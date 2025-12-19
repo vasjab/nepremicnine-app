@@ -210,24 +210,44 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
           : formatPriceForPin(listing.price);
 
         const popupContent = `
-          <div class="popup-content-${listing.id}" style="width: 220px; font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer;">
-            <div style="width: 100%; height: 120px; overflow: hidden; border-radius: 8px 8px 0 0;">
-              <img src="${imageUrl}" alt="${listing.title}" style="width: 100%; height: 100%; object-fit: cover;" />
+          <style>
+            .popup-btn-${listing.id} {
+              margin-top: 8px;
+              padding: 10px 8px;
+              background: hsl(350, 70%, 72%);
+              border-radius: 6px;
+              text-align: center;
+              font-size: 13px;
+              font-weight: 600;
+              color: white;
+              transition: background 0.15s ease, transform 0.15s ease;
+            }
+            .popup-btn-${listing.id}:hover {
+              background: hsl(350, 70%, 62%);
+              transform: scale(1.02);
+            }
+            .popup-content-${listing.id}:hover .popup-img-${listing.id} {
+              transform: scale(1.05);
+            }
+          </style>
+          <div class="popup-content-${listing.id}" style="width: 240px; font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer;">
+            <div style="width: 100%; height: 140px; overflow: hidden; border-radius: 8px 8px 0 0;">
+              <img class="popup-img-${listing.id}" src="${imageUrl}" alt="${listing.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s ease;" />
             </div>
-            <div style="padding: 12px;">
-              <div style="font-size: 11px; color: #888; margin-bottom: 4px; text-transform: uppercase;">
+            <div style="padding: 14px;">
+              <div style="font-size: 11px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px;">
                 ${propertyTypeLabels[listing.property_type] || 'Property'} • ${listing.listing_type === 'rent' ? 'For Rent' : 'For Sale'}
               </div>
-              <div style="font-size: 14px; font-weight: 600; color: #2d2319; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              <div style="font-size: 15px; font-weight: 600; color: #2d2319; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                 ${listing.address}
               </div>
-              <div style="font-size: 13px; color: #666; margin-bottom: 8px;">
+              <div style="font-size: 13px; color: #666; margin-bottom: 10px;">
                 ${listing.bedrooms} room${listing.bedrooms !== 1 ? 's' : ''} • ${listing.area_sqm ? listing.area_sqm + ' m²' : 'N/A'}
               </div>
-              <div style="font-size: 16px; font-weight: 700; color: #2d2319;">
+              <div style="font-size: 18px; font-weight: 700; color: #2d2319;">
                 ${priceDisplay}
               </div>
-              <div style="margin-top: 8px; padding: 8px; background: hsl(350, 70%, 72%); border-radius: 6px; text-align: center; font-size: 13px; font-weight: 600; color: white;">
+              <div class="popup-btn-${listing.id}">
                 View details
               </div>
             </div>
