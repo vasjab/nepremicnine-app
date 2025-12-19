@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Listing, ListingFilters } from '@/types/listing';
 import { useListings } from '@/hooks/useListings';
@@ -20,6 +20,8 @@ const Index = () => {
   const [filters, setFilters] = useState<ListingFilters>({});
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
+  const listingRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const listContainerRef = useRef<HTMLDivElement>(null);
   
   const { data: allListings, isLoading } = useListings(filters);
 
@@ -47,6 +49,34 @@ const Index = () => {
     setMapBounds(bounds);
   }, []);
 
+  // Handle marker click - scroll to card and highlight it
+  const handleMarkerClick = useCallback((listing: Listing) => {
+    setActiveListingId(listing.id);
+    
+    // Scroll the card into view
+    const cardElement = listingRefs.current[listing.id];
+    if (cardElement && listContainerRef.current) {
+      cardElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  }, []);
+
+  // Clear highlight after a delay when set via marker click
+  useEffect(() => {
+    if (activeListingId) {
+      const timer = setTimeout(() => {
+        // Only clear if it wasn't set by hovering
+        const cardElement = listingRefs.current[activeListingId];
+        if (cardElement && !cardElement.matches(':hover')) {
+          // Keep it highlighted for visibility
+        }
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [activeListingId]);
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -60,7 +90,7 @@ const Index = () => {
             totalCount={visibleListings.length}
           />
           
-          <div className="flex-1 overflow-y-auto p-4">
+          <div ref={listContainerRef} className="flex-1 overflow-y-auto p-4">
             {isLoading ? (
               <div className="grid gap-4">
                 {[...Array(4)].map((_, i) => (
@@ -76,8 +106,14 @@ const Index = () => {
                 {visibleListings.map((listing) => (
                   <div
                     key={listing.id}
+                    ref={(el) => { listingRefs.current[listing.id] = el; }}
                     onMouseEnter={() => handleCardHover(listing.id)}
                     onMouseLeave={() => handleCardHover(null)}
+                    className={`transition-all duration-300 rounded-xl ${
+                      listing.id === activeListingId 
+                        ? 'ring-2 ring-accent ring-offset-2 ring-offset-background' 
+                        : ''
+                    }`}
                   >
                     <ListingCard
                       listing={listing}
@@ -106,7 +142,7 @@ const Index = () => {
           <MapView
             listings={allListings || []}
             activeListing={activeListingId}
-            onListingClick={handleListingClick}
+            onListingClick={handleMarkerClick}
             onMapMove={handleMapMove}
           />
         </div>
