@@ -42,7 +42,8 @@ const PROPERTY_TYPES = [
   { value: 'villa', label: 'Villa', icon: Castle },
 ] as const;
 
-const MIN_PRICE_OPTIONS = [
+// Rental price options (monthly)
+const RENT_MIN_PRICE_OPTIONS = [
   { value: '', label: 'No min' },
   { value: '300', label: '€300' },
   { value: '500', label: '€500' },
@@ -53,7 +54,7 @@ const MIN_PRICE_OPTIONS = [
   { value: 'custom', label: 'Custom' },
 ] as const;
 
-const MAX_PRICE_OPTIONS = [
+const RENT_MAX_PRICE_OPTIONS = [
   { value: '', label: 'No max' },
   { value: '500', label: '€500' },
   { value: '750', label: '€750' },
@@ -62,6 +63,30 @@ const MAX_PRICE_OPTIONS = [
   { value: '2000', label: '€2,000' },
   { value: '3000', label: '€3,000' },
   { value: '5000', label: '€5,000' },
+  { value: 'custom', label: 'Custom' },
+] as const;
+
+// Sale price options (total price)
+const SALE_MIN_PRICE_OPTIONS = [
+  { value: '', label: 'No min' },
+  { value: '50000', label: '€50,000' },
+  { value: '100000', label: '€100,000' },
+  { value: '150000', label: '€150,000' },
+  { value: '200000', label: '€200,000' },
+  { value: '300000', label: '€300,000' },
+  { value: '500000', label: '€500,000' },
+  { value: 'custom', label: 'Custom' },
+] as const;
+
+const SALE_MAX_PRICE_OPTIONS = [
+  { value: '', label: 'No max' },
+  { value: '100000', label: '€100,000' },
+  { value: '200000', label: '€200,000' },
+  { value: '300000', label: '€300,000' },
+  { value: '500000', label: '€500,000' },
+  { value: '750000', label: '€750,000' },
+  { value: '1000000', label: '€1,000,000' },
+  { value: '2000000', label: '€2,000,000' },
   { value: 'custom', label: 'Custom' },
 ] as const;
 
@@ -75,12 +100,21 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   const [isOpen, setIsOpen] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Get dynamic price options based on listing type
+  const getMinPriceOptions = () => {
+    return filters.listing_type === 'sale' ? SALE_MIN_PRICE_OPTIONS : RENT_MIN_PRICE_OPTIONS;
+  };
+  
+  const getMaxPriceOptions = () => {
+    return filters.listing_type === 'sale' ? SALE_MAX_PRICE_OPTIONS : RENT_MAX_PRICE_OPTIONS;
+  };
+  
   // Track if user selected "Custom" option
   const [customMinPrice, setCustomMinPrice] = useState(
-    filters.min_price != null && !isPresetValue(filters.min_price, MIN_PRICE_OPTIONS)
+    filters.min_price != null && !isPresetValue(filters.min_price, getMinPriceOptions())
   );
   const [customMaxPrice, setCustomMaxPrice] = useState(
-    filters.max_price != null && !isPresetValue(filters.max_price, MAX_PRICE_OPTIONS)
+    filters.max_price != null && !isPresetValue(filters.max_price, getMaxPriceOptions())
   );
 
   // Live search with debounce
@@ -117,10 +151,23 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   };
 
   const handleListingTypeChange = (value: string) => {
-    onFiltersChange({
-      ...filters,
-      listing_type: value === 'all' ? null : (value as 'rent' | 'sale'),
-    });
+    const newListingType = value === 'all' ? null : (value as 'rent' | 'sale');
+    // Reset price filters when listing type changes since values differ significantly
+    if (newListingType !== filters.listing_type) {
+      setCustomMinPrice(false);
+      setCustomMaxPrice(false);
+      onFiltersChange({
+        ...filters,
+        listing_type: newListingType,
+        min_price: null,
+        max_price: null,
+      });
+    } else {
+      onFiltersChange({
+        ...filters,
+        listing_type: newListingType,
+      });
+    }
   };
 
   const handlePropertyTypeToggle = (value: string) => {
@@ -183,14 +230,14 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   const getMinPriceSelectValue = () => {
     if (customMinPrice) return 'custom';
     if (filters.min_price === null) return 'none';
-    const preset = MIN_PRICE_OPTIONS.find(opt => opt.value === filters.min_price?.toString());
+    const preset = getMinPriceOptions().find(opt => opt.value === filters.min_price?.toString());
     return preset ? preset.value : 'custom';
   };
 
   const getMaxPriceSelectValue = () => {
     if (customMaxPrice) return 'custom';
     if (filters.max_price === null) return 'none';
-    const preset = MAX_PRICE_OPTIONS.find(opt => opt.value === filters.max_price?.toString());
+    const preset = getMaxPriceOptions().find(opt => opt.value === filters.max_price?.toString());
     return preset ? preset.value : 'custom';
   };
 
@@ -381,7 +428,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                         <SelectValue placeholder="Min price" />
                       </SelectTrigger>
                       <SelectContent>
-                        {MIN_PRICE_OPTIONS.map((opt) => (
+                        {getMinPriceOptions().map((opt) => (
                           <SelectItem key={opt.value || 'no-min'} value={opt.value || 'none'}>
                             {opt.label}
                           </SelectItem>
@@ -397,7 +444,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                         <SelectValue placeholder="Max price" />
                       </SelectTrigger>
                       <SelectContent>
-                        {MAX_PRICE_OPTIONS.map((opt) => (
+                        {getMaxPriceOptions().map((opt) => (
                           <SelectItem key={opt.value || 'no-max'} value={opt.value || 'none'}>
                             {opt.label}
                           </SelectItem>
