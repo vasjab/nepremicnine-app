@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Check, X, Images } from 'lucide-react';
+import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Check, X, Images, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useListing } from '@/hooks/useListings';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -19,6 +19,25 @@ export default function ListingDetail() {
   const saveListing = useSaveListing();
   const unsaveListing = useUnsaveListing();
   const [showGallery, setShowGallery] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (listing?.images && listing.images.length > 0) {
+      setCurrentImageIndex((prev) => 
+        prev === 0 ? listing.images!.length - 1 : prev - 1
+      );
+    }
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (listing?.images && listing.images.length > 0) {
+      setCurrentImageIndex((prev) => 
+        prev === listing.images!.length - 1 ? 0 : prev + 1
+      );
+    }
+  };
 
   const handleSaveClick = () => {
     if (!user || !id) return;
@@ -105,15 +124,54 @@ export default function ListingDetail() {
           {listing.images && listing.images.length > 0 ? (
             <>
               <img
-                src={listing.images[0]}
-                alt={listing.title}
-                className="w-full h-full object-cover transition-transform group-hover:scale-[1.02]"
+                src={listing.images[currentImageIndex]}
+                alt={`${listing.title} - Photo ${currentImageIndex + 1}`}
+                className="w-full h-full object-cover transition-all duration-300"
               />
+              
+              {/* Navigation arrows */}
+              {listing.images.length > 1 && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={handlePrevImage}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={handleNextImage}
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </Button>
+                  
+                  {/* Image indicator dots */}
+                  <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    {listing.images.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(index); }}
+                        className={cn(
+                          "w-2 h-2 rounded-full transition-all",
+                          index === currentImageIndex 
+                            ? "bg-white w-4" 
+                            : "bg-white/50 hover:bg-white/75"
+                        )}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+              
               {/* Image count overlay */}
               <div className="absolute bottom-4 right-4 bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium">
                 <Images className="h-4 w-4" />
                 <span>
-                  {listing.images.length} photo{listing.images.length !== 1 ? 's' : ''}
+                  {currentImageIndex + 1} / {listing.images.length}
                   {(listing as any).floor_plan_url && ' • Floor plan'}
                 </span>
               </div>
