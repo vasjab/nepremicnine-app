@@ -28,6 +28,7 @@ export type Database = {
           created_at: string
           currency: string
           description: string | null
+          floor_plan_url: string | null
           id: string
           images: string[] | null
           is_active: boolean
@@ -55,6 +56,7 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string | null
+          floor_plan_url?: string | null
           id?: string
           images?: string[] | null
           is_active?: boolean
@@ -82,6 +84,7 @@ export type Database = {
           created_at?: string
           currency?: string
           description?: string | null
+          floor_plan_url?: string | null
           id?: string
           images?: string[] | null
           is_active?: boolean
