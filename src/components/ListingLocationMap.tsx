@@ -77,26 +77,43 @@ export function ListingLocationMap({ latitude, longitude, address }: ListingLoca
         'top-right'
       );
 
-      // Add marker for the listing location
+      // Add marker for the listing location using DOM methods (safer than innerHTML)
       const el = document.createElement('div');
-      el.innerHTML = `
-        <div style="
-          width: 40px;
-          height: 40px;
-          background: hsl(350, 70%, 72%);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-          border: 3px solid white;
-        ">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2">
-            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-            <circle cx="12" cy="10" r="3" fill="hsl(350, 70%, 72%)" stroke="hsl(350, 70%, 72%)"/>
-          </svg>
-        </div>
+      const markerDiv = document.createElement('div');
+      markerDiv.style.cssText = `
+        width: 40px;
+        height: 40px;
+        background: hsl(350, 70%, 72%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        border: 3px solid white;
       `;
+      
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('width', '20');
+      svg.setAttribute('height', '20');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('fill', 'white');
+      svg.setAttribute('stroke', 'white');
+      svg.setAttribute('stroke-width', '2');
+      
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', 'M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z');
+      
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', '12');
+      circle.setAttribute('cy', '10');
+      circle.setAttribute('r', '3');
+      circle.setAttribute('fill', 'hsl(350, 70%, 72%)');
+      circle.setAttribute('stroke', 'hsl(350, 70%, 72%)');
+      
+      svg.appendChild(path);
+      svg.appendChild(circle);
+      markerDiv.appendChild(svg);
+      el.appendChild(markerDiv);
 
       marker.current = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
         .setLngLat([longitude, latitude])
