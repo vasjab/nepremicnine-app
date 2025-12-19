@@ -119,42 +119,41 @@ export default function MyListings() {
                 >
                   {/* Image */}
                   <div className="w-full sm:w-40 h-32 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                      {listing.images && listing.images.length > 0 ? (
-                        <img
-                          src={listing.images[0]}
-                          alt={listing.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-secondary">
-                          <span className="text-xs text-muted-foreground">{t('listing.noImage')}</span>
-                        </div>
-                      )}
+                    {listing.images && listing.images.length > 0 ? (
+                      <img
+                        src={listing.images[0]}
+                        alt={listing.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-secondary">
+                        <span className="text-xs text-muted-foreground">{t('listing.noImage')}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="font-semibold text-foreground line-clamp-1">
+                          {listing.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {listing.address}, {listing.city}
+                        </p>
+                      </div>
+                      <span className={`px-2 py-1 rounded-md text-xs font-medium ${
+                        listing.is_active
+                          ? 'bg-success/10 text-success'
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {listing.is_active ? t('myListings.active') : t('myListings.inactive')}
+                      </span>
                     </div>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <h3 className="font-semibold text-foreground line-clamp-1">
-                            {listing.title}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            {listing.address}, {listing.city}
-                          </p>
-                        </div>
-                        <span className={`px-2 py-1 rounded-md text-xs font-medium ${
-                          listing.is_active
-                            ? 'bg-success/10 text-success'
-                            : 'bg-muted text-muted-foreground'
-                        }`}>
-                          {listing.is_active ? t('myListings.active') : t('myListings.inactive')}
-                        </span>
-                      </div>
-
-                      <p className="text-lg font-bold text-foreground mt-2">
-                        {formatPrice(listing.price, listing.currency, { isRental: listing.listing_type === 'rent', showPeriod: listing.listing_type === 'rent' })}
-                      </p>
+                    <p className="text-lg font-bold text-foreground mt-2">
+                      {formatPrice(listing.price, listing.currency, { isRental: listing.listing_type === 'rent', showPeriod: listing.listing_type === 'rent' })}
                     </p>
 
                     {/* Actions */}
@@ -164,7 +163,7 @@ export default function MyListings() {
                         size="sm"
                         onClick={() => navigate(`/listing/${listing.id}`)}
                       >
-                        View
+                        {t('common.view')}
                       </Button>
                       <Button
                         variant="outline"
@@ -172,7 +171,7 @@ export default function MyListings() {
                         onClick={() => navigate(`/edit-listing/${listing.id}`)}
                       >
                         <Edit className="h-4 w-4 mr-1" />
-                        Edit
+                        {t('common.edit')}
                       </Button>
                       <Button
                         variant="outline"
@@ -182,12 +181,12 @@ export default function MyListings() {
                         {listing.is_active ? (
                           <>
                             <EyeOff className="h-4 w-4 mr-1" />
-                            Hide
+                            {t('myListings.hide')}
                           </>
                         ) : (
                           <>
                             <Eye className="h-4 w-4 mr-1" />
-                            Show
+                            {t('myListings.show')}
                           </>
                         )}
                       </Button>
@@ -199,18 +198,18 @@ export default function MyListings() {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Delete listing?</AlertDialogTitle>
+                            <AlertDialogTitle>{t('myListings.deleteDialog.title')}</AlertDialogTitle>
                             <AlertDialogDescription>
-                              This action cannot be undone. This will permanently delete your listing.
+                              {t('myListings.deleteDialog.description')}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
                             <AlertDialogAction
                               onClick={() => handleDelete(listing.id)}
                               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             >
-                              Delete
+                              {t('common.delete')}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -225,14 +224,14 @@ export default function MyListings() {
               <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
                 <Plus className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h2 className="text-xl font-semibold text-foreground mb-2">No listings yet</h2>
+              <h2 className="text-xl font-semibold text-foreground mb-2">{t('myListings.noListingsYet')}</h2>
               <p className="text-muted-foreground mb-6 max-w-sm">
-                Create your first listing to start reaching potential tenants or buyers.
+                {t('myListings.noListingsYetDesc')}
               </p>
               <Link to="/create-listing">
                 <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
                   <Plus className="h-4 w-4 mr-2" />
-                  Create your first listing
+                  {t('myListings.createFirstListing')}
                 </Button>
               </Link>
             </div>
