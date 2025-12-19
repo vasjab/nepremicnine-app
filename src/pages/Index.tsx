@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Listing, ListingFilters } from '@/types/listing';
 import { useListings } from '@/hooks/useListings';
@@ -8,12 +8,32 @@ import { ListingCard } from '@/components/ListingCard';
 import { MapView } from '@/components/MapView';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface MapBounds {
+  north: number;
+  south: number;
+  east: number;
+  west: number;
+}
+
 const Index = () => {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<ListingFilters>({});
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
+  const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
   
-  const { data: listings, isLoading } = useListings(filters);
+  const { data: allListings, isLoading } = useListings(filters);
+
+  // Filter listings based on map bounds
+  const visibleListings = allListings?.filter(listing => {
+    if (!mapBounds) return true; // Show all if no bounds set yet
+    
+    return (
+      listing.latitude >= mapBounds.south &&
+      listing.latitude <= mapBounds.north &&
+      listing.longitude >= mapBounds.west &&
+      listing.longitude <= mapBounds.east
+    );
+  }) || [];
 
   const handleListingClick = (listing: Listing) => {
     navigate(`/listing/${listing.id}`);
@@ -22,6 +42,10 @@ const Index = () => {
   const handleCardHover = (listingId: string | null) => {
     setActiveListingId(listingId);
   };
+
+  const handleMapMove = useCallback((bounds: MapBounds) => {
+    setMapBounds(bounds);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -33,7 +57,7 @@ const Index = () => {
           <FilterBar 
             filters={filters} 
             onFiltersChange={setFilters}
-            totalCount={listings?.length}
+            totalCount={visibleListings.length}
           />
           
           <div className="flex-1 overflow-y-auto p-4">
@@ -47,9 +71,9 @@ const Index = () => {
                   </div>
                 ))}
               </div>
-            ) : listings && listings.length > 0 ? (
+            ) : visibleListings.length > 0 ? (
               <div className="grid gap-4">
-                {listings.map((listing) => (
+                {visibleListings.map((listing) => (
                   <div
                     key={listing.id}
                     onMouseEnter={() => handleCardHover(listing.id)}
@@ -68,9 +92,9 @@ const Index = () => {
                 <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
                   <span className="text-2xl">🏠</span>
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">No listings found</h3>
+                <h3 className="font-semibold text-foreground mb-2">No listings in this area</h3>
                 <p className="text-sm text-muted-foreground">
-                  Try adjusting your filters or search in a different area.
+                  Try zooming out or panning the map to see more listings.
                 </p>
               </div>
             )}
@@ -80,9 +104,10 @@ const Index = () => {
         {/* Right panel - Map */}
         <div className="flex-1 h-[50vh] lg:h-full">
           <MapView
-            listings={listings || []}
+            listings={allListings || []}
             activeListing={activeListingId}
             onListingClick={handleListingClick}
+            onMapMove={handleMapMove}
           />
         </div>
       </main>
