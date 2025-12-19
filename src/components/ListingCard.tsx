@@ -6,7 +6,6 @@ import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/use
 import { useSwipe } from '@/hooks/useSwipe';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface ListingCardProps {
@@ -23,6 +22,7 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
   const saveListing = useSaveListing();
   const unsaveListing = useUnsaveListing();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isHeartAnimating, setIsHeartAnimating] = useState(false);
 
   const goToPrevImage = useCallback(() => {
     if (listing.images && listing.images.length > 1) {
@@ -49,6 +49,9 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
   const handleSaveClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) return;
+
+    setIsHeartAnimating(true);
+    setTimeout(() => setIsHeartAnimating(false), 600);
 
     if (isSaved) {
       unsaveListing.mutate({ userId: user.id, listingId: listing.id });
@@ -96,17 +99,20 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
     <article
       className={cn(
         'listing-card cursor-pointer group',
-        isActive && 'ring-2 ring-accent shadow-warm'
+        isActive && 'ring-2 ring-accent shadow-elevated'
       )}
       onClick={onClick}
     >
-      {/* Image */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted" {...swipeHandlers}>
+      {/* Image container */}
+      <div 
+        className="relative aspect-[4/3] overflow-hidden bg-muted" 
+        {...swipeHandlers}
+      >
         {listing.images && listing.images.length > 0 ? (
           <img
             src={listing.images[currentImageIndex]}
             alt={`${listing.title} - Photo ${currentImageIndex + 1}`}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-500 ease-out-expo group-hover:scale-[1.03]"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-secondary">
@@ -114,29 +120,27 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
           </div>
         )}
 
-        {/* Navigation arrows */}
+        {/* Navigation arrows - always visible on mobile, hover on desktop */}
         {hasMultipleImages && (
           <>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            <button
+              type="button"
+              className="absolute left-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full glass flex items-center justify-center shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 hover:scale-105 active:scale-95 z-10"
               onClick={handlePrevImage}
             >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              <ChevronLeft className="h-5 w-5 text-foreground" />
+            </button>
+            <button
+              type="button"
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full glass flex items-center justify-center shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 hover:scale-105 active:scale-95 z-10"
               onClick={handleNextImage}
             >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+              <ChevronRight className="h-5 w-5 text-foreground" />
+            </button>
 
-            {/* Image indicator dots */}
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-1 z-10">
-              {listing.images.map((_, index) => (
+            {/* Airbnb-style pill dots */}
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+              {listing.images.slice(0, 5).map((_, index) => (
                 <button
                   key={index}
                   onClick={(e) => {
@@ -144,35 +148,43 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
                     setCurrentImageIndex(index);
                   }}
                   className={cn(
-                    "w-1.5 h-1.5 rounded-full transition-all",
+                    "h-1.5 rounded-full transition-all duration-300",
                     index === currentImageIndex
-                      ? "bg-white w-3"
-                      : "bg-white/60 hover:bg-white/80"
+                      ? "bg-white w-6 shadow-sm"
+                      : "bg-white/60 w-1.5 hover:bg-white/80"
                   )}
                 />
               ))}
+              {listing.images.length > 5 && (
+                <span className="text-white/80 text-xs ml-1">+{listing.images.length - 5}</span>
+              )}
             </div>
           </>
         )}
 
-        {/* Save button */}
+        {/* Save button - larger touch target */}
         {user && (
-          <Button
-            variant="ghost"
-            size="icon"
+          <button
+            type="button"
             className={cn(
-              'absolute top-3 right-3 h-9 w-9 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card z-10',
+              'absolute top-3 right-3 h-10 w-10 rounded-full glass flex items-center justify-center shadow-md z-10 transition-all duration-200 active:scale-90',
               isSaved && 'text-accent'
             )}
             onClick={handleSaveClick}
           >
-            <Heart className={cn('h-5 w-5', isSaved && 'fill-current')} />
-          </Button>
+            <Heart 
+              className={cn(
+                'h-5 w-5 transition-all duration-200',
+                isSaved && 'fill-current',
+                isHeartAnimating && 'animate-heart-beat'
+              )} 
+            />
+          </button>
         )}
 
         {/* Type badge */}
         <div className="absolute bottom-3 left-3 z-10">
-          <span className="px-2 py-1 rounded-md bg-card/90 backdrop-blur-sm text-xs font-medium">
+          <span className="px-3 py-1.5 rounded-xl glass text-xs font-semibold">
             {t(`listingTypes.${listing.listing_type}`)}
           </span>
         </div>
@@ -180,8 +192,8 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
 
       {/* Content */}
       <div className="p-4">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="font-semibold text-foreground line-clamp-1">
+        <div className="flex items-start justify-between gap-2 mb-1.5">
+          <h3 className="font-semibold text-foreground line-clamp-1 text-[15px]">
             {listing.address}
           </h3>
         </div>
@@ -198,7 +210,7 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
               return (
                 <span 
                   key={index}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary text-xs text-muted-foreground"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary/80 text-xs text-muted-foreground font-medium"
                 >
                   <Icon className="h-3 w-3" />
                   {badge.label}
@@ -208,11 +220,11 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
           </div>
         )}
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between pt-1">
           <span className="text-lg font-bold text-foreground">
             {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
           </span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground font-medium">
             {listing.city}
           </span>
         </div>
