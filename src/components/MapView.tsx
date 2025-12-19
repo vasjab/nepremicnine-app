@@ -4,7 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { Listing } from '@/types/listing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MapPin, Map, Satellite, Mountain } from 'lucide-react';
+import { MapPin, Map, Satellite, Mountain, Maximize2 } from 'lucide-react';
 
 type MapStyle = 'streets' | 'satellite' | 'outdoors';
 
@@ -373,6 +373,21 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
     }
   };
 
+  const handleResetView = () => {
+    if (!map.current || listings.length === 0) return;
+    
+    const bounds = new mapboxgl.LngLatBounds();
+    listings.forEach(listing => {
+      bounds.extend([listing.longitude, listing.latitude]);
+    });
+    
+    map.current.fitBounds(bounds, {
+      padding: 60,
+      maxZoom: 14,
+      duration: 500,
+    });
+  };
+
   return (
     <div className="relative w-full h-full">
       <div ref={mapContainer} className="absolute inset-0" />
@@ -399,6 +414,16 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
           );
         })}
       </div>
+
+      {/* Reset View Button */}
+      <button
+        onClick={handleResetView}
+        className="absolute top-3 right-14 z-10 flex items-center gap-1.5 px-3 py-1.5 bg-background/95 backdrop-blur-sm rounded-lg shadow-md border border-border/50 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+        title="Reset view to show all listings"
+      >
+        <Maximize2 className="h-4 w-4" />
+        <span className="hidden sm:inline">Reset view</span>
+      </button>
     </div>
   );
 }
