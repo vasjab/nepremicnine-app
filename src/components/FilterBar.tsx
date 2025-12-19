@@ -1,4 +1,4 @@
-import { Search, SlidersHorizontal, X, ArrowUpDown } from 'lucide-react';
+import { Search, SlidersHorizontal, X, ArrowUpDown, Building2, Home, DoorOpen, Square, Castle } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { ListingFilters, SortOption } from '@/types/listing';
 import { Button } from '@/components/ui/button';
@@ -30,11 +30,11 @@ interface FilterBarProps {
 }
 
 const PROPERTY_TYPES = [
-  { value: 'apartment', label: 'Apartment' },
-  { value: 'house', label: 'House' },
-  { value: 'room', label: 'Room' },
-  { value: 'studio', label: 'Studio' },
-  { value: 'villa', label: 'Villa' },
+  { value: 'apartment', label: 'Apartment', icon: Building2 },
+  { value: 'house', label: 'House', icon: Home },
+  { value: 'room', label: 'Room', icon: DoorOpen },
+  { value: 'studio', label: 'Studio', icon: Square },
+  { value: 'villa', label: 'Villa', icon: Castle },
 ] as const;
 
 export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount }: FilterBarProps) {
@@ -238,13 +238,14 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   <div className="flex flex-wrap gap-2">
                     {PROPERTY_TYPES.map((type) => {
                       const isSelected = filters.property_types?.includes(type.value) || false;
+                      const Icon = type.icon;
                       return (
                         <button
                           key={type.value}
                           type="button"
                           onClick={() => handlePropertyTypeToggle(type.value)}
                           className={`
-                            px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200
+                            flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200
                             border-2 cursor-pointer
                             ${isSelected 
                               ? 'bg-foreground text-background border-foreground' 
@@ -252,6 +253,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                             }
                           `}
                         >
+                          <Icon className="h-4 w-4" />
                           {type.label}
                         </button>
                       );
