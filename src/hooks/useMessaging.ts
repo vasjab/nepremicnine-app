@@ -124,10 +124,13 @@ export function useSendMessage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ conversationId, senderId, content }: {
+    mutationFn: async ({ conversationId, senderId, content, recipientId, senderName, listingTitle }: {
       conversationId: string;
       senderId: string;
       content: string;
+      recipientId?: string;
+      senderName?: string;
+      listingTitle?: string;
     }) => {
       const { data, error } = await supabase
         .from('messages')
@@ -140,6 +143,26 @@ export function useSendMessage() {
         .single();
 
       if (error) throw error;
+
+      // Trigger email notification if we have recipient info
+      if (recipientId && listingTitle) {
+        try {
+          await supabase.functions.invoke('send-message-notification', {
+            body: {
+              recipientId,
+              senderId,
+              senderName: senderName || 'Someone',
+              messagePreview: content.trim(),
+              listingTitle,
+              conversationId,
+            },
+          });
+        } catch (notifyError) {
+          console.error('Failed to send notification:', notifyError);
+          // Don't throw - message was still sent successfully
+        }
+      }
+
       return data;
     },
     onSuccess: (_, variables) => {
@@ -160,7 +183,7 @@ export function useMarkMessagesRead() {
     }) => {
       const { error } = await supabase
         .from('messages')
-        .update({ is_read: true })
+        .update({ is_read: true, read_at: new Date().toISOString() })
         .eq('conversation_id', conversationId)
         .neq('sender_id', userId)
         .eq('is_read', false);
