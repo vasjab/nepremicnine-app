@@ -4,8 +4,10 @@ import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
 import { useSwipe } from '@/hooks/useSwipe';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { Button } from '@/components/ui/button';
-import { cn, formatPrice } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 
 interface ListingCardProps {
   listing: Listing;
@@ -15,6 +17,8 @@ interface ListingCardProps {
 
 export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
   const { user } = useAuth();
+  const { t } = useTranslation();
+  const { formatPrice, formatArea, getPeriodSuffix } = useFormattedPrice();
   const { data: isSaved } = useIsListingSaved(user?.id, listing.id);
   const saveListing = useSaveListing();
   const unsaveListing = useUnsaveListing();
@@ -63,16 +67,11 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
     goToNextImage();
   };
 
-  const propertyTypeLabels: Record<string, string> = {
-    apartment: 'Apartment',
-    house: 'House',
-    room: 'Room',
-    studio: 'Studio',
-    villa: 'Villa',
-    other: 'Other',
-  };
+  const propertyTypeKey = listing.property_type as string;
+  const propertyTypeLabel = t(`propertyTypes.${propertyTypeKey}`);
 
   const hasMultipleImages = listing.images && listing.images.length > 1;
+  const isRental = listing.listing_type === 'rent';
 
   return (
     <article
@@ -92,7 +91,7 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-secondary">
-            <span className="text-muted-foreground text-sm">No image</span>
+            <span className="text-muted-foreground text-sm">{t('listing.noImage')}</span>
           </div>
         )}
 
@@ -155,7 +154,7 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
         {/* Type badge */}
         <div className="absolute bottom-3 left-3 z-10">
           <span className="px-2 py-1 rounded-md bg-card/90 backdrop-blur-sm text-xs font-medium">
-            {listing.listing_type === 'rent' ? 'For Rent' : 'For Sale'}
+            {t(`listingTypes.${listing.listing_type}`)}
           </span>
         </div>
       </div>
@@ -169,13 +168,12 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
         </div>
 
         <p className="text-sm text-muted-foreground mb-3">
-          {propertyTypeLabels[listing.property_type]} • {listing.bedrooms} room{listing.bedrooms !== 1 ? 's' : ''} • {listing.area_sqm ? `${listing.area_sqm} m²` : 'N/A'}
+          {propertyTypeLabel} • {listing.bedrooms} {listing.bedrooms !== 1 ? t('filters.rooms') : t('filters.room')} • {formatArea(listing.area_sqm)}
         </p>
 
         <div className="flex items-center justify-between">
           <span className="text-lg font-bold text-foreground">
-            {formatPrice(listing.price, listing.currency)}
-            {listing.listing_type === 'rent' && <span className="text-sm font-normal text-muted-foreground">/mo</span>}
+            {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
           </span>
           <span className="text-xs text-muted-foreground">
             {listing.city}
