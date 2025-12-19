@@ -169,20 +169,23 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
           marker.setLngLat([listing.longitude, listing.latitude]);
         }
       } else {
-        // Create new marker
+        // Create new marker with distinct styling based on listing type
+        const isForRent = listing.listing_type === 'rent';
         const el = document.createElement('div');
         el.innerHTML = formatPriceForPin(listing.price);
+        el.dataset.listingType = listing.listing_type;
         el.style.cssText = `
-          background: hsl(0, 0%, 100%);
-          color: hsl(25, 30%, 12%);
+          background: ${isForRent ? 'hsl(210, 90%, 56%)' : 'hsl(145, 65%, 42%)'};
+          color: hsl(0, 0%, 100%);
           padding: 6px 10px;
           border-radius: 8px;
           font-size: 13px;
           font-weight: 600;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
           cursor: pointer;
-          transition: background 0.15s ease, box-shadow 0.15s ease;
+          transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
           white-space: nowrap;
+          border-left: 3px solid ${isForRent ? 'hsl(210, 90%, 40%)' : 'hsl(145, 65%, 30%)'};
         `;
 
         // Create popup for click preview
@@ -267,14 +270,14 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
         });
 
         el.addEventListener('mouseenter', () => {
-          el.style.background = 'hsl(350, 70%, 72%)';
-          el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
+          el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.3)';
+          el.style.transform = 'scale(1.05)';
         });
 
         el.addEventListener('mouseleave', () => {
           const isActive = listing.id === activeListing;
-          el.style.background = isActive ? 'hsl(350, 70%, 72%)' : 'hsl(0, 0%, 100%)';
-          el.style.boxShadow = isActive ? '0 4px 12px rgba(0,0,0,0.25)' : '0 2px 8px rgba(0,0,0,0.15)';
+          el.style.boxShadow = isActive ? '0 4px 16px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.2)';
+          el.style.transform = isActive ? 'scale(1.05)' : 'scale(1)';
         });
 
         const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
@@ -307,8 +310,8 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
     Object.entries(markers.current).forEach(([id, marker]) => {
       const el = marker.getElement();
       const isActive = id === activeListing;
-      el.style.background = isActive ? 'hsl(350, 70%, 72%)' : 'hsl(0, 0%, 100%)';
-      el.style.boxShadow = isActive ? '0 4px 12px rgba(0,0,0,0.25)' : '0 2px 8px rgba(0,0,0,0.15)';
+      el.style.boxShadow = isActive ? '0 4px 16px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.2)';
+      el.style.transform = isActive ? 'scale(1.05)' : 'scale(1)';
     });
   }, [activeListing]);
 
