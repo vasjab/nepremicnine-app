@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Upload, X } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateListing } from '@/hooks/useListings';
@@ -20,6 +20,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { HoneypotField, isHoneypotTriggered } from '@/components/HoneypotField';
 import { useRateLimit, LISTING_RATE_LIMIT } from '@/hooks/useRateLimit';
+import { ImageUploader } from '@/components/ImageUploader';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import { supabase } from '@/integrations/supabase/client';
 
 // Validation schema for listing data
@@ -60,6 +62,16 @@ export default function CreateListing() {
   const [honeypot, setHoneypot] = useState('');
   const { checkRateLimit, isLimited, remainingTime } = useRateLimit(LISTING_RATE_LIMIT);
 
+  // Image upload hook
+  const {
+    images: uploadedImages,
+    isUploading,
+    uploadProgress,
+    uploadImages,
+    removeImage,
+    reorderImages,
+  } = useImageUpload({ userId: user?.id || '' });
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -77,7 +89,6 @@ export default function CreateListing() {
     available_from: '',
     is_furnished: false,
     allows_pets: false,
-    images: [] as string[],
     // Building & Floor
     floor_number: '',
     total_floors_building: '',
@@ -109,8 +120,6 @@ export default function CreateListing() {
     internet_included: '' as string,
     utilities_included: '' as string,
   });
-
-  const [imageUrl, setImageUrl] = useState('');
 
   const isApartmentType = ['apartment', 'room', 'studio'].includes(formData.property_type);
   const isHouseType = ['house', 'villa'].includes(formData.property_type);
@@ -197,7 +206,7 @@ export default function CreateListing() {
       available_from: formData.available_from || null,
       is_furnished: formData.is_furnished,
       allows_pets: formData.allows_pets,
-      images: formData.images,
+      images: uploadedImages.map(img => img.url),
     };
 
     // Validate with zod schema
@@ -290,22 +299,7 @@ export default function CreateListing() {
     );
   };
 
-  const handleAddImage = () => {
-    if (imageUrl && !formData.images.includes(imageUrl)) {
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, imageUrl],
-      }));
-      setImageUrl('');
-    }
-  };
-
-  const handleRemoveImage = (url: string) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter(img => img !== url),
-    }));
-  };
+  // Note: Image handling is now done by useImageUpload hook
 
   if (!user) return null;
 
@@ -986,36 +980,20 @@ export default function CreateListing() {
             {/* Images */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Images</h2>
-              <p className="text-sm text-muted-foreground">Add image URLs for your property</p>
+              <p className="text-sm text-muted-foreground">
+                Drag and drop images or click to upload. Images will be automatically compressed.
+              </p>
               
-              <div className="flex gap-2">
-                <Input
-                  placeholder="https://example.com/image.jpg"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                />
-                <Button type="button" variant="outline" onClick={handleAddImage}>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Add
-                </Button>
-              </div>
-
-              {formData.images.length > 0 && (
-                <div className="grid grid-cols-3 gap-3">
-                  {formData.images.map((url, index) => (
-                    <div key={index} className="relative aspect-[4/3] rounded-lg overflow-hidden bg-muted">
-                      <img src={url} alt="" className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(url)}
-                        className="absolute top-2 right-2 p-1 rounded-full bg-background/80 hover:bg-background"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <ImageUploader
+                images={uploadedImages}
+                isUploading={isUploading}
+                uploadProgress={uploadProgress}
+                onUpload={uploadImages}
+                onRemove={removeImage}
+                onReorder={reorderImages}
+                maxImages={20}
+                disabled={!user}
+              />
             </div>
 
             {/* Submit */}

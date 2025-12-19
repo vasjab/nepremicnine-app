@@ -1,8 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Heart, PlusCircle, User, Menu, X } from 'lucide-react';
+import { Home, Heart, PlusCircle, User, Menu, X, MessageCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useUnreadCount } from '@/hooks/useMessaging';
 import { Button } from '@/components/ui/button';
 import { InternationalSettings } from '@/components/InternationalSettings';
 import {
@@ -19,6 +20,7 @@ export function Header() {
   const { t } = useTranslation();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { data: unreadCount = 0 } = useUnreadCount(user?.id);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -93,6 +95,21 @@ export function Header() {
 
             {user ? (
               <>
+                {/* Messages button with badge */}
+                <Link to="/messages" className="relative">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="rounded-full hover:bg-secondary"
+                  >
+                    <MessageCircle className="h-5 w-5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-medium">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
                 <Link to="/create-listing">
                   <Button 
                     variant="outline" 
