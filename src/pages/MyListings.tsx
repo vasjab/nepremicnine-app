@@ -6,6 +6,8 @@ import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +24,8 @@ export default function MyListings() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
+  const { formatPrice } = useFormattedPrice();
   const { data: listings, isLoading } = useMyListings(user?.id);
   const updateListing = useUpdateListing();
   const deleteListing = useDeleteListing();
@@ -32,10 +36,10 @@ export default function MyListings() {
       {
         onSuccess: () => {
           toast({
-            title: isActive ? 'Listing deactivated' : 'Listing activated',
+            title: isActive ? t('myListings.listingDeactivated') : t('myListings.listingActivated'),
             description: isActive
-              ? 'Your listing is now hidden from search results.'
-              : 'Your listing is now visible to everyone.',
+              ? t('myListings.listingDeactivatedDesc')
+              : t('myListings.listingActivatedDesc'),
           });
         },
       }
@@ -46,29 +50,11 @@ export default function MyListings() {
     deleteListing.mutate(id, {
       onSuccess: () => {
         toast({
-          title: 'Listing deleted',
-          description: 'Your listing has been permanently removed.',
+          title: t('myListings.listingDeleted'),
+          description: t('myListings.listingDeletedDesc'),
         });
       },
     });
-  };
-
-  const formatPrice = (price: number, currency: string) => {
-    // Use de-DE locale for European number formatting (space as thousand separator)
-    const formatted = new Intl.NumberFormat('de-DE', {
-      style: 'decimal',
-      maximumFractionDigits: 0,
-    }).format(price);
-    
-    const currencySymbols: Record<string, string> = {
-      EUR: '€',
-      SEK: 'kr',
-      USD: '$',
-      GBP: '£',
-    };
-    
-    const symbol = currencySymbols[currency] || currency;
-    return `${formatted} ${symbol}`;
   };
 
   if (!user) {
@@ -80,13 +66,13 @@ export default function MyListings() {
             <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
               <Plus className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h1 className="text-2xl font-semibold text-foreground mb-2">List your property</h1>
+            <h1 className="text-2xl font-semibold text-foreground mb-2">{t('myListings.listYourProperty')}</h1>
             <p className="text-muted-foreground mb-6">
-              Sign in to create and manage your listings.
+              {t('myListings.signInToManage')}
             </p>
             <Link to="/auth">
               <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
-                Sign in
+                {t('common.signIn')}
               </Button>
             </Link>
           </div>
@@ -104,16 +90,16 @@ export default function MyListings() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="font-display text-3xl font-bold text-foreground mb-2">
-                My Listings
+                {t('myListings.title')}
               </h1>
               <p className="text-muted-foreground">
-                Manage your property listings
+                {t('myListings.subtitle')}
               </p>
             </div>
             <Link to="/create-listing">
               <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
                 <Plus className="h-4 w-4 mr-2" />
-                Create Listing
+                {t('common.createListing')}
               </Button>
             </Link>
           </div>
@@ -133,44 +119,42 @@ export default function MyListings() {
                 >
                   {/* Image */}
                   <div className="w-full sm:w-40 h-32 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                    {listing.images && listing.images.length > 0 ? (
-                      <img
-                        src={listing.images[0]}
-                        alt={listing.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-secondary">
-                        <span className="text-xs text-muted-foreground">No image</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="font-semibold text-foreground line-clamp-1">
-                          {listing.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          {listing.address}, {listing.city}
-                        </p>
-                      </div>
-                      <span className={`px-2 py-1 rounded-md text-xs font-medium ${
-                        listing.is_active
-                          ? 'bg-success/10 text-success'
-                          : 'bg-muted text-muted-foreground'
-                      }`}>
-                        {listing.is_active ? 'Active' : 'Inactive'}
-                      </span>
+                      {listing.images && listing.images.length > 0 ? (
+                        <img
+                          src={listing.images[0]}
+                          alt={listing.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-secondary">
+                          <span className="text-xs text-muted-foreground">{t('listing.noImage')}</span>
+                        </div>
+                      )}
                     </div>
 
-                    <p className="text-lg font-bold text-foreground mt-2">
-                      {formatPrice(listing.price, listing.currency)}
-                      {listing.listing_type === 'rent' && (
-                        <span className="text-sm font-normal text-muted-foreground">/mo</span>
-                      )}
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h3 className="font-semibold text-foreground line-clamp-1">
+                            {listing.title}
+                          </h3>
+                          <p className="text-sm text-muted-foreground">
+                            {listing.address}, {listing.city}
+                          </p>
+                        </div>
+                        <span className={`px-2 py-1 rounded-md text-xs font-medium ${
+                          listing.is_active
+                            ? 'bg-success/10 text-success'
+                            : 'bg-muted text-muted-foreground'
+                        }`}>
+                          {listing.is_active ? t('myListings.active') : t('myListings.inactive')}
+                        </span>
+                      </div>
+
+                      <p className="text-lg font-bold text-foreground mt-2">
+                        {formatPrice(listing.price, listing.currency, { isRental: listing.listing_type === 'rent', showPeriod: listing.listing_type === 'rent' })}
+                      </p>
                     </p>
 
                     {/* Actions */}

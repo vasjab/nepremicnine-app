@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 
 import {
   Select,
@@ -31,24 +33,11 @@ interface FilterBarProps {
   totalCount?: number;
 }
 
-const LISTING_TYPES = [
-  { value: 'rent', label: 'For Rent', icon: Key },
-  { value: 'sale', label: 'For Sale', icon: Banknote },
-] as const;
-
-const PROPERTY_TYPES = [
-  { value: 'apartment', label: 'Apartment', icon: Building2 },
-  { value: 'house', label: 'House', icon: Home },
-  { value: 'room', label: 'Room', icon: DoorOpen },
-  { value: 'studio', label: 'Studio', icon: Square },
-  { value: 'villa', label: 'Villa', icon: Castle },
-] as const;
-
 // Price ranges by listing type
 const PRICE_CONFIG = {
-  rent: { min: 0, max: 5000, step: 100, label: 'Monthly cost' },
-  sale: { min: 0, max: 2000000, step: 10000, label: 'Total price' },
-  default: { min: 0, max: 100000, step: 1000, label: 'Price' },
+  rent: { min: 0, max: 5000, step: 100 },
+  sale: { min: 0, max: 2000000, step: 10000 },
+  default: { min: 0, max: 100000, step: 1000 },
 } as const;
 
 // Size range config
@@ -60,10 +49,25 @@ const SIZE_CONFIG = {
 const SQM_TO_SQFT = 10.764;
 
 export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount }: FilterBarProps) {
+  const { t } = useTranslation();
+  const { formatPriceLabel, currencySymbol } = useFormattedPrice();
   const [searchValue, setSearchValue] = useState(filters.city || '');
   const [isOpen, setIsOpen] = useState(false);
   const [areaUnit, setAreaUnit] = useState<AreaUnit>('sqm');
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  const LISTING_TYPES = [
+    { value: 'rent', label: t('listingTypes.rent'), icon: Key },
+    { value: 'sale', label: t('listingTypes.sale'), icon: Banknote },
+  ] as const;
+
+  const PROPERTY_TYPES = [
+    { value: 'apartment', label: t('propertyTypes.apartment'), icon: Building2 },
+    { value: 'house', label: t('propertyTypes.house'), icon: Home },
+    { value: 'room', label: t('propertyTypes.room'), icon: DoorOpen },
+    { value: 'studio', label: t('propertyTypes.studio'), icon: Square },
+    { value: 'villa', label: t('propertyTypes.villa'), icon: Castle },
+  ] as const;
 
   // Get price config based on listing type
   const getPriceConfig = () => {
@@ -197,14 +201,14 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   const hasActiveFilters = Object.values(filters).some(v => v !== null && v !== undefined && (Array.isArray(v) ? v.length > 0 : true));
 
   // Format price for display
-  const formatPriceLabel = (value: number): string => {
+  const formatPriceLabelLocal = (value: number): string => {
     if (value >= 1000000) {
-      return `€${(value / 1000000).toFixed(1)}M`;
+      return `${currencySymbol}${(value / 1000000).toFixed(1)}M`;
     }
     if (value >= 1000) {
-      return `€${(value / 1000).toFixed(0)}k`;
+      return `${currencySymbol}${(value / 1000).toFixed(0)}k`;
     }
-    return `€${value}`;
+    return `${currencySymbol}${value}`;
   };
 
   // Get current price range values for slider
@@ -222,16 +226,15 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
     if (filters.listing_type) {
       chips.push({
-        label: filters.listing_type === 'rent' ? 'For Rent' : 'For Sale',
+        label: filters.listing_type === 'rent' ? t('listingTypes.rent') : t('listingTypes.sale'),
         onRemove: () => handleListingTypeChange('all'),
       });
     }
 
     if (filters.property_types && filters.property_types.length > 0) {
       filters.property_types.forEach((type) => {
-        const label = type.charAt(0).toUpperCase() + type.slice(1);
         chips.push({
-          label,
+          label: t(`propertyTypes.${type}`),
           onRemove: () => handlePropertyTypeToggle(type),
         });
       });
@@ -239,7 +242,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
     if (filters.min_bedrooms) {
       chips.push({
-        label: `${filters.min_bedrooms}+ rooms`,
+        label: `${filters.min_bedrooms}+ ${filters.min_bedrooms === 1 ? t('filters.room') : t('filters.rooms')}`,
         onRemove: () => handleBedroomChange('all'),
       });
     }
@@ -247,11 +250,11 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     if (filters.min_price || filters.max_price) {
       let priceLabel = '';
       if (filters.min_price && filters.max_price) {
-        priceLabel = `${formatPriceLabel(filters.min_price)} - ${formatPriceLabel(filters.max_price)}`;
+        priceLabel = `${formatPriceLabelLocal(filters.min_price)} - ${formatPriceLabelLocal(filters.max_price)}`;
       } else if (filters.min_price) {
-        priceLabel = `Min ${formatPriceLabel(filters.min_price)}`;
+        priceLabel = `Min ${formatPriceLabelLocal(filters.min_price)}`;
       } else if (filters.max_price) {
-        priceLabel = `Max ${formatPriceLabel(filters.max_price)}`;
+        priceLabel = `Max ${formatPriceLabelLocal(filters.max_price)}`;
       }
       chips.push({
         label: priceLabel,
@@ -293,7 +296,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
       <div className="p-3 sm:p-4">
         {/* Title */}
         <h1 className="font-display text-xl sm:text-2xl font-semibold text-foreground mb-3 sm:mb-4">
-          Find your home
+          {t('common.findHome')}
         </h1>
 
         {/* Search input + Filter button inline */}
@@ -301,7 +304,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           <form onSubmit={handleSearch} className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
             <Input
-              placeholder="Search city..."
+              placeholder={t('filters.searchCity')}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               className="w-full pl-10 pr-10 text-sm bg-secondary border-0 rounded-full focus-visible:ring-1 focus-visible:ring-accent focus-visible:ring-offset-0"
@@ -329,11 +332,11 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Filters</DialogTitle>
+                <DialogTitle>{t('filters.filters')}</DialogTitle>
               </DialogHeader>
               <div className="mt-4 space-y-5">
                 <div className="space-y-3">
-                  <Label>Listing Type</Label>
+                  <Label>{t('filters.listingType')}</Label>
                   <div className="flex flex-wrap gap-2">
                     {LISTING_TYPES.map((type) => {
                       const isSelected = filters.listing_type === type.value;
@@ -361,7 +364,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                 </div>
 
                 <div className="space-y-3">
-                  <Label>Property Type</Label>
+                  <Label>{t('filters.propertyType')}</Label>
                   <div className="flex flex-wrap gap-2">
                     {PROPERTY_TYPES.map((type) => {
                       const isSelected = filters.property_types?.includes(type.value) || false;
@@ -389,27 +392,27 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Minimum Rooms</Label>
+                  <Label>{t('filters.minimumRooms')}</Label>
                   <Select
                     value={filters.min_bedrooms?.toString() || 'all'}
                     onValueChange={handleBedroomChange}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Any" />
+                      <SelectValue placeholder={t('filters.any')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Any</SelectItem>
-                      <SelectItem value="1">1+ room</SelectItem>
-                      <SelectItem value="2">2+ rooms</SelectItem>
-                      <SelectItem value="3">3+ rooms</SelectItem>
-                      <SelectItem value="4">4+ rooms</SelectItem>
+                      <SelectItem value="all">{t('filters.any')}</SelectItem>
+                      <SelectItem value="1">1+ {t('filters.room')}</SelectItem>
+                      <SelectItem value="2">2+ {t('filters.rooms')}</SelectItem>
+                      <SelectItem value="3">3+ {t('filters.rooms')}</SelectItem>
+                      <SelectItem value="4">4+ {t('filters.rooms')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {/* Price Range Slider */}
                 <div className="space-y-3">
-                  <Label>{priceConfig.label}</Label>
+                  <Label>{filters.listing_type === 'rent' ? t('filters.monthlyCost') : filters.listing_type === 'sale' ? t('filters.totalPrice') : t('filters.price')}</Label>
                   <div className="pt-2 px-1">
                     <Slider
                       value={priceRangeValues}
@@ -421,15 +424,15 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                     />
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>{formatPriceLabel(priceRangeValues[0])}</span>
-                    <span>{priceRangeValues[1] >= priceConfig.max ? `${formatPriceLabel(priceConfig.max)}+` : formatPriceLabel(priceRangeValues[1])}</span>
+                    <span>{formatPriceLabelLocal(priceRangeValues[0])}</span>
+                    <span>{priceRangeValues[1] >= priceConfig.max ? `${formatPriceLabelLocal(priceConfig.max)}+` : formatPriceLabelLocal(priceRangeValues[1])}</span>
                   </div>
                 </div>
 
                 {/* Size Range Slider */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label>Size</Label>
+                    <Label>{t('filters.size')}</Label>
                     <div className="flex items-center gap-2">
                       <span className={`text-xs ${areaUnit === 'sqm' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>m²</span>
                       <Switch
@@ -465,7 +468,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                     }}
                   >
                     <X className="h-4 w-4 mr-2" />
-                    Clear all filters
+                    {t('filters.clearAllFilters')}
                   </Button>
                 )}
               </div>
@@ -501,15 +504,15 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
               <ArrowUpDown className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
               <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
                 <SelectTrigger className="w-[130px] sm:w-[150px] h-7 sm:h-8 text-xs sm:text-sm bg-secondary border-0">
-                  <SelectValue placeholder="Sort by" />
+                  <SelectValue placeholder={t('filters.sortBy')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="newest">Newest first</SelectItem>
-                  <SelectItem value="oldest">Oldest first</SelectItem>
-                  <SelectItem value="price_asc">Price: Low to High</SelectItem>
-                  <SelectItem value="price_desc">Price: High to Low</SelectItem>
-                  <SelectItem value="size_asc">Size: Small to Large</SelectItem>
-                  <SelectItem value="size_desc">Size: Large to Small</SelectItem>
+                  <SelectItem value="newest">{t('filters.newest')}</SelectItem>
+                  <SelectItem value="oldest">{t('filters.oldest')}</SelectItem>
+                  <SelectItem value="price_asc">{t('filters.priceAsc')}</SelectItem>
+                  <SelectItem value="price_desc">{t('filters.priceDesc')}</SelectItem>
+                  <SelectItem value="size_asc">{t('filters.sizeAsc')}</SelectItem>
+                  <SelectItem value="size_desc">{t('filters.sizeDesc')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
