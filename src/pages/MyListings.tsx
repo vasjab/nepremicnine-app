@@ -54,11 +54,21 @@ export default function MyListings() {
   };
 
   const formatPrice = (price: number, currency: string) => {
-    return new Intl.NumberFormat('sv-SE', {
-      style: 'currency',
-      currency: currency,
+    // Use de-DE locale for European number formatting (space as thousand separator)
+    const formatted = new Intl.NumberFormat('de-DE', {
+      style: 'decimal',
       maximumFractionDigits: 0,
     }).format(price);
+    
+    const currencySymbols: Record<string, string> = {
+      EUR: '€',
+      SEK: 'kr',
+      USD: '$',
+      GBP: '£',
+    };
+    
+    const symbol = currencySymbols[currency] || currency;
+    return `${formatted} ${symbol}`;
   };
 
   if (!user) {

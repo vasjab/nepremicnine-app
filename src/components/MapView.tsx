@@ -55,14 +55,21 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
     listingsRef.current = listings;
   }, [listings]);
 
-  const formatPrice = useCallback((price: number) => {
+  const formatPriceShort = useCallback((price: number) => {
     if (price >= 1000000) {
-      return `${(price / 1000000).toFixed(1)}M`;
+      return `${(price / 1000000).toFixed(1).replace('.', ',')}M`;
     }
     if (price >= 1000) {
       return `${Math.round(price / 1000)}k`;
     }
     return price.toString();
+  }, []);
+
+  const formatPriceEuropean = useCallback((price: number) => {
+    return new Intl.NumberFormat('de-DE', {
+      style: 'decimal',
+      maximumFractionDigits: 0,
+    }).format(price);
   }, []);
 
   const handleSaveToken = () => {
@@ -172,7 +179,7 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
       } else {
         // Create new marker
         const el = document.createElement('div');
-        el.innerHTML = formatPrice(listing.price);
+        el.innerHTML = formatPriceShort(listing.price);
         el.style.cssText = `
           background: hsl(0, 0%, 100%);
           color: hsl(25, 30%, 12%);
@@ -201,8 +208,8 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
         };
 
         const priceDisplay = listing.listing_type === 'rent' 
-          ? `€${listing.price.toLocaleString()}/mo`
-          : `€${listing.price.toLocaleString()}`;
+          ? `${formatPriceEuropean(listing.price)} €/mo`
+          : `${formatPriceEuropean(listing.price)} €`;
 
         const popupContent = `
           <div style="width: 220px; font-family: 'DM Sans', system-ui, sans-serif;">
@@ -301,7 +308,7 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
       
       initialFitDone.current = true;
     }
-  }, [listings, mapReady, formatPrice, activeListing]);
+  }, [listings, mapReady, formatPriceShort, formatPriceEuropean, activeListing]);
 
   // Update active marker styling separately
   useEffect(() => {
