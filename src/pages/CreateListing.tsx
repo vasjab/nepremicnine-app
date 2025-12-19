@@ -94,6 +94,7 @@ export default function CreateListing() {
         is_furnished: formData.is_furnished,
         allows_pets: formData.allows_pets,
         images: formData.images,
+        floor_plan_url: null,
         is_active: true,
       },
       {

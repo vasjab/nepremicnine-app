@@ -30,6 +30,7 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
   const saveListing = useSaveListing();
   const unsaveListing = useUnsaveListing();
   const [showGallery, setShowGallery] = useState(false);
+  const [scrollToFloorPlan, setScrollToFloorPlan] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleSaveClick = () => {
@@ -164,9 +165,12 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
         {listing.images && listing.images.length > 0 && (
           <div className="container mx-auto px-4 -mt-6 relative z-10">
             <div className="flex gap-3">
-              {(listing as any).floor_plan_url && (
+              {listing.floor_plan_url && (
                 <button
-                  onClick={() => setShowGallery(true)}
+                  onClick={() => {
+                    setScrollToFloorPlan(true);
+                    setShowGallery(true);
+                  }}
                   className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors shadow-sm"
                 >
                   <LayoutGrid className="h-4 w-4" />
@@ -174,7 +178,10 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
                 </button>
               )}
               <button
-                onClick={() => setShowGallery(true)}
+                onClick={() => {
+                  setScrollToFloorPlan(false);
+                  setShowGallery(true);
+                }}
                 className="flex items-center gap-2 px-4 py-2.5 bg-secondary border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors shadow-sm"
               >
                 {listing.images.length} images
@@ -296,10 +303,14 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
       {/* Full image gallery modal */}
       <ImageGalleryModal
         images={listing.images || []}
-        floorPlanUrl={(listing as any).floor_plan_url}
+        floorPlanUrl={listing.floor_plan_url}
         isOpen={showGallery}
-        onClose={() => setShowGallery(false)}
+        onClose={() => {
+          setShowGallery(false);
+          setScrollToFloorPlan(false);
+        }}
         title={listing.title}
+        initialScrollToFloorPlan={scrollToFloorPlan}
       />
     </div>
   );

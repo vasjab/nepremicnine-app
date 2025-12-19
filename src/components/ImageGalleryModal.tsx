@@ -8,9 +8,10 @@ interface ImageGalleryModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
+  initialScrollToFloorPlan?: boolean;
 }
 
-export function ImageGalleryModal({ images, floorPlanUrl, isOpen, onClose, title }: ImageGalleryModalProps) {
+export function ImageGalleryModal({ images, floorPlanUrl, isOpen, onClose, title, initialScrollToFloorPlan }: ImageGalleryModalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const floorPlanRef = useRef<HTMLDivElement>(null);
   const [showFloatingButtons, setShowFloatingButtons] = useState(false);
@@ -32,13 +33,19 @@ export function ImageGalleryModal({ images, floorPlanUrl, isOpen, onClose, title
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      // Scroll to floor plan if requested
+      if (initialScrollToFloorPlan && floorPlanUrl && floorPlanRef.current) {
+        setTimeout(() => {
+          floorPlanRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
     } else {
       document.body.style.overflow = '';
     }
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen]);
+  }, [isOpen, initialScrollToFloorPlan, floorPlanUrl]);
 
   const scrollToTop = (e: React.MouseEvent) => {
     e.stopPropagation();
