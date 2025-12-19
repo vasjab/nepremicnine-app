@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Check, X, Images, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useListing } from '@/hooks/useListings';
@@ -43,6 +43,22 @@ export default function ListingDetail() {
     onSwipeRight: goToPrevImage,
     minSwipeDistance: 50,
   });
+
+  // Keyboard navigation for images
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (showGallery) return; // Don't interfere when gallery modal is open
+      
+      if (e.key === 'ArrowLeft') {
+        goToPrevImage();
+      } else if (e.key === 'ArrowRight') {
+        goToNextImage();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [goToPrevImage, goToNextImage, showGallery]);
 
   const handlePrevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
