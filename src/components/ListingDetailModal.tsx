@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Heart, MapPin, Bed, Bath, Square, Calendar, Check, Images, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Heart, MapPin, Bed, Bath, Square, Calendar, Check, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -151,6 +151,30 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
             </span>
           </div>
         </div>
+
+        {/* Quick action buttons - Floor plan & All images */}
+        {listing.images && listing.images.length > 0 && (
+          <div className="container mx-auto px-4 -mt-6 relative z-10">
+            <div className="flex gap-3">
+              {(listing as any).floor_plan_url && (
+                <button
+                  onClick={() => setShowGallery(true)}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors shadow-sm"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                  Floor plan
+                </button>
+              )}
+              <button
+                onClick={() => setShowGallery(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-secondary border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors shadow-sm"
+              >
+                {listing.images.length} images
+                <ExternalLink className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Content */}
         <div className="container mx-auto px-4 py-8">
