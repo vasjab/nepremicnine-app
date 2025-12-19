@@ -213,3 +213,27 @@
 .listing-popup .mapboxgl-popup-content {
   background: white;
 }
+
+.mapboxgl-popup-close-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(0, 0%, 100%);
+  border-radius: 50%;
+  font-size: 18px;
+  color: hsl(25, 30%, 30%);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  z-index: 10;
+  border: none;
+  transition: background 0.15s ease;
+}
+
+.mapboxgl-popup-close-button:hover {
+  background: hsl(0, 0%, 95%);
+}

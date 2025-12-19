@@ -27,6 +27,8 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<{ [key: string]: mapboxgl.Marker }>({});
+  const popups = useRef<{ [key: string]: mapboxgl.Popup }>({});
+  const activePopupId = useRef<string | null>(null);
   const onMapMoveRef = useRef(onMapMove);
   const onListingClickRef = useRef(onListingClick);
   const initialFitDone = useRef(false);
@@ -112,6 +114,14 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
         }
       });
 
+      // Close popup when clicking on the map (not on a marker)
+      mapInstance.on('click', () => {
+        if (activePopupId.current) {
+          popups.current[activePopupId.current]?.remove();
+          activePopupId.current = null;
+        }
+      });
+
       mapInstance.on('moveend', () => {
         if (onMapMoveRef.current) {
           const bounds = mapInstance.getBounds();
@@ -176,7 +186,7 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
           white-space: nowrap;
         `;
 
-        // Create popup for hover preview
+        // Create popup for click preview
         const imageUrl = listing.images && listing.images.length > 0 
           ? listing.images[0] 
           : 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400';
@@ -217,31 +227,55 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
         `;
 
         const popup = new mapboxgl.Popup({
-          closeButton: false,
+          closeButton: true,
           closeOnClick: false,
           offset: [0, -10],
           className: 'listing-popup',
         }).setHTML(popupContent);
+
+        // Store popup reference
+        popups.current[listing.id] = popup;
         
         el.addEventListener('click', (e) => {
           e.stopPropagation();
+          
+          // Close any existing popup
+          if (activePopupId.current && activePopupId.current !== listing.id) {
+            popups.current[activePopupId.current]?.remove();
+          }
+          
+          // Toggle popup for this marker
+          if (activePopupId.current === listing.id) {
+            popup.remove();
+            activePopupId.current = null;
+          } else {
+            popup.setLngLat([listing.longitude, listing.latitude]).addTo(map.current!);
+            activePopupId.current = listing.id;
+          }
+          
+          // Also trigger the listing click callback
           const currentListing = listingsRef.current.find(l => l.id === listing.id);
           if (currentListing && onListingClickRef.current) {
             onListingClickRef.current(currentListing);
           }
         });
 
+        // Handle popup close via X button
+        popup.on('close', () => {
+          if (activePopupId.current === listing.id) {
+            activePopupId.current = null;
+          }
+        });
+
         el.addEventListener('mouseenter', () => {
           el.style.background = 'hsl(350, 70%, 72%)';
           el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
-          popup.setLngLat([listing.longitude, listing.latitude]).addTo(map.current!);
         });
 
         el.addEventListener('mouseleave', () => {
           const isActive = listing.id === activeListing;
           el.style.background = isActive ? 'hsl(350, 70%, 72%)' : 'hsl(0, 0%, 100%)';
           el.style.boxShadow = isActive ? '0 4px 12px rgba(0,0,0,0.25)' : '0 2px 8px rgba(0,0,0,0.15)';
-          popup.remove();
         });
 
         const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
