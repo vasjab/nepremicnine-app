@@ -10,6 +10,7 @@ import { MapView } from '@/components/MapView';
 import { ListingDetailModal } from '@/components/ListingDetailModal';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface MapBounds {
   north: number;
@@ -20,6 +21,7 @@ interface MapBounds {
 
 const Index = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [filters, setFilters] = useState<ListingFilters>({});
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
@@ -162,9 +164,9 @@ const Index = () => {
                 <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
                   <span className="text-2xl">🏠</span>
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">No listings in this area</h3>
+                <h3 className="font-semibold text-foreground mb-2">{t('listing.noListingsInArea')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Try zooming out or panning the map to see more listings.
+                  {t('listing.noListingsInAreaDesc')}
                 </p>
               </div>
             )}
@@ -194,7 +196,7 @@ const Index = () => {
               onClick={() => setMobileView('list')}
             >
               <List className="h-4 w-4 mr-2" />
-              List
+              {t('map.list')}
             </Button>
             <Button
               variant={mobileView === 'map' ? 'default' : 'ghost'}
@@ -203,7 +205,7 @@ const Index = () => {
               onClick={() => setMobileView('map')}
             >
               <MapIcon className="h-4 w-4 mr-2" />
-              Map
+              {t('map.map')}
             </Button>
           </div>
         </div>

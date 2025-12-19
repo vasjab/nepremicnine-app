@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { HoneypotField, isHoneypotTriggered } from '@/components/HoneypotField';
 import { useRateLimit, AUTH_RATE_LIMIT } from '@/hooks/useRateLimit';
 import { supabase } from '@/integrations/supabase/client';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
@@ -45,6 +46,7 @@ export default function Auth() {
   const navigate = useNavigate();
   const { user, signIn, signUp } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   const [isSignUp, setIsSignUp] = useState(searchParams.get('mode') === 'signup');
   const [email, setEmail] = useState('');
@@ -126,8 +128,8 @@ export default function Auth() {
     if (!checkRateLimit()) {
       toast({
         variant: 'destructive',
-        title: 'Too many attempts',
-        description: `Please wait ${remainingTime} seconds before trying again.`,
+        title: t('auth.tooManyAttempts'),
+        description: t('auth.pleaseWaitSeconds').replace('{seconds}', remainingTime.toString()),
       });
       return;
     }
@@ -144,8 +146,8 @@ export default function Auth() {
       if (!serverAllowed) {
         toast({
           variant: 'destructive',
-          title: 'Too many attempts',
-          description: 'Please wait a while before trying again.',
+          title: t('auth.tooManyAttempts'),
+          description: t('auth.pleaseWaitSeconds').replace('{seconds}', '60'),
         });
         setIsLoading(false);
         return;
@@ -157,20 +159,20 @@ export default function Auth() {
           if (error.message.includes('already registered')) {
             toast({
               variant: 'destructive',
-              title: 'Account exists',
-              description: 'An account with this email already exists. Try logging in instead.',
+              title: t('auth.accountExists'),
+              description: t('auth.accountExistsDesc'),
             });
           } else {
             toast({
               variant: 'destructive',
-              title: 'Sign up failed',
+              title: t('auth.signUpFailed'),
               description: error.message,
             });
           }
         } else {
           toast({
-            title: 'Welcome!',
-            description: 'Your account has been created successfully.',
+            title: t('auth.welcome'),
+            description: t('auth.accountCreated'),
           });
           navigate('/');
         }
@@ -179,8 +181,8 @@ export default function Auth() {
         if (error) {
           toast({
             variant: 'destructive',
-            title: 'Login failed',
-            description: 'Invalid email or password. Please try again.',
+            title: t('auth.loginFailed'),
+            description: t('auth.invalidCredentials'),
           });
         } else {
           navigate('/');
@@ -198,12 +200,12 @@ export default function Auth() {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <h1 className="font-display text-3xl font-bold text-foreground mb-2">
-              {isSignUp ? 'Create an account' : 'Welcome back'}
+              {isSignUp ? t('auth.createAccount') : t('auth.welcomeBack')}
             </h1>
             <p className="text-muted-foreground">
               {isSignUp 
-                ? 'Join hemma to find your perfect home' 
-                : 'Sign in to continue your home search'}
+                ? t('auth.joinToFind')
+                : t('auth.signInToContinue')}
             </p>
           </div>
 
@@ -213,7 +215,7 @@ export default function Auth() {
             
             {isSignUp && (
               <div className="space-y-2">
-                <Label htmlFor="fullName">Full Name</Label>
+                <Label htmlFor="fullName">{t('auth.fullName')}</Label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -232,7 +234,7 @@ export default function Auth() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('auth.email')}</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -250,7 +252,7 @@ export default function Auth() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('auth.password')}</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -279,25 +281,25 @@ export default function Auth() {
               className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
               disabled={isLoading || isLimited}
             >
-              {isLoading ? 'Please wait...' : (isSignUp ? 'Create Account' : 'Sign In')}
+              {isLoading ? t('common.pleaseWait') : (isSignUp ? t('auth.createAccountBtn') : t('common.signIn'))}
             </Button>
             
             {isLimited && (
               <p className="text-sm text-destructive text-center">
-                Too many attempts. Please wait {remainingTime} seconds.
+                {t('auth.tooManyAttempts')}. {t('auth.pleaseWaitSeconds').replace('{seconds}', remainingTime.toString())}
               </p>
             )}
           </form>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
-              {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+              {isSignUp ? t('auth.alreadyHaveAccount') : t('auth.dontHaveAccount')}{' '}
               <button
                 type="button"
                 onClick={() => setIsSignUp(!isSignUp)}
                 className="text-accent hover:underline font-medium"
               >
-                {isSignUp ? 'Sign in' : 'Sign up'}
+                {isSignUp ? t('common.signIn') : t('common.signUp')}
               </button>
             </p>
           </div>
@@ -308,7 +310,7 @@ export default function Auth() {
               className="w-full"
               onClick={() => navigate('/')}
             >
-              ← Back to Home
+              ← {t('common.backToHome')}
             </Button>
           </div>
         </div>
@@ -318,31 +320,31 @@ export default function Auth() {
       <div className="hidden lg:flex flex-1 bg-secondary items-center justify-center p-12">
         <div className="max-w-md text-center">
           <h2 className="font-display text-4xl font-bold text-foreground mb-4">
-            Find your perfect home
+            {t('auth.findPerfectHome')}
           </h2>
           <p className="text-lg text-muted-foreground">
-            Browse thousands of listings, save your favorites, and connect with landlords directly.
+            {t('auth.findPerfectHomeDesc')}
           </p>
           <div className="mt-12 grid grid-cols-2 gap-4 text-left">
             <div className="bg-card p-4 rounded-xl">
               <span className="text-2xl mb-2 block">🏠</span>
-              <h3 className="font-semibold text-foreground">Browse listings</h3>
-              <p className="text-sm text-muted-foreground">Explore homes on an interactive map</p>
+              <h3 className="font-semibold text-foreground">{t('auth.browseListings')}</h3>
+              <p className="text-sm text-muted-foreground">{t('auth.browseListingsDesc')}</p>
             </div>
             <div className="bg-card p-4 rounded-xl">
               <span className="text-2xl mb-2 block">❤️</span>
-              <h3 className="font-semibold text-foreground">Save favorites</h3>
-              <p className="text-sm text-muted-foreground">Keep track of homes you love</p>
+              <h3 className="font-semibold text-foreground">{t('auth.saveFavorites')}</h3>
+              <p className="text-sm text-muted-foreground">{t('auth.saveFavoritesDesc')}</p>
             </div>
             <div className="bg-card p-4 rounded-xl">
               <span className="text-2xl mb-2 block">📝</span>
-              <h3 className="font-semibold text-foreground">List your home</h3>
-              <p className="text-sm text-muted-foreground">Reach thousands of tenants</p>
+              <h3 className="font-semibold text-foreground">{t('auth.listYourHome')}</h3>
+              <p className="text-sm text-muted-foreground">{t('auth.listYourHomeDesc')}</p>
             </div>
             <div className="bg-card p-4 rounded-xl">
               <span className="text-2xl mb-2 block">🔒</span>
-              <h3 className="font-semibold text-foreground">Secure & trusted</h3>
-              <p className="text-sm text-muted-foreground">Verified listings only</p>
+              <h3 className="font-semibold text-foreground">{t('auth.secureAndTrusted')}</h3>
+              <p className="text-sm text-muted-foreground">{t('auth.secureAndTrustedDesc')}</p>
             </div>
           </div>
         </div>
