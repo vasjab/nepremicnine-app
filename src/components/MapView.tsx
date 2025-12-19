@@ -1,7 +1,10 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Listing } from '@/types/listing';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { MapPin } from 'lucide-react';
 
 interface MapViewProps {
   listings: Listing[];
@@ -10,10 +13,18 @@ interface MapViewProps {
   onMapMove?: (bounds: { north: number; south: number; east: number; west: number }) => void;
 }
 
+const MAPBOX_TOKEN_KEY = 'hemma_mapbox_token';
+
 export function MapView({ listings, activeListing, onListingClick, onMapMove }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<{ [key: string]: mapboxgl.Marker }>({});
+  
+  const [mapboxToken, setMapboxToken] = useState(() => {
+    return localStorage.getItem(MAPBOX_TOKEN_KEY) || import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || '';
+  });
+  const [tokenInput, setTokenInput] = useState('');
+  const [mapError, setMapError] = useState(false);
 
   const formatPrice = useCallback((price: number) => {
     if (price >= 1000000) {
@@ -45,42 +56,59 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
     return el;
   }, [formatPrice]);
 
+  const handleSaveToken = () => {
+    if (tokenInput.trim()) {
+      localStorage.setItem(MAPBOX_TOKEN_KEY, tokenInput.trim());
+      setMapboxToken(tokenInput.trim());
+      setMapError(false);
+    }
+  };
+
   useEffect(() => {
-    if (!mapContainer.current || map.current) return;
+    if (!mapContainer.current || map.current || !mapboxToken) return;
 
-    mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || '';
+    try {
+      mapboxgl.accessToken = mapboxToken;
 
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: [18.0686, 59.3293], // Stockholm by default
-      zoom: 10,
-    });
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/light-v11',
+        center: [18.0686, 59.3293], // Stockholm by default
+        zoom: 10,
+      });
 
-    map.current.addControl(
-      new mapboxgl.NavigationControl({
-        visualizePitch: false,
-      }),
-      'top-right'
-    );
+      map.current.on('error', () => {
+        setMapError(true);
+        localStorage.removeItem(MAPBOX_TOKEN_KEY);
+      });
 
-    map.current.on('moveend', () => {
-      if (map.current && onMapMove) {
-        const bounds = map.current.getBounds();
-        onMapMove({
-          north: bounds.getNorth(),
-          south: bounds.getSouth(),
-          east: bounds.getEast(),
-          west: bounds.getWest(),
-        });
-      }
-    });
+      map.current.addControl(
+        new mapboxgl.NavigationControl({
+          visualizePitch: false,
+        }),
+        'top-right'
+      );
+
+      map.current.on('moveend', () => {
+        if (map.current && onMapMove) {
+          const bounds = map.current.getBounds();
+          onMapMove({
+            north: bounds.getNorth(),
+            south: bounds.getSouth(),
+            east: bounds.getEast(),
+            west: bounds.getWest(),
+          });
+        }
+      });
+    } catch (error) {
+      setMapError(true);
+    }
 
     return () => {
       map.current?.remove();
       map.current = null;
     };
-  }, [onMapMove]);
+  }, [onMapMove, mapboxToken]);
 
   // Update markers when listings change
   useEffect(() => {
@@ -133,6 +161,52 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
       }
     });
   }, [activeListing, listings]);
+
+  // Show token input if no token is available
+  if (!mapboxToken || mapError) {
+    return (
+      <div className="relative w-full h-full bg-secondary flex items-center justify-center">
+        <div className="max-w-md p-8 text-center">
+          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+            <MapPin className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <h3 className="text-xl font-semibold text-foreground mb-2">
+            Mapbox API Token Required
+          </h3>
+          <p className="text-muted-foreground mb-6">
+            To display the map, enter your Mapbox public token. Get one for free at{' '}
+            <a 
+              href="https://mapbox.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-accent hover:underline"
+            >
+              mapbox.com
+            </a>
+          </p>
+          <div className="flex gap-2">
+            <Input
+              placeholder="pk.eyJ1Ijo..."
+              value={tokenInput}
+              onChange={(e) => setTokenInput(e.target.value)}
+              className="flex-1"
+            />
+            <Button 
+              onClick={handleSaveToken}
+              className="bg-accent text-accent-foreground hover:bg-accent/90"
+            >
+              Save
+            </Button>
+          </div>
+          {mapError && (
+            <p className="text-sm text-destructive mt-3">
+              Invalid token. Please check and try again.
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-full">
