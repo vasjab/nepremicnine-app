@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
 import { Button } from '@/components/ui/button';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
+import { ListingLocationMap } from '@/components/ListingLocationMap';
 import { cn, formatPrice } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
@@ -262,6 +263,19 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
                     </span>
                   </div>
                 </div>
+              </div>
+
+              {/* Location Map */}
+              <div>
+                <h2 className="text-xl font-semibold text-foreground mb-3">Location</h2>
+                <ListingLocationMap
+                  latitude={listing.latitude}
+                  longitude={listing.longitude}
+                  address={listing.address}
+                />
+                <p className="text-sm text-muted-foreground mt-2">
+                  {listing.address}, {listing.city}
+                </p>
               </div>
             </div>
 
