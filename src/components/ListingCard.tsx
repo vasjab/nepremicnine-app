@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
+import { useSwipe } from '@/hooks/useSwipe';
 import { Button } from '@/components/ui/button';
 import { cn, formatPrice } from '@/lib/utils';
 
@@ -19,6 +20,28 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
   const unsaveListing = useUnsaveListing();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
+  const goToPrevImage = useCallback(() => {
+    if (listing.images && listing.images.length > 1) {
+      setCurrentImageIndex((prev) => 
+        prev === 0 ? listing.images!.length - 1 : prev - 1
+      );
+    }
+  }, [listing.images]);
+
+  const goToNextImage = useCallback(() => {
+    if (listing.images && listing.images.length > 1) {
+      setCurrentImageIndex((prev) => 
+        prev === listing.images!.length - 1 ? 0 : prev + 1
+      );
+    }
+  }, [listing.images]);
+
+  const swipeHandlers = useSwipe({
+    onSwipeLeft: goToNextImage,
+    onSwipeRight: goToPrevImage,
+    minSwipeDistance: 50,
+  });
+
   const handleSaveClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user) return;
@@ -32,20 +55,12 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
 
   const handlePrevImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (listing.images && listing.images.length > 1) {
-      setCurrentImageIndex((prev) => 
-        prev === 0 ? listing.images!.length - 1 : prev - 1
-      );
-    }
+    goToPrevImage();
   };
 
   const handleNextImage = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (listing.images && listing.images.length > 1) {
-      setCurrentImageIndex((prev) => 
-        prev === listing.images!.length - 1 ? 0 : prev + 1
-      );
-    }
+    goToNextImage();
   };
 
   const propertyTypeLabels: Record<string, string> = {
@@ -68,7 +83,7 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
       onClick={onClick}
     >
       {/* Image */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+      <div className="relative aspect-[4/3] overflow-hidden bg-muted" {...swipeHandlers}>
         {listing.images && listing.images.length > 0 ? (
           <img
             src={listing.images[currentImageIndex]}
