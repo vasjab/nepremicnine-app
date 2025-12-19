@@ -13,7 +13,9 @@ import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { ListingLocationMap } from '@/components/ListingLocationMap';
 import { SimilarListings } from '@/components/SimilarListings';
 import { RecentlyViewedListings } from '@/components/RecentlyViewedListings';
-import { cn, formatPrice } from '@/lib/utils';
+import { cn } from '@/lib/utils';
+import { useFormattedPrice } from '@/hooks/useFormattedPrice';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +27,8 @@ export default function ListingDetail() {
   const unsaveListing = useUnsaveListing();
   const trackView = useTrackListingView();
   const { trackView: trackLocalView } = useTrackLocalListingView();
+  const { formatPrice, formatArea } = useFormattedPrice();
+  const { t, language } = useTranslation();
   const [showGallery, setShowGallery] = useState(false);
   const [scrollToFloorPlan, setScrollToFloorPlan] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -99,8 +103,8 @@ export default function ListingDetail() {
   };
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Flexible';
-    return new Date(dateString).toLocaleDateString('en-US', {
+    if (!dateString) return t('listing.flexible');
+    return new Date(dateString).toLocaleDateString(language === 'sl' ? 'sl-SI' : 'en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -108,12 +112,12 @@ export default function ListingDetail() {
   };
 
   const propertyTypeLabels: Record<string, string> = {
-    apartment: 'Apartment',
-    house: 'House',
-    room: 'Room',
-    studio: 'Studio',
-    villa: 'Villa',
-    other: 'Other',
+    apartment: t('propertyTypes.apartment'),
+    house: t('propertyTypes.house'),
+    room: t('propertyTypes.room'),
+    studio: t('propertyTypes.studio'),
+    villa: t('propertyTypes.villa'),
+    other: t('propertyTypes.other'),
   };
 
   if (isLoading) {
@@ -139,11 +143,11 @@ export default function ListingDetail() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="pt-16 flex items-center justify-center h-[80vh]">
+      <main className="pt-16 flex items-center justify-center h-[80vh]">
           <div className="text-center">
-            <h1 className="text-2xl font-semibold text-foreground mb-2">Listing not found</h1>
-            <p className="text-muted-foreground mb-4">This listing may have been removed or doesn't exist.</p>
-            <Button onClick={() => navigate('/')}>Back to listings</Button>
+            <h1 className="text-2xl font-semibold text-foreground mb-2">{t('listing.listingNotFound')}</h1>
+            <p className="text-muted-foreground mb-4">{t('listing.listingNotFoundDesc')}</p>
+            <Button onClick={() => navigate('/')}>{t('listing.backToListings')}</Button>
           </div>
         </main>
       </div>
@@ -243,7 +247,7 @@ export default function ListingDetail() {
             </>
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-secondary">
-              <span className="text-muted-foreground">No images available</span>
+              <span className="text-muted-foreground">{t('listing.noImagesAvailable')}</span>
             </div>
           )}
 
@@ -265,7 +269,7 @@ export default function ListingDetail() {
           {/* Type badge */}
           <div className="absolute bottom-4 left-4">
             <span className="px-3 py-1.5 rounded-lg bg-card/90 backdrop-blur-sm text-sm font-medium">
-              {listing.listing_type === 'rent' ? 'For Rent' : 'For Sale'}
+              {listing.listing_type === 'rent' ? t('listingTypes.rent') : t('listingTypes.sale')}
             </span>
           </div>
         </div>
@@ -283,7 +287,7 @@ export default function ListingDetail() {
                   className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors shadow-sm"
                 >
                   <LayoutGrid className="h-4 w-4" />
-                  Floor plan
+                  {t('listing.floorPlan')}
                 </button>
               )}
               <button
@@ -293,7 +297,7 @@ export default function ListingDetail() {
                 }}
                 className="flex items-center gap-2 px-4 py-2.5 bg-secondary border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors shadow-sm"
               >
-                {listing.images.length} images
+                {listing.images.length} {t('listing.images')}
                 <ExternalLink className="h-4 w-4" />
               </button>
             </div>
@@ -320,22 +324,22 @@ export default function ListingDetail() {
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
                 <div className="bg-secondary rounded-xl p-4">
                   <Bed className="h-5 w-5 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">Bedrooms</p>
+                  <p className="text-sm text-muted-foreground">{t('listing.bedrooms')}</p>
                   <p className="text-lg font-semibold text-foreground">{listing.bedrooms}</p>
                 </div>
                 <div className="bg-secondary rounded-xl p-4">
                   <Bath className="h-5 w-5 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">Bathrooms</p>
+                  <p className="text-sm text-muted-foreground">{t('listing.bathrooms')}</p>
                   <p className="text-lg font-semibold text-foreground">{listing.bathrooms}</p>
                 </div>
                 <div className="bg-secondary rounded-xl p-4">
                   <Square className="h-5 w-5 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">Area</p>
-                  <p className="text-lg font-semibold text-foreground">{listing.area_sqm ? `${listing.area_sqm} m²` : 'N/A'}</p>
+                  <p className="text-sm text-muted-foreground">{t('listing.area')}</p>
+                  <p className="text-lg font-semibold text-foreground">{formatArea(listing.area_sqm)}</p>
                 </div>
                 <div className="bg-secondary rounded-xl p-4">
                   <Calendar className="h-5 w-5 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">Available</p>
+                  <p className="text-sm text-muted-foreground">{t('listing.available')}</p>
                   <p className="text-lg font-semibold text-foreground">{formatDate(listing.available_from)}</p>
                 </div>
               </div>
@@ -343,14 +347,14 @@ export default function ListingDetail() {
               {/* Description */}
               {listing.description && (
                 <div>
-                  <h2 className="text-xl font-semibold text-foreground mb-3">Description</h2>
+                  <h2 className="text-xl font-semibold text-foreground mb-3">{t('listing.description')}</h2>
                   <p className="text-muted-foreground whitespace-pre-line">{listing.description}</p>
                 </div>
               )}
 
               {/* Features */}
               <div>
-                <h2 className="text-xl font-semibold text-foreground mb-3">Features</h2>
+                <h2 className="text-xl font-semibold text-foreground mb-3">{t('listing.features')}</h2>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex items-center gap-2">
                     {listing.is_furnished ? (
@@ -359,7 +363,7 @@ export default function ListingDetail() {
                       <X className="h-5 w-5 text-muted-foreground" />
                     )}
                     <span className={listing.is_furnished ? 'text-foreground' : 'text-muted-foreground'}>
-                      Furnished
+                      {t('listing.furnished')}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -369,7 +373,7 @@ export default function ListingDetail() {
                       <X className="h-5 w-5 text-muted-foreground" />
                     )}
                     <span className={listing.allows_pets ? 'text-foreground' : 'text-muted-foreground'}>
-                      Pets allowed
+                      {t('listing.petsAllowed')}
                     </span>
                   </div>
                 </div>
@@ -377,7 +381,7 @@ export default function ListingDetail() {
 
               {/* Location Map */}
               <div>
-                <h2 className="text-xl font-semibold text-foreground mb-3">Location</h2>
+                <h2 className="text-xl font-semibold text-foreground mb-3">{t('listing.location')}</h2>
                 <ListingLocationMap
                   latitude={listing.latitude}
                   longitude={listing.longitude}
@@ -397,15 +401,15 @@ export default function ListingDetail() {
                     {propertyTypeLabels[listing.property_type]}
                   </p>
                   <p className="text-3xl font-bold text-foreground">
-                    {formatPrice(listing.price, listing.currency)}
-                    {listing.listing_type === 'rent' && (
-                      <span className="text-lg font-normal text-muted-foreground">/mo</span>
-                    )}
+                    {formatPrice(listing.price, listing.currency, { 
+                      isRental: listing.listing_type === 'rent',
+                      showPeriod: listing.listing_type === 'rent'
+                    })}
                   </p>
                 </div>
 
                 <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90 mb-3">
-                  Contact landlord
+                  {t('listing.contactLandlord')}
                 </Button>
 
                 {user ? (
@@ -415,7 +419,7 @@ export default function ListingDetail() {
                     onClick={handleSaveClick}
                   >
                     <Heart className={cn('h-4 w-4 mr-2', isSaved && 'fill-current text-accent')} />
-                    {isSaved ? 'Saved' : 'Save listing'}
+                    {isSaved ? t('common.saved') : t('listing.saveListing')}
                   </Button>
                 ) : (
                   <Button
@@ -423,7 +427,7 @@ export default function ListingDetail() {
                     className="w-full"
                     onClick={() => navigate('/auth')}
                   >
-                    Sign in to save
+                    {t('listing.signInToSave')}
                   </Button>
                 )}
               </div>
