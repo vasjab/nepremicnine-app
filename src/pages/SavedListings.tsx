@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Heart, Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSavedListings } from '@/hooks/useSavedListings';
@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function SavedListings() {
   const { user } = useAuth();
   const { data: savedListings, isLoading } = useSavedListings(user?.id);
+  const navigate = useNavigate();
 
   if (!user) {
     return (
@@ -61,9 +62,11 @@ export default function SavedListings() {
           ) : savedListings && savedListings.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {savedListings.map((saved) => (
-                <Link key={saved.id} to={`/listing/${saved.listing.id}`}>
-                  <ListingCard listing={saved.listing} />
-                </Link>
+                <ListingCard 
+                  key={saved.id} 
+                  listing={saved.listing} 
+                  onClick={() => navigate(`/listing/${saved.listing.id}`)}
+                />
               ))}
             </div>
           ) : (
