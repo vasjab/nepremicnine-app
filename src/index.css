@@ -197,3 +197,19 @@
     transform: scale(1); 
   }
 }
+
+/* Mapbox popup styling */
+.mapboxgl-popup-content {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+  overflow: hidden;
+}
+
+.mapboxgl-popup-tip {
+  border-top-color: white !important;
+}
+
+.listing-popup .mapboxgl-popup-content {
+  background: white;
+}

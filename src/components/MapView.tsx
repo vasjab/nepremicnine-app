@@ -166,6 +166,53 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
           transition: background 0.15s ease, box-shadow 0.15s ease;
           white-space: nowrap;
         `;
+
+        // Create popup for hover preview
+        const imageUrl = listing.images && listing.images.length > 0 
+          ? listing.images[0] 
+          : 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400';
+        
+        const propertyTypeLabels: Record<string, string> = {
+          apartment: 'Apartment',
+          house: 'House',
+          room: 'Room',
+          studio: 'Studio',
+          villa: 'Villa',
+          other: 'Other',
+        };
+
+        const priceDisplay = listing.listing_type === 'rent' 
+          ? `€${listing.price.toLocaleString()}/mo`
+          : `€${listing.price.toLocaleString()}`;
+
+        const popupContent = `
+          <div style="width: 220px; font-family: 'DM Sans', system-ui, sans-serif;">
+            <div style="width: 100%; height: 120px; overflow: hidden; border-radius: 8px 8px 0 0;">
+              <img src="${imageUrl}" alt="${listing.title}" style="width: 100%; height: 100%; object-fit: cover;" />
+            </div>
+            <div style="padding: 12px;">
+              <div style="font-size: 11px; color: #888; margin-bottom: 4px; text-transform: uppercase;">
+                ${propertyTypeLabels[listing.property_type] || 'Property'} • ${listing.listing_type === 'rent' ? 'For Rent' : 'For Sale'}
+              </div>
+              <div style="font-size: 14px; font-weight: 600; color: #2d2319; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                ${listing.address}
+              </div>
+              <div style="font-size: 13px; color: #666; margin-bottom: 8px;">
+                ${listing.bedrooms} room${listing.bedrooms !== 1 ? 's' : ''} • ${listing.area_sqm ? listing.area_sqm + ' m²' : 'N/A'}
+              </div>
+              <div style="font-size: 16px; font-weight: 700; color: #2d2319;">
+                ${priceDisplay}
+              </div>
+            </div>
+          </div>
+        `;
+
+        const popup = new mapboxgl.Popup({
+          closeButton: false,
+          closeOnClick: false,
+          offset: [0, -10],
+          className: 'listing-popup',
+        }).setHTML(popupContent);
         
         el.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -178,12 +225,14 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
         el.addEventListener('mouseenter', () => {
           el.style.background = 'hsl(350, 70%, 72%)';
           el.style.boxShadow = '0 4px 12px rgba(0,0,0,0.25)';
+          popup.setLngLat([listing.longitude, listing.latitude]).addTo(map.current!);
         });
 
         el.addEventListener('mouseleave', () => {
           const isActive = listing.id === activeListing;
           el.style.background = isActive ? 'hsl(350, 70%, 72%)' : 'hsl(0, 0%, 100%)';
           el.style.boxShadow = isActive ? '0 4px 12px rgba(0,0,0,0.25)' : '0 2px 8px rgba(0,0,0,0.15)';
+          popup.remove();
         });
 
         const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
