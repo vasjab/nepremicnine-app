@@ -80,16 +80,16 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
   const featureBadges: { icon: React.ComponentType<{ className?: string }>; label: string }[] = [];
   
   if (listing.has_elevator) {
-    featureBadges.push({ icon: Building2, label: t('listing.features.elevator') });
+    featureBadges.push({ icon: Building2, label: t('listing.elevator') });
   }
   if (listing.has_parking || listing.has_garage) {
-    featureBadges.push({ icon: Car, label: listing.has_garage ? t('listing.features.garage') : t('listing.features.parking') });
+    featureBadges.push({ icon: Car, label: listing.has_garage ? t('listing.garage') : t('listing.parking') });
   }
   if (listing.has_garden) {
-    featureBadges.push({ icon: TreePine, label: t('listing.features.garden') });
+    featureBadges.push({ icon: TreePine, label: t('listing.garden') });
   }
   if (listing.has_air_conditioning) {
-    featureBadges.push({ icon: Snowflake, label: t('listing.features.airConditioning') });
+    featureBadges.push({ icon: Snowflake, label: t('listing.airConditioning') });
   }
 
   // Limit to 3 badges max
