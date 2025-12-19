@@ -166,12 +166,16 @@ export default function ListingDetail() {
               />
               
               {/* Navigation arrows */}
-              {listing.images.length > 1 && (
+              {listing.images.length >= 1 && (
                 <>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10"
+                    disabled={listing.images.length <= 1}
+                    className={cn(
+                      "absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10",
+                      listing.images.length <= 1 && "opacity-50 cursor-not-allowed"
+                    )}
                     onClick={handlePrevImage}
                   >
                     <ChevronLeft className="h-6 w-6" />
@@ -179,27 +183,34 @@ export default function ListingDetail() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10"
+                    disabled={listing.images.length <= 1}
+                    className={cn(
+                      "absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10",
+                      listing.images.length <= 1 && "opacity-50 cursor-not-allowed"
+                    )}
                     onClick={handleNextImage}
                   >
                     <ChevronRight className="h-6 w-6" />
                   </Button>
-                  
+
                   {/* Image indicator dots */}
-                  <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-                    {listing.images.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(index); }}
-                        className={cn(
-                          "w-2.5 h-2.5 rounded-full transition-all",
-                          index === currentImageIndex 
-                            ? "bg-white w-5" 
-                            : "bg-white/60 hover:bg-white/80"
-                        )}
-                      />
-                    ))}
-                  </div>
+                  {listing.images.length > 1 && (
+                    <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                      {listing.images.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentImageIndex(index);
+                          }}
+                          className={cn(
+                            "w-2.5 h-2.5 rounded-full transition-all",
+                            index === currentImageIndex ? "bg-white w-5" : "bg-white/60 hover:bg-white/80"
+                          )}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </>
               )}
               
