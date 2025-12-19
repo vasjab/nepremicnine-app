@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { X, Heart, MapPin, Bed, Bath, Square, Calendar, Check, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
+import { useSwipe } from '@/hooks/useSwipe';
 import { Button } from '@/components/ui/button';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { ListingLocationMap } from '@/components/ListingLocationMap';
@@ -33,6 +34,28 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
   const [showGallery, setShowGallery] = useState(false);
   const [scrollToFloorPlan, setScrollToFloorPlan] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const goToPrevImage = useCallback(() => {
+    if (listing.images && listing.images.length > 1) {
+      setCurrentImageIndex((prev) => 
+        prev === 0 ? listing.images!.length - 1 : prev - 1
+      );
+    }
+  }, [listing.images]);
+
+  const goToNextImage = useCallback(() => {
+    if (listing.images && listing.images.length > 1) {
+      setCurrentImageIndex((prev) => 
+        prev === listing.images!.length - 1 ? 0 : prev + 1
+      );
+    }
+  }, [listing.images]);
+
+  const swipeHandlers = useSwipe({
+    onSwipeLeft: goToNextImage,
+    onSwipeRight: goToPrevImage,
+    minSwipeDistance: 50,
+  });
 
   const handleSaveClick = () => {
     if (!user) {
@@ -90,8 +113,9 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
 
         {/* Image gallery preview */}
         <div 
-          className="relative h-[40vh] sm:h-[50vh] bg-muted cursor-pointer group"
+          className="relative h-[40vh] sm:h-[50vh] bg-muted cursor-pointer group select-none"
           onClick={() => setShowGallery(true)}
+          {...swipeHandlers}
         >
           {listing.images && listing.images.length > 0 ? (
             <>
@@ -114,7 +138,7 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
                     )}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setCurrentImageIndex((prev) => (prev === 0 ? listing.images!.length - 1 : prev - 1));
+                      goToPrevImage();
                     }}
                   >
                     <ChevronLeft className="h-6 w-6" />
@@ -129,7 +153,7 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
                     )}
                     onClick={(e) => {
                       e.stopPropagation();
-                      setCurrentImageIndex((prev) => (prev === listing.images!.length - 1 ? 0 : prev + 1));
+                      goToNextImage();
                     }}
                   >
                     <ChevronRight className="h-6 w-6" />
