@@ -40,7 +40,7 @@ export type Database = {
           property_type: Database["public"]["Enums"]["property_type"]
           title: string
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           address: string
@@ -67,7 +67,7 @@ export type Database = {
           property_type?: Database["public"]["Enums"]["property_type"]
           title: string
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           address?: string
@@ -94,7 +94,7 @@ export type Database = {
           property_type?: Database["public"]["Enums"]["property_type"]
           title?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
