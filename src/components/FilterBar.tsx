@@ -65,8 +65,8 @@ const MAX_PRICE_OPTIONS = [
   { value: 'custom', label: 'Custom' },
 ] as const;
 
-const isPresetValue = (value: number | null, options: readonly { value: string }[]) => {
-  if (value === null) return true;
+const isPresetValue = (value: number | null | undefined, options: readonly { value: string }[]) => {
+  if (value === null || value === undefined) return true;
   return options.some(opt => opt.value === value.toString());
 };
 
@@ -77,10 +77,10 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   
   // Track if user selected "Custom" option
   const [customMinPrice, setCustomMinPrice] = useState(
-    filters.min_price !== null && !isPresetValue(filters.min_price, MIN_PRICE_OPTIONS)
+    filters.min_price != null && !isPresetValue(filters.min_price, MIN_PRICE_OPTIONS)
   );
   const [customMaxPrice, setCustomMaxPrice] = useState(
-    filters.max_price !== null && !isPresetValue(filters.max_price, MAX_PRICE_OPTIONS)
+    filters.max_price != null && !isPresetValue(filters.max_price, MAX_PRICE_OPTIONS)
   );
 
   // Live search with debounce
