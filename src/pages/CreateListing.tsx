@@ -48,6 +48,8 @@ const listingSchema = z.object({
   ).max(20, 'Maximum 20 images allowed'),
 });
 
+type PropertyType = 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other';
+
 export default function CreateListing() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -62,7 +64,7 @@ export default function CreateListing() {
     title: '',
     description: '',
     listing_type: 'rent' as 'rent' | 'sale',
-    property_type: 'apartment' as 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other',
+    property_type: 'apartment' as PropertyType,
     price: '',
     address: '',
     city: '',
@@ -76,9 +78,43 @@ export default function CreateListing() {
     is_furnished: false,
     allows_pets: false,
     images: [] as string[],
+    // Building & Floor
+    floor_number: '',
+    total_floors_building: '',
+    property_floors: '',
+    has_elevator: false,
+    // Outdoor
+    has_balcony: false,
+    has_terrace: false,
+    has_garden: false,
+    garden_sqm: '',
+    // Parking
+    has_parking: false,
+    parking_type: '' as string,
+    parking_spaces: '',
+    has_garage: false,
+    // Amenities
+    has_storage: false,
+    has_air_conditioning: false,
+    has_dishwasher: false,
+    has_washing_machine: false,
+    // Building Info
+    heating_type: '' as string,
+    energy_rating: '' as string,
+    year_built: '',
+    property_condition: '' as string,
+    // Rental Terms
+    deposit_amount: '',
+    min_lease_months: '',
+    internet_included: '' as string,
+    utilities_included: '' as string,
   });
 
   const [imageUrl, setImageUrl] = useState('');
+
+  const isApartmentType = ['apartment', 'room', 'studio'].includes(formData.property_type);
+  const isHouseType = ['house', 'villa'].includes(formData.property_type);
+  const isRental = formData.listing_type === 'rent';
 
   useEffect(() => {
     if (!user) {
@@ -136,6 +172,7 @@ export default function CreateListing() {
       });
       return;
     }
+    
     const latitude = formData.latitude ? parseFloat(formData.latitude) : 59.3293;
     const longitude = formData.longitude ? parseFloat(formData.longitude) : 18.0686;
     const price = parseFloat(formData.price) || 0;
@@ -203,6 +240,36 @@ export default function CreateListing() {
         images: validatedData.images,
         floor_plan_url: null,
         is_active: true,
+        // Building & Floor
+        floor_number: formData.floor_number ? parseInt(formData.floor_number) : null,
+        total_floors_building: formData.total_floors_building ? parseInt(formData.total_floors_building) : null,
+        property_floors: formData.property_floors ? parseInt(formData.property_floors) : null,
+        has_elevator: formData.has_elevator,
+        // Outdoor
+        has_balcony: formData.has_balcony,
+        has_terrace: formData.has_terrace,
+        has_garden: formData.has_garden,
+        garden_sqm: formData.garden_sqm ? parseFloat(formData.garden_sqm) : null,
+        // Parking
+        has_parking: formData.has_parking,
+        parking_type: (formData.parking_type || null) as 'street' | 'designated' | 'underground' | 'private' | null,
+        parking_spaces: formData.parking_spaces ? parseInt(formData.parking_spaces) : null,
+        has_garage: formData.has_garage,
+        // Amenities
+        has_storage: formData.has_storage,
+        has_air_conditioning: formData.has_air_conditioning,
+        has_dishwasher: formData.has_dishwasher,
+        has_washing_machine: formData.has_washing_machine,
+        // Building Info
+        heating_type: (formData.heating_type || null) as 'central' | 'electric' | 'gas' | 'heat_pump' | 'other' | null,
+        energy_rating: (formData.energy_rating || null) as 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | null,
+        year_built: formData.year_built ? parseInt(formData.year_built) : null,
+        property_condition: (formData.property_condition || null) as 'new' | 'renovated' | 'good' | 'needs_work' | null,
+        // Rental Terms
+        deposit_amount: formData.deposit_amount ? parseFloat(formData.deposit_amount) : null,
+        min_lease_months: formData.min_lease_months ? parseInt(formData.min_lease_months) : null,
+        internet_included: (formData.internet_included || null) as 'yes' | 'no' | 'available' | null,
+        utilities_included: (formData.utilities_included || null) as 'yes' | 'no' | 'partial' | null,
       },
       {
         onSuccess: () => {
@@ -295,7 +362,7 @@ export default function CreateListing() {
                   <Label htmlFor="property_type">Property Type *</Label>
                   <Select
                     value={formData.property_type}
-                    onValueChange={(value: typeof formData.property_type) => 
+                    onValueChange={(value: PropertyType) => 
                       setFormData(prev => ({ ...prev, property_type: value }))
                     }
                   >
@@ -505,6 +572,416 @@ export default function CreateListing() {
                 </div>
               </div>
             </div>
+
+            {/* Building & Floor - Conditional */}
+            {(isApartmentType || isHouseType) && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold text-foreground">Building & Floor</h2>
+                
+                {isApartmentType && (
+                  <>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="floor_number">Floor Number</Label>
+                        <Input
+                          id="floor_number"
+                          type="number"
+                          placeholder="3"
+                          value={formData.floor_number}
+                          onChange={(e) => setFormData(prev => ({ ...prev, floor_number: e.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="total_floors_building">Total Building Floors</Label>
+                        <Input
+                          id="total_floors_building"
+                          type="number"
+                          placeholder="5"
+                          value={formData.total_floors_building}
+                          onChange={(e) => setFormData(prev => ({ ...prev, total_floors_building: e.target.value }))}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="has_elevator">Elevator</Label>
+                        <p className="text-sm text-muted-foreground">Building has an elevator</p>
+                      </div>
+                      <Switch
+                        id="has_elevator"
+                        checked={formData.has_elevator}
+                        onCheckedChange={(checked) => 
+                          setFormData(prev => ({ ...prev, has_elevator: checked }))
+                        }
+                      />
+                    </div>
+                  </>
+                )}
+
+                {isHouseType && (
+                  <div className="space-y-2">
+                    <Label htmlFor="property_floors">Number of Floors</Label>
+                    <Input
+                      id="property_floors"
+                      type="number"
+                      placeholder="2"
+                      value={formData.property_floors}
+                      onChange={(e) => setFormData(prev => ({ ...prev, property_floors: e.target.value }))}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Outdoor Features */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-foreground">Outdoor Features</h2>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="has_balcony">Balcony</Label>
+                    <p className="text-sm text-muted-foreground">Property has a balcony</p>
+                  </div>
+                  <Switch
+                    id="has_balcony"
+                    checked={formData.has_balcony}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ ...prev, has_balcony: checked }))
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="has_terrace">Terrace</Label>
+                    <p className="text-sm text-muted-foreground">Property has a terrace</p>
+                  </div>
+                  <Switch
+                    id="has_terrace"
+                    checked={formData.has_terrace}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ ...prev, has_terrace: checked }))
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="has_garden">Garden</Label>
+                    <p className="text-sm text-muted-foreground">Property has a garden</p>
+                  </div>
+                  <Switch
+                    id="has_garden"
+                    checked={formData.has_garden}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ ...prev, has_garden: checked }))
+                    }
+                  />
+                </div>
+
+                {formData.has_garden && (
+                  <div className="space-y-2 ml-4">
+                    <Label htmlFor="garden_sqm">Garden Size (m²)</Label>
+                    <Input
+                      id="garden_sqm"
+                      type="number"
+                      placeholder="50"
+                      value={formData.garden_sqm}
+                      onChange={(e) => setFormData(prev => ({ ...prev, garden_sqm: e.target.value }))}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Parking */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-foreground">Parking</h2>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="has_parking">Parking Available</Label>
+                    <p className="text-sm text-muted-foreground">Parking is available</p>
+                  </div>
+                  <Switch
+                    id="has_parking"
+                    checked={formData.has_parking}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ ...prev, has_parking: checked }))
+                    }
+                  />
+                </div>
+
+                {formData.has_parking && (
+                  <div className="grid sm:grid-cols-2 gap-4 ml-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="parking_type">Parking Type</Label>
+                      <Select
+                        value={formData.parking_type}
+                        onValueChange={(value) => 
+                          setFormData(prev => ({ ...prev, parking_type: value }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="street">Street</SelectItem>
+                          <SelectItem value="designated">Designated</SelectItem>
+                          <SelectItem value="underground">Underground</SelectItem>
+                          <SelectItem value="private">Private</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="parking_spaces">Number of Spaces</Label>
+                      <Input
+                        id="parking_spaces"
+                        type="number"
+                        placeholder="1"
+                        value={formData.parking_spaces}
+                        onChange={(e) => setFormData(prev => ({ ...prev, parking_spaces: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="has_garage">Garage</Label>
+                    <p className="text-sm text-muted-foreground">Property has a garage</p>
+                  </div>
+                  <Switch
+                    id="has_garage"
+                    checked={formData.has_garage}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ ...prev, has_garage: checked }))
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Amenities */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-foreground">Amenities</h2>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="has_air_conditioning">Air Conditioning</Label>
+                    <p className="text-sm text-muted-foreground">Property has AC</p>
+                  </div>
+                  <Switch
+                    id="has_air_conditioning"
+                    checked={formData.has_air_conditioning}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ ...prev, has_air_conditioning: checked }))
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="has_dishwasher">Dishwasher</Label>
+                    <p className="text-sm text-muted-foreground">Property has a dishwasher</p>
+                  </div>
+                  <Switch
+                    id="has_dishwasher"
+                    checked={formData.has_dishwasher}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ ...prev, has_dishwasher: checked }))
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="has_washing_machine">Washing Machine</Label>
+                    <p className="text-sm text-muted-foreground">Property has a washing machine</p>
+                  </div>
+                  <Switch
+                    id="has_washing_machine"
+                    checked={formData.has_washing_machine}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ ...prev, has_washing_machine: checked }))
+                    }
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="has_storage">Storage/Cellar</Label>
+                    <p className="text-sm text-muted-foreground">Property has storage space</p>
+                  </div>
+                  <Switch
+                    id="has_storage"
+                    checked={formData.has_storage}
+                    onCheckedChange={(checked) => 
+                      setFormData(prev => ({ ...prev, has_storage: checked }))
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Building Info */}
+            <div className="space-y-4">
+              <h2 className="text-xl font-semibold text-foreground">Building Information</h2>
+              
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="heating_type">Heating Type</Label>
+                  <Select
+                    value={formData.heating_type}
+                    onValueChange={(value) => 
+                      setFormData(prev => ({ ...prev, heating_type: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="central">Central</SelectItem>
+                      <SelectItem value="electric">Electric</SelectItem>
+                      <SelectItem value="gas">Gas</SelectItem>
+                      <SelectItem value="heat_pump">Heat Pump</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="energy_rating">Energy Rating</Label>
+                  <Select
+                    value={formData.energy_rating}
+                    onValueChange={(value) => 
+                      setFormData(prev => ({ ...prev, energy_rating: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select rating" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {['A', 'B', 'C', 'D', 'E', 'F', 'G'].map(rating => (
+                        <SelectItem key={rating} value={rating}>{rating}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="year_built">Year Built</Label>
+                  <Input
+                    id="year_built"
+                    type="number"
+                    placeholder="2005"
+                    value={formData.year_built}
+                    onChange={(e) => setFormData(prev => ({ ...prev, year_built: e.target.value }))}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="property_condition">Condition</Label>
+                  <Select
+                    value={formData.property_condition}
+                    onValueChange={(value) => 
+                      setFormData(prev => ({ ...prev, property_condition: value }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select condition" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="new">New</SelectItem>
+                      <SelectItem value="renovated">Renovated</SelectItem>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="needs_work">Needs Work</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Rental Terms - Only for rentals */}
+            {isRental && (
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold text-foreground">Rental Terms</h2>
+                
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="deposit_amount">Deposit Amount (SEK)</Label>
+                    <Input
+                      id="deposit_amount"
+                      type="number"
+                      placeholder="24000"
+                      value={formData.deposit_amount}
+                      onChange={(e) => setFormData(prev => ({ ...prev, deposit_amount: e.target.value }))}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="min_lease_months">Minimum Lease (months)</Label>
+                    <Select
+                      value={formData.min_lease_months}
+                      onValueChange={(value) => 
+                        setFormData(prev => ({ ...prev, min_lease_months: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select duration" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 3, 6, 12, 24].map(n => (
+                          <SelectItem key={n} value={n.toString()}>{n} months</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="internet_included">Internet Included</Label>
+                    <Select
+                      value={formData.internet_included}
+                      onValueChange={(value) => 
+                        setFormData(prev => ({ ...prev, internet_included: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select option" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="yes">Yes</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                        <SelectItem value="available">Available (extra cost)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="utilities_included">Utilities Included</Label>
+                    <Select
+                      value={formData.utilities_included}
+                      onValueChange={(value) => 
+                        setFormData(prev => ({ ...prev, utilities_included: value }))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select option" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="yes">Yes (all included)</SelectItem>
+                        <SelectItem value="no">No</SelectItem>
+                        <SelectItem value="partial">Partial (some included)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Images */}
             <div className="space-y-4">

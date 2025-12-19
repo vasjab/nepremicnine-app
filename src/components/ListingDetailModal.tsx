@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { X, Heart, MapPin, Bed, Bath, Square, Calendar, Check, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink } from 'lucide-react';
+import { X, Heart, MapPin, Bed, Bath, Square, Calendar, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -7,6 +7,7 @@ import { useSwipe } from '@/hooks/useSwipe';
 import { Button } from '@/components/ui/button';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { ListingLocationMap } from '@/components/ListingLocationMap';
+import { PropertyFeatures } from '@/components/PropertyFeatures';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -257,32 +258,8 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
                 </div>
               )}
 
-              {/* Features */}
-              <div>
-                <h2 className="text-xl font-semibold text-foreground mb-3">{t('listing.features')}</h2>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2">
-                    {listing.is_furnished ? (
-                      <Check className="h-5 w-5 text-success" />
-                    ) : (
-                      <X className="h-5 w-5 text-muted-foreground" />
-                    )}
-                    <span className={listing.is_furnished ? 'text-foreground' : 'text-muted-foreground'}>
-                      {t('listing.furnished')}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {listing.allows_pets ? (
-                      <Check className="h-5 w-5 text-success" />
-                    ) : (
-                      <X className="h-5 w-5 text-muted-foreground" />
-                    )}
-                    <span className={listing.allows_pets ? 'text-foreground' : 'text-muted-foreground'}>
-                      {t('listing.petsAllowed')}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              {/* Property Features */}
+              <PropertyFeatures listing={listing} />
 
               {/* Location Map */}
               <div>
