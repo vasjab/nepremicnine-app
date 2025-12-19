@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { MapPin } from 'lucide-react';
+import { MapPin, Map, Satellite, Mountain } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
@@ -10,6 +10,14 @@ interface ListingLocationMapProps {
   longitude: number;
   address: string;
 }
+
+type MapStyle = 'streets' | 'satellite' | 'outdoors';
+
+const MAP_STYLES: Record<MapStyle, { url: string; label: string; icon: typeof Map }> = {
+  streets: { url: 'mapbox://styles/mapbox/light-v11', label: 'Streets', icon: Map },
+  satellite: { url: 'mapbox://styles/mapbox/satellite-streets-v12', label: 'Satellite', icon: Satellite },
+  outdoors: { url: 'mapbox://styles/mapbox/outdoors-v12', label: 'Outdoors', icon: Mountain },
+};
 
 const MAPBOX_TOKEN_KEY = 'hemma_mapbox_token';
 
@@ -23,12 +31,21 @@ export function ListingLocationMap({ latitude, longitude, address }: ListingLoca
   });
   const [tokenInput, setTokenInput] = useState('');
   const [mapError, setMapError] = useState(false);
+  const [mapStyle, setMapStyle] = useState<MapStyle>('streets');
+  const [mapReady, setMapReady] = useState(false);
 
   const handleSaveToken = () => {
     if (tokenInput.trim()) {
       localStorage.setItem(MAPBOX_TOKEN_KEY, tokenInput.trim());
       setMapboxToken(tokenInput.trim());
       setMapError(false);
+    }
+  };
+
+  const handleStyleChange = (style: MapStyle) => {
+    if (map.current && style !== mapStyle) {
+      setMapStyle(style);
+      map.current.setStyle(MAP_STYLES[style].url);
     }
   };
 
@@ -40,7 +57,7 @@ export function ListingLocationMap({ latitude, longitude, address }: ListingLoca
 
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/light-v11',
+        style: MAP_STYLES[mapStyle].url,
         center: [longitude, latitude],
         zoom: 15,
         interactive: true,
@@ -49,6 +66,10 @@ export function ListingLocationMap({ latitude, longitude, address }: ListingLoca
       map.current.on('error', () => {
         setMapError(true);
         localStorage.removeItem(MAPBOX_TOKEN_KEY);
+      });
+
+      map.current.on('load', () => {
+        setMapReady(true);
       });
 
       map.current.addControl(
@@ -89,6 +110,7 @@ export function ListingLocationMap({ latitude, longitude, address }: ListingLoca
       marker.current?.remove();
       map.current?.remove();
       map.current = null;
+      setMapReady(false);
     };
   }, [mapboxToken, latitude, longitude]);
 
@@ -131,8 +153,33 @@ export function ListingLocationMap({ latitude, longitude, address }: ListingLoca
   }
 
   return (
-    <div className="w-full h-[300px] rounded-xl overflow-hidden">
+    <div className="relative w-full h-[300px] rounded-xl overflow-hidden">
       <div ref={mapContainer} className="w-full h-full" />
+      
+      {/* Map Style Switcher */}
+      {mapReady && (
+        <div className="absolute top-3 left-3 z-10 flex gap-1 bg-background/95 backdrop-blur-sm rounded-lg p-1 shadow-md border border-border/50">
+          {(Object.keys(MAP_STYLES) as MapStyle[]).map((style) => {
+            const { label, icon: Icon } = MAP_STYLES[style];
+            const isActive = mapStyle === style;
+            return (
+              <button
+                key={style}
+                onClick={() => handleStyleChange(style)}
+                className={`flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-all ${
+                  isActive
+                    ? 'bg-accent text-accent-foreground'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                }`}
+                title={label}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                <span>{label}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
