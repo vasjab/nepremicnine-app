@@ -19,12 +19,30 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<{ [key: string]: mapboxgl.Marker }>({});
+  const onMapMoveRef = useRef(onMapMove);
+  const onListingClickRef = useRef(onListingClick);
+  const initialFitDone = useRef(false);
+  const listingsRef = useRef<Listing[]>([]);
   
   const [mapboxToken, setMapboxToken] = useState(() => {
     return localStorage.getItem(MAPBOX_TOKEN_KEY) || import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || '';
   });
   const [tokenInput, setTokenInput] = useState('');
   const [mapError, setMapError] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
+
+  // Keep refs updated
+  useEffect(() => {
+    onMapMoveRef.current = onMapMove;
+  }, [onMapMove]);
+
+  useEffect(() => {
+    onListingClickRef.current = onListingClick;
+  }, [onListingClick]);
+
+  useEffect(() => {
+    listingsRef.current = listings;
+  }, [listings]);
 
   const formatPrice = useCallback((price: number) => {
     if (price >= 1000000) {
@@ -36,26 +54,6 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
     return price.toString();
   }, []);
 
-  const createMarkerElement = useCallback((listing: Listing, isActive: boolean) => {
-    const el = document.createElement('div');
-    el.className = `map-marker ${isActive ? 'map-marker-active' : ''}`;
-    el.innerHTML = formatPrice(listing.price);
-    el.style.cssText = `
-      background: ${isActive ? 'hsl(350, 70%, 72%)' : 'hsl(0, 0%, 100%)'};
-      color: ${isActive ? 'hsl(25, 30%, 12%)' : 'hsl(25, 30%, 12%)'};
-      padding: 4px 8px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      transform: ${isActive ? 'scale(1.1)' : 'scale(1)'};
-      z-index: ${isActive ? '10' : '1'};
-    `;
-    return el;
-  }, [formatPrice]);
-
   const handleSaveToken = () => {
     if (tokenInput.trim()) {
       localStorage.setItem(MAPBOX_TOKEN_KEY, tokenInput.trim());
@@ -64,35 +62,39 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
     }
   };
 
+  // Initialize map only once
   useEffect(() => {
     if (!mapContainer.current || map.current || !mapboxToken) return;
 
     try {
       mapboxgl.accessToken = mapboxToken;
 
-      map.current = new mapboxgl.Map({
+      const mapInstance = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [18.0686, 59.3293], // Stockholm by default
-        zoom: 10,
+        center: [14.5058, 46.0515], // Ljubljana center
+        zoom: 12,
       });
 
-      map.current.on('error', () => {
+      mapInstance.on('error', () => {
         setMapError(true);
         localStorage.removeItem(MAPBOX_TOKEN_KEY);
       });
 
-      map.current.addControl(
+      mapInstance.addControl(
         new mapboxgl.NavigationControl({
           visualizePitch: false,
         }),
         'top-right'
       );
 
-      map.current.on('moveend', () => {
-        if (map.current && onMapMove) {
-          const bounds = map.current.getBounds();
-          onMapMove({
+      mapInstance.on('load', () => {
+        setMapReady(true);
+        
+        // Initial bounds report
+        if (onMapMoveRef.current) {
+          const bounds = mapInstance.getBounds();
+          onMapMoveRef.current({
             north: bounds.getNorth(),
             south: bounds.getSouth(),
             east: bounds.getEast(),
@@ -100,6 +102,20 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
           });
         }
       });
+
+      mapInstance.on('moveend', () => {
+        if (onMapMoveRef.current) {
+          const bounds = mapInstance.getBounds();
+          onMapMoveRef.current({
+            north: bounds.getNorth(),
+            south: bounds.getSouth(),
+            east: bounds.getEast(),
+            west: bounds.getWest(),
+          });
+        }
+      });
+
+      map.current = mapInstance;
     } catch (error) {
       setMapError(true);
     }
@@ -108,59 +124,105 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
       map.current?.remove();
       map.current = null;
     };
-  }, [onMapMove, mapboxToken]);
+  }, [mapboxToken]);
 
-  // Update markers when listings change
+  // Update markers when listings change (but don't re-fit bounds on every change)
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current || !mapReady) return;
 
-    // Remove old markers
-    Object.values(markers.current).forEach(marker => marker.remove());
-    markers.current = {};
+    const currentListingIds = new Set(listings.map(l => l.id));
+    const existingIds = new Set(Object.keys(markers.current));
 
-    // Add new markers
-    listings.forEach(listing => {
-      const el = createMarkerElement(listing, listing.id === activeListing);
-      
-      el.addEventListener('click', () => {
-        onListingClick?.(listing);
-      });
-
-      const marker = new mapboxgl.Marker({ element: el })
-        .setLngLat([listing.longitude, listing.latitude])
-        .addTo(map.current!);
-
-      markers.current[listing.id] = marker;
+    // Remove markers that are no longer in listings
+    existingIds.forEach(id => {
+      if (!currentListingIds.has(id)) {
+        markers.current[id].remove();
+        delete markers.current[id];
+      }
     });
 
-    // Fit bounds to show all markers
-    if (listings.length > 0) {
+    // Add or update markers
+    listings.forEach(listing => {
+      if (markers.current[listing.id]) {
+        // Marker exists, just update position if needed
+        const marker = markers.current[listing.id];
+        const lngLat = marker.getLngLat();
+        if (lngLat.lng !== listing.longitude || lngLat.lat !== listing.latitude) {
+          marker.setLngLat([listing.longitude, listing.latitude]);
+        }
+      } else {
+        // Create new marker
+        const el = document.createElement('div');
+        el.innerHTML = formatPrice(listing.price);
+        el.style.cssText = `
+          background: hsl(0, 0%, 100%);
+          color: hsl(25, 30%, 12%);
+          padding: 6px 10px;
+          border-radius: 8px;
+          font-size: 13px;
+          font-weight: 600;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+          cursor: pointer;
+          transition: all 0.15s ease;
+          white-space: nowrap;
+        `;
+        
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const currentListing = listingsRef.current.find(l => l.id === listing.id);
+          if (currentListing && onListingClickRef.current) {
+            onListingClickRef.current(currentListing);
+          }
+        });
+
+        el.addEventListener('mouseenter', () => {
+          el.style.background = 'hsl(350, 70%, 72%)';
+          el.style.transform = 'scale(1.1)';
+          el.style.zIndex = '10';
+        });
+
+        el.addEventListener('mouseleave', () => {
+          const isActive = listing.id === activeListing;
+          el.style.background = isActive ? 'hsl(350, 70%, 72%)' : 'hsl(0, 0%, 100%)';
+          el.style.transform = isActive ? 'scale(1.1)' : 'scale(1)';
+          el.style.zIndex = isActive ? '10' : '1';
+        });
+
+        const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
+          .setLngLat([listing.longitude, listing.latitude])
+          .addTo(map.current!);
+
+        markers.current[listing.id] = marker;
+      }
+    });
+
+    // Fit bounds only on first load with listings
+    if (!initialFitDone.current && listings.length > 0) {
       const bounds = new mapboxgl.LngLatBounds();
       listings.forEach(listing => {
         bounds.extend([listing.longitude, listing.latitude]);
       });
       
       map.current.fitBounds(bounds, {
-        padding: 50,
+        padding: 60,
         maxZoom: 14,
-        duration: 1000,
+        duration: 500,
       });
+      
+      initialFitDone.current = true;
     }
-  }, [listings, activeListing, createMarkerElement, onListingClick]);
+  }, [listings, mapReady, formatPrice, activeListing]);
 
-  // Update active marker styling
+  // Update active marker styling separately
   useEffect(() => {
-    listings.forEach(listing => {
-      const marker = markers.current[listing.id];
-      if (marker) {
-        const el = marker.getElement();
-        const isActive = listing.id === activeListing;
-        el.style.background = isActive ? 'hsl(350, 70%, 72%)' : 'hsl(0, 0%, 100%)';
-        el.style.transform = isActive ? 'scale(1.1)' : 'scale(1)';
-        el.style.zIndex = isActive ? '10' : '1';
-      }
+    Object.entries(markers.current).forEach(([id, marker]) => {
+      const el = marker.getElement();
+      const isActive = id === activeListing;
+      el.style.background = isActive ? 'hsl(350, 70%, 72%)' : 'hsl(0, 0%, 100%)';
+      el.style.transform = isActive ? 'scale(1.1)' : 'scale(1)';
+      el.style.zIndex = isActive ? '10' : '1';
     });
-  }, [activeListing, listings]);
+  }, [activeListing]);
 
   // Show token input if no token is available
   if (!mapboxToken || mapError) {
