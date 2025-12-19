@@ -77,46 +77,70 @@ export function useListing(id: string | undefined) {
   });
 }
 
+function calculateSimilarityScore(candidate: Listing, reference: Listing): number {
+  let score = 0;
+  
+  // City match (25 points)
+  if (candidate.city.toLowerCase() === reference.city.toLowerCase()) {
+    score += 25;
+  }
+  
+  // Property type match (15 points)
+  if (candidate.property_type === reference.property_type) {
+    score += 15;
+  }
+  
+  // Price similarity (up to 20 points)
+  const priceDiff = Math.abs(candidate.price - reference.price) / reference.price;
+  if (priceDiff <= 0.1) score += 20;
+  else if (priceDiff <= 0.25) score += 15;
+  else if (priceDiff <= 0.5) score += 10;
+  else if (priceDiff <= 0.75) score += 5;
+  
+  // Bedroom match (up to 10 points)
+  const bedroomDiff = Math.abs(candidate.bedrooms - reference.bedrooms);
+  if (bedroomDiff === 0) score += 10;
+  else if (bedroomDiff === 1) score += 5;
+  else if (bedroomDiff === 2) score += 2;
+  
+  // Size similarity (up to 10 points) - only if both have area_sqm
+  if (candidate.area_sqm && reference.area_sqm) {
+    const sizeDiff = Math.abs(candidate.area_sqm - reference.area_sqm) / reference.area_sqm;
+    if (sizeDiff <= 0.1) score += 10;
+    else if (sizeDiff <= 0.25) score += 7;
+    else if (sizeDiff <= 0.5) score += 4;
+  }
+  
+  return score;
+}
+
 export function useSimilarListings(listing: Listing | null | undefined, limit: number = 6) {
   return useQuery({
     queryKey: ['similar-listings', listing?.id],
     queryFn: async () => {
       if (!listing) return [];
       
-      // Find listings in the same city with the same listing type, excluding current
+      // Fetch a broader pool of candidates with same listing type
       const { data, error } = await supabase
         .from('listings')
         .select('*')
         .eq('is_active', true)
         .eq('listing_type', listing.listing_type)
-        .eq('city', listing.city)
         .neq('id', listing.id)
-        .order('created_at', { ascending: false })
-        .limit(limit);
+        .limit(50);
 
       if (error) throw error;
+      if (!data || data.length === 0) return [];
       
-      // If we don't have enough results, fetch more from same property type
-      if (data.length < limit) {
-        const remaining = limit - data.length;
-        const existingIds = [listing.id, ...data.map(l => l.id)];
-        
-        const { data: moreData, error: moreError } = await supabase
-          .from('listings')
-          .select('*')
-          .eq('is_active', true)
-          .eq('listing_type', listing.listing_type)
-          .eq('property_type', listing.property_type)
-          .not('id', 'in', `(${existingIds.join(',')})`)
-          .order('created_at', { ascending: false })
-          .limit(remaining);
-
-        if (!moreError && moreData) {
-          return [...data, ...moreData] as Listing[];
-        }
-      }
+      // Score each candidate and sort by similarity
+      const scoredListings = data.map(candidate => ({
+        listing: candidate as Listing,
+        score: calculateSimilarityScore(candidate as Listing, listing)
+      }));
       
-      return data as Listing[];
+      scoredListings.sort((a, b) => b.score - a.score);
+      
+      return scoredListings.slice(0, limit).map(item => item.listing);
     },
     enabled: !!listing,
   });
