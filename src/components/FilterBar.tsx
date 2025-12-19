@@ -1,9 +1,11 @@
 import { Search, SlidersHorizontal, X, ArrowUpDown, Building2, Home, DoorOpen, Square, Castle, Key, Banknote } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import { ListingFilters, SortOption } from '@/types/listing';
+import { ListingFilters, SortOption, AreaUnit } from '@/types/listing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 
 import {
   Select,
@@ -42,87 +44,61 @@ const PROPERTY_TYPES = [
   { value: 'villa', label: 'Villa', icon: Castle },
 ] as const;
 
-// Rental price options (monthly)
-const RENT_MIN_PRICE_OPTIONS = [
-  { value: '', label: 'No min' },
-  { value: '300', label: '€300' },
-  { value: '500', label: '€500' },
-  { value: '750', label: '€750' },
-  { value: '1000', label: '€1,000' },
-  { value: '1500', label: '€1,500' },
-  { value: '2000', label: '€2,000' },
-  { value: 'custom', label: 'Custom' },
-] as const;
+// Price ranges by listing type
+const PRICE_CONFIG = {
+  rent: { min: 0, max: 5000, step: 100, label: 'Monthly cost' },
+  sale: { min: 0, max: 2000000, step: 10000, label: 'Total price' },
+  default: { min: 0, max: 100000, step: 1000, label: 'Price' },
+} as const;
 
-const RENT_MAX_PRICE_OPTIONS = [
-  { value: '', label: 'No max' },
-  { value: '500', label: '€500' },
-  { value: '750', label: '€750' },
-  { value: '1000', label: '€1,000' },
-  { value: '1500', label: '€1,500' },
-  { value: '2000', label: '€2,000' },
-  { value: '3000', label: '€3,000' },
-  { value: '5000', label: '€5,000' },
-  { value: 'custom', label: 'Custom' },
-] as const;
+// Size range config
+const SIZE_CONFIG = {
+  sqm: { min: 5, max: 200, step: 5, label: 'm²' },
+  sqft: { min: 50, max: 2150, step: 50, label: 'ft²' },
+} as const;
 
-// Sale price options (total price)
-const SALE_MIN_PRICE_OPTIONS = [
-  { value: '', label: 'No min' },
-  { value: '50000', label: '€50,000' },
-  { value: '100000', label: '€100,000' },
-  { value: '150000', label: '€150,000' },
-  { value: '200000', label: '€200,000' },
-  { value: '300000', label: '€300,000' },
-  { value: '500000', label: '€500,000' },
-  { value: 'custom', label: 'Custom' },
-] as const;
-
-const SALE_MAX_PRICE_OPTIONS = [
-  { value: '', label: 'No max' },
-  { value: '100000', label: '€100,000' },
-  { value: '200000', label: '€200,000' },
-  { value: '300000', label: '€300,000' },
-  { value: '500000', label: '€500,000' },
-  { value: '750000', label: '€750,000' },
-  { value: '1000000', label: '€1,000,000' },
-  { value: '2000000', label: '€2,000,000' },
-  { value: 'custom', label: 'Custom' },
-] as const;
-
-const isPresetValue = (value: number | null | undefined, options: readonly { value: string }[]) => {
-  if (value === null || value === undefined) return true;
-  return options.some(opt => opt.value === value.toString());
-};
+const SQM_TO_SQFT = 10.764;
 
 export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount }: FilterBarProps) {
   const [searchValue, setSearchValue] = useState(filters.city || '');
   const [isOpen, setIsOpen] = useState(false);
+  const [areaUnit, setAreaUnit] = useState<AreaUnit>('sqm');
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Get dynamic price options based on listing type
-  const getMinPriceOptions = () => {
-    return filters.listing_type === 'sale' ? SALE_MIN_PRICE_OPTIONS : RENT_MIN_PRICE_OPTIONS;
+
+  // Get price config based on listing type
+  const getPriceConfig = () => {
+    if (filters.listing_type === 'rent') return PRICE_CONFIG.rent;
+    if (filters.listing_type === 'sale') return PRICE_CONFIG.sale;
+    return PRICE_CONFIG.default;
   };
-  
-  const getMaxPriceOptions = () => {
-    return filters.listing_type === 'sale' ? SALE_MAX_PRICE_OPTIONS : RENT_MAX_PRICE_OPTIONS;
+
+  const priceConfig = getPriceConfig();
+  const sizeConfig = SIZE_CONFIG[areaUnit];
+
+  // Convert size value between units
+  const convertSize = (value: number, from: AreaUnit, to: AreaUnit): number => {
+    if (from === to) return value;
+    if (from === 'sqm' && to === 'sqft') return Math.round(value * SQM_TO_SQFT);
+    return Math.round(value / SQM_TO_SQFT);
   };
-  
-  // Track if user selected "Custom" option
-  const [customMinPrice, setCustomMinPrice] = useState(
-    filters.min_price != null && !isPresetValue(filters.min_price, getMinPriceOptions())
-  );
-  const [customMaxPrice, setCustomMaxPrice] = useState(
-    filters.max_price != null && !isPresetValue(filters.max_price, getMaxPriceOptions())
-  );
+
+  // Get displayed size range values (in current unit)
+  const getDisplayedSizeRange = (): [number, number] => {
+    const minSqm = filters.min_area ?? SIZE_CONFIG.sqm.min;
+    const maxSqm = filters.max_area ?? SIZE_CONFIG.sqm.max;
+    
+    if (areaUnit === 'sqm') {
+      return [minSqm, maxSqm];
+    }
+    return [convertSize(minSqm, 'sqm', 'sqft'), convertSize(maxSqm, 'sqm', 'sqft')];
+  };
 
   // Live search with debounce
   useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
-    
+
     debounceRef.current = setTimeout(() => {
       const newCity = searchValue.trim() || null;
       if (newCity !== filters.city) {
@@ -152,10 +128,8 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
   const handleListingTypeChange = (value: string) => {
     const newListingType = value === 'all' ? null : (value as 'rent' | 'sale');
-    // Reset price filters when listing type changes since values differ significantly
+    // Reset price filters when listing type changes since ranges differ significantly
     if (newListingType !== filters.listing_type) {
-      setCustomMinPrice(false);
-      setCustomMaxPrice(false);
       onFiltersChange({
         ...filters,
         listing_type: newListingType,
@@ -181,13 +155,6 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     });
   };
 
-  const clearPropertyTypes = () => {
-    onFiltersChange({
-      ...filters,
-      property_types: null,
-    });
-  };
-
   const handleBedroomChange = (value: string) => {
     onFiltersChange({
       ...filters,
@@ -195,61 +162,31 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     });
   };
 
-  const handlePriceChange = (type: 'min' | 'max', value: string) => {
-    const numValue = value ? parseInt(value) : null;
+  const handlePriceRangeChange = (values: number[]) => {
+    const [min, max] = values;
+    const config = getPriceConfig();
     onFiltersChange({
       ...filters,
-      [type === 'min' ? 'min_price' : 'max_price']: numValue,
+      min_price: min === config.min ? null : min,
+      max_price: max === config.max ? null : max,
     });
   };
 
-  // Parse currency input (remove formatting)
-  const parseCurrencyInput = (input: string): string => {
-    return input.replace(/[^0-9]/g, '');
+  const handleSizeRangeChange = (values: number[]) => {
+    const [min, max] = values;
+    // Always store in sqm
+    const minSqm = areaUnit === 'sqm' ? min : convertSize(min, 'sqft', 'sqm');
+    const maxSqm = areaUnit === 'sqm' ? max : convertSize(max, 'sqft', 'sqm');
+    
+    onFiltersChange({
+      ...filters,
+      min_area: minSqm === SIZE_CONFIG.sqm.min ? null : minSqm,
+      max_area: maxSqm >= SIZE_CONFIG.sqm.max ? null : maxSqm,
+    });
   };
 
-  // Format number with thousand separators
-  const formatDisplayValue = (value: number | null | undefined): string => {
-    if (value === null || value === undefined || value === 0) return '';
-    return value.toLocaleString();
-  };
-
-  const handleMinPriceSelect = (value: string) => {
-    if (value === 'custom') {
-      setCustomMinPrice(true);
-    } else if (value === 'none') {
-      setCustomMinPrice(false);
-      handlePriceChange('min', '');
-    } else {
-      setCustomMinPrice(false);
-      handlePriceChange('min', value);
-    }
-  };
-
-  const handleMaxPriceSelect = (value: string) => {
-    if (value === 'custom') {
-      setCustomMaxPrice(true);
-    } else if (value === 'none') {
-      setCustomMaxPrice(false);
-      handlePriceChange('max', '');
-    } else {
-      setCustomMaxPrice(false);
-      handlePriceChange('max', value);
-    }
-  };
-
-  const getMinPriceSelectValue = () => {
-    if (customMinPrice) return 'custom';
-    if (filters.min_price === null) return 'none';
-    const preset = getMinPriceOptions().find(opt => opt.value === filters.min_price?.toString());
-    return preset ? preset.value : 'custom';
-  };
-
-  const getMaxPriceSelectValue = () => {
-    if (customMaxPrice) return 'custom';
-    if (filters.max_price === null) return 'none';
-    const preset = getMaxPriceOptions().find(opt => opt.value === filters.max_price?.toString());
-    return preset ? preset.value : 'custom';
+  const handleUnitToggle = (checked: boolean) => {
+    setAreaUnit(checked ? 'sqft' : 'sqm');
   };
 
   const clearFilters = () => {
@@ -258,6 +195,26 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   };
 
   const hasActiveFilters = Object.values(filters).some(v => v !== null && v !== undefined && (Array.isArray(v) ? v.length > 0 : true));
+
+  // Format price for display
+  const formatPriceLabel = (value: number): string => {
+    if (value >= 1000000) {
+      return `€${(value / 1000000).toFixed(1)}M`;
+    }
+    if (value >= 1000) {
+      return `€${(value / 1000).toFixed(0)}k`;
+    }
+    return `€${value}`;
+  };
+
+  // Get current price range values for slider
+  const getPriceRangeValues = (): [number, number] => {
+    const config = getPriceConfig();
+    return [
+      filters.min_price ?? config.min,
+      filters.max_price ?? config.max,
+    ];
+  };
 
   // Build active filter chips
   const getActiveFilterChips = () => {
@@ -290,11 +247,11 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     if (filters.min_price || filters.max_price) {
       let priceLabel = '';
       if (filters.min_price && filters.max_price) {
-        priceLabel = `€${filters.min_price.toLocaleString()} - €${filters.max_price.toLocaleString()}`;
+        priceLabel = `${formatPriceLabel(filters.min_price)} - ${formatPriceLabel(filters.max_price)}`;
       } else if (filters.min_price) {
-        priceLabel = `Min €${filters.min_price.toLocaleString()}`;
+        priceLabel = `Min ${formatPriceLabel(filters.min_price)}`;
       } else if (filters.max_price) {
-        priceLabel = `Max €${filters.max_price.toLocaleString()}`;
+        priceLabel = `Max ${formatPriceLabel(filters.max_price)}`;
       }
       chips.push({
         label: priceLabel,
@@ -304,10 +261,32 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
       });
     }
 
+    if (filters.min_area || filters.max_area) {
+      const minDisplay = filters.min_area ? (areaUnit === 'sqm' ? filters.min_area : convertSize(filters.min_area, 'sqm', 'sqft')) : null;
+      const maxDisplay = filters.max_area ? (areaUnit === 'sqm' ? filters.max_area : convertSize(filters.max_area, 'sqm', 'sqft')) : null;
+      
+      let sizeLabel = '';
+      if (minDisplay && maxDisplay) {
+        sizeLabel = `${minDisplay} - ${maxDisplay} ${sizeConfig.label}`;
+      } else if (minDisplay) {
+        sizeLabel = `Min ${minDisplay} ${sizeConfig.label}`;
+      } else if (maxDisplay) {
+        sizeLabel = `Max ${maxDisplay} ${sizeConfig.label}`;
+      }
+      chips.push({
+        label: sizeLabel,
+        onRemove: () => {
+          onFiltersChange({ ...filters, min_area: null, max_area: null });
+        },
+      });
+    }
+
     return chips;
   };
 
   const activeChips = getActiveFilterChips();
+  const priceRangeValues = getPriceRangeValues();
+  const sizeRangeValues = getDisplayedSizeRange();
 
   return (
     <div className="bg-background border-b border-border">
@@ -428,99 +407,52 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   </Select>
                 </div>
 
+                {/* Price Range Slider */}
                 <div className="space-y-3">
-                  <Label>Price Range</Label>
-                  {filters.listing_type ? (
-                    <div className="flex items-start gap-2">
-                      <div className="flex-1 space-y-2">
-                        <Select
-                          value={getMinPriceSelectValue()}
-                          onValueChange={handleMinPriceSelect}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Min price" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {getMinPriceOptions().map((opt) => (
-                              <SelectItem key={opt.value || 'no-min'} value={opt.value || 'none'}>
-                                {opt.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {customMinPrice && (
-                          <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
-                            <Input
-                              type="text"
-                              inputMode="numeric"
-                              placeholder="Enter amount"
-                              value={formatDisplayValue(filters.min_price)}
-                              onChange={(e) => handlePriceChange('min', parseCurrencyInput(e.target.value))}
-                              className="pl-7"
-                            />
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-muted-foreground pt-2">—</span>
-                      <div className="flex-1 space-y-2">
-                        <Select
-                          value={getMaxPriceSelectValue()}
-                          onValueChange={handleMaxPriceSelect}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Max price" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {getMaxPriceOptions().map((opt) => (
-                              <SelectItem key={opt.value || 'no-max'} value={opt.value || 'none'}>
-                                {opt.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {customMaxPrice && (
-                          <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
-                            <Input
-                              type="text"
-                              inputMode="numeric"
-                              placeholder="Enter amount"
-                              value={formatDisplayValue(filters.max_price)}
-                              onChange={(e) => handlePriceChange('max', parseCurrencyInput(e.target.value))}
-                              className="pl-7"
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
+                  <Label>{priceConfig.label}</Label>
+                  <div className="pt-2 px-1">
+                    <Slider
+                      value={priceRangeValues}
+                      min={priceConfig.min}
+                      max={priceConfig.max}
+                      step={priceConfig.step}
+                      thumbCount={2}
+                      onValueChange={handlePriceRangeChange}
+                    />
+                  </div>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>{formatPriceLabel(priceRangeValues[0])}</span>
+                    <span>{priceRangeValues[1] >= priceConfig.max ? `${formatPriceLabel(priceConfig.max)}+` : formatPriceLabel(priceRangeValues[1])}</span>
+                  </div>
+                </div>
+
+                {/* Size Range Slider */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label>Size</Label>
                     <div className="flex items-center gap-2">
-                      <div className="relative flex-1">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
-                        <Input
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="Min"
-                          value={formatDisplayValue(filters.min_price)}
-                          onChange={(e) => handlePriceChange('min', parseCurrencyInput(e.target.value))}
-                          className="pl-7"
-                        />
-                      </div>
-                      <span className="text-muted-foreground">—</span>
-                      <div className="relative flex-1">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
-                        <Input
-                          type="text"
-                          inputMode="numeric"
-                          placeholder="Max"
-                          value={formatDisplayValue(filters.max_price)}
-                          onChange={(e) => handlePriceChange('max', parseCurrencyInput(e.target.value))}
-                          className="pl-7"
-                        />
-                      </div>
+                      <span className={`text-xs ${areaUnit === 'sqm' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>m²</span>
+                      <Switch
+                        checked={areaUnit === 'sqft'}
+                        onCheckedChange={handleUnitToggle}
+                      />
+                      <span className={`text-xs ${areaUnit === 'sqft' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>ft²</span>
                     </div>
-                  )}
+                  </div>
+                  <div className="pt-2 px-1">
+                    <Slider
+                      value={sizeRangeValues}
+                      min={sizeConfig.min}
+                      max={sizeConfig.max}
+                      step={sizeConfig.step}
+                      thumbCount={2}
+                      onValueChange={handleSizeRangeChange}
+                    />
+                  </div>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>{sizeRangeValues[0]} {sizeConfig.label}</span>
+                    <span>{sizeRangeValues[1] >= sizeConfig.max ? `${sizeConfig.max}+ ${sizeConfig.label}` : `${sizeRangeValues[1]} ${sizeConfig.label}`}</span>
+                  </div>
                 </div>
 
                 {hasActiveFilters && (

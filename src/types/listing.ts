@@ -52,7 +52,11 @@ export interface ListingFilters {
   max_price?: number | null;
   min_bedrooms?: number | null;
   max_bedrooms?: number | null;
+  min_area?: number | null;
+  max_area?: number | null;
   city?: string | null;
 }
+
+export type AreaUnit = 'sqm' | 'sqft';
 
 export type SortOption = 'newest' | 'oldest' | 'price_asc' | 'price_desc' | 'size_asc' | 'size_desc';
