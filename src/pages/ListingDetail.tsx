@@ -9,6 +9,7 @@ import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
+import { ListingLocationMap } from '@/components/ListingLocationMap';
 import { cn, formatPrice } from '@/lib/utils';
 
 export default function ListingDetail() {
@@ -356,6 +357,19 @@ export default function ListingDetail() {
                     </span>
                   </div>
                 </div>
+              </div>
+
+              {/* Location Map */}
+              <div>
+                <h2 className="text-xl font-semibold text-foreground mb-3">Location</h2>
+                <ListingLocationMap
+                  latitude={listing.latitude}
+                  longitude={listing.longitude}
+                  address={listing.address}
+                />
+                <p className="text-sm text-muted-foreground mt-2">
+                  {listing.address}, {listing.city}
+                </p>
               </div>
             </div>
 
