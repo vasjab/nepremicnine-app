@@ -63,37 +63,37 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
   };
 
   const parkingTypeLabels: Record<string, string> = {
-    street: t('filters.parkingTypes.street'),
-    designated: t('filters.parkingTypes.designated'),
-    underground: t('filters.parkingTypes.underground'),
-    private: t('filters.parkingTypes.private'),
+    street: t('filters.parkingStreet'),
+    designated: t('filters.parkingDesignated'),
+    underground: t('filters.parkingUnderground'),
+    private: t('filters.parkingPrivate'),
   };
 
   const heatingTypeLabels: Record<string, string> = {
-    central: t('filters.heatingTypes.central'),
-    electric: t('filters.heatingTypes.electric'),
-    gas: t('filters.heatingTypes.gas'),
-    heat_pump: t('filters.heatingTypes.heatPump'),
-    other: t('filters.heatingTypes.other'),
+    central: t('filters.heatingCentral'),
+    electric: t('filters.heatingElectric'),
+    gas: t('filters.heatingGas'),
+    heat_pump: t('filters.heatingHeatPump'),
+    other: t('filters.heatingOther'),
   };
 
   const conditionLabels: Record<string, string> = {
-    new: t('filters.conditions.new'),
-    renovated: t('filters.conditions.renovated'),
-    good: t('filters.conditions.good'),
-    needs_work: t('filters.conditions.needsWork'),
+    new: t('filters.conditionNew'),
+    renovated: t('filters.conditionRenovated'),
+    good: t('filters.conditionGood'),
+    needs_work: t('filters.conditionNeedsWork'),
   };
 
   const internetLabels: Record<string, string> = {
-    yes: t('filters.internetOptions.yes'),
-    no: t('filters.internetOptions.no'),
-    available: t('filters.internetOptions.available'),
+    yes: t('filters.included'),
+    no: t('filters.notIncluded'),
+    available: t('filters.available'),
   };
 
   const utilitiesLabels: Record<string, string> = {
-    yes: t('filters.utilitiesOptions.yes'),
-    no: t('filters.utilitiesOptions.no'),
-    partial: t('filters.utilitiesOptions.partial'),
+    yes: t('filters.included'),
+    no: t('filters.notIncluded'),
+    partial: t('filters.partial'),
   };
 
   return (
@@ -123,7 +123,7 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
               />
             )}
             {isApartmentType && (
-              <FeatureItem value={listing.has_elevator} label={t('listing.features.elevator')} />
+              <FeatureItem value={listing.has_elevator} label={t('listing.elevator')} />
             )}
             {isHouseType && listing.property_floors != null && (
               <InfoItem 
@@ -141,13 +141,13 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
         <div>
           <h2 className="text-xl font-semibold text-foreground mb-3">{t('filters.outdoor')}</h2>
           <div className="grid grid-cols-2 gap-3">
-            <FeatureItem value={listing.has_balcony} label={t('listing.features.balcony')} />
-            <FeatureItem value={listing.has_terrace} label={t('listing.features.terrace')} />
+            <FeatureItem value={listing.has_balcony} label={t('listing.balcony')} />
+            <FeatureItem value={listing.has_terrace} label={t('listing.terrace')} />
             {listing.has_garden && (
               <div className="flex items-center gap-2">
                 <Check className="h-5 w-5 text-success" />
                 <span className="text-foreground">
-                  {t('listing.features.garden')}
+                  {t('listing.garden')}
                   {listing.garden_sqm && ` (${listing.garden_sqm} m²)`}
                 </span>
               </div>
@@ -165,13 +165,13 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
               <div className="flex items-center gap-2">
                 <Check className="h-5 w-5 text-success" />
                 <span className="text-foreground">
-                  {t('listing.features.parking')}
+                  {t('listing.parking')}
                   {listing.parking_type && ` (${parkingTypeLabels[listing.parking_type] || listing.parking_type})`}
-                  {listing.parking_spaces && listing.parking_spaces > 1 && ` - ${listing.parking_spaces} ${t('listing.features.parkingSpaces')}`}
+                  {listing.parking_spaces && listing.parking_spaces > 1 && ` - ${listing.parking_spaces} ${t('listing.spaces')}`}
                 </span>
               </div>
             )}
-            <FeatureItem value={listing.has_garage} label={t('listing.features.garage')} />
+            <FeatureItem value={listing.has_garage} label={t('listing.garage')} />
           </div>
         </div>
       )}
@@ -179,12 +179,12 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
       {/* Amenities */}
       {hasAmenities && (
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3">{t('filters.amenities')}</h2>
+          <h2 className="text-xl font-semibold text-foreground mb-3">{t('listing.amenities')}</h2>
           <div className="grid grid-cols-2 gap-3">
-            <FeatureItem value={listing.has_air_conditioning} label={t('listing.features.airConditioning')} />
-            <FeatureItem value={listing.has_dishwasher} label={t('listing.features.dishwasher')} />
-            <FeatureItem value={listing.has_washing_machine} label={t('listing.features.washingMachine')} />
-            <FeatureItem value={listing.has_storage} label={t('listing.features.storage')} />
+            <FeatureItem value={listing.has_air_conditioning} label={t('listing.airConditioning')} />
+            <FeatureItem value={listing.has_dishwasher} label={t('listing.dishwasher')} />
+            <FeatureItem value={listing.has_washing_machine} label={t('listing.washingMachine')} />
+            <FeatureItem value={listing.has_storage} label={t('listing.storage')} />
           </div>
         </div>
       )}
