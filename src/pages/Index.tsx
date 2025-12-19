@@ -8,10 +8,10 @@ import { FilterBar } from '@/components/FilterBar';
 import { ListingCard } from '@/components/ListingCard';
 import { MapView } from '@/components/MapView';
 import { ListingDetailModal } from '@/components/ListingDetailModal';
-import { Skeleton } from '@/components/ui/skeleton';
+import { ListingSkeletonGrid } from '@/components/ListingSkeleton';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
-
+import { cn } from '@/lib/utils';
 interface MapBounds {
   north: number;
   south: number;
@@ -133,23 +133,23 @@ const Index = () => {
           
           <div ref={listContainerRef} className="flex-1 overflow-y-auto p-3 sm:p-4">
             {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4">
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="space-y-3">
-                    <Skeleton className="aspect-[4/3] rounded-xl" />
-                    <Skeleton className="h-5 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
-                  </div>
-                ))}
-              </div>
+              <ListingSkeletonGrid count={4} />
             ) : visibleListings.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4">
-                {visibleListings.map((listing) => (
+                {visibleListings.map((listing, index) => (
                   <div
                     key={listing.id}
                     ref={(el) => { listingRefs.current[listing.id] = el; }}
                     onMouseEnter={() => handleCardHover(listing.id)}
                     onMouseLeave={() => handleCardHover(null)}
+                    className={cn(
+                      "opacity-0 animate-slide-up-spring",
+                      "transition-opacity duration-300"
+                    )}
+                    style={{ 
+                      animationDelay: `${index * 0.05}s`,
+                      animationFillMode: 'forwards'
+                    }}
                   >
                     <ListingCard
                       listing={listing}
