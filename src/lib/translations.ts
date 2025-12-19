@@ -103,6 +103,8 @@ const translations = {
       perYear: '/yr',
       similarListings: 'Similar Listings',
       recentlyViewed: 'Recently Viewed',
+      listingCount: '{count} listing',
+      listingsCount: '{count} listings',
     },
     auth: {
       createAccount: 'Create an account',
@@ -350,6 +352,8 @@ const translations = {
       perYear: '/leto',
       similarListings: 'Podobni oglasi',
       recentlyViewed: 'Nedavno ogledani',
+      listingCount: '{count} oglas',
+      listingsCount: '{count} oglasov',
     },
     auth: {
       createAccount: 'Ustvari račun',
