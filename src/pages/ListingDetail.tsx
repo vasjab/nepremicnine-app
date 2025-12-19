@@ -4,7 +4,7 @@ import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Check, X, Images
 import { useListing } from '@/hooks/useListings';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
-import { useTrackListingView } from '@/hooks/useRecentlyViewed';
+import { useTrackListingView, useTrackLocalListingView } from '@/hooks/useRecentlyViewed';
 import { useSwipe } from '@/hooks/useSwipe';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -24,14 +24,19 @@ export default function ListingDetail() {
   const saveListing = useSaveListing();
   const unsaveListing = useUnsaveListing();
   const trackView = useTrackListingView();
+  const { trackView: trackLocalView } = useTrackLocalListingView();
   const [showGallery, setShowGallery] = useState(false);
   const [scrollToFloorPlan, setScrollToFloorPlan] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  // Track listing view
+  // Track listing view for both authenticated and non-authenticated users
   useEffect(() => {
-    if (user && id && listing) {
-      trackView.mutate({ userId: user.id, listingId: id });
+    if (id && listing) {
+      if (user) {
+        trackView.mutate({ userId: user.id, listingId: id });
+      } else {
+        trackLocalView(id);
+      }
     }
   }, [user, id, listing?.id]);
 

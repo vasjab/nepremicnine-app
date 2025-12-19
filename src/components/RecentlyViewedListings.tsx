@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRecentlyViewedListings } from '@/hooks/useRecentlyViewed';
+import { useRecentlyViewedListings, useLocalRecentlyViewedListings } from '@/hooks/useRecentlyViewed';
 import { ListingCard } from '@/components/ListingCard';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -18,9 +18,12 @@ export function RecentlyViewedListings({
 }: RecentlyViewedListingsProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data: recentlyViewed, isLoading } = useRecentlyViewedListings(user?.id, limit + 1);
+  
+  // Use database for logged-in users, localStorage for guests
+  const { data: dbRecentlyViewed, isLoading: dbLoading } = useRecentlyViewedListings(user?.id, limit + 1);
+  const { data: localRecentlyViewed, isLoading: localLoading } = useLocalRecentlyViewedListings(limit + 1);
 
-  if (!user) return null;
+  const isLoading = user ? dbLoading : localLoading;
 
   if (isLoading) {
     return (
@@ -44,12 +47,22 @@ export function RecentlyViewedListings({
     );
   }
 
-  // Filter out the current listing if provided
-  const filteredListings = recentlyViewed
-    ?.filter(item => item.listing_id !== excludeListingId)
-    .slice(0, limit);
+  // Handle both data formats
+  let listings: { id: string; listing: any }[] = [];
+  
+  if (user && dbRecentlyViewed) {
+    listings = dbRecentlyViewed
+      .filter(item => item.listing_id !== excludeListingId)
+      .slice(0, limit)
+      .map(item => ({ id: item.id, listing: item.listing }));
+  } else if (!user && localRecentlyViewed) {
+    listings = localRecentlyViewed
+      .filter(listing => listing.id !== excludeListingId)
+      .slice(0, limit)
+      .map(listing => ({ id: listing.id, listing }));
+  }
 
-  if (!filteredListings || filteredListings.length === 0) {
+  if (listings.length === 0) {
     return null;
   }
 
@@ -62,7 +75,7 @@ export function RecentlyViewedListings({
         </div>
       )}
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredListings.map((item) => (
+        {listings.map((item) => (
           <ListingCard
             key={item.id}
             listing={item.listing}
