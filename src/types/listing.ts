@@ -21,6 +21,7 @@ export interface Listing {
   is_furnished: boolean;
   allows_pets: boolean;
   images: string[];
+  floor_plan_url: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;

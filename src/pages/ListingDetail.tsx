@@ -20,6 +20,7 @@ export default function ListingDetail() {
   const saveListing = useSaveListing();
   const unsaveListing = useUnsaveListing();
   const [showGallery, setShowGallery] = useState(false);
+  const [scrollToFloorPlan, setScrollToFloorPlan] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const goToPrevImage = useCallback(() => {
@@ -256,9 +257,12 @@ export default function ListingDetail() {
         {listing.images && listing.images.length > 0 && (
           <div className="container mx-auto px-4 -mt-6 relative z-10">
             <div className="flex gap-3">
-              {(listing as any).floor_plan_url && (
+              {listing.floor_plan_url && (
                 <button
-                  onClick={() => setShowGallery(true)}
+                  onClick={() => {
+                    setScrollToFloorPlan(true);
+                    setShowGallery(true);
+                  }}
                   className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors shadow-sm"
                 >
                   <LayoutGrid className="h-4 w-4" />
@@ -266,7 +270,10 @@ export default function ListingDetail() {
                 </button>
               )}
               <button
-                onClick={() => setShowGallery(true)}
+                onClick={() => {
+                  setScrollToFloorPlan(false);
+                  setShowGallery(true);
+                }}
                 className="flex items-center gap-2 px-4 py-2.5 bg-secondary border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors shadow-sm"
               >
                 {listing.images.length} images
@@ -398,10 +405,14 @@ export default function ListingDetail() {
       {/* Full image gallery modal */}
       <ImageGalleryModal
         images={listing.images || []}
-        floorPlanUrl={(listing as any).floor_plan_url}
+        floorPlanUrl={listing.floor_plan_url}
         isOpen={showGallery}
-        onClose={() => setShowGallery(false)}
+        onClose={() => {
+          setShowGallery(false);
+          setScrollToFloorPlan(false);
+        }}
         title={listing.title}
+        initialScrollToFloorPlan={scrollToFloorPlan}
       />
     </div>
   );
