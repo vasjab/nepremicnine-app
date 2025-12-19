@@ -36,8 +36,25 @@ export function useSaveListing() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (_, variables) => {
+    onMutate: async ({ userId, listingId }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['is-saved', userId, listingId] });
+      
+      // Snapshot the previous value
+      const previousValue = queryClient.getQueryData(['is-saved', userId, listingId]);
+      
+      // Optimistically update to the new value
+      queryClient.setQueryData(['is-saved', userId, listingId], true);
+      
+      return { previousValue };
+    },
+    onError: (err, { userId, listingId }, context) => {
+      // Rollback on error
+      queryClient.setQueryData(['is-saved', userId, listingId], context?.previousValue);
+    },
+    onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({ queryKey: ['saved-listings', variables.userId] });
+      queryClient.invalidateQueries({ queryKey: ['is-saved', variables.userId, variables.listingId] });
     },
   });
 }
@@ -55,8 +72,25 @@ export function useUnsaveListing() {
 
       if (error) throw error;
     },
-    onSuccess: (_, variables) => {
+    onMutate: async ({ userId, listingId }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['is-saved', userId, listingId] });
+      
+      // Snapshot the previous value
+      const previousValue = queryClient.getQueryData(['is-saved', userId, listingId]);
+      
+      // Optimistically update to the new value
+      queryClient.setQueryData(['is-saved', userId, listingId], false);
+      
+      return { previousValue };
+    },
+    onError: (err, { userId, listingId }, context) => {
+      // Rollback on error
+      queryClient.setQueryData(['is-saved', userId, listingId], context?.previousValue);
+    },
+    onSettled: (_, __, variables) => {
       queryClient.invalidateQueries({ queryKey: ['saved-listings', variables.userId] });
+      queryClient.invalidateQueries({ queryKey: ['is-saved', variables.userId, variables.listingId] });
     },
   });
 }
