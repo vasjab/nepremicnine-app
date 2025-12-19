@@ -1,4 +1,5 @@
-import { Heart } from 'lucide-react';
+import { useState } from 'react';
+import { Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -16,6 +17,7 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
   const { data: isSaved } = useIsListingSaved(user?.id, listing.id);
   const saveListing = useSaveListing();
   const unsaveListing = useUnsaveListing();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleSaveClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -28,6 +30,24 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
     }
   };
 
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (listing.images && listing.images.length > 1) {
+      setCurrentImageIndex((prev) => 
+        prev === 0 ? listing.images!.length - 1 : prev - 1
+      );
+    }
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (listing.images && listing.images.length > 1) {
+      setCurrentImageIndex((prev) => 
+        prev === listing.images!.length - 1 ? 0 : prev + 1
+      );
+    }
+  };
+
   const propertyTypeLabels: Record<string, string> = {
     apartment: 'Apartment',
     house: 'House',
@@ -36,6 +56,8 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
     villa: 'Villa',
     other: 'Other',
   };
+
+  const hasMultipleImages = listing.images && listing.images.length > 1;
 
   return (
     <article
@@ -49,8 +71,8 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
         {listing.images && listing.images.length > 0 ? (
           <img
-            src={listing.images[0]}
-            alt={listing.title}
+            src={listing.images[currentImageIndex]}
+            alt={`${listing.title} - Photo ${currentImageIndex + 1}`}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -59,13 +81,54 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
           </div>
         )}
 
+        {/* Navigation arrows */}
+        {hasMultipleImages && (
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              onClick={handlePrevImage}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-sm opacity-0 group-hover:opacity-100 transition-opacity z-10"
+              onClick={handleNextImage}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+
+            {/* Image indicator dots */}
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+              {listing.images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImageIndex(index);
+                  }}
+                  className={cn(
+                    "w-1.5 h-1.5 rounded-full transition-all",
+                    index === currentImageIndex
+                      ? "bg-white w-3"
+                      : "bg-white/60 hover:bg-white/80"
+                  )}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
         {/* Save button */}
         {user && (
           <Button
             variant="ghost"
             size="icon"
             className={cn(
-              'absolute top-3 right-3 h-9 w-9 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card',
+              'absolute top-3 right-3 h-9 w-9 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card z-10',
               isSaved && 'text-accent'
             )}
             onClick={handleSaveClick}
@@ -75,7 +138,7 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
         )}
 
         {/* Type badge */}
-        <div className="absolute bottom-3 left-3">
+        <div className="absolute bottom-3 left-3 z-10">
           <span className="px-2 py-1 rounded-md bg-card/90 backdrop-blur-sm text-xs font-medium">
             {listing.listing_type === 'rent' ? 'For Rent' : 'For Sale'}
           </span>
