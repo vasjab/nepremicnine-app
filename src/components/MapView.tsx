@@ -10,10 +10,10 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 type MapStyle = 'streets' | 'satellite' | 'outdoors';
 
-const MAP_STYLES: Record<MapStyle, { url: string; label: string; icon: typeof Map }> = {
-  streets: { url: 'mapbox://styles/mapbox/light-v11', label: 'Streets', icon: Map },
-  satellite: { url: 'mapbox://styles/mapbox/satellite-streets-v12', label: 'Satellite', icon: Satellite },
-  outdoors: { url: 'mapbox://styles/mapbox/outdoors-v12', label: 'Outdoors', icon: Mountain },
+const MAP_STYLES: Record<MapStyle, { url: string; icon: typeof Map }> = {
+  streets: { url: 'mapbox://styles/mapbox/light-v11', icon: Map },
+  satellite: { url: 'mapbox://styles/mapbox/satellite-streets-v12', icon: Satellite },
+  outdoors: { url: 'mapbox://styles/mapbox/outdoors-v12', icon: Mountain },
 };
 
 interface MapViewProps {
@@ -215,12 +215,12 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
         const hasMultipleImages = images.length > 1;
         
         const propertyTypeLabels: Record<string, string> = {
-          apartment: 'Apartment',
-          house: 'House',
-          room: 'Room',
-          studio: 'Studio',
-          villa: 'Villa',
-          other: 'Other',
+          apartment: t('propertyTypes.apartment'),
+          house: t('propertyTypes.house'),
+          room: t('propertyTypes.room'),
+          studio: t('propertyTypes.studio'),
+          villa: t('propertyTypes.villa'),
+          other: t('propertyTypes.other'),
         };
 
         const priceDisplay = formatPrice(listing.price, listing.currency || 'EUR', { 
@@ -273,19 +273,19 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
             </div>
             <div style="padding: 14px;">
               <div style="font-size: 11px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px;">
-                ${propertyTypeLabels[listing.property_type] || 'Property'} • ${listing.listing_type === 'rent' ? 'For Rent' : 'For Sale'}
+                ${propertyTypeLabels[listing.property_type] || t('propertyTypes.other')} • ${listing.listing_type === 'rent' ? t('map.forRent') : t('map.forSale')}
               </div>
               <div style="font-size: 15px; font-weight: 600; color: #2d2319; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                 ${listing.address}
               </div>
               <div style="font-size: 13px; color: #666; margin-bottom: 10px;">
-                ${listing.bedrooms} room${listing.bedrooms !== 1 ? 's' : ''} • ${formatArea(listing.area_sqm)}
+                ${listing.bedrooms} ${listing.bedrooms !== 1 ? t('map.rooms') : t('map.room')} • ${formatArea(listing.area_sqm)}
               </div>
               <div style="font-size: 18px; font-weight: 700; color: #2d2319;">
                 ${priceDisplay}
               </div>
               <div class="popup-btn-${listing.id}">
-                View details
+                ${t('map.viewDetails')}
               </div>
             </div>
           </div>
@@ -514,7 +514,8 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
       {/* Map Style Switcher */}
       <div className="absolute top-3 left-3 z-10 flex gap-1 bg-background/95 backdrop-blur-sm rounded-lg p-1 shadow-md border border-border/50">
         {(Object.keys(MAP_STYLES) as MapStyle[]).map((style) => {
-          const { label, icon: Icon } = MAP_STYLES[style];
+          const { icon: Icon } = MAP_STYLES[style];
+          const label = t(`map.${style}`);
           const isActive = mapStyle === style;
           return (
             <button
@@ -538,10 +539,10 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
       <button
         onClick={handleResetView}
         className="absolute top-3 right-14 z-10 flex items-center gap-1.5 px-3 py-1.5 bg-background/95 backdrop-blur-sm rounded-lg shadow-md border border-border/50 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
-        title="Reset view to show all listings"
+        title={t('map.resetView')}
       >
         <Maximize2 className="h-4 w-4" />
-        <span className="hidden sm:inline">Reset view</span>
+        <span className="hidden sm:inline">{t('map.resetView')}</span>
       </button>
     </div>
   );
