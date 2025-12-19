@@ -419,68 +419,90 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
                 <div className="space-y-3">
                   <Label>Price Range</Label>
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={getMinPriceSelectValue()}
-                      onValueChange={handleMinPriceSelect}
-                    >
-                      <SelectTrigger className="flex-1">
-                        <SelectValue placeholder="Min price" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getMinPriceOptions().map((opt) => (
-                          <SelectItem key={opt.value || 'no-min'} value={opt.value || 'none'}>
-                            {opt.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <span className="text-muted-foreground">—</span>
-                    <Select
-                      value={getMaxPriceSelectValue()}
-                      onValueChange={handleMaxPriceSelect}
-                    >
-                      <SelectTrigger className="flex-1">
-                        <SelectValue placeholder="Max price" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getMaxPriceOptions().map((opt) => (
-                          <SelectItem key={opt.value || 'no-max'} value={opt.value || 'none'}>
-                            {opt.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  {/* Custom price inputs */}
-                  {(customMinPrice || customMaxPrice) && (
-                    <div className="flex items-center gap-2">
-                      {customMinPrice ? (
-                        <Input
-                          type="number"
-                          placeholder="Enter min price"
-                          value={filters.min_price || ''}
-                          onChange={(e) => handlePriceChange('min', e.target.value)}
-                          className="flex-1"
-                        />
-                      ) : (
-                        <div className="flex-1" />
-                      )}
-                      {customMinPrice && customMaxPrice && (
+                  {filters.listing_type ? (
+                    <>
+                      <div className="flex items-center gap-2">
+                        <Select
+                          value={getMinPriceSelectValue()}
+                          onValueChange={handleMinPriceSelect}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Min price" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getMinPriceOptions().map((opt) => (
+                              <SelectItem key={opt.value || 'no-min'} value={opt.value || 'none'}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <span className="text-muted-foreground">—</span>
+                        <Select
+                          value={getMaxPriceSelectValue()}
+                          onValueChange={handleMaxPriceSelect}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Max price" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getMaxPriceOptions().map((opt) => (
+                              <SelectItem key={opt.value || 'no-max'} value={opt.value || 'none'}>
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      {/* Custom price inputs */}
+                      {(customMinPrice || customMaxPrice) && (
+                        <div className="flex items-center gap-2">
+                          {customMinPrice ? (
+                            <Input
+                              type="number"
+                              placeholder="Enter min price"
+                              value={filters.min_price || ''}
+                              onChange={(e) => handlePriceChange('min', e.target.value)}
+                              className="flex-1"
+                            />
+                          ) : (
+                            <div className="flex-1" />
+                          )}
+                          {customMinPrice && customMaxPrice && (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                          {customMaxPrice ? (
+                            <Input
+                              type="number"
+                              placeholder="Enter max price"
+                              value={filters.max_price || ''}
+                              onChange={(e) => handlePriceChange('max', e.target.value)}
+                              className="flex-1"
+                            />
+                          ) : (
+                            <div className="flex-1" />
+                          )}
+                        </div>
                       )}
-                      {customMaxPrice ? (
-                        <Input
-                          type="number"
-                          placeholder="Enter max price"
-                          value={filters.max_price || ''}
-                          onChange={(e) => handlePriceChange('max', e.target.value)}
-                          className="flex-1"
-                        />
-                      ) : (
-                        <div className="flex-1" />
-                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        placeholder="Min €"
+                        value={filters.min_price || ''}
+                        onChange={(e) => handlePriceChange('min', e.target.value)}
+                        className="flex-1"
+                      />
+                      <span className="text-muted-foreground">—</span>
+                      <Input
+                        type="number"
+                        placeholder="Max €"
+                        value={filters.max_price || ''}
+                        onChange={(e) => handlePriceChange('max', e.target.value)}
+                        className="flex-1"
+                      />
                     </div>
                   )}
                 </div>
