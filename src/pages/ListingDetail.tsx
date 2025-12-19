@@ -167,31 +167,31 @@ export default function ListingDetail() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10"
                     onClick={handlePrevImage}
                   >
-                    <ChevronLeft className="h-5 w-5" />
+                    <ChevronLeft className="h-6 w-6" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10"
                     onClick={handleNextImage}
                   >
-                    <ChevronRight className="h-5 w-5" />
+                    <ChevronRight className="h-6 w-6" />
                   </Button>
                   
                   {/* Image indicator dots */}
-                  <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-1.5">
+                  <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
                     {listing.images.map((_, index) => (
                       <button
                         key={index}
                         onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(index); }}
                         className={cn(
-                          "w-2 h-2 rounded-full transition-all",
+                          "w-2.5 h-2.5 rounded-full transition-all",
                           index === currentImageIndex 
-                            ? "bg-white w-4" 
-                            : "bg-white/50 hover:bg-white/75"
+                            ? "bg-white w-5" 
+                            : "bg-white/60 hover:bg-white/80"
                         )}
                       />
                     ))}
