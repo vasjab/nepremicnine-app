@@ -84,12 +84,12 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
         <div className="flex items-center gap-2">
           {/* Search input */}
           <form onSubmit={handleSearch} className="flex-1 min-w-0 relative">
-            <Search className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
             <Input
               placeholder="Search city..."
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className="pl-8 sm:pl-10 text-sm bg-secondary border-0 focus-visible:ring-1 focus-visible:ring-accent"
+              className="pl-8 sm:pl-10 text-sm bg-secondary border-0 rounded-full focus-visible:ring-1 focus-visible:ring-accent focus-visible:ring-offset-0"
             />
           </form>
 
