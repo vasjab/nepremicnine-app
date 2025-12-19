@@ -86,6 +86,16 @@ export default function ListingDetail() {
     <div className="min-h-screen bg-background">
       <Header />
       
+      {/* Fixed back button - always visible */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="fixed top-20 left-4 z-40 h-10 w-10 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card shadow-md"
+        onClick={() => navigate(-1)}
+      >
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
+      
       <main className="pt-16">
         {/* Image gallery preview */}
         <div 
@@ -113,16 +123,6 @@ export default function ListingDetail() {
               <span className="text-muted-foreground">No images available</span>
             </div>
           )}
-
-          {/* Back button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-4 left-4 h-10 w-10 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card"
-            onClick={(e) => { e.stopPropagation(); navigate(-1); }}
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
 
           {/* Save button */}
           {user && (
