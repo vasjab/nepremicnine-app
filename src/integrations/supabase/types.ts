@@ -155,6 +155,35 @@ export type Database = {
         }
         Relationships: []
       }
+      recently_viewed_listings: {
+        Row: {
+          id: string
+          listing_id: string
+          user_id: string
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          listing_id: string
+          user_id: string
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          listing_id?: string
+          user_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recently_viewed_listings_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       saved_listings: {
         Row: {
           created_at: string

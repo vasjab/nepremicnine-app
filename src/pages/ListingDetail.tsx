@@ -4,6 +4,7 @@ import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Check, X, Images
 import { useListing } from '@/hooks/useListings';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
+import { useTrackListingView } from '@/hooks/useRecentlyViewed';
 import { useSwipe } from '@/hooks/useSwipe';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { ListingLocationMap } from '@/components/ListingLocationMap';
 import { SimilarListings } from '@/components/SimilarListings';
+import { RecentlyViewedListings } from '@/components/RecentlyViewedListings';
 import { cn, formatPrice } from '@/lib/utils';
 
 export default function ListingDetail() {
@@ -21,9 +23,17 @@ export default function ListingDetail() {
   const { data: isSaved } = useIsListingSaved(user?.id, id);
   const saveListing = useSaveListing();
   const unsaveListing = useUnsaveListing();
+  const trackView = useTrackListingView();
   const [showGallery, setShowGallery] = useState(false);
   const [scrollToFloorPlan, setScrollToFloorPlan] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  // Track listing view
+  useEffect(() => {
+    if (user && id && listing) {
+      trackView.mutate({ userId: user.id, listingId: id });
+    }
+  }, [user, id, listing?.id]);
 
   const goToPrevImage = useCallback(() => {
     if (listing?.images && listing.images.length > 0) {
@@ -418,6 +428,11 @@ export default function ListingDetail() {
           {/* Similar Listings */}
           <div className="lg:col-span-3 mt-8 pt-8 border-t border-border">
             <SimilarListings listing={listing} />
+          </div>
+
+          {/* Recently Viewed */}
+          <div className="lg:col-span-3 mt-8 pt-8 border-t border-border">
+            <RecentlyViewedListings excludeListingId={listing.id} limit={6} />
           </div>
         </div>
       </main>

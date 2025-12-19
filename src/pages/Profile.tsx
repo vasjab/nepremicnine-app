@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
+import { RecentlyViewedListings } from '@/components/RecentlyViewedListings';
 import { Profile } from '@/types/listing';
 
 export default function ProfilePage() {
@@ -106,7 +107,11 @@ export default function ProfilePage() {
       <Header />
       
       <main className="pt-16">
-        <div className="container mx-auto px-4 py-8 max-w-xl">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-xl mx-auto">
+            <h1 className="font-display text-3xl font-bold text-foreground mb-8">
+              My Profile
+            </h1>
           <h1 className="font-display text-3xl font-bold text-foreground mb-8">
             My Profile
           </h1>
@@ -199,6 +204,12 @@ export default function ProfilePage() {
               </div>
             </div>
           )}
+          </div>
+
+          {/* Recently Viewed Section */}
+          <div className="mt-12 pt-8 border-t border-border">
+            <RecentlyViewedListings limit={6} />
+          </div>
         </div>
       </main>
     </div>
