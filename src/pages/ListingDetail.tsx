@@ -150,7 +150,11 @@ export default function ListingDetail() {
         {/* Image gallery preview */}
         <div 
           className="relative h-[50vh] bg-muted cursor-pointer group select-none"
-          onClick={() => setShowGallery(true)}
+          onClick={(e) => {
+            const target = e.target as HTMLElement;
+            if (target.closest('button')) return;
+            setShowGallery(true);
+          }}
           {...swipeHandlers}
         >
           {listing.images && listing.images.length > 0 ? (
