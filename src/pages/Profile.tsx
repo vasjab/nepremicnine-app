@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { RecentlyViewedListings } from '@/components/RecentlyViewedListings';
+import { NotificationPreferences } from '@/components/NotificationPreferences';
 import { Profile } from '@/types/listing';
 
 export default function ProfilePage() {
@@ -112,98 +113,100 @@ export default function ProfilePage() {
             <h1 className="font-display text-3xl font-bold text-foreground mb-8">
               My Profile
             </h1>
-          <h1 className="font-display text-3xl font-bold text-foreground mb-8">
-            My Profile
-          </h1>
 
-          {loading ? (
-            <div className="space-y-4">
-              <div className="h-24 w-24 rounded-full bg-muted animate-pulse" />
-              <div className="h-10 bg-muted rounded animate-pulse" />
-              <div className="h-10 bg-muted rounded animate-pulse" />
-            </div>
-          ) : (
-            <div className="space-y-8">
-              {/* Avatar */}
-              <div className="flex items-center gap-4">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src={formData.avatar_url} />
-                  <AvatarFallback className="text-xl bg-secondary">
-                    {formData.full_name ? getInitials(formData.full_name) : user.email?.[0].toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <Label htmlFor="avatar_url">Avatar URL</Label>
+            {loading ? (
+              <div className="space-y-4">
+                <div className="h-24 w-24 rounded-full bg-muted animate-pulse" />
+                <div className="h-10 bg-muted rounded animate-pulse" />
+                <div className="h-10 bg-muted rounded animate-pulse" />
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {/* Avatar */}
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-24 w-24">
+                    <AvatarImage src={formData.avatar_url} />
+                    <AvatarFallback className="text-xl bg-secondary">
+                      {formData.full_name ? getInitials(formData.full_name) : user.email?.[0].toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <Label htmlFor="avatar_url">Avatar URL</Label>
+                    <Input
+                      id="avatar_url"
+                      placeholder="https://example.com/avatar.jpg"
+                      value={formData.avatar_url}
+                      onChange={(e) => setFormData(prev => ({ ...prev, avatar_url: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                {/* Email (read-only) */}
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input value={user.email || ''} disabled className="bg-muted" />
+                </div>
+
+                {/* Full Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="full_name">Full Name</Label>
                   <Input
-                    id="avatar_url"
-                    placeholder="https://example.com/avatar.jpg"
-                    value={formData.avatar_url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, avatar_url: e.target.value }))}
+                    id="full_name"
+                    placeholder="John Doe"
+                    value={formData.full_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
                   />
                 </div>
-              </div>
 
-              {/* Email (read-only) */}
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input value={user.email || ''} disabled className="bg-muted" />
-              </div>
+                {/* Phone */}
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+46 70 123 4567"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                  />
+                </div>
 
-              {/* Full Name */}
-              <div className="space-y-2">
-                <Label htmlFor="full_name">Full Name</Label>
-                <Input
-                  id="full_name"
-                  placeholder="John Doe"
-                  value={formData.full_name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
-                />
-              </div>
+                {/* Bio */}
+                <div className="space-y-2">
+                  <Label htmlFor="bio">About</Label>
+                  <Textarea
+                    id="bio"
+                    placeholder="Tell us a bit about yourself..."
+                    rows={3}
+                    value={formData.bio}
+                    onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                  />
+                </div>
 
-              {/* Phone */}
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="+46 70 123 4567"
-                  value={formData.phone}
-                  onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                />
-              </div>
+                {/* Actions */}
+                <div className="flex flex-col gap-3 pt-4">
+                  <Button
+                    onClick={handleSave}
+                    className="bg-accent text-accent-foreground hover:bg-accent/90"
+                    disabled={saving}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={handleSignOut}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    Sign Out
+                  </Button>
+                </div>
 
-              {/* Bio */}
-              <div className="space-y-2">
-                <Label htmlFor="bio">About</Label>
-                <Textarea
-                  id="bio"
-                  placeholder="Tell us a bit about yourself..."
-                  rows={3}
-                  value={formData.bio}
-                  onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                />
+                {/* Notification Preferences */}
+                <div className="pt-4">
+                  <NotificationPreferences />
+                </div>
               </div>
-
-              {/* Actions */}
-              <div className="flex flex-col gap-3 pt-4">
-                <Button
-                  onClick={handleSave}
-                  className="bg-accent text-accent-foreground hover:bg-accent/90"
-                  disabled={saving}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleSignOut}
-                  className="text-destructive hover:text-destructive"
-                >
-                  Sign Out
-                </Button>
-              </div>
-            </div>
-          )}
+            )}
           </div>
 
           {/* Recently Viewed Section */}

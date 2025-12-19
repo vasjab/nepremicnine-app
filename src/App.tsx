@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { InternationalizationProvider } from "@/contexts/InternationalizationContext";
+import { GlobalMessageListener } from "@/components/GlobalMessageListener";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import ListingDetail from "./pages/ListingDetail";
@@ -24,6 +25,7 @@ const App = () => (
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <GlobalMessageListener />
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />
