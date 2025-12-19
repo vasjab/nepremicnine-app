@@ -90,7 +90,7 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
 
         {/* Image gallery preview */}
         <div 
-          className="relative h-[50vh] bg-muted cursor-pointer group"
+          className="relative h-[40vh] sm:h-[50vh] bg-muted cursor-pointer group"
           onClick={() => setShowGallery(true)}
         >
           {listing.images && listing.images.length > 0 ? (
@@ -191,13 +191,13 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
         )}
 
         {/* Content */}
-        <div className="container mx-auto px-4 py-8">
-          <div className="grid lg:grid-cols-3 gap-8">
+        <div className="container mx-auto px-4 py-6 sm:py-8">
+          <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Main content */}
-            <div className="lg:col-span-2 space-y-8">
+            <div className="lg:col-span-2 space-y-6 sm:space-y-8">
               {/* Header */}
               <div>
-                <h1 className="font-display text-3xl font-bold text-foreground mb-2">
+                <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-2">
                   {listing.title}
                 </h1>
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -207,7 +207,7 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
               </div>
 
               {/* Quick stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
                 <div className="bg-secondary rounded-xl p-4">
                   <Bed className="h-5 w-5 text-muted-foreground mb-2" />
                   <p className="text-sm text-muted-foreground">Bedrooms</p>
