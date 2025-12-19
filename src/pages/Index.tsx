@@ -148,11 +148,6 @@ const Index = () => {
                     ref={(el) => { listingRefs.current[listing.id] = el; }}
                     onMouseEnter={() => handleCardHover(listing.id)}
                     onMouseLeave={() => handleCardHover(null)}
-                    className={`transition-all duration-300 rounded-xl ${
-                      listing.id === activeListingId 
-                        ? 'ring-2 ring-accent ring-offset-2 ring-offset-background' 
-                        : ''
-                    }`}
                   >
                     <ListingCard
                       listing={listing}
