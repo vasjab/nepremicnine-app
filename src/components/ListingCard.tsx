@@ -3,7 +3,7 @@ import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { cn, formatPrice } from '@/lib/utils';
 
 interface ListingCardProps {
   listing: Listing;
@@ -26,14 +26,6 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
     } else {
       saveListing.mutate({ userId: user.id, listingId: listing.id });
     }
-  };
-
-  const formatPrice = (price: number, currency: string) => {
-    return new Intl.NumberFormat('sv-SE', {
-      style: 'currency',
-      currency: currency,
-      maximumFractionDigits: 0,
-    }).format(price);
   };
 
   const propertyTypeLabels: Record<string, string> = {

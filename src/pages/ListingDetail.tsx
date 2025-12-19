@@ -6,7 +6,7 @@ import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/use
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { cn, formatPrice } from '@/lib/utils';
 
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
@@ -25,14 +25,6 @@ export default function ListingDetail() {
     } else {
       saveListing.mutate({ userId: user.id, listingId: id });
     }
-  };
-
-  const formatPrice = (price: number, currency: string) => {
-    return new Intl.NumberFormat('sv-SE', {
-      style: 'currency',
-      currency: currency,
-      maximumFractionDigits: 0,
-    }).format(price);
   };
 
   const formatDate = (dateString: string | null) => {
