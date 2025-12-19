@@ -65,7 +65,7 @@ export function ImageGalleryModal({ images, floorPlanUrl, isOpen, onClose, title
           <Button
             variant="ghost"
             size="icon"
-            onClick={onClose}
+            onClick={(e) => { e.stopPropagation(); onClose(); }}
             className="shrink-0"
           >
             <X className="h-5 w-5" />
