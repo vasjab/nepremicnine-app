@@ -55,21 +55,13 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
     listingsRef.current = listings;
   }, [listings]);
 
-  const formatPriceShort = useCallback((price: number) => {
-    if (price >= 1000000) {
-      return `${(price / 1000000).toFixed(1).replace('.', ',')}M`;
-    }
-    if (price >= 1000) {
-      return `${Math.round(price / 1000)}k`;
-    }
-    return price.toString();
-  }, []);
-
-  const formatPriceEuropean = useCallback((price: number) => {
-    return new Intl.NumberFormat('de-DE', {
+  const formatPriceForPin = useCallback((price: number) => {
+    // Format in European style with space as thousand separator
+    const formatted = new Intl.NumberFormat('de-DE', {
       style: 'decimal',
       maximumFractionDigits: 0,
     }).format(price);
+    return `${formatted} €`;
   }, []);
 
   const handleSaveToken = () => {
@@ -179,7 +171,7 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
       } else {
         // Create new marker
         const el = document.createElement('div');
-        el.innerHTML = formatPriceShort(listing.price);
+        el.innerHTML = formatPriceForPin(listing.price);
         el.style.cssText = `
           background: hsl(0, 0%, 100%);
           color: hsl(25, 30%, 12%);
@@ -208,8 +200,8 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
         };
 
         const priceDisplay = listing.listing_type === 'rent' 
-          ? `${formatPriceEuropean(listing.price)} €/mo`
-          : `${formatPriceEuropean(listing.price)} €`;
+          ? `${formatPriceForPin(listing.price)}/mo`
+          : formatPriceForPin(listing.price);
 
         const popupContent = `
           <div style="width: 220px; font-family: 'DM Sans', system-ui, sans-serif;">
@@ -308,7 +300,7 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
       
       initialFitDone.current = true;
     }
-  }, [listings, mapReady, formatPriceShort, formatPriceEuropean, activeListing]);
+  }, [listings, mapReady, formatPriceForPin, activeListing]);
 
   // Update active marker styling separately
   useEffect(() => {
