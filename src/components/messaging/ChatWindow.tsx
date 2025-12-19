@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { format, isToday, isYesterday } from 'date-fns';
-import { ArrowLeft, Send, Loader2, Check, CheckCheck } from 'lucide-react';
-import { Message, Conversation, useMessages, useSendMessage, useMarkMessagesRead } from '@/hooks/useMessaging';
+import { format, isToday, isYesterday, differenceInMinutes } from 'date-fns';
+import { ArrowLeft, Send, Loader2 } from 'lucide-react';
+import { Message, Conversation, useMessages, useSendMessage, useMarkMessagesRead, useEditMessage, useDeleteMessage } from '@/hooks/useMessaging';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 import { Button } from '@/components/ui/button';
@@ -11,11 +11,16 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { TypingIndicator } from './TypingIndicator';
 import { ReadReceipt } from './ReadReceipt';
+import { MessageContextMenu } from './MessageContextMenu';
+import { MessageEditForm } from './MessageEditForm';
+import { AttachmentUploader, AttachmentPreview } from './AttachmentUploader';
+import { MessageAttachment } from './MessageAttachment';
 
 interface ChatWindowProps {
   conversation: Conversation;
   onBack?: () => void;
   showBackButton?: boolean;
+  highlightMessageId?: string;
 }
 
 function formatMessageDate(dateString: string) {
@@ -52,15 +57,22 @@ function formatGroupDate(dateString: string) {
   return format(date, 'MMMM d, yyyy');
 }
 
-export function ChatWindow({ conversation, onBack, showBackButton }: ChatWindowProps) {
+const EDIT_TIME_LIMIT_MINUTES = 15;
+
+export function ChatWindow({ conversation, onBack, showBackButton, highlightMessageId }: ChatWindowProps) {
   const { user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const highlightRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [newMessage, setNewMessage] = useState('');
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<AttachmentPreview[]>([]);
 
   const { data: messages = [], isLoading, refetch } = useMessages(conversation.id);
   const sendMessage = useSendMessage();
   const markAsRead = useMarkMessagesRead();
+  const editMessage = useEditMessage();
+  const deleteMessage = useDeleteMessage();
 
   const isRenter = conversation.renter_id === user?.id;
   const otherUser = conversation.other_user;
@@ -69,10 +81,14 @@ export function ChatWindow({ conversation, onBack, showBackButton }: ChatWindowP
   // Typing indicator
   const { isOtherTyping, setTyping } = useTypingIndicator(conversation.id, user?.id);
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom or highlighted message
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (highlightMessageId && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, highlightMessageId]);
 
   // Mark messages as read when opening conversation
   useEffect(() => {
@@ -88,7 +104,7 @@ export function ChatWindow({ conversation, onBack, showBackButton }: ChatWindowP
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'messages',
           filter: `conversation_id=eq.${conversation.id}`,
@@ -108,10 +124,13 @@ export function ChatWindow({ conversation, onBack, showBackButton }: ChatWindowP
   }, [conversation.id, refetch, user]);
 
   const handleSend = async () => {
-    if (!newMessage.trim() || !user) return;
+    if ((!newMessage.trim() && attachments.length === 0) || !user) return;
 
-    const content = newMessage.trim();
+    const content = newMessage.trim() || (attachments.length > 0 ? '📎 Attachment' : '');
+    const attachmentFiles = attachments.map(a => ({ file: a.file, type: a.type }));
+    
     setNewMessage('');
+    setAttachments([]);
     setTyping(false);
 
     try {
@@ -122,9 +141,10 @@ export function ChatWindow({ conversation, onBack, showBackButton }: ChatWindowP
         recipientId,
         senderName: user.user_metadata?.full_name || user.email?.split('@')[0],
         listingTitle: conversation.listing?.title || 'Listing',
+        attachmentFiles: attachmentFiles.length > 0 ? attachmentFiles : undefined,
       });
     } catch (error) {
-      setNewMessage(content); // Restore message on error
+      setNewMessage(content);
     }
   };
 
@@ -138,6 +158,34 @@ export function ChatWindow({ conversation, onBack, showBackButton }: ChatWindowP
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleEdit = async (messageId: string, newContent: string, originalContent: string) => {
+    try {
+      await editMessage.mutateAsync({ messageId, newContent, originalContent });
+      setEditingMessageId(null);
+    } catch (error) {
+      console.error('Failed to edit message:', error);
+    }
+  };
+
+  const handleDelete = async (messageId: string) => {
+    try {
+      await deleteMessage.mutateAsync({ messageId });
+    } catch (error) {
+      console.error('Failed to delete message:', error);
+    }
+  };
+
+  const canEditMessage = (message: Message) => {
+    if (message.sender_id !== user?.id) return false;
+    if (message.is_deleted) return false;
+    const minutesOld = differenceInMinutes(new Date(), new Date(message.created_at));
+    return minutesOld <= EDIT_TIME_LIMIT_MINUTES;
+  };
+
+  const canDeleteMessage = (message: Message) => {
+    return message.sender_id === user?.id && !message.is_deleted;
   };
 
   const messageGroups = groupMessagesByDate(messages);
@@ -195,36 +243,96 @@ export function ChatWindow({ conversation, onBack, showBackButton }: ChatWindowP
               <div className="space-y-2">
                 {group.messages.map((message) => {
                   const isMine = message.sender_id === user?.id;
+                  const isHighlighted = message.id === highlightMessageId;
+                  const isEditing = editingMessageId === message.id;
+
                   return (
                     <div
                       key={message.id}
+                      ref={isHighlighted ? highlightRef : undefined}
                       className={cn(
-                        "flex",
-                        isMine ? "justify-end" : "justify-start"
+                        "flex group",
+                        isMine ? "justify-end" : "justify-start",
+                        isHighlighted && "animate-pulse"
                       )}
                     >
+                      {/* Context menu for own messages */}
+                      {isMine && !isEditing && (
+                        <MessageContextMenu
+                          canEdit={canEditMessage(message)}
+                          canDelete={canDeleteMessage(message)}
+                          onEdit={() => setEditingMessageId(message.id)}
+                          onDelete={() => handleDelete(message.id)}
+                          className="self-center mr-1"
+                        />
+                      )}
+
                       <div
                         className={cn(
                           "max-w-[75%] rounded-2xl px-4 py-2",
                           isMine
                             ? "bg-accent text-accent-foreground rounded-br-md"
-                            : "bg-secondary text-foreground rounded-bl-md"
+                            : "bg-secondary text-foreground rounded-bl-md",
+                          message.is_deleted && "opacity-60 italic",
+                          isHighlighted && "ring-2 ring-primary"
                         )}
                       >
-                        <p className="text-sm whitespace-pre-wrap break-words">
-                          {message.content}
-                        </p>
+                        {message.is_deleted ? (
+                          <p className="text-sm">This message was deleted</p>
+                        ) : isEditing ? (
+                          <MessageEditForm
+                            initialContent={message.content}
+                            onSave={(content) => handleEdit(message.id, content, message.content)}
+                            onCancel={() => setEditingMessageId(null)}
+                            isSaving={editMessage.isPending}
+                          />
+                        ) : (
+                          <>
+                            {/* Attachments */}
+                            {message.attachments && message.attachments.length > 0 && (
+                              <div className="space-y-2 mb-2">
+                                {message.attachments.map((att) => (
+                                  <MessageAttachment
+                                    key={att.id}
+                                    fileUrl={att.file_url}
+                                    fileName={att.file_name}
+                                    fileType={att.file_type as 'image' | 'document' | 'other'}
+                                    fileSize={att.file_size}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                            
+                            <p className="text-sm whitespace-pre-wrap break-words">
+                              {message.content}
+                            </p>
+                          </>
+                        )}
+
                         <div className={cn(
                           "flex items-center gap-1 mt-1",
                           isMine ? "justify-end" : "justify-start"
                         )}>
+                          {message.is_edited && !message.is_deleted && (
+                            <span className={cn(
+                              "text-xs",
+                              isMine ? "text-accent-foreground/50" : "text-muted-foreground/70"
+                            )}>
+                              edited
+                            </span>
+                          )}
                           <span className={cn(
                             "text-xs",
                             isMine ? "text-accent-foreground/70" : "text-muted-foreground"
                           )}>
                             {formatMessageDate(message.created_at)}
                           </span>
-                          {isMine && <ReadReceipt isRead={message.is_read} />}
+                          {isMine && !message.is_deleted && (
+                            <ReadReceipt 
+                              isRead={message.is_read} 
+                              readAt={message.read_at}
+                            />
+                          )}
                         </div>
                       </div>
                     </div>
@@ -245,19 +353,35 @@ export function ChatWindow({ conversation, onBack, showBackButton }: ChatWindowP
 
       {/* Input */}
       <div className="p-4 border-t border-border bg-card">
+        {/* Attachment previews */}
+        {attachments.length > 0 && (
+          <div className="mb-2">
+            <AttachmentUploader
+              attachments={attachments}
+              onAttachmentsChange={setAttachments}
+              disabled={sendMessage.isPending}
+            />
+          </div>
+        )}
+        
         <div className="flex gap-2">
+          <AttachmentUploader
+            attachments={attachments}
+            onAttachmentsChange={setAttachments}
+            disabled={sendMessage.isPending}
+          />
           <Textarea
             ref={textareaRef}
             value={newMessage}
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
-            className="min-h-[44px] max-h-32 resize-none"
+            className="min-h-[44px] max-h-32 resize-none flex-1"
             rows={1}
           />
           <Button
             onClick={handleSend}
-            disabled={!newMessage.trim() || sendMessage.isPending}
+            disabled={(!newMessage.trim() && attachments.length === 0) || sendMessage.isPending}
             className="h-[44px] w-[44px] flex-shrink-0 bg-accent text-accent-foreground hover:bg-accent/90"
             size="icon"
           >
