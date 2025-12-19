@@ -161,8 +161,8 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
 
         {/* Quick action buttons - Floor plan & All images */}
         {listing.images && listing.images.length > 0 && (
-          <div className="container mx-auto px-4 -mt-6 relative z-10">
-            <div className="flex gap-3">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex flex-row gap-3">
               {listing.floor_plan_url && (
                 <button
                   onClick={() => {
