@@ -1,6 +1,6 @@
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, ArrowUpDown } from 'lucide-react';
 import { useState } from 'react';
-import { ListingFilters } from '@/types/listing';
+import { ListingFilters, SortOption } from '@/types/listing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -22,10 +22,12 @@ import { Label } from '@/components/ui/label';
 interface FilterBarProps {
   filters: ListingFilters;
   onFiltersChange: (filters: ListingFilters) => void;
+  sortBy: SortOption;
+  onSortChange: (sort: SortOption) => void;
   totalCount?: number;
 }
 
-export function FilterBar({ filters, onFiltersChange, totalCount }: FilterBarProps) {
+export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount }: FilterBarProps) {
   const [searchValue, setSearchValue] = useState(filters.city || '');
   const [isOpen, setIsOpen] = useState(false);
 
@@ -249,11 +251,30 @@ export function FilterBar({ filters, onFiltersChange, totalCount }: FilterBarPro
           </Sheet>
         </div>
 
-        {/* Results count */}
+        {/* Results count and sort */}
         {totalCount !== undefined && (
-          <p className="mt-3 text-sm text-muted-foreground">
-            {totalCount.toLocaleString()} {totalCount === 1 ? 'listing' : 'listings'}
-          </p>
+          <div className="mt-3 flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {totalCount.toLocaleString()} {totalCount === 1 ? 'listing' : 'listings'}
+            </p>
+            
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+              <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
+                <SelectTrigger className="w-[150px] h-8 text-sm bg-secondary border-0">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest first</SelectItem>
+                  <SelectItem value="oldest">Oldest first</SelectItem>
+                  <SelectItem value="price_asc">Price: Low to High</SelectItem>
+                  <SelectItem value="price_desc">Price: High to Low</SelectItem>
+                  <SelectItem value="size_asc">Size: Small to Large</SelectItem>
+                  <SelectItem value="size_desc">Size: Large to Small</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         )}
       </div>
     </div>
