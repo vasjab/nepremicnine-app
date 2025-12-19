@@ -1,8 +1,10 @@
-import { X, Heart, MapPin, Bed, Bath, Square, Calendar, Check } from 'lucide-react';
+import { useState } from 'react';
+import { X, Heart, MapPin, Bed, Bath, Square, Calendar, Check, Images } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
 import { Button } from '@/components/ui/button';
+import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { cn, formatPrice } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 
@@ -27,6 +29,7 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
   const { data: isSaved } = useIsListingSaved(user?.id, listing.id);
   const saveListing = useSaveListing();
   const unsaveListing = useUnsaveListing();
+  const [showGallery, setShowGallery] = useState(false);
 
   const handleSaveClick = () => {
     if (!user) {
@@ -84,14 +87,27 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
           <Heart className={cn('h-5 w-5', isSaved && 'fill-current')} />
         </Button>
 
-        {/* Image gallery */}
-        <div className="relative h-[50vh] bg-muted">
+        {/* Image gallery preview */}
+        <div 
+          className="relative h-[50vh] bg-muted cursor-pointer group"
+          onClick={() => setShowGallery(true)}
+        >
           {listing.images && listing.images.length > 0 ? (
-            <img
-              src={listing.images[0]}
-              alt={listing.title}
-              className="w-full h-full object-cover"
-            />
+            <>
+              <img
+                src={listing.images[0]}
+                alt={listing.title}
+                className="w-full h-full object-cover transition-transform group-hover:scale-[1.02]"
+              />
+              {/* Image count overlay */}
+              <div className="absolute bottom-4 right-4 bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium">
+                <Images className="h-4 w-4" />
+                <span>
+                  {listing.images.length} photo{listing.images.length !== 1 ? 's' : ''}
+                  {(listing as any).floor_plan_url && ' • Floor plan'}
+                </span>
+              </div>
+            </>
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-secondary">
               <span className="text-muted-foreground">No images available</span>
@@ -214,6 +230,15 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
           </div>
         </div>
       </div>
+
+      {/* Full image gallery modal */}
+      <ImageGalleryModal
+        images={listing.images || []}
+        floorPlanUrl={(listing as any).floor_plan_url}
+        isOpen={showGallery}
+        onClose={() => setShowGallery(false)}
+        title={listing.title}
+      />
     </div>
   );
 }

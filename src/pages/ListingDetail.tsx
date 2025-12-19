@@ -1,11 +1,13 @@
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Check, X } from 'lucide-react';
+import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Check, X, Images } from 'lucide-react';
 import { useListing } from '@/hooks/useListings';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { cn, formatPrice } from '@/lib/utils';
 
 export default function ListingDetail() {
@@ -16,6 +18,7 @@ export default function ListingDetail() {
   const { data: isSaved } = useIsListingSaved(user?.id, id);
   const saveListing = useSaveListing();
   const unsaveListing = useUnsaveListing();
+  const [showGallery, setShowGallery] = useState(false);
 
   const handleSaveClick = () => {
     if (!user || !id) return;
@@ -84,14 +87,27 @@ export default function ListingDetail() {
       <Header />
       
       <main className="pt-16">
-        {/* Image gallery */}
-        <div className="relative h-[50vh] bg-muted">
+        {/* Image gallery preview */}
+        <div 
+          className="relative h-[50vh] bg-muted cursor-pointer group"
+          onClick={() => setShowGallery(true)}
+        >
           {listing.images && listing.images.length > 0 ? (
-            <img
-              src={listing.images[0]}
-              alt={listing.title}
-              className="w-full h-full object-cover"
-            />
+            <>
+              <img
+                src={listing.images[0]}
+                alt={listing.title}
+                className="w-full h-full object-cover transition-transform group-hover:scale-[1.02]"
+              />
+              {/* Image count overlay */}
+              <div className="absolute bottom-4 right-4 bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium">
+                <Images className="h-4 w-4" />
+                <span>
+                  {listing.images.length} photo{listing.images.length !== 1 ? 's' : ''}
+                  {(listing as any).floor_plan_url && ' • Floor plan'}
+                </span>
+              </div>
+            </>
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-secondary">
               <span className="text-muted-foreground">No images available</span>
@@ -103,7 +119,7 @@ export default function ListingDetail() {
             variant="ghost"
             size="icon"
             className="absolute top-4 left-4 h-10 w-10 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card"
-            onClick={() => navigate(-1)}
+            onClick={(e) => { e.stopPropagation(); navigate(-1); }}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -117,7 +133,7 @@ export default function ListingDetail() {
                 'absolute top-4 right-4 h-10 w-10 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card',
                 isSaved && 'text-accent'
               )}
-              onClick={handleSaveClick}
+              onClick={(e) => { e.stopPropagation(); handleSaveClick(); }}
             >
               <Heart className={cn('h-5 w-5', isSaved && 'fill-current')} />
             </Button>
@@ -249,6 +265,15 @@ export default function ListingDetail() {
           </div>
         </div>
       </main>
+
+      {/* Full image gallery modal */}
+      <ImageGalleryModal
+        images={listing.images || []}
+        floorPlanUrl={(listing as any).floor_plan_url}
+        isOpen={showGallery}
+        onClose={() => setShowGallery(false)}
+        title={listing.title}
+      />
     </div>
   );
 }
