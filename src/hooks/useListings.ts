@@ -30,6 +30,12 @@ export function useListings(filters?: ListingFilters) {
       if (filters?.max_bedrooms) {
         query = query.lte('bedrooms', filters.max_bedrooms);
       }
+      if (filters?.min_area) {
+        query = query.gte('area_sqm', filters.min_area);
+      }
+      if (filters?.max_area) {
+        query = query.lte('area_sqm', filters.max_area);
+      }
       if (filters?.city) {
         query = query.ilike('city', `%${filters.city}%`);
       }
