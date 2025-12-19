@@ -497,7 +497,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
         {totalCount !== undefined && (
           <div className="mt-3 flex items-center justify-between gap-2">
             <p className="text-xs sm:text-sm text-muted-foreground">
-              {totalCount.toLocaleString()} {totalCount === 1 ? 'listing' : 'listings'}
+              {totalCount === 1 ? t('listing.listingCount', { count: totalCount }) : t('listing.listingsCount', { count: totalCount.toLocaleString() })}
             </p>
             
             <div className="flex items-center gap-1 sm:gap-2">
