@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Check, X, Images, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useListing } from '@/hooks/useListings';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
+import { useSwipe } from '@/hooks/useSwipe';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,22 +22,36 @@ export default function ListingDetail() {
   const [showGallery, setShowGallery] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const handlePrevImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const goToPrevImage = useCallback(() => {
     if (listing?.images && listing.images.length > 0) {
       setCurrentImageIndex((prev) => 
         prev === 0 ? listing.images!.length - 1 : prev - 1
       );
     }
-  };
+  }, [listing?.images]);
 
-  const handleNextImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const goToNextImage = useCallback(() => {
     if (listing?.images && listing.images.length > 0) {
       setCurrentImageIndex((prev) => 
         prev === listing.images!.length - 1 ? 0 : prev + 1
       );
     }
+  }, [listing?.images]);
+
+  const swipeHandlers = useSwipe({
+    onSwipeLeft: goToNextImage,
+    onSwipeRight: goToPrevImage,
+    minSwipeDistance: 50,
+  });
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    goToPrevImage();
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    goToNextImage();
   };
 
   const handleSaveClick = () => {
@@ -118,8 +133,9 @@ export default function ListingDetail() {
       <main className="pt-16">
         {/* Image gallery preview */}
         <div 
-          className="relative h-[50vh] bg-muted cursor-pointer group"
+          className="relative h-[50vh] bg-muted cursor-pointer group select-none"
           onClick={() => setShowGallery(true)}
+          {...swipeHandlers}
         >
           {listing.images && listing.images.length > 0 ? (
             <>
