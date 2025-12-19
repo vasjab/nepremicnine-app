@@ -18,6 +18,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { HoneypotField, isHoneypotTriggered } from '@/components/HoneypotField';
+import { useRateLimit, LISTING_RATE_LIMIT } from '@/hooks/useRateLimit';
+import { supabase } from '@/integrations/supabase/client';
 
 // Validation schema for listing data
 const listingSchema = z.object({
@@ -51,6 +54,10 @@ export default function CreateListing() {
   const { toast } = useToast();
   const createListing = useCreateListing();
 
+  // Bot protection
+  const [honeypot, setHoneypot] = useState('');
+  const { checkRateLimit, isLimited, remainingTime } = useRateLimit(LISTING_RATE_LIMIT);
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -79,12 +86,56 @@ export default function CreateListing() {
     }
   }, [user, navigate]);
 
+  const checkServerRateLimit = async (): Promise<boolean> => {
+    try {
+      if (!user) return false;
+      const { data, error } = await supabase.functions.invoke('check-rate-limit', {
+        body: { identifier: user.id, action: 'create_listing' },
+      });
+      
+      if (error) return true; // Fail open
+      return data?.allowed !== false;
+    } catch {
+      return true; // Fail open on network errors
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!user) return;
 
-    // Parse and validate all form data
+    // Check honeypot
+    if (isHoneypotTriggered(honeypot)) {
+      // Silently fail for bots
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      toast({
+        title: 'Listing created!',
+        description: 'Your property is now live.',
+      });
+      return;
+    }
+
+    // Check client-side rate limit first
+    if (!checkRateLimit()) {
+      toast({
+        variant: 'destructive',
+        title: 'Too many listings',
+        description: `Please wait ${Math.ceil(remainingTime / 60)} minutes before creating another listing.`,
+      });
+      return;
+    }
+
+    // Check server-side rate limit
+    const serverAllowed = await checkServerRateLimit();
+    if (!serverAllowed) {
+      toast({
+        variant: 'destructive',
+        title: 'Too many listings',
+        description: 'You have reached the maximum number of listings allowed. Please wait before creating more.',
+      });
+      return;
+    }
     const latitude = formData.latitude ? parseFloat(formData.latitude) : 59.3293;
     const longitude = formData.longitude ? parseFloat(formData.longitude) : 18.0686;
     const price = parseFloat(formData.price) || 0;
@@ -214,6 +265,9 @@ export default function CreateListing() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Honeypot field for bot detection */}
+            <HoneypotField value={honeypot} onChange={setHoneypot} />
+            
             {/* Basic Info */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Basic Information</h2>
@@ -500,11 +554,17 @@ export default function CreateListing() {
               <Button
                 type="submit"
                 className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
-                disabled={createListing.isPending}
+                disabled={createListing.isPending || isLimited}
               >
                 {createListing.isPending ? 'Creating...' : 'Create Listing'}
               </Button>
             </div>
+            
+            {isLimited && (
+              <p className="text-sm text-destructive text-center">
+                You've created too many listings recently. Please wait {Math.ceil(remainingTime / 60)} minutes.
+              </p>
+            )}
           </form>
         </div>
       </main>

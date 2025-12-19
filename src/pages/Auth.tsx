@@ -7,9 +7,38 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
 import { z } from 'zod';
+import { HoneypotField, isHoneypotTriggered } from '@/components/HoneypotField';
+import { useRateLimit, AUTH_RATE_LIMIT } from '@/hooks/useRateLimit';
+import { supabase } from '@/integrations/supabase/client';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
+
+// Generate a simple fingerprint for rate limiting
+function getClientFingerprint(): string {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  ctx?.fillText('fingerprint', 10, 10);
+  const canvasData = canvas.toDataURL();
+  
+  const data = [
+    navigator.userAgent,
+    navigator.language,
+    screen.width,
+    screen.height,
+    new Date().getTimezoneOffset(),
+    canvasData.slice(0, 50),
+  ].join('|');
+  
+  // Simple hash
+  let hash = 0;
+  for (let i = 0; i < data.length; i++) {
+    const char = data.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36);
+}
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
@@ -24,6 +53,10 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
+  
+  // Bot protection
+  const [honeypot, setHoneypot] = useState('');
+  const { checkRateLimit, isLimited, remainingTime } = useRateLimit(AUTH_RATE_LIMIT);
 
   useEffect(() => {
     if (user) {
@@ -58,14 +91,66 @@ export default function Auth() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const checkServerRateLimit = async (action: 'signup' | 'login'): Promise<boolean> => {
+    try {
+      const fingerprint = getClientFingerprint();
+      const { data, error } = await supabase.functions.invoke('check-rate-limit', {
+        body: { identifier: fingerprint, action },
+      });
+      
+      if (error) {
+        // Fail open if rate limit check fails
+        return true;
+      }
+      
+      return data?.allowed !== false;
+    } catch {
+      // Fail open on network errors
+      return true;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check honeypot
+    if (isHoneypotTriggered(honeypot)) {
+      // Silently fail for bots
+      setIsLoading(true);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      setIsLoading(false);
+      return;
+    }
+    
+    // Check client-side rate limit first
+    if (!checkRateLimit()) {
+      toast({
+        variant: 'destructive',
+        title: 'Too many attempts',
+        description: `Please wait ${remainingTime} seconds before trying again.`,
+      });
+      return;
+    }
     
     if (!validateForm()) return;
 
     setIsLoading(true);
 
     try {
+      // Check server-side rate limit
+      const action = isSignUp ? 'signup' : 'login';
+      const serverAllowed = await checkServerRateLimit(action);
+      
+      if (!serverAllowed) {
+        toast({
+          variant: 'destructive',
+          title: 'Too many attempts',
+          description: 'Please wait a while before trying again.',
+        });
+        setIsLoading(false);
+        return;
+      }
+
       if (isSignUp) {
         const { error } = await signUp(email, password, fullName);
         if (error) {
@@ -123,6 +208,9 @@ export default function Auth() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Honeypot field for bot detection */}
+            <HoneypotField value={honeypot} onChange={setHoneypot} />
+            
             {isSignUp && (
               <div className="space-y-2">
                 <Label htmlFor="fullName">Full Name</Label>
@@ -189,10 +277,16 @@ export default function Auth() {
             <Button 
               type="submit" 
               className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
-              disabled={isLoading}
+              disabled={isLoading || isLimited}
             >
               {isLoading ? 'Please wait...' : (isSignUp ? 'Create Account' : 'Sign In')}
             </Button>
+            
+            {isLimited && (
+              <p className="text-sm text-destructive text-center">
+                Too many attempts. Please wait {remainingTime} seconds.
+              </p>
+            )}
           </form>
 
           <div className="mt-6 text-center">
