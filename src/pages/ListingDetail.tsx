@@ -5,6 +5,7 @@ import { useListing } from '@/hooks/useListings';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
 import { useTrackListingView, useTrackLocalListingView } from '@/hooks/useRecentlyViewed';
+import { useGetOrCreateConversation } from '@/hooks/useMessaging';
 import { useSwipe } from '@/hooks/useSwipe';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ import { PropertyFeatures } from '@/components/PropertyFeatures';
 import { cn } from '@/lib/utils';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useToast } from '@/hooks/use-toast';
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -27,8 +29,10 @@ export default function ListingDetail() {
   const unsaveListing = useUnsaveListing();
   const trackView = useTrackListingView();
   const { trackView: trackLocalView } = useTrackLocalListingView();
+  const getOrCreateConversation = useGetOrCreateConversation();
   const { formatPrice, formatArea } = useFormattedPrice();
   const { t, language } = useTranslation();
+  const { toast } = useToast();
   const [showGallery, setShowGallery] = useState(false);
   const [scrollToFloorPlan, setScrollToFloorPlan] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -384,8 +388,31 @@ export default function ListingDetail() {
                   </p>
                 </div>
 
-                <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90 mb-3">
-                  {t('listing.contactLandlord')}
+                <Button 
+                  className="w-full bg-accent text-accent-foreground hover:bg-accent/90 mb-3"
+                  disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
+                  onClick={async () => {
+                    if (!user) {
+                      navigate('/auth');
+                      return;
+                    }
+                    if (!listing.user_id) {
+                      toast({ variant: 'destructive', title: 'Unable to contact', description: 'This listing has no owner' });
+                      return;
+                    }
+                    try {
+                      await getOrCreateConversation.mutateAsync({
+                        listingId: listing.id,
+                        renterId: user.id,
+                        landlordId: listing.user_id,
+                      });
+                      navigate('/messages');
+                    } catch (error) {
+                      toast({ variant: 'destructive', title: 'Error', description: 'Failed to start conversation' });
+                    }
+                  }}
+                >
+                  {getOrCreateConversation.isPending ? 'Starting chat...' : t('listing.contactLandlord')}
                 </Button>
 
                 {user ? (
