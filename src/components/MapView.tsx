@@ -192,9 +192,10 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
         `;
 
         // Create popup for click preview
-        const imageUrl = listing.images && listing.images.length > 0 
-          ? listing.images[0] 
-          : 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400';
+        const images = listing.images && listing.images.length > 0 
+          ? listing.images 
+          : ['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=400'];
+        const hasMultipleImages = images.length > 1;
         
         const propertyTypeLabels: Record<string, string> = {
           apartment: 'Apartment',
@@ -208,6 +209,21 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
         const priceDisplay = listing.listing_type === 'rent' 
           ? `${formatPriceForPin(listing.price)}/mo`
           : formatPriceForPin(listing.price);
+
+        const dotsHtml = hasMultipleImages 
+          ? `<div class="popup-dots-${listing.id}" style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; z-index: 10;">
+              ${images.map((_, i) => `<span class="popup-dot-${listing.id}" data-index="${i}" style="width: 6px; height: 6px; border-radius: 50%; background: ${i === 0 ? 'white' : 'rgba(255,255,255,0.6)'}; cursor: pointer; transition: all 0.2s;"></span>`).join('')}
+            </div>`
+          : '';
+
+        const arrowsHtml = hasMultipleImages
+          ? `<button class="popup-prev-${listing.id}" style="position: absolute; left: 8px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; z-index: 10;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <button class="popup-next-${listing.id}" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; z-index: 10;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </button>`
+          : '';
 
         const popupContent = `
           <style>
@@ -226,13 +242,16 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
               background: hsl(350, 70%, 62%);
               transform: scale(1.02);
             }
-            .popup-content-${listing.id}:hover .popup-img-${listing.id} {
-              transform: scale(1.05);
+            .popup-img-container-${listing.id}:hover .popup-prev-${listing.id},
+            .popup-img-container-${listing.id}:hover .popup-next-${listing.id} {
+              opacity: 1 !important;
             }
           </style>
           <div class="popup-content-${listing.id}" style="width: 240px; font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer;">
-            <div style="width: 100%; height: 140px; overflow: hidden; border-radius: 8px 8px 0 0;">
-              <img class="popup-img-${listing.id}" src="${imageUrl}" alt="${listing.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s ease;" />
+            <div class="popup-img-container-${listing.id}" style="position: relative; width: 100%; height: 140px; overflow: hidden; border-radius: 8px 8px 0 0;">
+              <img class="popup-img-${listing.id}" src="${images[0]}" alt="${listing.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s ease;" />
+              ${arrowsHtml}
+              ${dotsHtml}
             </div>
             <div style="padding: 14px;">
               <div style="font-size: 11px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px;">
@@ -263,9 +282,57 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
 
         // Add click handler to popup content after it opens
         popup.on('open', () => {
+          let currentIndex = 0;
           const popupEl = document.querySelector(`.popup-content-${listing.id}`);
+          const imgEl = document.querySelector(`.popup-img-${listing.id}`) as HTMLImageElement;
+          const prevBtn = document.querySelector(`.popup-prev-${listing.id}`);
+          const nextBtn = document.querySelector(`.popup-next-${listing.id}`);
+          const dots = document.querySelectorAll(`.popup-dot-${listing.id}`);
+
+          const updateImage = (newIndex: number) => {
+            currentIndex = newIndex;
+            if (imgEl && images[currentIndex]) {
+              imgEl.src = images[currentIndex];
+            }
+            dots.forEach((dot, i) => {
+              (dot as HTMLElement).style.background = i === currentIndex ? 'white' : 'rgba(255,255,255,0.6)';
+              (dot as HTMLElement).style.width = i === currentIndex ? '12px' : '6px';
+            });
+          };
+
+          if (prevBtn) {
+            prevBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const newIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
+              updateImage(newIndex);
+            });
+          }
+
+          if (nextBtn) {
+            nextBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const newIndex = currentIndex === images.length - 1 ? 0 : currentIndex + 1;
+              updateImage(newIndex);
+            });
+          }
+
+          dots.forEach((dot) => {
+            dot.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const index = parseInt((dot as HTMLElement).dataset.index || '0', 10);
+              updateImage(index);
+            });
+          });
+
           if (popupEl) {
-            popupEl.addEventListener('click', () => {
+            popupEl.addEventListener('click', (e) => {
+              // Only trigger if not clicking on navigation elements
+              const target = e.target as HTMLElement;
+              if (target.closest(`.popup-prev-${listing.id}`) || 
+                  target.closest(`.popup-next-${listing.id}`) ||
+                  target.closest(`.popup-dot-${listing.id}`)) {
+                return;
+              }
               const currentListing = listingsRef.current.find(l => l.id === listing.id);
               if (currentListing && onPopupClickRef.current) {
                 onPopupClickRef.current(currentListing);
