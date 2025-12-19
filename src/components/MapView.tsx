@@ -177,7 +177,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
       } else {
         // Create new marker
         const el = document.createElement('div');
-        el.innerHTML = formatPriceForPin(listing.price);
+        el.textContent = formatPriceForPin(listing.price);
         el.style.cssText = `
           background: hsl(0, 0%, 100%);
           color: hsl(25, 30%, 12%);
