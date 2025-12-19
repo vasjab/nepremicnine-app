@@ -3,6 +3,7 @@ import { X, Heart, MapPin, Bed, Bath, Square, Calendar, Images, ChevronLeft, Che
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
+import { useGetOrCreateConversation } from '@/hooks/useMessaging';
 import { useSwipe } from '@/hooks/useSwipe';
 import { Button } from '@/components/ui/button';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
@@ -12,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
+import { useToast } from '@/hooks/use-toast';
 
 interface ListingDetailModalProps {
   listing: Listing;
@@ -27,6 +29,8 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
   const { data: isSaved } = useIsListingSaved(user?.id, listing.id);
   const saveListing = useSaveListing();
   const unsaveListing = useUnsaveListing();
+  const getOrCreateConversation = useGetOrCreateConversation();
+  const { toast } = useToast();
   const [showGallery, setShowGallery] = useState(false);
   const [scrollToFloorPlan, setScrollToFloorPlan] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -395,12 +399,36 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
                   </p>
                 </div>
 
-                <Button className={cn(
-                  "w-full bg-accent text-accent-foreground mb-3 h-12",
-                  "hover:bg-accent/90 hover:scale-[1.02] active:scale-[0.98]",
-                  "transition-all duration-200 touch-target"
-                )}>
-                  {t('listing.contactLandlord')}
+                <Button 
+                  className={cn(
+                    "w-full bg-accent text-accent-foreground mb-3 h-12",
+                    "hover:bg-accent/90 hover:scale-[1.02] active:scale-[0.98]",
+                    "transition-all duration-200 touch-target"
+                  )}
+                  disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
+                  onClick={async () => {
+                    if (!user) {
+                      navigate('/auth');
+                      return;
+                    }
+                    if (!listing.user_id) {
+                      toast({ variant: 'destructive', title: 'Unable to contact', description: 'This listing has no owner' });
+                      return;
+                    }
+                    try {
+                      await getOrCreateConversation.mutateAsync({
+                        listingId: listing.id,
+                        renterId: user.id,
+                        landlordId: listing.user_id,
+                      });
+                      handleClose();
+                      navigate('/messages');
+                    } catch (error) {
+                      toast({ variant: 'destructive', title: 'Error', description: 'Failed to start conversation' });
+                    }
+                  }}
+                >
+                  {getOrCreateConversation.isPending ? 'Starting chat...' : t('listing.contactLandlord')}
                 </Button>
 
                 <Button
