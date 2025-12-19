@@ -211,13 +211,59 @@ export type Database = {
         }
         Relationships: []
       }
+      message_attachments: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size: number
+          file_type: string
+          file_url: string
+          id: string
+          message_id: string
+          mime_type: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size?: number
+          file_type?: string
+          file_url: string
+          id?: string
+          message_id: string
+          mime_type?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size?: number
+          file_type?: string
+          file_url?: string
+          id?: string
+          message_id?: string
+          mime_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           content: string
           conversation_id: string
           created_at: string
+          deleted_at: string | null
+          edited_at: string | null
           id: string
+          is_deleted: boolean
+          is_edited: boolean
           is_read: boolean
+          original_content: string | null
           read_at: string | null
           sender_id: string
         }
@@ -225,8 +271,13 @@ export type Database = {
           content: string
           conversation_id: string
           created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
           id?: string
+          is_deleted?: boolean
+          is_edited?: boolean
           is_read?: boolean
+          original_content?: string | null
           read_at?: string | null
           sender_id: string
         }
@@ -234,8 +285,13 @@ export type Database = {
           content?: string
           conversation_id?: string
           created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
           id?: string
+          is_deleted?: boolean
+          is_edited?: boolean
           is_read?: boolean
+          original_content?: string | null
           read_at?: string | null
           sender_id?: string
         }

@@ -26,6 +26,7 @@ export interface Conversation {
     sender_id: string;
     created_at: string;
     is_read: boolean;
+    is_deleted?: boolean;
   };
   unread_count?: number;
 }
@@ -36,6 +37,24 @@ export interface Message {
   sender_id: string;
   content: string;
   is_read: boolean;
+  read_at?: string | null;
+  created_at: string;
+  is_deleted?: boolean;
+  deleted_at?: string | null;
+  is_edited?: boolean;
+  edited_at?: string | null;
+  original_content?: string | null;
+  attachments?: MessageAttachment[];
+}
+
+export interface MessageAttachment {
+  id: string;
+  message_id: string;
+  file_url: string;
+  file_name: string;
+  file_type: string;
+  file_size: number;
+  mime_type?: string;
   created_at: string;
 }
 
@@ -60,20 +79,22 @@ export function useConversations(userId: string | undefined) {
       // Fetch last message and unread count for each conversation
       const conversationsWithDetails = await Promise.all(
         (data || []).map(async (conv) => {
-          // Get last message
+          // Get last message (excluding deleted)
           const { data: messages } = await supabase
             .from('messages')
-            .select('content, sender_id, created_at, is_read')
+            .select('content, sender_id, created_at, is_read, is_deleted')
             .eq('conversation_id', conv.id)
+            .eq('is_deleted', false)
             .order('created_at', { ascending: false })
             .limit(1);
 
-          // Get unread count
+          // Get unread count (excluding deleted)
           const { count } = await supabase
             .from('messages')
             .select('*', { count: 'exact', head: true })
             .eq('conversation_id', conv.id)
             .eq('is_read', false)
+            .eq('is_deleted', false)
             .neq('sender_id', userId);
 
           // Get other user's profile
@@ -106,33 +127,66 @@ export function useMessages(conversationId: string | undefined) {
     queryFn: async () => {
       if (!conversationId) return [];
 
-      const { data, error } = await supabase
+      const { data: messages, error } = await supabase
         .from('messages')
         .select('*')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data as Message[];
+
+      // Fetch attachments for all messages
+      const messageIds = messages?.map(m => m.id) || [];
+      
+      if (messageIds.length > 0) {
+        const { data: attachments } = await supabase
+          .from('message_attachments')
+          .select('*')
+          .in('message_id', messageIds);
+
+        const attachmentMap = new Map<string, MessageAttachment[]>();
+        attachments?.forEach(att => {
+          if (!attachmentMap.has(att.message_id)) {
+            attachmentMap.set(att.message_id, []);
+          }
+          attachmentMap.get(att.message_id)!.push(att as MessageAttachment);
+        });
+
+        return messages?.map(m => ({
+          ...m,
+          attachments: attachmentMap.get(m.id) || [],
+        })) as Message[];
+      }
+
+      return messages as Message[];
     },
     enabled: !!conversationId,
   });
 }
 
-// Send a message
+// Send a message with optional attachments
 export function useSendMessage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ conversationId, senderId, content, recipientId, senderName, listingTitle }: {
+    mutationFn: async ({ 
+      conversationId, 
+      senderId, 
+      content, 
+      recipientId, 
+      senderName, 
+      listingTitle,
+      attachmentFiles,
+    }: {
       conversationId: string;
       senderId: string;
       content: string;
       recipientId?: string;
       senderName?: string;
       listingTitle?: string;
+      attachmentFiles?: { file: File; type: string }[];
     }) => {
-      const { data, error } = await supabase
+      const { data: message, error } = await supabase
         .from('messages')
         .insert({
           conversation_id: conversationId,
@@ -143,6 +197,36 @@ export function useSendMessage() {
         .single();
 
       if (error) throw error;
+
+      // Upload attachments if any
+      if (attachmentFiles && attachmentFiles.length > 0) {
+        for (const { file, type } of attachmentFiles) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${senderId}/${message.id}/${crypto.randomUUID()}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('message-attachments')
+            .upload(fileName, file);
+
+          if (uploadError) {
+            console.error('Failed to upload attachment:', uploadError);
+            continue;
+          }
+
+          const { data: urlData } = supabase.storage
+            .from('message-attachments')
+            .getPublicUrl(fileName);
+
+          await supabase.from('message_attachments').insert({
+            message_id: message.id,
+            file_url: urlData.publicUrl,
+            file_name: file.name,
+            file_type: type,
+            file_size: file.size,
+            mime_type: file.type,
+          });
+        }
+      }
 
       // Trigger email notification if we have recipient info
       if (recipientId && listingTitle) {
@@ -159,14 +243,65 @@ export function useSendMessage() {
           });
         } catch (notifyError) {
           console.error('Failed to send notification:', notifyError);
-          // Don't throw - message was still sent successfully
         }
       }
 
-      return data;
+      return message;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['messages', variables.conversationId] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    },
+  });
+}
+
+// Edit a message
+export function useEditMessage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ messageId, newContent, originalContent }: {
+      messageId: string;
+      newContent: string;
+      originalContent: string;
+    }) => {
+      const { error } = await supabase
+        .from('messages')
+        .update({
+          content: newContent.trim(),
+          is_edited: true,
+          edited_at: new Date().toISOString(),
+          original_content: originalContent,
+        })
+        .eq('id', messageId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    },
+  });
+}
+
+// Delete a message (soft delete)
+export function useDeleteMessage() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ messageId }: { messageId: string }) => {
+      const { error } = await supabase
+        .from('messages')
+        .update({
+          is_deleted: true,
+          deleted_at: new Date().toISOString(),
+        })
+        .eq('id', messageId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     },
   });
@@ -256,18 +391,19 @@ export function useUnreadCount(userId: string | undefined) {
 
       const conversationIds = conversations.map(c => c.id);
 
-      // Count unread messages across all conversations
+      // Count unread messages across all conversations (excluding deleted)
       const { count, error } = await supabase
         .from('messages')
         .select('*', { count: 'exact', head: true })
         .in('conversation_id', conversationIds)
         .eq('is_read', false)
+        .eq('is_deleted', false)
         .neq('sender_id', userId);
 
       if (error) throw error;
       return count || 0;
     },
     enabled: !!userId,
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 30000,
   });
 }

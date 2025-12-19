@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useConversations, Conversation } from '@/hooks/useMessaging';
 import { Header } from '@/components/Header';
 import { ConversationsList } from '@/components/messaging/ConversationsList';
 import { ChatWindow } from '@/components/messaging/ChatWindow';
+import { MessageSearch } from '@/components/messaging/MessageSearch';
 import { cn } from '@/lib/utils';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ export default function Messages() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
+  const [highlightMessageId, setHighlightMessageId] = useState<string | undefined>();
   
   const { data: conversations = [], isLoading, refetch } = useConversations(user?.id);
 
@@ -38,7 +40,7 @@ export default function Messages() {
       .on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'messages',
         },
@@ -62,6 +64,24 @@ export default function Messages() {
       }
     }
   }, [conversations, selectedConversation?.id]);
+
+  // Clear highlight after a delay
+  useEffect(() => {
+    if (highlightMessageId) {
+      const timer = setTimeout(() => {
+        setHighlightMessageId(undefined);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [highlightMessageId]);
+
+  const handleSearchResultClick = useCallback((conversationId: string, messageId: string) => {
+    const conversation = conversations.find(c => c.id === conversationId);
+    if (conversation) {
+      setSelectedConversation(conversation);
+      setHighlightMessageId(messageId);
+    }
+  }, [conversations]);
 
   if (!user) {
     return (
@@ -98,14 +118,25 @@ export default function Messages() {
               conversation={selectedConversation}
               showBackButton
               onBack={() => setSelectedConversation(null)}
+              highlightMessageId={highlightMessageId}
             />
           ) : (
-            <ConversationsList
-              conversations={conversations}
-              selectedId={selectedConversation?.id}
-              onSelect={setSelectedConversation}
-              isLoading={isLoading}
-            />
+            <div className="flex flex-col h-full">
+              <div className="p-4 border-b border-border">
+                <MessageSearch 
+                  onResultClick={handleSearchResultClick}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                <ConversationsList
+                  conversations={conversations}
+                  selectedId={selectedConversation?.id}
+                  onSelect={setSelectedConversation}
+                  isLoading={isLoading}
+                />
+              </div>
+            </div>
           )}
         </main>
       </div>
@@ -120,23 +151,32 @@ export default function Messages() {
         {/* Conversations sidebar */}
         <div className={cn(
           "w-80 xl:w-96 border-r border-border flex-shrink-0",
-          "overflow-y-auto bg-card"
+          "flex flex-col bg-card"
         )}>
-          <div className="p-4 border-b border-border">
+          <div className="p-4 border-b border-border space-y-3">
             <h1 className="text-xl font-semibold text-foreground">Messages</h1>
+            <MessageSearch 
+              onResultClick={handleSearchResultClick}
+              className="w-full"
+            />
           </div>
-          <ConversationsList
-            conversations={conversations}
-            selectedId={selectedConversation?.id}
-            onSelect={setSelectedConversation}
-            isLoading={isLoading}
-          />
+          <div className="flex-1 overflow-y-auto">
+            <ConversationsList
+              conversations={conversations}
+              selectedId={selectedConversation?.id}
+              onSelect={setSelectedConversation}
+              isLoading={isLoading}
+            />
+          </div>
         </div>
 
         {/* Chat window */}
         <div className="flex-1">
           {selectedConversation ? (
-            <ChatWindow conversation={selectedConversation} />
+            <ChatWindow 
+              conversation={selectedConversation}
+              highlightMessageId={highlightMessageId}
+            />
           ) : (
             <div className="h-full flex items-center justify-center text-center p-8">
               <div>
