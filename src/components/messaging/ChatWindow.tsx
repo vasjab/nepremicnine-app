@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { format, isToday, isYesterday } from 'date-fns';
-import { ArrowLeft, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, Check, CheckCheck } from 'lucide-react';
 import { Message, Conversation, useMessages, useSendMessage, useMarkMessagesRead } from '@/hooks/useMessaging';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { TypingIndicator } from './TypingIndicator';
+import { ReadReceipt } from './ReadReceipt';
 
 interface ChatWindowProps {
   conversation: Conversation;
@@ -61,6 +64,10 @@ export function ChatWindow({ conversation, onBack, showBackButton }: ChatWindowP
 
   const isRenter = conversation.renter_id === user?.id;
   const otherUser = conversation.other_user;
+  const recipientId = isRenter ? conversation.landlord_id : conversation.renter_id;
+
+  // Typing indicator
+  const { isOtherTyping, setTyping } = useTypingIndicator(conversation.id, user?.id);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -105,16 +112,25 @@ export function ChatWindow({ conversation, onBack, showBackButton }: ChatWindowP
 
     const content = newMessage.trim();
     setNewMessage('');
+    setTyping(false);
 
     try {
       await sendMessage.mutateAsync({
         conversationId: conversation.id,
         senderId: user.id,
         content,
+        recipientId,
+        senderName: user.user_metadata?.full_name || user.email?.split('@')[0],
+        listingTitle: conversation.listing?.title || 'Listing',
       });
     } catch (error) {
       setNewMessage(content); // Restore message on error
     }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNewMessage(e.target.value);
+    setTyping(e.target.value.length > 0);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -198,12 +214,18 @@ export function ChatWindow({ conversation, onBack, showBackButton }: ChatWindowP
                         <p className="text-sm whitespace-pre-wrap break-words">
                           {message.content}
                         </p>
-                        <p className={cn(
-                          "text-xs mt-1",
-                          isMine ? "text-accent-foreground/70" : "text-muted-foreground"
+                        <div className={cn(
+                          "flex items-center gap-1 mt-1",
+                          isMine ? "justify-end" : "justify-start"
                         )}>
-                          {formatMessageDate(message.created_at)}
-                        </p>
+                          <span className={cn(
+                            "text-xs",
+                            isMine ? "text-accent-foreground/70" : "text-muted-foreground"
+                          )}>
+                            {formatMessageDate(message.created_at)}
+                          </span>
+                          {isMine && <ReadReceipt isRead={message.is_read} />}
+                        </div>
                       </div>
                     </div>
                   );
@@ -212,6 +234,12 @@ export function ChatWindow({ conversation, onBack, showBackButton }: ChatWindowP
             </div>
           ))
         )}
+        
+        {/* Typing indicator */}
+        {isOtherTyping && (
+          <TypingIndicator userName={otherUser?.full_name || undefined} />
+        )}
+        
         <div ref={messagesEndRef} />
       </div>
 
@@ -221,7 +249,7 @@ export function ChatWindow({ conversation, onBack, showBackButton }: ChatWindowP
           <Textarea
             ref={textareaRef}
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
             className="min-h-[44px] max-h-32 resize-none"
