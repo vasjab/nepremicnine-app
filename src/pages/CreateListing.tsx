@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Upload, X } from 'lucide-react';
+import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateListing } from '@/hooks/useListings';
 import { Header } from '@/components/Header';
@@ -17,6 +18,32 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+
+// Validation schema for listing data
+const listingSchema = z.object({
+  title: z.string().trim().min(5, 'Title must be at least 5 characters').max(200, 'Title must be less than 200 characters'),
+  description: z.string().max(5000, 'Description must be less than 5000 characters').optional().or(z.literal('')),
+  listing_type: z.enum(['rent', 'sale']),
+  property_type: z.enum(['apartment', 'house', 'room', 'studio', 'villa', 'other']),
+  price: z.number().positive('Price must be positive').min(1, 'Price must be at least 1').max(1000000000, 'Price is too large'),
+  address: z.string().trim().min(1, 'Address is required').max(500, 'Address must be less than 500 characters'),
+  city: z.string().trim().min(1, 'City is required').max(100, 'City must be less than 100 characters'),
+  postal_code: z.string().max(20, 'Postal code must be less than 20 characters').optional().or(z.literal('')),
+  latitude: z.number().min(-90, 'Latitude must be between -90 and 90').max(90, 'Latitude must be between -90 and 90'),
+  longitude: z.number().min(-180, 'Longitude must be between -180 and 180').max(180, 'Longitude must be between -180 and 180'),
+  bedrooms: z.number().int().min(0, 'Bedrooms cannot be negative').max(50, 'Bedrooms must be 50 or less'),
+  bathrooms: z.number().int().min(0, 'Bathrooms cannot be negative').max(20, 'Bathrooms must be 20 or less'),
+  area_sqm: z.number().positive('Area must be positive').max(100000, 'Area is too large').optional().nullable(),
+  available_from: z.string().optional().nullable(),
+  is_furnished: z.boolean(),
+  allows_pets: z.boolean(),
+  images: z.array(
+    z.string().url('Invalid image URL').refine(
+      (url) => /\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(url) || url.includes('unsplash.com') || url.includes('images.pexels.com'),
+      'Image URL must end with .jpg, .jpeg, .png, .gif, or .webp'
+    )
+  ).max(20, 'Maximum 20 images allowed'),
+});
 
 export default function CreateListing() {
   const navigate = useNavigate();
@@ -57,43 +84,72 @@ export default function CreateListing() {
 
     if (!user) return;
 
-    // Validate required fields
-    if (!formData.title || !formData.price || !formData.address || !formData.city) {
+    // Parse and validate all form data
+    const latitude = formData.latitude ? parseFloat(formData.latitude) : 59.3293;
+    const longitude = formData.longitude ? parseFloat(formData.longitude) : 18.0686;
+    const price = parseFloat(formData.price) || 0;
+    const bedrooms = parseInt(formData.bedrooms) || 0;
+    const bathrooms = parseInt(formData.bathrooms) || 0;
+    const area_sqm = formData.area_sqm ? parseFloat(formData.area_sqm) : null;
+
+    const dataToValidate = {
+      title: formData.title,
+      description: formData.description || undefined,
+      listing_type: formData.listing_type,
+      property_type: formData.property_type,
+      price,
+      address: formData.address,
+      city: formData.city,
+      postal_code: formData.postal_code || undefined,
+      latitude,
+      longitude,
+      bedrooms,
+      bathrooms,
+      area_sqm,
+      available_from: formData.available_from || null,
+      is_furnished: formData.is_furnished,
+      allows_pets: formData.allows_pets,
+      images: formData.images,
+    };
+
+    // Validate with zod schema
+    const validationResult = listingSchema.safeParse(dataToValidate);
+    
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
       toast({
         variant: 'destructive',
-        title: 'Missing fields',
-        description: 'Please fill in all required fields.',
+        title: 'Validation Error',
+        description: firstError.message,
       });
       return;
     }
 
-    // Default coordinates to Stockholm if not provided
-    const latitude = formData.latitude ? parseFloat(formData.latitude) : 59.3293;
-    const longitude = formData.longitude ? parseFloat(formData.longitude) : 18.0686;
+    const validatedData = validationResult.data;
 
     createListing.mutate(
       {
         user_id: user.id,
-        title: formData.title,
-        description: formData.description || null,
-        listing_type: formData.listing_type,
-        property_type: formData.property_type,
-        price: parseFloat(formData.price),
+        title: validatedData.title,
+        description: validatedData.description || null,
+        listing_type: validatedData.listing_type,
+        property_type: validatedData.property_type,
+        price: validatedData.price,
         currency: 'SEK',
-        address: formData.address,
-        city: formData.city,
-        postal_code: formData.postal_code || null,
+        address: validatedData.address,
+        city: validatedData.city,
+        postal_code: validatedData.postal_code || null,
         country: 'Sweden',
-        latitude,
-        longitude,
-        bedrooms: parseInt(formData.bedrooms),
-        bathrooms: parseInt(formData.bathrooms),
-        area_sqm: formData.area_sqm ? parseFloat(formData.area_sqm) : null,
-        available_from: formData.available_from || null,
+        latitude: validatedData.latitude,
+        longitude: validatedData.longitude,
+        bedrooms: validatedData.bedrooms,
+        bathrooms: validatedData.bathrooms,
+        area_sqm: validatedData.area_sqm,
+        available_from: validatedData.available_from,
         available_until: null,
-        is_furnished: formData.is_furnished,
-        allows_pets: formData.allows_pets,
-        images: formData.images,
+        is_furnished: validatedData.is_furnished,
+        allows_pets: validatedData.allows_pets,
+        images: validatedData.images,
         floor_plan_url: null,
         is_active: true,
       },
@@ -105,7 +161,7 @@ export default function CreateListing() {
           });
           navigate('/my-listings');
         },
-        onError: (error) => {
+        onError: () => {
           toast({
             variant: 'destructive',
             title: 'Error',
