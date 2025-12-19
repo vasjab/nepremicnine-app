@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { ListingFilters, SortOption } from '@/types/listing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -11,12 +12,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 
 interface FilterBarProps {
@@ -54,7 +55,6 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Immediate search on Enter key
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
@@ -102,6 +102,54 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
   const hasActiveFilters = Object.values(filters).some(v => v !== null && v !== undefined);
 
+  // Build active filter chips
+  const getActiveFilterChips = () => {
+    const chips: { label: string; onRemove: () => void }[] = [];
+
+    if (filters.listing_type) {
+      chips.push({
+        label: filters.listing_type === 'rent' ? 'For Rent' : 'For Sale',
+        onRemove: () => handleListingTypeChange('all'),
+      });
+    }
+
+    if (filters.property_type) {
+      const label = filters.property_type.charAt(0).toUpperCase() + filters.property_type.slice(1);
+      chips.push({
+        label,
+        onRemove: () => handlePropertyTypeChange('all'),
+      });
+    }
+
+    if (filters.min_bedrooms) {
+      chips.push({
+        label: `${filters.min_bedrooms}+ rooms`,
+        onRemove: () => handleBedroomChange('all'),
+      });
+    }
+
+    if (filters.min_price || filters.max_price) {
+      let priceLabel = '';
+      if (filters.min_price && filters.max_price) {
+        priceLabel = `€${filters.min_price.toLocaleString()} - €${filters.max_price.toLocaleString()}`;
+      } else if (filters.min_price) {
+        priceLabel = `Min €${filters.min_price.toLocaleString()}`;
+      } else if (filters.max_price) {
+        priceLabel = `Max €${filters.max_price.toLocaleString()}`;
+      }
+      chips.push({
+        label: priceLabel,
+        onRemove: () => {
+          onFiltersChange({ ...filters, min_price: null, max_price: null });
+        },
+      });
+    }
+
+    return chips;
+  };
+
+  const activeChips = getActiveFilterChips();
+
   return (
     <div className="bg-background border-b border-border">
       <div className="p-3 sm:p-4">
@@ -111,7 +159,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
         </h1>
 
         {/* Search input + Filter button inline */}
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2">
           <form onSubmit={handleSearch} className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
             <Input
@@ -131,21 +179,21 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
             )}
           </form>
 
-          {/* Filter button - always visible */}
-          <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetTrigger asChild>
+          {/* Filter button - opens centered Dialog */}
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
               <Button variant="outline" size="icon" className="relative shrink-0 rounded-full">
                 <SlidersHorizontal className="h-4 w-4" />
                 {hasActiveFilters && (
                   <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-accent" />
                 )}
               </Button>
-            </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle>Filters</SheetTitle>
-              </SheetHeader>
-              <div className="mt-6 space-y-6">
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Filters</DialogTitle>
+              </DialogHeader>
+              <div className="mt-4 space-y-5">
                 <div className="space-y-2">
                   <Label>Listing Type</Label>
                   <Select
@@ -211,7 +259,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                       value={filters.min_price || ''}
                       onChange={(e) => handlePriceChange('min', e.target.value)}
                     />
-                    <span className="text-muted-foreground">-</span>
+                    <span className="text-muted-foreground">—</span>
                     <Input
                       type="number"
                       placeholder="Max"
@@ -235,62 +283,26 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   </Button>
                 )}
               </div>
-            </SheetContent>
-          </Sheet>
+            </DialogContent>
+          </Dialog>
         </div>
 
-        {/* Filters row */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Quick filters - desktop */}
-          <div className="hidden sm:flex items-center gap-2 flex-wrap">
-            <Select
-              value={filters.listing_type || 'all'}
-              onValueChange={handleListingTypeChange}
-            >
-              <SelectTrigger className="w-[120px] bg-secondary border-0 rounded-full">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
-                <SelectItem value="rent">For Rent</SelectItem>
-                <SelectItem value="sale">For Sale</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={filters.property_type || 'all'}
-              onValueChange={handlePropertyTypeChange}
-            >
-              <SelectTrigger className="w-[140px] bg-secondary border-0 rounded-full">
-                <SelectValue placeholder="Property" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All properties</SelectItem>
-                <SelectItem value="apartment">Apartment</SelectItem>
-                <SelectItem value="house">House</SelectItem>
-                <SelectItem value="room">Room</SelectItem>
-                <SelectItem value="studio">Studio</SelectItem>
-                <SelectItem value="villa">Villa</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={filters.min_bedrooms?.toString() || 'all'}
-              onValueChange={handleBedroomChange}
-            >
-              <SelectTrigger className="w-[130px] bg-secondary border-0 rounded-full">
-                <SelectValue placeholder="Bedrooms" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Any rooms</SelectItem>
-                <SelectItem value="1">1+ room</SelectItem>
-                <SelectItem value="2">2+ rooms</SelectItem>
-                <SelectItem value="3">3+ rooms</SelectItem>
-                <SelectItem value="4">4+ rooms</SelectItem>
-              </SelectContent>
-            </Select>
+        {/* Active filter chips */}
+        {activeChips.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap mt-3">
+            {activeChips.map((chip) => (
+              <Badge
+                key={chip.label}
+                variant="secondary"
+                className="pl-2.5 pr-1.5 py-1 gap-1 cursor-pointer hover:bg-secondary/80 transition-colors"
+                onClick={chip.onRemove}
+              >
+                {chip.label}
+                <X className="h-3 w-3" />
+              </Badge>
+            ))}
           </div>
-        </div>
+        )}
 
         {/* Results count and sort */}
         {totalCount !== undefined && (
