@@ -12,6 +12,7 @@ export function useListings(filters?: ListingFilters) {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
+      // Basic filters
       if (filters?.listing_type) {
         query = query.eq('listing_type', filters.listing_type);
       }
@@ -30,6 +31,9 @@ export function useListings(filters?: ListingFilters) {
       if (filters?.max_bedrooms) {
         query = query.lte('bedrooms', filters.max_bedrooms);
       }
+      if (filters?.min_bathrooms) {
+        query = query.gte('bathrooms', filters.min_bathrooms);
+      }
       if (filters?.min_area) {
         query = query.gte('area_sqm', filters.min_area);
       }
@@ -38,6 +42,98 @@ export function useListings(filters?: ListingFilters) {
       }
       if (filters?.city) {
         query = query.ilike('city', `%${filters.city}%`);
+      }
+
+      // Feature filters
+      if (filters?.is_furnished === true) {
+        query = query.eq('is_furnished', true);
+      }
+      if (filters?.allows_pets === true) {
+        query = query.eq('allows_pets', true);
+      }
+      if (filters?.available_from) {
+        query = query.lte('available_from', filters.available_from);
+      }
+
+      // Building/Floor filters
+      if (filters?.min_floor) {
+        query = query.gte('floor_number', filters.min_floor);
+      }
+      if (filters?.max_floor) {
+        query = query.lte('floor_number', filters.max_floor);
+      }
+      if (filters?.has_elevator === true) {
+        query = query.eq('has_elevator', true);
+      }
+      if (filters?.min_property_floors) {
+        query = query.gte('property_floors', filters.min_property_floors);
+      }
+
+      // Outdoor filters
+      if (filters?.has_balcony === true) {
+        query = query.eq('has_balcony', true);
+      }
+      if (filters?.has_terrace === true) {
+        query = query.eq('has_terrace', true);
+      }
+      if (filters?.has_garden === true) {
+        query = query.eq('has_garden', true);
+      }
+
+      // Parking filters
+      if (filters?.has_parking === true) {
+        query = query.eq('has_parking', true);
+      }
+      if (filters?.parking_type) {
+        query = query.eq('parking_type', filters.parking_type);
+      }
+      if (filters?.has_garage === true) {
+        query = query.eq('has_garage', true);
+      }
+
+      // Amenities filters
+      if (filters?.has_storage === true) {
+        query = query.eq('has_storage', true);
+      }
+      if (filters?.has_air_conditioning === true) {
+        query = query.eq('has_air_conditioning', true);
+      }
+      if (filters?.has_dishwasher === true) {
+        query = query.eq('has_dishwasher', true);
+      }
+      if (filters?.has_washing_machine === true) {
+        query = query.eq('has_washing_machine', true);
+      }
+
+      // Building info filters
+      if (filters?.heating_type) {
+        query = query.eq('heating_type', filters.heating_type);
+      }
+      if (filters?.energy_rating && filters.energy_rating.length > 0) {
+        query = query.in('energy_rating', filters.energy_rating);
+      }
+      if (filters?.min_year_built) {
+        query = query.gte('year_built', filters.min_year_built);
+      }
+      if (filters?.max_year_built) {
+        query = query.lte('year_built', filters.max_year_built);
+      }
+      if (filters?.property_condition && filters.property_condition.length > 0) {
+        query = query.in('property_condition', filters.property_condition);
+      }
+
+      // Rental filters
+      if (filters?.max_deposit) {
+        query = query.lte('deposit_amount', filters.max_deposit);
+      }
+      if (filters?.max_lease_months) {
+        query = query.lte('min_lease_months', filters.max_lease_months);
+      }
+      if (filters?.internet_included) {
+        query = query.eq('internet_included', filters.internet_included);
+      }
+      if (filters?.utilities_included) {
+        query = query.eq('utilities_included', filters.utilities_included);
       }
 
       const { data, error } = await query;
@@ -152,11 +248,28 @@ export function useSimilarListings(listing: Listing | null | undefined, limit: n
   });
 }
 
+// Type for creating a listing - new fields are optional with defaults in DB
+type CreateListingInput = Omit<Listing, 'id' | 'created_at' | 'updated_at' | 
+  'floor_number' | 'total_floors_building' | 'property_floors' | 'has_elevator' |
+  'has_balcony' | 'has_terrace' | 'has_garden' | 'garden_sqm' |
+  'has_parking' | 'parking_type' | 'parking_spaces' | 'has_garage' |
+  'has_storage' | 'has_air_conditioning' | 'has_dishwasher' | 'has_washing_machine' |
+  'heating_type' | 'energy_rating' | 'year_built' | 'property_condition' |
+  'deposit_amount' | 'min_lease_months' | 'internet_included' | 'utilities_included'
+> & Partial<Pick<Listing,
+  'floor_number' | 'total_floors_building' | 'property_floors' | 'has_elevator' |
+  'has_balcony' | 'has_terrace' | 'has_garden' | 'garden_sqm' |
+  'has_parking' | 'parking_type' | 'parking_spaces' | 'has_garage' |
+  'has_storage' | 'has_air_conditioning' | 'has_dishwasher' | 'has_washing_machine' |
+  'heating_type' | 'energy_rating' | 'year_built' | 'property_condition' |
+  'deposit_amount' | 'min_lease_months' | 'internet_included' | 'utilities_included'
+>>;
+
 export function useCreateListing() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (listing: Omit<Listing, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (listing: CreateListingInput) => {
       const { data, error } = await supabase
         .from('listings')
         .insert(listing)

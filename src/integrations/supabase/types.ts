@@ -27,21 +27,45 @@ export type Database = {
           country: string
           created_at: string
           currency: string
+          deposit_amount: number | null
           description: string | null
+          energy_rating: string | null
+          floor_number: number | null
           floor_plan_url: string | null
+          garden_sqm: number | null
+          has_air_conditioning: boolean | null
+          has_balcony: boolean | null
+          has_dishwasher: boolean | null
+          has_elevator: boolean | null
+          has_garage: boolean | null
+          has_garden: boolean | null
+          has_parking: boolean | null
+          has_storage: boolean | null
+          has_terrace: boolean | null
+          has_washing_machine: boolean | null
+          heating_type: string | null
           id: string
           images: string[] | null
+          internet_included: string | null
           is_active: boolean
           is_furnished: boolean | null
           latitude: number
           listing_type: Database["public"]["Enums"]["listing_type"]
           longitude: number
+          min_lease_months: number | null
+          parking_spaces: number | null
+          parking_type: string | null
           postal_code: string | null
           price: number
+          property_condition: string | null
+          property_floors: number | null
           property_type: Database["public"]["Enums"]["property_type"]
           title: string
+          total_floors_building: number | null
           updated_at: string
           user_id: string | null
+          utilities_included: string | null
+          year_built: number | null
         }
         Insert: {
           address: string
@@ -55,21 +79,45 @@ export type Database = {
           country?: string
           created_at?: string
           currency?: string
+          deposit_amount?: number | null
           description?: string | null
+          energy_rating?: string | null
+          floor_number?: number | null
           floor_plan_url?: string | null
+          garden_sqm?: number | null
+          has_air_conditioning?: boolean | null
+          has_balcony?: boolean | null
+          has_dishwasher?: boolean | null
+          has_elevator?: boolean | null
+          has_garage?: boolean | null
+          has_garden?: boolean | null
+          has_parking?: boolean | null
+          has_storage?: boolean | null
+          has_terrace?: boolean | null
+          has_washing_machine?: boolean | null
+          heating_type?: string | null
           id?: string
           images?: string[] | null
+          internet_included?: string | null
           is_active?: boolean
           is_furnished?: boolean | null
           latitude: number
           listing_type?: Database["public"]["Enums"]["listing_type"]
           longitude: number
+          min_lease_months?: number | null
+          parking_spaces?: number | null
+          parking_type?: string | null
           postal_code?: string | null
           price: number
+          property_condition?: string | null
+          property_floors?: number | null
           property_type?: Database["public"]["Enums"]["property_type"]
           title: string
+          total_floors_building?: number | null
           updated_at?: string
           user_id?: string | null
+          utilities_included?: string | null
+          year_built?: number | null
         }
         Update: {
           address?: string
@@ -83,21 +131,45 @@ export type Database = {
           country?: string
           created_at?: string
           currency?: string
+          deposit_amount?: number | null
           description?: string | null
+          energy_rating?: string | null
+          floor_number?: number | null
           floor_plan_url?: string | null
+          garden_sqm?: number | null
+          has_air_conditioning?: boolean | null
+          has_balcony?: boolean | null
+          has_dishwasher?: boolean | null
+          has_elevator?: boolean | null
+          has_garage?: boolean | null
+          has_garden?: boolean | null
+          has_parking?: boolean | null
+          has_storage?: boolean | null
+          has_terrace?: boolean | null
+          has_washing_machine?: boolean | null
+          heating_type?: string | null
           id?: string
           images?: string[] | null
+          internet_included?: string | null
           is_active?: boolean
           is_furnished?: boolean | null
           latitude?: number
           listing_type?: Database["public"]["Enums"]["listing_type"]
           longitude?: number
+          min_lease_months?: number | null
+          parking_spaces?: number | null
+          parking_type?: string | null
           postal_code?: string | null
           price?: number
+          property_condition?: string | null
+          property_floors?: number | null
           property_type?: Database["public"]["Enums"]["property_type"]
           title?: string
+          total_floors_building?: number | null
           updated_at?: string
           user_id?: string | null
+          utilities_included?: string | null
+          year_built?: number | null
         }
         Relationships: []
       }
