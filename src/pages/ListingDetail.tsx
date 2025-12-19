@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Check, X, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink } from 'lucide-react';
 import { useListing } from '@/hooks/useListings';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -13,10 +13,10 @@ import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { ListingLocationMap } from '@/components/ListingLocationMap';
 import { SimilarListings } from '@/components/SimilarListings';
 import { RecentlyViewedListings } from '@/components/RecentlyViewedListings';
+import { PropertyFeatures } from '@/components/PropertyFeatures';
 import { cn } from '@/lib/utils';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { useTranslation } from '@/hooks/useTranslation';
-
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -352,32 +352,8 @@ export default function ListingDetail() {
                 </div>
               )}
 
-              {/* Features */}
-              <div>
-                <h2 className="text-xl font-semibold text-foreground mb-3">{t('listing.features')}</h2>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2">
-                    {listing.is_furnished ? (
-                      <Check className="h-5 w-5 text-success" />
-                    ) : (
-                      <X className="h-5 w-5 text-muted-foreground" />
-                    )}
-                    <span className={listing.is_furnished ? 'text-foreground' : 'text-muted-foreground'}>
-                      {t('listing.furnished')}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {listing.allows_pets ? (
-                      <Check className="h-5 w-5 text-success" />
-                    ) : (
-                      <X className="h-5 w-5 text-muted-foreground" />
-                    )}
-                    <span className={listing.allows_pets ? 'text-foreground' : 'text-muted-foreground'}>
-                      {t('listing.petsAllowed')}
-                    </span>
-                  </div>
-                </div>
-              </div>
+              {/* Property Features */}
+              <PropertyFeatures listing={listing} />
 
               {/* Location Map */}
               <div>
