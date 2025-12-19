@@ -1,5 +1,5 @@
 import { Search, SlidersHorizontal, X, ArrowUpDown } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ListingFilters, SortOption } from '@/types/listing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,10 +30,40 @@ interface FilterBarProps {
 export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount }: FilterBarProps) {
   const [searchValue, setSearchValue] = useState(filters.city || '');
   const [isOpen, setIsOpen] = useState(false);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Live search with debounce
+  useEffect(() => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    
+    debounceRef.current = setTimeout(() => {
+      const newCity = searchValue.trim() || null;
+      if (newCity !== filters.city) {
+        onFiltersChange({ ...filters, city: newCity });
+      }
+    }, 400);
+
+    return () => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, [searchValue]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    onFiltersChange({ ...filters, city: searchValue || null });
+    // Immediate search on Enter key
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    onFiltersChange({ ...filters, city: searchValue.trim() || null });
+  };
+
+  const clearSearch = () => {
+    setSearchValue('');
+    onFiltersChange({ ...filters, city: null });
   };
 
   const handleListingTypeChange = (value: string) => {
@@ -80,73 +110,31 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           Find your home
         </h1>
 
-        {/* Search input - full width on its own line */}
-        <form onSubmit={handleSearch} className="relative w-full mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
-          <Input
-            placeholder="Search city..."
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            className="w-full pl-10 pr-4 text-sm bg-secondary border-0 rounded-full focus-visible:ring-1 focus-visible:ring-accent focus-visible:ring-offset-0"
-          />
-        </form>
+        {/* Search input + Filter button inline */}
+        <div className="flex items-center gap-2 mb-3">
+          <form onSubmit={handleSearch} className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+            <Input
+              placeholder="Search city..."
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              className="w-full pl-10 pr-10 text-sm bg-secondary border-0 rounded-full focus-visible:ring-1 focus-visible:ring-accent focus-visible:ring-offset-0"
+            />
+            {searchValue && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </form>
 
-        {/* Filters row */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Quick filters - desktop */}
-          <div className="hidden sm:flex items-center gap-2 flex-wrap">
-            <Select
-              value={filters.listing_type || 'all'}
-              onValueChange={handleListingTypeChange}
-            >
-              <SelectTrigger className="w-[120px] bg-secondary border-0 rounded-full">
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All types</SelectItem>
-                <SelectItem value="rent">For Rent</SelectItem>
-                <SelectItem value="sale">For Sale</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={filters.property_type || 'all'}
-              onValueChange={handlePropertyTypeChange}
-            >
-              <SelectTrigger className="w-[140px] bg-secondary border-0 rounded-full">
-                <SelectValue placeholder="Property" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All properties</SelectItem>
-                <SelectItem value="apartment">Apartment</SelectItem>
-                <SelectItem value="house">House</SelectItem>
-                <SelectItem value="room">Room</SelectItem>
-                <SelectItem value="studio">Studio</SelectItem>
-                <SelectItem value="villa">Villa</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={filters.min_bedrooms?.toString() || 'all'}
-              onValueChange={handleBedroomChange}
-            >
-              <SelectTrigger className="w-[130px] bg-secondary border-0 rounded-full">
-                <SelectValue placeholder="Bedrooms" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Any rooms</SelectItem>
-                <SelectItem value="1">1+ room</SelectItem>
-                <SelectItem value="2">2+ rooms</SelectItem>
-                <SelectItem value="3">3+ rooms</SelectItem>
-                <SelectItem value="4">4+ rooms</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Filter button - mobile and additional filters */}
+          {/* Filter button - always visible */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="relative">
+              <Button variant="outline" size="icon" className="relative shrink-0 rounded-full">
                 <SlidersHorizontal className="h-4 w-4" />
                 {hasActiveFilters && (
                   <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-accent" />
@@ -249,6 +237,59 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
               </div>
             </SheetContent>
           </Sheet>
+        </div>
+
+        {/* Filters row */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Quick filters - desktop */}
+          <div className="hidden sm:flex items-center gap-2 flex-wrap">
+            <Select
+              value={filters.listing_type || 'all'}
+              onValueChange={handleListingTypeChange}
+            >
+              <SelectTrigger className="w-[120px] bg-secondary border-0 rounded-full">
+                <SelectValue placeholder="Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All types</SelectItem>
+                <SelectItem value="rent">For Rent</SelectItem>
+                <SelectItem value="sale">For Sale</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={filters.property_type || 'all'}
+              onValueChange={handlePropertyTypeChange}
+            >
+              <SelectTrigger className="w-[140px] bg-secondary border-0 rounded-full">
+                <SelectValue placeholder="Property" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All properties</SelectItem>
+                <SelectItem value="apartment">Apartment</SelectItem>
+                <SelectItem value="house">House</SelectItem>
+                <SelectItem value="room">Room</SelectItem>
+                <SelectItem value="studio">Studio</SelectItem>
+                <SelectItem value="villa">Villa</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={filters.min_bedrooms?.toString() || 'all'}
+              onValueChange={handleBedroomChange}
+            >
+              <SelectTrigger className="w-[130px] bg-secondary border-0 rounded-full">
+                <SelectValue placeholder="Bedrooms" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any rooms</SelectItem>
+                <SelectItem value="1">1+ room</SelectItem>
+                <SelectItem value="2">2+ rooms</SelectItem>
+                <SelectItem value="3">3+ rooms</SelectItem>
+                <SelectItem value="4">4+ rooms</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Results count and sort */}
