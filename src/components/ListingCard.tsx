@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Heart, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, ChevronLeft, ChevronRight, Building2, Car, TreePine, Snowflake } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -18,7 +18,7 @@ interface ListingCardProps {
 export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const { formatPrice, formatArea, getPeriodSuffix } = useFormattedPrice();
+  const { formatPrice, formatArea } = useFormattedPrice();
   const { data: isSaved } = useIsListingSaved(user?.id, listing.id);
   const saveListing = useSaveListing();
   const unsaveListing = useUnsaveListing();
@@ -72,6 +72,25 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
 
   const hasMultipleImages = listing.images && listing.images.length > 1;
   const isRental = listing.listing_type === 'rent';
+
+  // Build feature badges
+  const featureBadges: { icon: React.ComponentType<{ className?: string }>; label: string }[] = [];
+  
+  if (listing.has_elevator) {
+    featureBadges.push({ icon: Building2, label: t('listing.features.elevator') });
+  }
+  if (listing.has_parking || listing.has_garage) {
+    featureBadges.push({ icon: Car, label: listing.has_garage ? t('listing.features.garage') : t('listing.features.parking') });
+  }
+  if (listing.has_garden) {
+    featureBadges.push({ icon: TreePine, label: t('listing.features.garden') });
+  }
+  if (listing.has_air_conditioning) {
+    featureBadges.push({ icon: Snowflake, label: t('listing.features.airConditioning') });
+  }
+
+  // Limit to 3 badges max
+  const displayBadges = featureBadges.slice(0, 3);
 
   return (
     <article
@@ -167,9 +186,27 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
           </h3>
         </div>
 
-        <p className="text-sm text-muted-foreground mb-3">
+        <p className="text-sm text-muted-foreground mb-2">
           {propertyTypeLabel} • {listing.bedrooms} {listing.bedrooms !== 1 ? t('filters.rooms') : t('filters.room')} • {formatArea(listing.area_sqm)}
         </p>
+
+        {/* Feature badges */}
+        {displayBadges.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {displayBadges.map((badge, index) => {
+              const Icon = badge.icon;
+              return (
+                <span 
+                  key={index}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary text-xs text-muted-foreground"
+                >
+                  <Icon className="h-3 w-3" />
+                  {badge.label}
+                </span>
+              );
+            })}
+          </div>
+        )}
 
         <div className="flex items-center justify-between">
           <span className="text-lg font-bold text-foreground">
