@@ -60,11 +60,9 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
   return (
     <div 
       className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
-      onClick={onClose}
     >
       <div 
         className="fixed inset-0 z-50 overflow-y-auto bg-background"
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Close button */}
         <Button
