@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { List, MapIcon } from 'lucide-react';
 import { Listing, ListingFilters, SortOption } from '@/types/listing';
 import { useListings } from '@/hooks/useListings';
 import { Header } from '@/components/Header';
@@ -8,6 +9,7 @@ import { ListingCard } from '@/components/ListingCard';
 import { MapView } from '@/components/MapView';
 import { ListingDetailModal } from '@/components/ListingDetailModal';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 
 interface MapBounds {
   north: number;
@@ -23,6 +25,7 @@ const Index = () => {
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
   const [modalListing, setModalListing] = useState<Listing | null>(null);
+  const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
   const listingRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const listContainerRef = useRef<HTMLDivElement>(null);
   
@@ -115,7 +118,9 @@ const Index = () => {
       
       <main className="pt-16 h-screen flex flex-col lg:flex-row">
         {/* Left panel - Listings */}
-        <div className="w-full lg:w-[480px] xl:w-[540px] flex flex-col h-[50vh] lg:h-full border-r border-border">
+        <div className={`w-full lg:w-[480px] xl:w-[540px] flex flex-col lg:h-full border-r border-border ${
+          mobileView === 'map' ? 'hidden lg:flex' : 'flex h-[calc(100vh-4rem)]'
+        }`}>
           <FilterBar 
             filters={filters} 
             onFiltersChange={setFilters}
@@ -124,9 +129,9 @@ const Index = () => {
             totalCount={visibleListings.length}
           />
           
-          <div ref={listContainerRef} className="flex-1 overflow-y-auto p-4">
+          <div ref={listContainerRef} className="flex-1 overflow-y-auto p-3 sm:p-4">
             {isLoading ? (
-              <div className="grid gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4">
                 {[...Array(4)].map((_, i) => (
                   <div key={i} className="space-y-3">
                     <Skeleton className="aspect-[4/3] rounded-xl" />
@@ -136,7 +141,7 @@ const Index = () => {
                 ))}
               </div>
             ) : visibleListings.length > 0 ? (
-              <div className="grid gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4">
                 {visibleListings.map((listing) => (
                   <div
                     key={listing.id}
@@ -172,7 +177,9 @@ const Index = () => {
         </div>
 
         {/* Right panel - Map */}
-        <div className="flex-1 h-[50vh] lg:h-full">
+        <div className={`flex-1 lg:h-full ${
+          mobileView === 'list' ? 'hidden lg:block' : 'block h-[calc(100vh-4rem)]'
+        }`}>
           <MapView
             listings={allListings || []}
             activeListing={activeListingId}
@@ -180,6 +187,30 @@ const Index = () => {
             onPopupClick={handlePopupClick}
             onMapMove={handleMapMove}
           />
+        </div>
+
+        {/* Mobile view toggle */}
+        <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
+          <div className="flex bg-card rounded-full shadow-lg border border-border p-1">
+            <Button
+              variant={mobileView === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              className={`rounded-full px-4 ${mobileView === 'list' ? 'bg-accent text-accent-foreground' : ''}`}
+              onClick={() => setMobileView('list')}
+            >
+              <List className="h-4 w-4 mr-2" />
+              List
+            </Button>
+            <Button
+              variant={mobileView === 'map' ? 'default' : 'ghost'}
+              size="sm"
+              className={`rounded-full px-4 ${mobileView === 'map' ? 'bg-accent text-accent-foreground' : ''}`}
+              onClick={() => setMobileView('map')}
+            >
+              <MapIcon className="h-4 w-4 mr-2" />
+              Map
+            </Button>
+          </div>
         </div>
       </main>
 

@@ -74,14 +74,14 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
   return (
     <div className="bg-background border-b border-border">
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
         {/* Title */}
-        <h1 className="font-display text-2xl font-semibold text-foreground mb-4">
+        <h1 className="font-display text-xl sm:text-2xl font-semibold text-foreground mb-3 sm:mb-4">
           Find your home
         </h1>
 
         {/* Search and filters row */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Search input */}
           <form onSubmit={handleSearch} className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -253,15 +253,15 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
         {/* Results count and sort */}
         {totalCount !== undefined && (
-          <div className="mt-3 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {totalCount.toLocaleString()} {totalCount === 1 ? 'listing' : 'listings'}
             </p>
             
-            <div className="flex items-center gap-2">
-              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-1 sm:gap-2">
+              <ArrowUpDown className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
               <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
-                <SelectTrigger className="w-[150px] h-8 text-sm bg-secondary border-0">
+                <SelectTrigger className="w-[130px] sm:w-[150px] h-7 sm:h-8 text-xs sm:text-sm bg-secondary border-0">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
