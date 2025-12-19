@@ -203,6 +203,17 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     });
   };
 
+  // Parse currency input (remove formatting)
+  const parseCurrencyInput = (input: string): string => {
+    return input.replace(/[^0-9]/g, '');
+  };
+
+  // Format number with thousand separators
+  const formatDisplayValue = (value: number | null | undefined): string => {
+    if (value === null || value === undefined || value === 0) return '';
+    return value.toLocaleString();
+  };
+
   const handleMinPriceSelect = (value: string) => {
     if (value === 'custom') {
       setCustomMinPrice(true);
@@ -420,13 +431,13 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                 <div className="space-y-3">
                   <Label>Price Range</Label>
                   {filters.listing_type ? (
-                    <>
-                      <div className="flex items-center gap-2">
+                    <div className="flex items-start gap-2">
+                      <div className="flex-1 space-y-2">
                         <Select
                           value={getMinPriceSelectValue()}
                           onValueChange={handleMinPriceSelect}
                         >
-                          <SelectTrigger className="flex-1">
+                          <SelectTrigger>
                             <SelectValue placeholder="Min price" />
                           </SelectTrigger>
                           <SelectContent>
@@ -437,12 +448,27 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                             ))}
                           </SelectContent>
                         </Select>
-                        <span className="text-muted-foreground">—</span>
+                        {customMinPrice && (
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              placeholder="Enter amount"
+                              value={formatDisplayValue(filters.min_price)}
+                              onChange={(e) => handlePriceChange('min', parseCurrencyInput(e.target.value))}
+                              className="pl-7"
+                            />
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-muted-foreground pt-2">—</span>
+                      <div className="flex-1 space-y-2">
                         <Select
                           value={getMaxPriceSelectValue()}
                           onValueChange={handleMaxPriceSelect}
                         >
-                          <SelectTrigger className="flex-1">
+                          <SelectTrigger>
                             <SelectValue placeholder="Max price" />
                           </SelectTrigger>
                           <SelectContent>
@@ -453,56 +479,46 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                             ))}
                           </SelectContent>
                         </Select>
+                        {customMaxPrice && (
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
+                            <Input
+                              type="text"
+                              inputMode="numeric"
+                              placeholder="Enter amount"
+                              value={formatDisplayValue(filters.max_price)}
+                              onChange={(e) => handlePriceChange('max', parseCurrencyInput(e.target.value))}
+                              className="pl-7"
+                            />
+                          </div>
+                        )}
                       </div>
-                      
-                      {/* Custom price inputs */}
-                      {(customMinPrice || customMaxPrice) && (
-                        <div className="flex items-center gap-2">
-                          {customMinPrice ? (
-                            <Input
-                              type="number"
-                              placeholder="Enter min price"
-                              value={filters.min_price || ''}
-                              onChange={(e) => handlePriceChange('min', e.target.value)}
-                              className="flex-1"
-                            />
-                          ) : (
-                            <div className="flex-1" />
-                          )}
-                          {customMinPrice && customMaxPrice && (
-                            <span className="text-muted-foreground">—</span>
-                          )}
-                          {customMaxPrice ? (
-                            <Input
-                              type="number"
-                              placeholder="Enter max price"
-                              value={filters.max_price || ''}
-                              onChange={(e) => handlePriceChange('max', e.target.value)}
-                              className="flex-1"
-                            />
-                          ) : (
-                            <div className="flex-1" />
-                          )}
-                        </div>
-                      )}
-                    </>
+                    </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        placeholder="Min €"
-                        value={filters.min_price || ''}
-                        onChange={(e) => handlePriceChange('min', e.target.value)}
-                        className="flex-1"
-                      />
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="Min"
+                          value={formatDisplayValue(filters.min_price)}
+                          onChange={(e) => handlePriceChange('min', parseCurrencyInput(e.target.value))}
+                          className="pl-7"
+                        />
+                      </div>
                       <span className="text-muted-foreground">—</span>
-                      <Input
-                        type="number"
-                        placeholder="Max €"
-                        value={filters.max_price || ''}
-                        onChange={(e) => handlePriceChange('max', e.target.value)}
-                        className="flex-1"
-                      />
+                      <div className="relative flex-1">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          placeholder="Max"
+                          value={formatDisplayValue(filters.max_price)}
+                          onChange={(e) => handlePriceChange('max', parseCurrencyInput(e.target.value))}
+                          className="pl-7"
+                        />
+                      </div>
                     </div>
                   )}
                 </div>
