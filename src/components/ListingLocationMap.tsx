@@ -116,7 +116,7 @@ export function ListingLocationMap({ latitude, longitude, address }: ListingLoca
 
   if (!mapboxToken || mapError) {
     return (
-      <div className="w-full h-[300px] bg-secondary rounded-xl flex items-center justify-center">
+      <div className="w-full h-[400px] bg-secondary rounded-xl flex items-center justify-center">
         <div className="max-w-sm p-6 text-center">
           <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mx-auto mb-3">
             <MapPin className="h-6 w-6 text-muted-foreground" />
@@ -153,7 +153,7 @@ export function ListingLocationMap({ latitude, longitude, address }: ListingLoca
   }
 
   return (
-    <div className="relative w-full h-[300px] rounded-xl overflow-hidden">
+    <div className="relative w-full h-[400px] rounded-xl overflow-hidden">
       <div ref={mapContainer} className="w-full h-full" />
       
       {/* Map Style Switcher */}
