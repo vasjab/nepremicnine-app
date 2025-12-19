@@ -1,6 +1,6 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Listing, ListingFilters } from '@/types/listing';
+import { Listing, ListingFilters, SortOption } from '@/types/listing';
 import { useListings } from '@/hooks/useListings';
 import { Header } from '@/components/Header';
 import { FilterBar } from '@/components/FilterBar';
@@ -18,6 +18,7 @@ interface MapBounds {
 const Index = () => {
   const navigate = useNavigate();
   const [filters, setFilters] = useState<ListingFilters>({});
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
   const listingRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -26,16 +27,40 @@ const Index = () => {
   const { data: allListings, isLoading } = useListings(filters);
 
   // Filter listings based on map bounds
-  const visibleListings = allListings?.filter(listing => {
-    if (!mapBounds) return true; // Show all if no bounds set yet
-    
-    return (
-      listing.latitude >= mapBounds.south &&
-      listing.latitude <= mapBounds.north &&
-      listing.longitude >= mapBounds.west &&
-      listing.longitude <= mapBounds.east
-    );
-  }) || [];
+  const filteredListings = useMemo(() => {
+    let result = allListings?.filter(listing => {
+      if (!mapBounds) return true; // Show all if no bounds set yet
+      
+      return (
+        listing.latitude >= mapBounds.south &&
+        listing.latitude <= mapBounds.north &&
+        listing.longitude >= mapBounds.west &&
+        listing.longitude <= mapBounds.east
+      );
+    }) || [];
+
+    // Apply sorting
+    return result.sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'oldest':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case 'price_asc':
+          return a.price - b.price;
+        case 'price_desc':
+          return b.price - a.price;
+        case 'size_asc':
+          return (a.area_sqm || 0) - (b.area_sqm || 0);
+        case 'size_desc':
+          return (b.area_sqm || 0) - (a.area_sqm || 0);
+        default:
+          return 0;
+      }
+    });
+  }, [allListings, mapBounds, sortBy]);
+
+  const visibleListings = filteredListings;
 
   const handleListingClick = (listing: Listing) => {
     navigate(`/listing/${listing.id}`);
@@ -87,6 +112,8 @@ const Index = () => {
           <FilterBar 
             filters={filters} 
             onFiltersChange={setFilters}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
             totalCount={visibleListings.length}
           />
           

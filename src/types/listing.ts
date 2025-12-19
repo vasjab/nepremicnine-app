@@ -53,3 +53,5 @@ export interface ListingFilters {
   max_bedrooms?: number | null;
   city?: string | null;
 }
+
+export type SortOption = 'newest' | 'oldest' | 'price_asc' | 'price_desc' | 'size_asc' | 'size_desc';
