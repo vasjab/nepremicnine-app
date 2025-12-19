@@ -1,4 +1,4 @@
-import { Globe, RefreshCw } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { useInternationalization } from '@/contexts/InternationalizationContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { CURRENCIES, Currency, CURRENCY_SYMBOLS } from '@/lib/exchangeRates';
@@ -27,9 +27,6 @@ export function InternationalSettings() {
     setAreaUnit,
     rentPeriod,
     setRentPeriod,
-    ratesDate,
-    refreshRates,
-    isLoadingRates,
   } = useInternationalization();
 
   return (
@@ -73,23 +70,6 @@ export function InternationalSettings() {
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
-          {ratesDate && ratesDate !== 'fallback' && (
-            <div className="flex items-center justify-between mt-2 pt-2 border-t border-border">
-              <span className="text-xs text-muted-foreground">
-                {t('international.lastUpdated')}: {ratesDate}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 px-2 text-xs"
-                onClick={refreshRates}
-                disabled={isLoadingRates}
-              >
-                <RefreshCw className={`h-3 w-3 mr-1 ${isLoadingRates ? 'animate-spin' : ''}`} />
-                {t('international.refresh')}
-              </Button>
-            </div>
-          )}
         </div>
         
         <DropdownMenuSeparator />
