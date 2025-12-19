@@ -6,6 +6,7 @@ import { Header } from '@/components/Header';
 import { FilterBar } from '@/components/FilterBar';
 import { ListingCard } from '@/components/ListingCard';
 import { MapView } from '@/components/MapView';
+import { ListingDetailModal } from '@/components/ListingDetailModal';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface MapBounds {
@@ -21,6 +22,7 @@ const Index = () => {
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
+  const [modalListing, setModalListing] = useState<Listing | null>(null);
   const listingRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const listContainerRef = useRef<HTMLDivElement>(null);
   
@@ -86,6 +88,11 @@ const Index = () => {
         block: 'center',
       });
     }
+  }, []);
+
+  // Handle popup click - open modal
+  const handlePopupClick = useCallback((listing: Listing) => {
+    setModalListing(listing);
   }, []);
 
   // Clear highlight after a delay when set via marker click
@@ -170,10 +177,20 @@ const Index = () => {
             listings={allListings || []}
             activeListing={activeListingId}
             onListingClick={handleMarkerClick}
+            onPopupClick={handlePopupClick}
             onMapMove={handleMapMove}
           />
         </div>
       </main>
+
+      {/* Listing Detail Modal */}
+      {modalListing && (
+        <ListingDetailModal
+          listing={modalListing}
+          isOpen={!!modalListing}
+          onClose={() => setModalListing(null)}
+        />
+      )}
     </div>
   );
 };

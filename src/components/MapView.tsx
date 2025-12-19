@@ -18,12 +18,13 @@ interface MapViewProps {
   listings: Listing[];
   activeListing?: string | null;
   onListingClick?: (listing: Listing) => void;
+  onPopupClick?: (listing: Listing) => void;
   onMapMove?: (bounds: { north: number; south: number; east: number; west: number }) => void;
 }
 
 const MAPBOX_TOKEN_KEY = 'hemma_mapbox_token';
 
-export function MapView({ listings, activeListing, onListingClick, onMapMove }: MapViewProps) {
+export function MapView({ listings, activeListing, onListingClick, onPopupClick, onMapMove }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<{ [key: string]: mapboxgl.Marker }>({});
@@ -31,6 +32,7 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
   const activePopupId = useRef<string | null>(null);
   const onMapMoveRef = useRef(onMapMove);
   const onListingClickRef = useRef(onListingClick);
+  const onPopupClickRef = useRef(onPopupClick);
   const initialFitDone = useRef(false);
   const listingsRef = useRef<Listing[]>([]);
   
@@ -50,6 +52,10 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
   useEffect(() => {
     onListingClickRef.current = onListingClick;
   }, [onListingClick]);
+
+  useEffect(() => {
+    onPopupClickRef.current = onPopupClick;
+  }, [onPopupClick]);
 
   useEffect(() => {
     listingsRef.current = listings;
@@ -204,7 +210,7 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
           : formatPriceForPin(listing.price);
 
         const popupContent = `
-          <div style="width: 220px; font-family: 'DM Sans', system-ui, sans-serif;">
+          <div class="popup-content-${listing.id}" style="width: 220px; font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer;">
             <div style="width: 100%; height: 120px; overflow: hidden; border-radius: 8px 8px 0 0;">
               <img src="${imageUrl}" alt="${listing.title}" style="width: 100%; height: 100%; object-fit: cover;" />
             </div>
@@ -221,6 +227,9 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
               <div style="font-size: 16px; font-weight: 700; color: #2d2319;">
                 ${priceDisplay}
               </div>
+              <div style="margin-top: 8px; padding: 8px; background: hsl(350, 70%, 72%); border-radius: 6px; text-align: center; font-size: 13px; font-weight: 600; color: white;">
+                View details
+              </div>
             </div>
           </div>
         `;
@@ -231,6 +240,19 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
           offset: [0, -10],
           className: 'listing-popup',
         }).setHTML(popupContent);
+
+        // Add click handler to popup content after it opens
+        popup.on('open', () => {
+          const popupEl = document.querySelector(`.popup-content-${listing.id}`);
+          if (popupEl) {
+            popupEl.addEventListener('click', () => {
+              const currentListing = listingsRef.current.find(l => l.id === listing.id);
+              if (currentListing && onPopupClickRef.current) {
+                onPopupClickRef.current(currentListing);
+              }
+            });
+          }
+        });
 
         // Store popup reference
         popups.current[listing.id] = popup;
