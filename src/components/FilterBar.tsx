@@ -1,4 +1,4 @@
-import { Search, SlidersHorizontal, X, ArrowUpDown, Building2, Home, DoorOpen, Square, Castle } from 'lucide-react';
+import { Search, SlidersHorizontal, X, ArrowUpDown, Building2, Home, DoorOpen, Square, Castle, Key, Banknote } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { ListingFilters, SortOption } from '@/types/listing';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,11 @@ interface FilterBarProps {
   onSortChange: (sort: SortOption) => void;
   totalCount?: number;
 }
+
+const LISTING_TYPES = [
+  { value: 'rent', label: 'For Rent', icon: Key },
+  { value: 'sale', label: 'For Sale', icon: Banknote },
+] as const;
 
 const PROPERTY_TYPES = [
   { value: 'apartment', label: 'Apartment', icon: Building2 },
@@ -216,21 +221,32 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                 <DialogTitle>Filters</DialogTitle>
               </DialogHeader>
               <div className="mt-4 space-y-5">
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Label>Listing Type</Label>
-                  <Select
-                    value={filters.listing_type || 'all'}
-                    onValueChange={handleListingTypeChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="All types" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All types</SelectItem>
-                      <SelectItem value="rent">For Rent</SelectItem>
-                      <SelectItem value="sale">For Sale</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex flex-wrap gap-2">
+                    {LISTING_TYPES.map((type) => {
+                      const isSelected = filters.listing_type === type.value;
+                      const Icon = type.icon;
+                      return (
+                        <button
+                          key={type.value}
+                          type="button"
+                          onClick={() => handleListingTypeChange(isSelected ? 'all' : type.value)}
+                          className={`
+                            flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200
+                            border-2 cursor-pointer
+                            ${isSelected 
+                              ? 'bg-foreground text-background border-foreground' 
+                              : 'bg-background text-foreground border-border hover:border-foreground/50'
+                            }
+                          `}
+                        >
+                          <Icon className="h-4 w-4" />
+                          {type.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="space-y-3">
