@@ -80,26 +80,26 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           Find your home
         </h1>
 
-        {/* Search and filters row */}
-        <div className="flex items-center gap-2">
-          {/* Search input */}
-          <form onSubmit={handleSearch} className="relative w-full max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
-            <Input
-              placeholder="Search city..."
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              className="w-full pl-10 pr-4 text-sm bg-secondary border-0 rounded-full focus-visible:ring-1 focus-visible:ring-accent focus-visible:ring-offset-0"
-            />
-          </form>
+        {/* Search input - full width on its own line */}
+        <form onSubmit={handleSearch} className="relative w-full mb-3">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+          <Input
+            placeholder="Search city..."
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            className="w-full pl-10 pr-4 text-sm bg-secondary border-0 rounded-full focus-visible:ring-1 focus-visible:ring-accent focus-visible:ring-offset-0"
+          />
+        </form>
 
+        {/* Filters row */}
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Quick filters - desktop */}
-          <div className="hidden lg:flex items-center gap-2">
+          <div className="hidden sm:flex items-center gap-2 flex-wrap">
             <Select
               value={filters.listing_type || 'all'}
               onValueChange={handleListingTypeChange}
             >
-              <SelectTrigger className="w-[120px] bg-secondary border-0">
+              <SelectTrigger className="w-[120px] bg-secondary border-0 rounded-full">
                 <SelectValue placeholder="Type" />
               </SelectTrigger>
               <SelectContent>
@@ -113,7 +113,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
               value={filters.property_type || 'all'}
               onValueChange={handlePropertyTypeChange}
             >
-              <SelectTrigger className="w-[140px] bg-secondary border-0">
+              <SelectTrigger className="w-[140px] bg-secondary border-0 rounded-full">
                 <SelectValue placeholder="Property" />
               </SelectTrigger>
               <SelectContent>
@@ -130,7 +130,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
               value={filters.min_bedrooms?.toString() || 'all'}
               onValueChange={handleBedroomChange}
             >
-              <SelectTrigger className="w-[130px] bg-secondary border-0">
+              <SelectTrigger className="w-[130px] bg-secondary border-0 rounded-full">
                 <SelectValue placeholder="Bedrooms" />
               </SelectTrigger>
               <SelectContent>
