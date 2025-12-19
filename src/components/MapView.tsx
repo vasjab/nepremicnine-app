@@ -4,7 +4,15 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { Listing } from '@/types/listing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { MapPin } from 'lucide-react';
+import { MapPin, Map, Satellite, Mountain } from 'lucide-react';
+
+type MapStyle = 'streets' | 'satellite' | 'outdoors';
+
+const MAP_STYLES: Record<MapStyle, { url: string; label: string; icon: typeof Map }> = {
+  streets: { url: 'mapbox://styles/mapbox/light-v11', label: 'Streets', icon: Map },
+  satellite: { url: 'mapbox://styles/mapbox/satellite-streets-v12', label: 'Satellite', icon: Satellite },
+  outdoors: { url: 'mapbox://styles/mapbox/outdoors-v12', label: 'Outdoors', icon: Mountain },
+};
 
 interface MapViewProps {
   listings: Listing[];
@@ -30,6 +38,7 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
   const [tokenInput, setTokenInput] = useState('');
   const [mapError, setMapError] = useState(false);
   const [mapReady, setMapReady] = useState(false);
+  const [mapStyle, setMapStyle] = useState<MapStyle>('streets');
 
   // Keep refs updated
   useEffect(() => {
@@ -316,9 +325,39 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
     );
   }
 
+  const handleStyleChange = (style: MapStyle) => {
+    if (map.current && style !== mapStyle) {
+      setMapStyle(style);
+      map.current.setStyle(MAP_STYLES[style].url);
+    }
+  };
+
   return (
     <div className="relative w-full h-full">
       <div ref={mapContainer} className="absolute inset-0" />
+      
+      {/* Map Style Switcher */}
+      <div className="absolute top-3 left-3 z-10 flex gap-1 bg-background/95 backdrop-blur-sm rounded-lg p-1 shadow-md border border-border/50">
+        {(Object.keys(MAP_STYLES) as MapStyle[]).map((style) => {
+          const { label, icon: Icon } = MAP_STYLES[style];
+          const isActive = mapStyle === style;
+          return (
+            <button
+              key={style}
+              onClick={() => handleStyleChange(style)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+                isActive
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+              }`}
+              title={label}
+            >
+              <Icon className="h-4 w-4" />
+              <span className="hidden sm:inline">{label}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
