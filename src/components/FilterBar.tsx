@@ -8,6 +8,7 @@ import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Select,
   SelectContent,
@@ -23,12 +24,20 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from '@/components/ui/drawer';
+import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 interface FilterBarProps {
   filters: ListingFilters;
@@ -69,23 +78,26 @@ function FilterSection({
   
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="flex w-full items-center justify-between py-2 text-sm font-medium hover:underline">
+      <CollapsibleTrigger className="flex w-full items-center justify-between py-3 text-sm font-medium transition-colors hover:text-foreground">
         <span className="flex items-center gap-2">
           {title}
           {hasActiveFilters && (
-            <span className="h-2 w-2 rounded-full bg-accent" />
+            <span className="h-2 w-2 rounded-full bg-accent animate-pulse-ring" />
           )}
         </span>
-        {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+        <ChevronDown className={cn(
+          "h-4 w-4 text-muted-foreground transition-transform duration-200",
+          isOpen && "rotate-180"
+        )} />
       </CollapsibleTrigger>
-      <CollapsibleContent className="space-y-3 pt-2 pb-4">
+      <CollapsibleContent className="space-y-3 pt-1 pb-4 animate-accordion-down">
         {children}
       </CollapsibleContent>
     </Collapsible>
   );
 }
 
-// Toggle filter button component
+// Toggle filter button component with larger touch target
 function ToggleFilter({ 
   label, 
   checked, 
@@ -96,9 +108,318 @@ function ToggleFilter({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between">
-      <Label className="text-sm font-normal">{label}</Label>
-      <Switch checked={checked} onCheckedChange={onChange} />
+    <div className="flex items-center justify-between min-h-[44px]">
+      <Label className="text-sm font-normal cursor-pointer flex-1" onClick={() => onChange(!checked)}>
+        {label}
+      </Label>
+      <Switch 
+        checked={checked} 
+        onCheckedChange={onChange}
+        className="data-[state=checked]:bg-accent"
+      />
+    </div>
+  );
+}
+
+// Filter content shared between Dialog and Drawer
+function FilterContent({
+  filters,
+  onFiltersChange,
+  t,
+  clearFilters,
+  hasActiveFilters,
+  setIsOpen,
+  LISTING_TYPES,
+  PROPERTY_TYPES,
+  handleListingTypeChange,
+  handlePropertyTypeToggle,
+  handleBedroomChange,
+  handlePriceRangeChange,
+  handleSizeRangeChange,
+  handleUnitToggle,
+  handleBooleanFilter,
+  priceConfig,
+  sizeConfig,
+  priceRangeValues,
+  sizeRangeValues,
+  formatPriceLabelLocal,
+  areaUnit,
+  isApartmentTypeSelected,
+  isHouseTypeSelected,
+  isRentalSelected,
+  hasFeaturesActive,
+  hasBuildingActive,
+  hasOutdoorActive,
+  hasParkingActive,
+  hasAmenitiesActive,
+  hasRentalActive,
+}: any) {
+  return (
+    <div className="space-y-4 px-1">
+      {/* Listing Type */}
+      <div className="space-y-3 pt-2">
+        <Label className="text-sm font-medium">{t('filters.listingType')}</Label>
+        <div className="flex flex-wrap gap-2">
+          {LISTING_TYPES.map((type: any) => {
+            const isSelected = filters.listing_type === type.value;
+            const Icon = type.icon;
+            return (
+              <button
+                key={type.value}
+                type="button"
+                onClick={() => handleListingTypeChange(isSelected ? 'all' : type.value)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border-2 cursor-pointer min-h-[48px] press-effect",
+                  isSelected 
+                    ? 'bg-foreground text-background border-foreground' 
+                    : 'bg-background text-foreground border-border hover:border-foreground/50'
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                {type.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Property Type */}
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">{t('filters.propertyType')}</Label>
+        <div className="flex flex-wrap gap-2">
+          {PROPERTY_TYPES.map((type: any) => {
+            const isSelected = filters.property_types?.includes(type.value) || false;
+            const Icon = type.icon;
+            return (
+              <button
+                key={type.value}
+                type="button"
+                onClick={() => handlePropertyTypeToggle(type.value)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border-2 cursor-pointer min-h-[48px] press-effect",
+                  isSelected 
+                    ? 'bg-foreground text-background border-foreground' 
+                    : 'bg-background text-foreground border-border hover:border-foreground/50'
+                )}
+              >
+                <Icon className="h-4 w-4" />
+                {type.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Bedrooms */}
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">{t('filters.minimumRooms')}</Label>
+        <Select
+          value={filters.min_bedrooms?.toString() || 'all'}
+          onValueChange={handleBedroomChange}
+        >
+          <SelectTrigger className="bg-background h-12 rounded-xl">
+            <SelectValue placeholder={t('filters.any')} />
+          </SelectTrigger>
+          <SelectContent className="bg-popover">
+            <SelectItem value="all">{t('filters.any')}</SelectItem>
+            <SelectItem value="1">1+ {t('filters.room')}</SelectItem>
+            <SelectItem value="2">2+ {t('filters.rooms')}</SelectItem>
+            <SelectItem value="3">3+ {t('filters.rooms')}</SelectItem>
+            <SelectItem value="4">4+ {t('filters.rooms')}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Price Range Slider */}
+      <div className="space-y-4">
+        <Label className="text-sm font-medium">
+          {filters.listing_type === 'rent' ? t('filters.monthlyCost') : filters.listing_type === 'sale' ? t('filters.totalPrice') : t('filters.price')}
+        </Label>
+        <div className="pt-2 px-2">
+          <Slider
+            value={priceRangeValues}
+            min={priceConfig.min}
+            max={priceConfig.max}
+            step={priceConfig.step}
+            thumbCount={2}
+            onValueChange={handlePriceRangeChange}
+            className="touch-none"
+          />
+        </div>
+        <div className="flex justify-between text-sm text-muted-foreground px-1">
+          <span>{formatPriceLabelLocal(priceRangeValues[0])}</span>
+          <span>{priceRangeValues[1] >= priceConfig.max ? `${formatPriceLabelLocal(priceConfig.max)}+` : formatPriceLabelLocal(priceRangeValues[1])}</span>
+        </div>
+      </div>
+
+      {/* Size Range Slider */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label className="text-sm font-medium">{t('filters.size')}</Label>
+          <div className="flex items-center gap-2">
+            <span className={cn("text-xs transition-colors", areaUnit === 'sqm' ? 'text-foreground font-medium' : 'text-muted-foreground')}>m²</span>
+            <Switch
+              checked={areaUnit === 'sqft'}
+              onCheckedChange={handleUnitToggle}
+            />
+            <span className={cn("text-xs transition-colors", areaUnit === 'sqft' ? 'text-foreground font-medium' : 'text-muted-foreground')}>ft²</span>
+          </div>
+        </div>
+        <div className="pt-2 px-2">
+          <Slider
+            value={sizeRangeValues}
+            min={sizeConfig.min}
+            max={sizeConfig.max}
+            step={sizeConfig.step}
+            thumbCount={2}
+            onValueChange={handleSizeRangeChange}
+            className="touch-none"
+          />
+        </div>
+        <div className="flex justify-between text-sm text-muted-foreground px-1">
+          <span>{sizeRangeValues[0]} {sizeConfig.label}</span>
+          <span>{sizeRangeValues[1] >= sizeConfig.max ? `${sizeConfig.max}+ ${sizeConfig.label}` : `${sizeRangeValues[1]} ${sizeConfig.label}`}</span>
+        </div>
+      </div>
+
+      {/* Collapsible Sections */}
+      <div className="border-t border-border pt-4 space-y-1">
+        {/* Features Section */}
+        <FilterSection title={t('filters.features')} hasActiveFilters={hasFeaturesActive}>
+          <ToggleFilter 
+            label={t('filters.furnished')} 
+            checked={filters.is_furnished || false} 
+            onChange={(v) => handleBooleanFilter('is_furnished', v)} 
+          />
+          <ToggleFilter 
+            label={t('filters.petsAllowed')} 
+            checked={filters.allows_pets || false} 
+            onChange={(v) => handleBooleanFilter('allows_pets', v)} 
+          />
+        </FilterSection>
+
+        {/* Building & Floor Section - conditional */}
+        {(isApartmentTypeSelected || isHouseTypeSelected) && (
+          <FilterSection title={t('filters.buildingFloor')} hasActiveFilters={hasBuildingActive}>
+            {isApartmentTypeSelected && (
+              <ToggleFilter 
+                label={t('filters.hasElevator')} 
+                checked={filters.has_elevator || false} 
+                onChange={(v) => handleBooleanFilter('has_elevator', v)} 
+              />
+            )}
+          </FilterSection>
+        )}
+
+        {/* Outdoor Section */}
+        <FilterSection title={t('filters.outdoor')} hasActiveFilters={hasOutdoorActive}>
+          <ToggleFilter 
+            label={t('filters.hasBalcony')} 
+            checked={filters.has_balcony || false} 
+            onChange={(v) => handleBooleanFilter('has_balcony', v)} 
+          />
+          <ToggleFilter 
+            label={t('filters.hasTerrace')} 
+            checked={filters.has_terrace || false} 
+            onChange={(v) => handleBooleanFilter('has_terrace', v)} 
+          />
+          <ToggleFilter 
+            label={t('filters.hasGarden')} 
+            checked={filters.has_garden || false} 
+            onChange={(v) => handleBooleanFilter('has_garden', v)} 
+          />
+        </FilterSection>
+
+        {/* Parking Section */}
+        <FilterSection title={t('filters.parking')} hasActiveFilters={hasParkingActive}>
+          <ToggleFilter 
+            label={t('filters.hasParking')} 
+            checked={filters.has_parking || false} 
+            onChange={(v) => handleBooleanFilter('has_parking', v)} 
+          />
+          <ToggleFilter 
+            label={t('filters.hasGarage')} 
+            checked={filters.has_garage || false} 
+            onChange={(v) => handleBooleanFilter('has_garage', v)} 
+          />
+        </FilterSection>
+
+        {/* Amenities Section */}
+        <FilterSection title={t('filters.amenities')} hasActiveFilters={hasAmenitiesActive}>
+          <ToggleFilter 
+            label={t('filters.hasAirConditioning')} 
+            checked={filters.has_air_conditioning || false} 
+            onChange={(v) => handleBooleanFilter('has_air_conditioning', v)} 
+          />
+          <ToggleFilter 
+            label={t('filters.hasDishwasher')} 
+            checked={filters.has_dishwasher || false} 
+            onChange={(v) => handleBooleanFilter('has_dishwasher', v)} 
+          />
+          <ToggleFilter 
+            label={t('filters.hasWashingMachine')} 
+            checked={filters.has_washing_machine || false} 
+            onChange={(v) => handleBooleanFilter('has_washing_machine', v)} 
+          />
+          <ToggleFilter 
+            label={t('filters.hasStorage')} 
+            checked={filters.has_storage || false} 
+            onChange={(v) => handleBooleanFilter('has_storage', v)} 
+          />
+        </FilterSection>
+
+        {/* Rental Terms Section - only for rentals */}
+        {isRentalSelected && (
+          <FilterSection title={t('filters.rentalTerms')} hasActiveFilters={hasRentalActive}>
+            <div className="space-y-2">
+              <Label className="text-sm font-normal">{t('filters.internetIncluded')}</Label>
+              <Select
+                value={filters.internet_included || 'any'}
+                onValueChange={(v) => onFiltersChange({ ...filters, internet_included: v === 'any' ? null : v })}
+              >
+                <SelectTrigger className="bg-background h-12 rounded-xl">
+                  <SelectValue placeholder={t('filters.any')} />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  <SelectItem value="any">{t('filters.any')}</SelectItem>
+                  <SelectItem value="yes">{t('filters.internetOptions.yes')}</SelectItem>
+                  <SelectItem value="available">{t('filters.internetOptions.available')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-normal">{t('filters.utilitiesIncluded')}</Label>
+              <Select
+                value={filters.utilities_included || 'any'}
+                onValueChange={(v) => onFiltersChange({ ...filters, utilities_included: v === 'any' ? null : v })}
+              >
+                <SelectTrigger className="bg-background h-12 rounded-xl">
+                  <SelectValue placeholder={t('filters.any')} />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  <SelectItem value="any">{t('filters.any')}</SelectItem>
+                  <SelectItem value="yes">{t('filters.utilitiesOptions.yes')}</SelectItem>
+                  <SelectItem value="partial">{t('filters.utilitiesOptions.partial')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </FilterSection>
+        )}
+      </div>
+
+      {hasActiveFilters && (
+        <Button
+          variant="outline"
+          className="w-full h-12 rounded-xl"
+          onClick={() => {
+            clearFilters();
+            setIsOpen(false);
+          }}
+        >
+          <X className="h-4 w-4 mr-2" />
+          {t('filters.clearAllFilters')}
+        </Button>
+      )}
     </div>
   );
 }
@@ -106,6 +427,7 @@ function ToggleFilter({
 export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount }: FilterBarProps) {
   const { t } = useTranslation();
   const { formatPriceLabel, currencySymbol } = useFormattedPrice();
+  const isMobile = useIsMobile();
   const [searchValue, setSearchValue] = useState(filters.city || '');
   const [isOpen, setIsOpen] = useState(false);
   const [areaUnit, setAreaUnit] = useState<AreaUnit>('sqm');
@@ -127,7 +449,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   // Check if apartment-type properties are selected
   const isApartmentTypeSelected = filters.property_types?.some(t => 
     ['apartment', 'room', 'studio'].includes(t)
-  ) ?? true; // Show by default if no filter
+  ) ?? true;
   
   const isHouseTypeSelected = filters.property_types?.some(t => 
     ['house', 'villa'].includes(t)
@@ -362,329 +684,126 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   const priceRangeValues = getPriceRangeValues();
   const sizeRangeValues = getDisplayedSizeRange();
 
+  const filterContentProps = {
+    filters,
+    onFiltersChange,
+    t,
+    clearFilters,
+    hasActiveFilters,
+    setIsOpen,
+    LISTING_TYPES,
+    PROPERTY_TYPES,
+    handleListingTypeChange,
+    handlePropertyTypeToggle,
+    handleBedroomChange,
+    handlePriceRangeChange,
+    handleSizeRangeChange,
+    handleUnitToggle,
+    handleBooleanFilter,
+    priceConfig,
+    sizeConfig,
+    priceRangeValues,
+    sizeRangeValues,
+    formatPriceLabelLocal,
+    areaUnit,
+    isApartmentTypeSelected,
+    isHouseTypeSelected,
+    isRentalSelected,
+    hasFeaturesActive,
+    hasBuildingActive,
+    hasOutdoorActive,
+    hasParkingActive,
+    hasAmenitiesActive,
+    hasRentalActive,
+  };
+
   return (
-    <div className="bg-background border-b border-border">
-      <div className="p-3 sm:p-4">
+    <div className="bg-background border-b border-border/50">
+      <div className="p-4">
         {/* Title */}
-        <h1 className="font-display text-xl sm:text-2xl font-semibold text-foreground mb-3 sm:mb-4">
+        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">
           {t('common.findHome')}
         </h1>
 
         {/* Search input + Filter button inline */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <form onSubmit={handleSearch} className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
             <Input
               placeholder={t('filters.searchCity')}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className="w-full pl-10 pr-10 text-sm bg-secondary border-0 rounded-full focus-visible:ring-1 focus-visible:ring-accent focus-visible:ring-offset-0"
+              className="w-full pl-11 pr-10 h-12 text-sm bg-secondary border-0 rounded-xl focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0"
             />
             {searchValue && (
               <button
                 type="button"
                 onClick={clearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground hover:text-foreground transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground hover:text-foreground transition-colors rounded-full"
               >
                 <X className="h-4 w-4" />
               </button>
             )}
           </form>
 
-          {/* Filter button - opens centered Dialog */}
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="icon" className="relative shrink-0 rounded-full">
-                <SlidersHorizontal className="h-4 w-4" />
-                {hasActiveFilters && (
-                  <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-accent" />
-                )}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md max-h-[85vh] p-0">
-              <DialogHeader className="p-4 pb-0">
-                <DialogTitle>{t('filters.filters')}</DialogTitle>
-              </DialogHeader>
-              <ScrollArea className="max-h-[calc(85vh-80px)] px-4 pb-4">
-                <div className="space-y-4">
-                  {/* Listing Type */}
-                  <div className="space-y-3 pt-2">
-                    <Label>{t('filters.listingType')}</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {LISTING_TYPES.map((type) => {
-                        const isSelected = filters.listing_type === type.value;
-                        const Icon = type.icon;
-                        return (
-                          <button
-                            key={type.value}
-                            type="button"
-                            onClick={() => handleListingTypeChange(isSelected ? 'all' : type.value)}
-                            className={`
-                              flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200
-                              border-2 cursor-pointer
-                              ${isSelected 
-                                ? 'bg-foreground text-background border-foreground' 
-                                : 'bg-background text-foreground border-border hover:border-foreground/50'
-                              }
-                            `}
-                          >
-                            <Icon className="h-4 w-4" />
-                            {type.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Property Type */}
-                  <div className="space-y-3">
-                    <Label>{t('filters.propertyType')}</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {PROPERTY_TYPES.map((type) => {
-                        const isSelected = filters.property_types?.includes(type.value) || false;
-                        const Icon = type.icon;
-                        return (
-                          <button
-                            key={type.value}
-                            type="button"
-                            onClick={() => handlePropertyTypeToggle(type.value)}
-                            className={`
-                              flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200
-                              border-2 cursor-pointer
-                              ${isSelected 
-                                ? 'bg-foreground text-background border-foreground' 
-                                : 'bg-background text-foreground border-border hover:border-foreground/50'
-                              }
-                            `}
-                          >
-                            <Icon className="h-4 w-4" />
-                            {type.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Bedrooms */}
-                  <div className="space-y-2">
-                    <Label>{t('filters.minimumRooms')}</Label>
-                    <Select
-                      value={filters.min_bedrooms?.toString() || 'all'}
-                      onValueChange={handleBedroomChange}
-                    >
-                      <SelectTrigger className="bg-background">
-                        <SelectValue placeholder={t('filters.any')} />
-                      </SelectTrigger>
-                      <SelectContent className="bg-popover">
-                        <SelectItem value="all">{t('filters.any')}</SelectItem>
-                        <SelectItem value="1">1+ {t('filters.room')}</SelectItem>
-                        <SelectItem value="2">2+ {t('filters.rooms')}</SelectItem>
-                        <SelectItem value="3">3+ {t('filters.rooms')}</SelectItem>
-                        <SelectItem value="4">4+ {t('filters.rooms')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Price Range Slider */}
-                  <div className="space-y-3">
-                    <Label>{filters.listing_type === 'rent' ? t('filters.monthlyCost') : filters.listing_type === 'sale' ? t('filters.totalPrice') : t('filters.price')}</Label>
-                    <div className="pt-2 px-1">
-                      <Slider
-                        value={priceRangeValues}
-                        min={priceConfig.min}
-                        max={priceConfig.max}
-                        step={priceConfig.step}
-                        thumbCount={2}
-                        onValueChange={handlePriceRangeChange}
-                      />
-                    </div>
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>{formatPriceLabelLocal(priceRangeValues[0])}</span>
-                      <span>{priceRangeValues[1] >= priceConfig.max ? `${formatPriceLabelLocal(priceConfig.max)}+` : formatPriceLabelLocal(priceRangeValues[1])}</span>
-                    </div>
-                  </div>
-
-                  {/* Size Range Slider */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label>{t('filters.size')}</Label>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs ${areaUnit === 'sqm' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>m²</span>
-                        <Switch
-                          checked={areaUnit === 'sqft'}
-                          onCheckedChange={handleUnitToggle}
-                        />
-                        <span className={`text-xs ${areaUnit === 'sqft' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>ft²</span>
-                      </div>
-                    </div>
-                    <div className="pt-2 px-1">
-                      <Slider
-                        value={sizeRangeValues}
-                        min={sizeConfig.min}
-                        max={sizeConfig.max}
-                        step={sizeConfig.step}
-                        thumbCount={2}
-                        onValueChange={handleSizeRangeChange}
-                      />
-                    </div>
-                    <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>{sizeRangeValues[0]} {sizeConfig.label}</span>
-                      <span>{sizeRangeValues[1] >= sizeConfig.max ? `${sizeConfig.max}+ ${sizeConfig.label}` : `${sizeRangeValues[1]} ${sizeConfig.label}`}</span>
-                    </div>
-                  </div>
-
-                  {/* Collapsible Sections */}
-                  <div className="border-t border-border pt-4 space-y-1">
-                    {/* Features Section */}
-                    <FilterSection title={t('filters.features')} hasActiveFilters={hasFeaturesActive}>
-                      <ToggleFilter 
-                        label={t('filters.furnished')} 
-                        checked={filters.is_furnished || false} 
-                        onChange={(v) => handleBooleanFilter('is_furnished', v)} 
-                      />
-                      <ToggleFilter 
-                        label={t('filters.petsAllowed')} 
-                        checked={filters.allows_pets || false} 
-                        onChange={(v) => handleBooleanFilter('allows_pets', v)} 
-                      />
-                    </FilterSection>
-
-                    {/* Building & Floor Section - conditional */}
-                    {(isApartmentTypeSelected || isHouseTypeSelected) && (
-                      <FilterSection title={t('filters.buildingFloor')} hasActiveFilters={hasBuildingActive}>
-                        {isApartmentTypeSelected && (
-                          <ToggleFilter 
-                            label={t('filters.hasElevator')} 
-                            checked={filters.has_elevator || false} 
-                            onChange={(v) => handleBooleanFilter('has_elevator', v)} 
-                          />
-                        )}
-                      </FilterSection>
-                    )}
-
-                    {/* Outdoor Section */}
-                    <FilterSection title={t('filters.outdoor')} hasActiveFilters={hasOutdoorActive}>
-                      <ToggleFilter 
-                        label={t('filters.hasBalcony')} 
-                        checked={filters.has_balcony || false} 
-                        onChange={(v) => handleBooleanFilter('has_balcony', v)} 
-                      />
-                      <ToggleFilter 
-                        label={t('filters.hasTerrace')} 
-                        checked={filters.has_terrace || false} 
-                        onChange={(v) => handleBooleanFilter('has_terrace', v)} 
-                      />
-                      <ToggleFilter 
-                        label={t('filters.hasGarden')} 
-                        checked={filters.has_garden || false} 
-                        onChange={(v) => handleBooleanFilter('has_garden', v)} 
-                      />
-                    </FilterSection>
-
-                    {/* Parking Section */}
-                    <FilterSection title={t('filters.parking')} hasActiveFilters={hasParkingActive}>
-                      <ToggleFilter 
-                        label={t('filters.hasParking')} 
-                        checked={filters.has_parking || false} 
-                        onChange={(v) => handleBooleanFilter('has_parking', v)} 
-                      />
-                      <ToggleFilter 
-                        label={t('filters.hasGarage')} 
-                        checked={filters.has_garage || false} 
-                        onChange={(v) => handleBooleanFilter('has_garage', v)} 
-                      />
-                    </FilterSection>
-
-                    {/* Amenities Section */}
-                    <FilterSection title={t('filters.amenities')} hasActiveFilters={hasAmenitiesActive}>
-                      <ToggleFilter 
-                        label={t('filters.hasAirConditioning')} 
-                        checked={filters.has_air_conditioning || false} 
-                        onChange={(v) => handleBooleanFilter('has_air_conditioning', v)} 
-                      />
-                      <ToggleFilter 
-                        label={t('filters.hasDishwasher')} 
-                        checked={filters.has_dishwasher || false} 
-                        onChange={(v) => handleBooleanFilter('has_dishwasher', v)} 
-                      />
-                      <ToggleFilter 
-                        label={t('filters.hasWashingMachine')} 
-                        checked={filters.has_washing_machine || false} 
-                        onChange={(v) => handleBooleanFilter('has_washing_machine', v)} 
-                      />
-                      <ToggleFilter 
-                        label={t('filters.hasStorage')} 
-                        checked={filters.has_storage || false} 
-                        onChange={(v) => handleBooleanFilter('has_storage', v)} 
-                      />
-                    </FilterSection>
-
-                    {/* Rental Terms Section - only for rentals */}
-                    {isRentalSelected && (
-                      <FilterSection title={t('filters.rentalTerms')} hasActiveFilters={hasRentalActive}>
-                        <div className="space-y-2">
-                          <Label className="text-sm font-normal">{t('filters.internetIncluded')}</Label>
-                          <Select
-                            value={filters.internet_included || 'any'}
-                            onValueChange={(v) => onFiltersChange({ ...filters, internet_included: v === 'any' ? null : v })}
-                          >
-                            <SelectTrigger className="bg-background">
-                              <SelectValue placeholder={t('filters.any')} />
-                            </SelectTrigger>
-                            <SelectContent className="bg-popover">
-                              <SelectItem value="any">{t('filters.any')}</SelectItem>
-                              <SelectItem value="yes">{t('filters.internetOptions.yes')}</SelectItem>
-                              <SelectItem value="available">{t('filters.internetOptions.available')}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm font-normal">{t('filters.utilitiesIncluded')}</Label>
-                          <Select
-                            value={filters.utilities_included || 'any'}
-                            onValueChange={(v) => onFiltersChange({ ...filters, utilities_included: v === 'any' ? null : v })}
-                          >
-                            <SelectTrigger className="bg-background">
-                              <SelectValue placeholder={t('filters.any')} />
-                            </SelectTrigger>
-                            <SelectContent className="bg-popover">
-                              <SelectItem value="any">{t('filters.any')}</SelectItem>
-                              <SelectItem value="yes">{t('filters.utilitiesOptions.yes')}</SelectItem>
-                              <SelectItem value="partial">{t('filters.utilitiesOptions.partial')}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </FilterSection>
-                    )}
-                  </div>
-
+          {/* Filter button - Drawer on mobile, Dialog on desktop */}
+          {isMobile ? (
+            <Drawer open={isOpen} onOpenChange={setIsOpen}>
+              <DrawerTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="relative shrink-0 rounded-xl h-12 w-12 border-border/50"
+                >
+                  <SlidersHorizontal className="h-5 w-5" />
                   {hasActiveFilters && (
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => {
-                        clearFilters();
-                        setIsOpen(false);
-                      }}
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      {t('filters.clearAllFilters')}
-                    </Button>
+                    <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-accent" />
                   )}
-                </div>
-              </ScrollArea>
-            </DialogContent>
-          </Dialog>
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent className="max-h-[85vh]">
+                <DrawerHeader className="pb-2">
+                  <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
+                </DrawerHeader>
+                <ScrollArea className="flex-1 px-4 pb-8 overflow-y-auto">
+                  <FilterContent {...filterContentProps} />
+                </ScrollArea>
+              </DrawerContent>
+            </Drawer>
+          ) : (
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="relative shrink-0 rounded-xl h-12 w-12 border-border/50"
+                >
+                  <SlidersHorizontal className="h-5 w-5" />
+                  {hasActiveFilters && (
+                    <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-accent" />
+                  )}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md max-h-[85vh] p-0 rounded-2xl">
+                <DialogHeader className="p-4 pb-2">
+                  <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="max-h-[calc(85vh-80px)] px-4 pb-6">
+                  <FilterContent {...filterContentProps} />
+                </ScrollArea>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
         {/* Active filter chips */}
         {activeChips.length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap mt-3">
+          <div className="flex items-center gap-2 flex-wrap mt-4">
             {activeChips.map((chip) => (
               <Badge
                 key={chip.label}
                 variant="secondary"
-                className="pl-2.5 pr-1.5 py-1 gap-1 cursor-pointer hover:bg-secondary/80 transition-colors"
+                className="pl-3 pr-2 py-1.5 gap-1.5 cursor-pointer hover:bg-secondary/80 transition-all rounded-full text-xs font-medium press-effect"
                 onClick={chip.onRemove}
               >
                 {chip.label}
@@ -696,18 +815,18 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
         {/* Results count and sort */}
         {totalCount !== undefined && (
-          <div className="mt-3 flex items-center justify-between gap-2">
-            <p className="text-xs sm:text-sm text-muted-foreground">
+          <div className="mt-4 flex items-center justify-between gap-2">
+            <p className="text-sm text-muted-foreground">
               {totalCount === 1 ? t('listing.listingCount', { count: totalCount }) : t('listing.listingsCount', { count: totalCount.toLocaleString() })}
             </p>
             
-            <div className="flex items-center gap-1 sm:gap-2">
-              <ArrowUpDown className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
               <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
-                <SelectTrigger className="w-[130px] sm:w-[150px] h-7 sm:h-8 text-xs sm:text-sm bg-secondary border-0">
+                <SelectTrigger className="w-[140px] h-9 text-sm bg-secondary border-0 rounded-xl">
                   <SelectValue placeholder={t('filters.sortBy')} />
                 </SelectTrigger>
-                <SelectContent className="bg-popover">
+                <SelectContent className="bg-popover rounded-xl">
                   <SelectItem value="newest">{t('filters.newest')}</SelectItem>
                   <SelectItem value="oldest">{t('filters.oldest')}</SelectItem>
                   <SelectItem value="price_asc">{t('filters.priceAsc')}</SelectItem>
