@@ -42,10 +42,46 @@ const PROPERTY_TYPES = [
   { value: 'villa', label: 'Villa', icon: Castle },
 ] as const;
 
+const MIN_PRICE_OPTIONS = [
+  { value: '', label: 'No min' },
+  { value: '300', label: '€300' },
+  { value: '500', label: '€500' },
+  { value: '750', label: '€750' },
+  { value: '1000', label: '€1,000' },
+  { value: '1500', label: '€1,500' },
+  { value: '2000', label: '€2,000' },
+  { value: 'custom', label: 'Custom' },
+] as const;
+
+const MAX_PRICE_OPTIONS = [
+  { value: '', label: 'No max' },
+  { value: '500', label: '€500' },
+  { value: '750', label: '€750' },
+  { value: '1000', label: '€1,000' },
+  { value: '1500', label: '€1,500' },
+  { value: '2000', label: '€2,000' },
+  { value: '3000', label: '€3,000' },
+  { value: '5000', label: '€5,000' },
+  { value: 'custom', label: 'Custom' },
+] as const;
+
+const isPresetValue = (value: number | null, options: readonly { value: string }[]) => {
+  if (value === null) return true;
+  return options.some(opt => opt.value === value.toString());
+};
+
 export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount }: FilterBarProps) {
   const [searchValue, setSearchValue] = useState(filters.city || '');
   const [isOpen, setIsOpen] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Track if user selected "Custom" option
+  const [customMinPrice, setCustomMinPrice] = useState(
+    filters.min_price !== null && !isPresetValue(filters.min_price, MIN_PRICE_OPTIONS)
+  );
+  const [customMaxPrice, setCustomMaxPrice] = useState(
+    filters.max_price !== null && !isPresetValue(filters.max_price, MAX_PRICE_OPTIONS)
+  );
 
   // Live search with debounce
   useEffect(() => {
@@ -118,6 +154,44 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
       ...filters,
       [type === 'min' ? 'min_price' : 'max_price']: numValue,
     });
+  };
+
+  const handleMinPriceSelect = (value: string) => {
+    if (value === 'custom') {
+      setCustomMinPrice(true);
+    } else if (value === 'none') {
+      setCustomMinPrice(false);
+      handlePriceChange('min', '');
+    } else {
+      setCustomMinPrice(false);
+      handlePriceChange('min', value);
+    }
+  };
+
+  const handleMaxPriceSelect = (value: string) => {
+    if (value === 'custom') {
+      setCustomMaxPrice(true);
+    } else if (value === 'none') {
+      setCustomMaxPrice(false);
+      handlePriceChange('max', '');
+    } else {
+      setCustomMaxPrice(false);
+      handlePriceChange('max', value);
+    }
+  };
+
+  const getMinPriceSelectValue = () => {
+    if (customMinPrice) return 'custom';
+    if (filters.min_price === null) return 'none';
+    const preset = MIN_PRICE_OPTIONS.find(opt => opt.value === filters.min_price?.toString());
+    return preset ? preset.value : 'custom';
+  };
+
+  const getMaxPriceSelectValue = () => {
+    if (customMaxPrice) return 'custom';
+    if (filters.max_price === null) return 'none';
+    const preset = MAX_PRICE_OPTIONS.find(opt => opt.value === filters.max_price?.toString());
+    return preset ? preset.value : 'custom';
   };
 
   const clearFilters = () => {
@@ -296,23 +370,72 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   </Select>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Label>Price Range</Label>
                   <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={filters.min_price || ''}
-                      onChange={(e) => handlePriceChange('min', e.target.value)}
-                    />
+                    <Select
+                      value={getMinPriceSelectValue()}
+                      onValueChange={handleMinPriceSelect}
+                    >
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Min price" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MIN_PRICE_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value || 'no-min'} value={opt.value || 'none'}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <span className="text-muted-foreground">—</span>
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={filters.max_price || ''}
-                      onChange={(e) => handlePriceChange('max', e.target.value)}
-                    />
+                    <Select
+                      value={getMaxPriceSelectValue()}
+                      onValueChange={handleMaxPriceSelect}
+                    >
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Max price" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MAX_PRICE_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value || 'no-max'} value={opt.value || 'none'}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+                  
+                  {/* Custom price inputs */}
+                  {(customMinPrice || customMaxPrice) && (
+                    <div className="flex items-center gap-2">
+                      {customMinPrice ? (
+                        <Input
+                          type="number"
+                          placeholder="Enter min price"
+                          value={filters.min_price || ''}
+                          onChange={(e) => handlePriceChange('min', e.target.value)}
+                          className="flex-1"
+                        />
+                      ) : (
+                        <div className="flex-1" />
+                      )}
+                      {customMinPrice && customMaxPrice && (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                      {customMaxPrice ? (
+                        <Input
+                          type="number"
+                          placeholder="Enter max price"
+                          value={filters.max_price || ''}
+                          onChange={(e) => handlePriceChange('max', e.target.value)}
+                          className="flex-1"
+                        />
+                      ) : (
+                        <div className="flex-1" />
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {hasActiveFilters && (
