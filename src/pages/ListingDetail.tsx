@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ImageGalleryModal } from '@/components/ImageGalleryModal';
 import { ListingLocationMap } from '@/components/ListingLocationMap';
+import { SimilarListings } from '@/components/SimilarListings';
 import { cn, formatPrice } from '@/lib/utils';
 
 export default function ListingDetail() {
@@ -412,6 +413,11 @@ export default function ListingDetail() {
                 )}
               </div>
             </div>
+          </div>
+
+          {/* Similar Listings */}
+          <div className="lg:col-span-3 mt-8 pt-8 border-t border-border">
+            <SimilarListings listing={listing} />
           </div>
         </div>
       </main>

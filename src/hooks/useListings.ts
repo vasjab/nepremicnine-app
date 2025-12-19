@@ -77,6 +77,51 @@ export function useListing(id: string | undefined) {
   });
 }
 
+export function useSimilarListings(listing: Listing | null | undefined, limit: number = 6) {
+  return useQuery({
+    queryKey: ['similar-listings', listing?.id],
+    queryFn: async () => {
+      if (!listing) return [];
+      
+      // Find listings in the same city with the same listing type, excluding current
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .eq('is_active', true)
+        .eq('listing_type', listing.listing_type)
+        .eq('city', listing.city)
+        .neq('id', listing.id)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+      
+      // If we don't have enough results, fetch more from same property type
+      if (data.length < limit) {
+        const remaining = limit - data.length;
+        const existingIds = [listing.id, ...data.map(l => l.id)];
+        
+        const { data: moreData, error: moreError } = await supabase
+          .from('listings')
+          .select('*')
+          .eq('is_active', true)
+          .eq('listing_type', listing.listing_type)
+          .eq('property_type', listing.property_type)
+          .not('id', 'in', `(${existingIds.join(',')})`)
+          .order('created_at', { ascending: false })
+          .limit(remaining);
+
+        if (!moreError && moreData) {
+          return [...data, ...moreData] as Listing[];
+        }
+      }
+      
+      return data as Listing[];
+    },
+    enabled: !!listing,
+  });
+}
+
 export function useCreateListing() {
   const queryClient = useQueryClient();
 
