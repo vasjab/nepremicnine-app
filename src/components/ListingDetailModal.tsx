@@ -102,12 +102,16 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
               />
 
               {/* Navigation arrows */}
-              {listing.images.length > 1 && (
+              {listing.images.length >= 1 && (
                 <>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10"
+                    disabled={listing.images.length <= 1}
+                    className={cn(
+                      "absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10",
+                      listing.images.length <= 1 && "opacity-50 cursor-not-allowed"
+                    )}
                     onClick={(e) => {
                       e.stopPropagation();
                       setCurrentImageIndex((prev) => (prev === 0 ? listing.images!.length - 1 : prev - 1));
@@ -118,7 +122,11 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10"
+                    disabled={listing.images.length <= 1}
+                    className={cn(
+                      "absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10",
+                      listing.images.length <= 1 && "opacity-50 cursor-not-allowed"
+                    )}
                     onClick={(e) => {
                       e.stopPropagation();
                       setCurrentImageIndex((prev) => (prev === listing.images!.length - 1 ? 0 : prev + 1));
