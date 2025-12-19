@@ -2,7 +2,9 @@ import { Link, useLocation } from 'react-router-dom';
 import { Home, Heart, PlusCircle, User, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Button } from '@/components/ui/button';
+import { InternationalSettings } from '@/components/InternationalSettings';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +15,7 @@ import {
 
 export function Header() {
   const { user, signOut } = useAuth();
+  const { t } = useTranslation();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -39,7 +42,7 @@ export function Header() {
                   : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
               }`}
             >
-              Find Home
+              {t('nav.findHome')}
             </Link>
             {user && (
               <>
@@ -51,7 +54,7 @@ export function Header() {
                       : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
                   }`}
                 >
-                  Saved
+                  {t('nav.saved')}
                 </Link>
                 <Link
                   to="/my-listings"
@@ -61,20 +64,23 @@ export function Header() {
                       : 'text-muted-foreground hover:text-foreground hover:bg-secondary/50'
                   }`}
                 >
-                  My Listings
+                  {t('nav.myListings')}
                 </Link>
               </>
             )}
           </nav>
 
           {/* Right side */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {/* International Settings */}
+            <InternationalSettings />
+
             {user ? (
               <>
                 <Link to="/create-listing">
                   <Button variant="outline" size="sm" className="hidden sm:flex gap-2">
                     <PlusCircle className="h-4 w-4" />
-                    Create Listing
+                    {t('common.createListing')}
                   </Button>
                 </Link>
                 <DropdownMenu>
@@ -87,24 +93,24 @@ export function Header() {
                     <DropdownMenuItem asChild>
                       <Link to="/profile" className="cursor-pointer">
                         <User className="mr-2 h-4 w-4" />
-                        Profile
+                        {t('common.profile')}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/saved" className="cursor-pointer">
                         <Heart className="mr-2 h-4 w-4" />
-                        Saved Listings
+                        {t('common.savedListings')}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/my-listings" className="cursor-pointer">
                         <Home className="mr-2 h-4 w-4" />
-                        My Listings
+                        {t('common.myListings')}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={signOut} className="cursor-pointer text-destructive">
-                      Sign Out
+                      {t('common.signOut')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -113,12 +119,12 @@ export function Header() {
               <div className="flex items-center gap-2">
                 <Link to="/auth">
                   <Button variant="ghost" size="sm">
-                    Log In
+                    {t('common.logIn')}
                   </Button>
                 </Link>
                 <Link to="/auth?mode=signup">
                   <Button size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90">
-                    Sign Up
+                    {t('common.signUp')}
                   </Button>
                 </Link>
               </div>
@@ -150,7 +156,7 @@ export function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <Home className="inline-block mr-2 h-4 w-4" />
-                Find Home
+                {t('nav.findHome')}
               </Link>
               {user && (
                 <>
@@ -164,7 +170,7 @@ export function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <Heart className="inline-block mr-2 h-4 w-4" />
-                    Saved
+                    {t('nav.saved')}
                   </Link>
                   <Link
                     to="/my-listings"
@@ -176,7 +182,7 @@ export function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <PlusCircle className="inline-block mr-2 h-4 w-4" />
-                    My Listings
+                    {t('nav.myListings')}
                   </Link>
                   <Link
                     to="/create-listing"
@@ -184,7 +190,7 @@ export function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <PlusCircle className="inline-block mr-2 h-4 w-4" />
-                    Create Listing
+                    {t('common.createListing')}
                   </Link>
                 </>
               )}
