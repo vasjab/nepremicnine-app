@@ -183,7 +183,7 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
           font-weight: 600;
           box-shadow: 0 2px 8px rgba(0,0,0,0.2);
           cursor: pointer;
-          transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+          transition: background 0.15s ease, box-shadow 0.15s ease;
           white-space: nowrap;
           border-left: 3px solid ${isForRent ? 'hsl(210, 90%, 40%)' : 'hsl(145, 65%, 30%)'};
         `;
@@ -270,14 +270,12 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
         });
 
         el.addEventListener('mouseenter', () => {
-          el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.3)';
-          el.style.transform = 'scale(1.05)';
+          el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.35)';
         });
 
         el.addEventListener('mouseleave', () => {
           const isActive = listing.id === activeListing;
-          el.style.boxShadow = isActive ? '0 4px 16px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.2)';
-          el.style.transform = isActive ? 'scale(1.05)' : 'scale(1)';
+          el.style.boxShadow = isActive ? '0 4px 16px rgba(0,0,0,0.35)' : '0 2px 8px rgba(0,0,0,0.2)';
         });
 
         const marker = new mapboxgl.Marker({ element: el, anchor: 'center' })
@@ -310,8 +308,7 @@ export function MapView({ listings, activeListing, onListingClick, onMapMove }: 
     Object.entries(markers.current).forEach(([id, marker]) => {
       const el = marker.getElement();
       const isActive = id === activeListing;
-      el.style.boxShadow = isActive ? '0 4px 16px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.2)';
-      el.style.transform = isActive ? 'scale(1.05)' : 'scale(1)';
+      el.style.boxShadow = isActive ? '0 4px 16px rgba(0,0,0,0.35)' : '0 2px 8px rgba(0,0,0,0.2)';
     });
   }, [activeListing]);
 
