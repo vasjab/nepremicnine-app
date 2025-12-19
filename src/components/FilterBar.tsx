@@ -4,6 +4,7 @@ import { ListingFilters, SortOption } from '@/types/listing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -27,6 +28,14 @@ interface FilterBarProps {
   onSortChange: (sort: SortOption) => void;
   totalCount?: number;
 }
+
+const PROPERTY_TYPES = [
+  { value: 'apartment', label: 'Apartment' },
+  { value: 'house', label: 'House' },
+  { value: 'room', label: 'Room' },
+  { value: 'studio', label: 'Studio' },
+  { value: 'villa', label: 'Villa' },
+] as const;
 
 export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount }: FilterBarProps) {
   const [searchValue, setSearchValue] = useState(filters.city || '');
@@ -73,10 +82,21 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     });
   };
 
-  const handlePropertyTypeChange = (value: string) => {
+  const handlePropertyTypeToggle = (value: string) => {
+    const current = filters.property_types || [];
+    const updated = current.includes(value)
+      ? current.filter((t) => t !== value)
+      : [...current, value];
     onFiltersChange({
       ...filters,
-      property_type: value === 'all' ? null : value,
+      property_types: updated.length > 0 ? updated : null,
+    });
+  };
+
+  const clearPropertyTypes = () => {
+    onFiltersChange({
+      ...filters,
+      property_types: null,
     });
   };
 
@@ -100,7 +120,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     onFiltersChange({});
   };
 
-  const hasActiveFilters = Object.values(filters).some(v => v !== null && v !== undefined);
+  const hasActiveFilters = Object.values(filters).some(v => v !== null && v !== undefined && (Array.isArray(v) ? v.length > 0 : true));
 
   // Build active filter chips
   const getActiveFilterChips = () => {
@@ -113,11 +133,13 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
       });
     }
 
-    if (filters.property_type) {
-      const label = filters.property_type.charAt(0).toUpperCase() + filters.property_type.slice(1);
-      chips.push({
-        label,
-        onRemove: () => handlePropertyTypeChange('all'),
+    if (filters.property_types && filters.property_types.length > 0) {
+      filters.property_types.forEach((type) => {
+        const label = type.charAt(0).toUpperCase() + type.slice(1);
+        chips.push({
+          label,
+          onRemove: () => handlePropertyTypeToggle(type),
+        });
       });
     }
 
@@ -211,24 +233,28 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   </Select>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Label>Property Type</Label>
-                  <Select
-                    value={filters.property_type || 'all'}
-                    onValueChange={handlePropertyTypeChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="All properties" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All properties</SelectItem>
-                      <SelectItem value="apartment">Apartment</SelectItem>
-                      <SelectItem value="house">House</SelectItem>
-                      <SelectItem value="room">Room</SelectItem>
-                      <SelectItem value="studio">Studio</SelectItem>
-                      <SelectItem value="villa">Villa</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="grid grid-cols-2 gap-2">
+                    {PROPERTY_TYPES.map((type) => (
+                      <div
+                        key={type.value}
+                        className="flex items-center space-x-2"
+                      >
+                        <Checkbox
+                          id={`property-${type.value}`}
+                          checked={filters.property_types?.includes(type.value) || false}
+                          onCheckedChange={() => handlePropertyTypeToggle(type.value)}
+                        />
+                        <label
+                          htmlFor={`property-${type.value}`}
+                          className="text-sm font-medium leading-none cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {type.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="space-y-2">

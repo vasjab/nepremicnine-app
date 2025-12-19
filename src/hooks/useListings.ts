@@ -15,8 +15,8 @@ export function useListings(filters?: ListingFilters) {
       if (filters?.listing_type) {
         query = query.eq('listing_type', filters.listing_type);
       }
-      if (filters?.property_type) {
-        query = query.eq('property_type', filters.property_type as 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other');
+      if (filters?.property_types && filters.property_types.length > 0) {
+        query = query.in('property_type', filters.property_types as ('apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other')[]);
       }
       if (filters?.min_price) {
         query = query.gte('price', filters.min_price);

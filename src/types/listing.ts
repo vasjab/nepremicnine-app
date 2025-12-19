@@ -47,7 +47,7 @@ export interface SavedListing {
 
 export interface ListingFilters {
   listing_type?: 'rent' | 'sale' | null;
-  property_type?: string | null;
+  property_types?: string[] | null;
   min_price?: number | null;
   max_price?: number | null;
   min_bedrooms?: number | null;
