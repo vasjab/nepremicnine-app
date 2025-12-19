@@ -1,7 +1,7 @@
 // Dynamic exchange rates from Frankfurter API (European Central Bank data)
 const FRANKFURTER_API = 'https://api.frankfurter.dev/v1/latest';
 const CACHE_KEY = 'exchange_rates_cache';
-const CACHE_TTL = 60 * 60 * 1000; // 1 hour in milliseconds
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
 export type Currency = 'EUR' | 'SEK' | 'DKK' | 'NOK' | 'ISK' | 'USD' | 'CAD' | 'GBP' | 'CHF';
 

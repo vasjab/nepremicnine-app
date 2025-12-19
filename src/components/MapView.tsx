@@ -1,10 +1,12 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Listing } from '@/types/listing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MapPin, Map, Satellite, Mountain, Maximize2 } from 'lucide-react';
+import { useFormattedPrice } from '@/hooks/useFormattedPrice';
+import { useTranslation } from '@/hooks/useTranslation';
 
 type MapStyle = 'streets' | 'satellite' | 'outdoors';
 
@@ -44,6 +46,10 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
   const [mapReady, setMapReady] = useState(false);
   const [mapStyle, setMapStyle] = useState<MapStyle>('streets');
 
+  // Use internationalization hooks
+  const { formatPrice, formatArea, currency, rentPeriod, areaUnit } = useFormattedPrice();
+  const { t } = useTranslation();
+
   // Keep refs updated
   useEffect(() => {
     onMapMoveRef.current = onMapMove;
@@ -60,15 +66,6 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
   useEffect(() => {
     listingsRef.current = listings;
   }, [listings]);
-
-  const formatPriceForPin = useCallback((price: number) => {
-    // Format in European style with space as thousand separator
-    const formatted = new Intl.NumberFormat('de-DE', {
-      style: 'decimal',
-      maximumFractionDigits: 0,
-    }).format(price);
-    return `${formatted} €`;
-  }, []);
 
   const handleSaveToken = () => {
     if (tokenInput.trim()) {
@@ -150,20 +147,36 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
     };
   }, [mapboxToken]);
 
-  // Update markers when listings change (but don't re-fit bounds on every change)
+  // Track i18n settings to force marker recreation
+  const lastI18nKey = useRef<string>('');
+  const currentI18nKey = `${currency}-${rentPeriod}-${areaUnit}`;
+
+  // Update markers when listings or i18n settings change
   useEffect(() => {
     if (!map.current || !mapReady) return;
 
     const currentListingIds = new Set(listings.map(l => l.id));
     const existingIds = new Set(Object.keys(markers.current));
+    const i18nChanged = lastI18nKey.current !== currentI18nKey;
 
-    // Remove markers that are no longer in listings
-    existingIds.forEach(id => {
-      if (!currentListingIds.has(id)) {
+    // If i18n settings changed, remove ALL markers to force recreation
+    if (i18nChanged) {
+      existingIds.forEach(id => {
         markers.current[id].remove();
+        popups.current[id]?.remove();
         delete markers.current[id];
-      }
-    });
+        delete popups.current[id];
+      });
+      lastI18nKey.current = currentI18nKey;
+    } else {
+      // Remove only markers that are no longer in listings
+      existingIds.forEach(id => {
+        if (!currentListingIds.has(id)) {
+          markers.current[id].remove();
+          delete markers.current[id];
+        }
+      });
+    }
 
     // Add or update markers
     listings.forEach(listing => {
@@ -177,7 +190,11 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
       } else {
         // Create new marker
         const el = document.createElement('div');
-        el.textContent = formatPriceForPin(listing.price);
+        el.textContent = formatPrice(listing.price, listing.currency || 'EUR', { 
+          isRental: listing.listing_type === 'rent', 
+          showPeriod: listing.listing_type === 'rent',
+          compact: true 
+        });
         el.style.cssText = `
           background: hsl(0, 0%, 100%);
           color: hsl(25, 30%, 12%);
@@ -206,9 +223,10 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
           other: 'Other',
         };
 
-        const priceDisplay = listing.listing_type === 'rent' 
-          ? `${formatPriceForPin(listing.price)}/mo`
-          : formatPriceForPin(listing.price);
+        const priceDisplay = formatPrice(listing.price, listing.currency || 'EUR', { 
+          isRental: listing.listing_type === 'rent', 
+          showPeriod: listing.listing_type === 'rent' 
+        });
 
         const dotsHtml = hasMultipleImages 
           ? `<div class="popup-dots-${listing.id}" style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; z-index: 10;">
@@ -261,7 +279,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
                 ${listing.address}
               </div>
               <div style="font-size: 13px; color: #666; margin-bottom: 10px;">
-                ${listing.bedrooms} room${listing.bedrooms !== 1 ? 's' : ''} • ${listing.area_sqm ? listing.area_sqm + ' m²' : 'N/A'}
+                ${listing.bedrooms} room${listing.bedrooms !== 1 ? 's' : ''} • ${formatArea(listing.area_sqm)}
               </div>
               <div style="font-size: 18px; font-weight: 700; color: #2d2319;">
                 ${priceDisplay}
@@ -409,7 +427,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
       
       initialFitDone.current = true;
     }
-  }, [listings, mapReady, formatPriceForPin, activeListing]);
+  }, [listings, mapReady, activeListing, formatPrice, formatArea, currency, rentPeriod, areaUnit]);
 
   // Update active marker styling separately
   useEffect(() => {
