@@ -40,11 +40,13 @@ export function ImageGalleryModal({ images, floorPlanUrl, isOpen, onClose, title
     };
   }, [isOpen]);
 
-  const scrollToTop = () => {
+  const scrollToTop = (e: React.MouseEvent) => {
+    e.stopPropagation();
     containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const scrollToFloorPlan = () => {
+  const scrollToFloorPlan = (e: React.MouseEvent) => {
+    e.stopPropagation();
     floorPlanRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
