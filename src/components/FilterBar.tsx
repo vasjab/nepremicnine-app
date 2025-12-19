@@ -4,7 +4,7 @@ import { ListingFilters, SortOption } from '@/types/listing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
+
 import {
   Select,
   SelectContent,
@@ -235,25 +235,27 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
                 <div className="space-y-3">
                   <Label>Property Type</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {PROPERTY_TYPES.map((type) => (
-                      <div
-                        key={type.value}
-                        className="flex items-center space-x-2"
-                      >
-                        <Checkbox
-                          id={`property-${type.value}`}
-                          checked={filters.property_types?.includes(type.value) || false}
-                          onCheckedChange={() => handlePropertyTypeToggle(type.value)}
-                        />
-                        <label
-                          htmlFor={`property-${type.value}`}
-                          className="text-sm font-medium leading-none cursor-pointer peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  <div className="flex flex-wrap gap-2">
+                    {PROPERTY_TYPES.map((type) => {
+                      const isSelected = filters.property_types?.includes(type.value) || false;
+                      return (
+                        <button
+                          key={type.value}
+                          type="button"
+                          onClick={() => handlePropertyTypeToggle(type.value)}
+                          className={`
+                            px-4 py-2.5 rounded-full text-sm font-medium transition-all duration-200
+                            border-2 cursor-pointer
+                            ${isSelected 
+                              ? 'bg-foreground text-background border-foreground' 
+                              : 'bg-background text-foreground border-border hover:border-foreground/50'
+                            }
+                          `}
                         >
                           {type.label}
-                        </label>
-                      </div>
-                    ))}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
