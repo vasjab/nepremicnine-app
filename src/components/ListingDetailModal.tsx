@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { X, Heart, MapPin, Bed, Bath, Square, Calendar, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,6 +30,25 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
   const [showGallery, setShowGallery] = useState(false);
   const [scrollToFloorPlan, setScrollToFloorPlan] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  // Trigger entrance animation
+  useEffect(() => {
+    if (isOpen) {
+      setIsAnimating(true);
+      setIsClosing(false);
+    }
+  }, [isOpen]);
+
+  const handleClose = useCallback(() => {
+    setIsClosing(true);
+    setTimeout(() => {
+      onClose();
+      setIsClosing(false);
+      setIsAnimating(false);
+    }, 200);
+  }, [onClose]);
 
   const goToPrevImage = useCallback(() => {
     if (listing.images && listing.images.length > 1) {
@@ -79,22 +98,61 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm"
+      className={cn(
+        "fixed inset-0 z-50 transition-all duration-300",
+        isClosing ? "opacity-0" : "opacity-100"
+      )}
     >
+      {/* Backdrop */}
       <div 
-        className="fixed inset-0 z-50 overflow-y-auto bg-background"
+        className={cn(
+          "fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity duration-300",
+          isAnimating && !isClosing ? "opacity-100" : "opacity-0"
+        )}
+        onClick={handleClose}
+      />
+      
+      <div 
+        className={cn(
+          "fixed inset-0 z-50 overflow-y-auto bg-background transition-all duration-300",
+          isAnimating && !isClosing 
+            ? "opacity-100 translate-y-0 scale-100" 
+            : "opacity-0 translate-y-4 scale-[0.98]"
+        )}
       >
         {/* Close button */}
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 h-10 w-10 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card"
-          onClick={onClose}
+          className={cn(
+            "fixed top-4 left-4 z-50 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm",
+            "hover:bg-card hover:scale-105 active:scale-95",
+            "shadow-lg transition-all duration-200",
+            "touch-target"
+          )}
+          onClick={handleClose}
         >
           <X className="h-5 w-5" />
         </Button>
 
         {/* Save button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "fixed top-4 right-4 z-50 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm",
+            "hover:bg-card hover:scale-105 active:scale-95",
+            "shadow-lg transition-all duration-200",
+            "touch-target",
+            isSaved && "text-accent"
+          )}
+          onClick={handleSaveClick}
+        >
+          <Heart className={cn(
+            'h-5 w-5 transition-transform duration-200',
+            isSaved && 'fill-current animate-heart-beat'
+          )} />
+        </Button>
         <Button
           variant="ghost"
           size="icon"
@@ -109,28 +167,49 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
 
         {/* Image gallery preview */}
         <div 
-          className="relative h-[40vh] sm:h-[50vh] bg-muted cursor-pointer group select-none"
+          className={cn(
+            "relative h-[40vh] sm:h-[50vh] bg-muted cursor-pointer group select-none overflow-hidden",
+            "transition-transform duration-500",
+            isAnimating && !isClosing ? "translate-y-0" : "translate-y-4"
+          )}
           onClick={() => setShowGallery(true)}
           {...swipeHandlers}
         >
           {listing.images && listing.images.length > 0 ? (
             <>
-              <img
-                src={listing.images[currentImageIndex]}
-                alt={`${listing.title} - Photo ${currentImageIndex + 1}`}
-                className="w-full h-full object-cover transition-all duration-300"
-              />
+              {/* Preload adjacent images */}
+              {listing.images.length > 1 && (
+                <>
+                  <link rel="prefetch" href={listing.images[(currentImageIndex + 1) % listing.images.length]} />
+                  <link rel="prefetch" href={listing.images[(currentImageIndex - 1 + listing.images.length) % listing.images.length]} />
+                </>
+              )}
+              
+              <div className="relative w-full h-full">
+                <img
+                  src={listing.images[currentImageIndex]}
+                  alt={`${listing.title} - Photo ${currentImageIndex + 1}`}
+                  className={cn(
+                    "w-full h-full object-cover transition-all duration-500",
+                    "group-hover:scale-[1.02]"
+                  )}
+                />
+                {/* Gradient overlay for better text visibility */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+              </div>
 
               {/* Navigation arrows */}
-              {listing.images.length >= 1 && (
+              {listing.images.length > 1 && (
                 <>
                   <Button
                     variant="ghost"
                     size="icon"
-                    disabled={listing.images.length <= 1}
                     className={cn(
-                      "absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10",
-                      listing.images.length <= 1 && "opacity-50 cursor-not-allowed"
+                      "absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full",
+                      "bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg z-10",
+                      "opacity-0 group-hover:opacity-100 transition-all duration-200",
+                      "hover:scale-110 active:scale-95",
+                      "sm:opacity-100"
                     )}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -142,10 +221,12 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
                   <Button
                     variant="ghost"
                     size="icon"
-                    disabled={listing.images.length <= 1}
                     className={cn(
-                      "absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10",
-                      listing.images.length <= 1 && "opacity-50 cursor-not-allowed"
+                      "absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full",
+                      "bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg z-10",
+                      "opacity-0 group-hover:opacity-100 transition-all duration-200",
+                      "hover:scale-110 active:scale-95",
+                      "sm:opacity-100"
                     )}
                     onClick={(e) => {
                       e.stopPropagation();
@@ -158,11 +239,15 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
               )}
 
               {/* Image count overlay */}
-              <div className="absolute bottom-4 right-4 bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium">
+              <div className={cn(
+                "absolute bottom-4 right-4 bg-card/90 backdrop-blur-sm px-4 py-2 rounded-xl",
+                "flex items-center gap-2 text-sm font-medium shadow-lg",
+                "transition-transform duration-200 hover:scale-105"
+              )}>
                 <Images className="h-4 w-4" />
                 <span>
                   {currentImageIndex + 1} / {listing.images.length}
-                  {(listing as any).floor_plan_url && ` • ${t('listing.floorPlan')}`}
+                  {listing.floor_plan_url && ` • ${t('listing.floorPlan')}`}
                 </span>
               </div>
             </>
@@ -174,7 +259,10 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
 
           {/* Type badge */}
           <div className="absolute bottom-4 left-4">
-            <span className="px-3 py-1.5 rounded-lg bg-card/90 backdrop-blur-sm text-sm font-medium">
+            <span className={cn(
+              "px-4 py-2 rounded-xl bg-card/90 backdrop-blur-sm text-sm font-medium shadow-lg",
+              "transition-transform duration-200 hover:scale-105"
+            )}>
               {listing.listing_type === 'rent' ? t('listingTypes.rent') : t('listingTypes.sale')}
             </span>
           </div>
@@ -182,7 +270,10 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
 
         {/* Quick action buttons - Floor plan & All images */}
         {listing.images && listing.images.length > 0 && (
-          <div className="container mx-auto px-4 py-4">
+          <div className={cn(
+            "container mx-auto px-4 py-4 transition-all duration-500 delay-100",
+            isAnimating && !isClosing ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          )}>
             <div className="flex flex-row gap-3">
               {listing.floor_plan_url && (
                 <button
@@ -190,7 +281,12 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
                     setScrollToFloorPlan(true);
                     setShowGallery(true);
                   }}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-card border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors shadow-sm"
+                  className={cn(
+                    "flex items-center gap-2 px-5 py-3 bg-card border border-border rounded-xl",
+                    "text-sm font-medium text-foreground shadow-sm",
+                    "hover:bg-muted hover:scale-105 active:scale-95",
+                    "transition-all duration-200 touch-target"
+                  )}
                 >
                   <LayoutGrid className="h-4 w-4" />
                   {t('listing.floorPlan')}
@@ -201,7 +297,12 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
                   setScrollToFloorPlan(false);
                   setShowGallery(true);
                 }}
-                className="flex items-center gap-2 px-4 py-2.5 bg-secondary border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors shadow-sm"
+                className={cn(
+                  "flex items-center gap-2 px-5 py-3 bg-secondary border border-border rounded-xl",
+                  "text-sm font-medium text-foreground shadow-sm",
+                  "hover:bg-muted hover:scale-105 active:scale-95",
+                  "transition-all duration-200 touch-target"
+                )}
               >
                 {listing.images.length} {t('listing.images')}
                 <ExternalLink className="h-4 w-4" />
@@ -211,13 +312,16 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
         )}
 
         {/* Content */}
-        <div className="container mx-auto px-4 py-6 sm:py-8">
+        <div className={cn(
+          "container mx-auto px-4 py-6 sm:py-8 transition-all duration-500 delay-150",
+          isAnimating && !isClosing ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+        )}>
           <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Main content */}
             <div className="lg:col-span-2 space-y-6 sm:space-y-8">
               {/* Header */}
               <div>
-                <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-2">
+                <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2">
                   {listing.title}
                 </h1>
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -228,22 +332,22 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
 
               {/* Quick stats */}
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-                <div className="bg-secondary rounded-xl p-4">
+                <div className="bg-secondary rounded-xl p-4 hover:bg-secondary/80 transition-colors">
                   <Bed className="h-5 w-5 text-muted-foreground mb-2" />
                   <p className="text-sm text-muted-foreground">{t('listing.bedrooms')}</p>
                   <p className="text-lg font-semibold text-foreground">{listing.bedrooms}</p>
                 </div>
-                <div className="bg-secondary rounded-xl p-4">
+                <div className="bg-secondary rounded-xl p-4 hover:bg-secondary/80 transition-colors">
                   <Bath className="h-5 w-5 text-muted-foreground mb-2" />
                   <p className="text-sm text-muted-foreground">{t('listing.bathrooms')}</p>
                   <p className="text-lg font-semibold text-foreground">{listing.bathrooms}</p>
                 </div>
-                <div className="bg-secondary rounded-xl p-4">
+                <div className="bg-secondary rounded-xl p-4 hover:bg-secondary/80 transition-colors">
                   <Square className="h-5 w-5 text-muted-foreground mb-2" />
                   <p className="text-sm text-muted-foreground">{t('listing.area')}</p>
                   <p className="text-lg font-semibold text-foreground">{formatArea(listing.area_sqm)}</p>
                 </div>
-                <div className="bg-secondary rounded-xl p-4">
+                <div className="bg-secondary rounded-xl p-4 hover:bg-secondary/80 transition-colors">
                   <Calendar className="h-5 w-5 text-muted-foreground mb-2" />
                   <p className="text-sm text-muted-foreground">{t('listing.available')}</p>
                   <p className="text-lg font-semibold text-foreground">{formatDate(listing.available_from)}</p>
@@ -254,7 +358,7 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
               {listing.description && (
                 <div>
                   <h2 className="text-xl font-semibold text-foreground mb-3">{t('listing.description')}</h2>
-                  <p className="text-muted-foreground whitespace-pre-line">{listing.description}</p>
+                  <p className="text-muted-foreground whitespace-pre-line leading-relaxed">{listing.description}</p>
                 </div>
               )}
 
@@ -277,26 +381,41 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
 
             {/* Sidebar */}
             <div className="lg:col-span-1">
-              <div className="sticky top-24 bg-card rounded-2xl p-6 shadow-card">
+              <div className={cn(
+                "sticky top-24 bg-card rounded-2xl p-6 shadow-elevated",
+                "transition-all duration-300",
+                "hover:shadow-xl"
+              )}>
                 <div className="mb-6">
                   <p className="text-sm text-muted-foreground mb-1">
                     {t(`propertyTypes.${listing.property_type}`)}
                   </p>
-                  <p className="text-3xl font-bold text-foreground">
+                  <p className="text-3xl lg:text-4xl font-bold text-foreground">
                     {formatPrice(listing.price, listing.currency, { isRental: listing.listing_type === 'rent', showPeriod: listing.listing_type === 'rent' })}
                   </p>
                 </div>
 
-                <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90 mb-3">
+                <Button className={cn(
+                  "w-full bg-accent text-accent-foreground mb-3 h-12",
+                  "hover:bg-accent/90 hover:scale-[1.02] active:scale-[0.98]",
+                  "transition-all duration-200 touch-target"
+                )}>
                   {t('listing.contactLandlord')}
                 </Button>
 
                 <Button
                   variant="outline"
-                  className="w-full"
+                  className={cn(
+                    "w-full h-12",
+                    "hover:scale-[1.02] active:scale-[0.98]",
+                    "transition-all duration-200 touch-target"
+                  )}
                   onClick={handleSaveClick}
                 >
-                  <Heart className={cn('h-4 w-4 mr-2', isSaved && 'fill-current text-accent')} />
+                  <Heart className={cn(
+                    'h-4 w-4 mr-2 transition-transform duration-200',
+                    isSaved && 'fill-current text-accent'
+                  )} />
                   {user ? (isSaved ? t('common.saved') : t('listing.saveListing')) : t('listing.signInToSave')}
                 </Button>
               </div>

@@ -4,10 +4,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useMyListings, useUpdateListing, useDeleteListing } from '@/hooks/useListings';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { MyListingSkeletonGrid } from '@/components/ListingSkeleton';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
+import { cn } from '@/lib/utils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -105,17 +106,21 @@ export default function MyListings() {
           </div>
 
           {isLoading ? (
-            <div className="space-y-4">
-              {[...Array(3)].map((_, i) => (
-                <Skeleton key={i} className="h-32 rounded-xl" />
-              ))}
-            </div>
+            <MyListingSkeletonGrid count={3} />
           ) : listings && listings.length > 0 ? (
             <div className="space-y-4">
-              {listings.map((listing) => (
+              {listings.map((listing, index) => (
                 <div
                   key={listing.id}
-                  className="bg-card rounded-xl p-4 flex flex-col sm:flex-row gap-4 shadow-card"
+                  className={cn(
+                    "bg-card rounded-xl p-4 flex flex-col sm:flex-row gap-4 shadow-card",
+                    "opacity-0 animate-slide-up-spring",
+                    "hover:shadow-elevated transition-all duration-300"
+                  )}
+                  style={{ 
+                    animationDelay: `${index * 0.08}s`,
+                    animationFillMode: 'forwards'
+                  }}
                 >
                   {/* Image */}
                   <div className="w-full sm:w-40 h-32 rounded-lg overflow-hidden bg-muted flex-shrink-0">
