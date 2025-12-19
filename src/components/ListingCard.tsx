@@ -78,7 +78,7 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
     <article
       className={cn(
         'listing-card cursor-pointer group',
-        isActive && 'ring-2 ring-accent shadow-warm'
+        isActive && 'shadow-warm'
       )}
       onClick={onClick}
     >
