@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Heart, MapPin, Bed, Bath, Square, Calendar, Check, Images } from 'lucide-react';
+import { X, Heart, MapPin, Bed, Bath, Square, Calendar, Check, Images, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -30,6 +30,7 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
   const saveListing = useSaveListing();
   const unsaveListing = useUnsaveListing();
   const [showGallery, setShowGallery] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleSaveClick = () => {
     if (!user) {
@@ -95,15 +96,44 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
           {listing.images && listing.images.length > 0 ? (
             <>
               <img
-                src={listing.images[0]}
-                alt={listing.title}
-                className="w-full h-full object-cover transition-transform group-hover:scale-[1.02]"
+                src={listing.images[currentImageIndex]}
+                alt={`${listing.title} - Photo ${currentImageIndex + 1}`}
+                className="w-full h-full object-cover transition-all duration-300"
               />
+
+              {/* Navigation arrows */}
+              {listing.images.length > 1 && (
+                <>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex((prev) => (prev === 0 ? listing.images!.length - 1 : prev - 1));
+                    }}
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex((prev) => (prev === listing.images!.length - 1 ? 0 : prev + 1));
+                    }}
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </Button>
+                </>
+              )}
+
               {/* Image count overlay */}
               <div className="absolute bottom-4 right-4 bg-card/90 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-2 text-sm font-medium">
                 <Images className="h-4 w-4" />
                 <span>
-                  {listing.images.length} photo{listing.images.length !== 1 ? 's' : ''}
+                  {currentImageIndex + 1} / {listing.images.length}
                   {(listing as any).floor_plan_url && ' • Floor plan'}
                 </span>
               </div>
