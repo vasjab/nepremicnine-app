@@ -36,11 +36,9 @@ export function UserProfileModal({ isOpen, onClose, userId, userName, userAvatar
     const fetchProfile = async () => {
       setIsLoading(true);
       try {
-        // Fetch profile
+        // Fetch profile using secure function that conditionally exposes phone
         const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', userId)
+          .rpc('get_profile_for_viewer', { p_profile_user_id: userId })
           .single();
 
         setProfile(profileData);
