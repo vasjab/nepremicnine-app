@@ -391,6 +391,13 @@
 
 .listing-popup .mapboxgl-popup-content {
   background: white;
+  overflow: hidden !important;
+  border-radius: 16px !important;
+}
+
+.listing-popup .mapboxgl-popup-content > div {
+  overflow: hidden;
+  border-radius: 16px;
 }
 
 .mapboxgl-popup-close-button {
