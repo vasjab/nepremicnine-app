@@ -4,7 +4,8 @@ export interface Listing {
   title: string;
   description: string | null;
   listing_type: 'rent' | 'sale';
-  property_type: 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other';
+  property_type: 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other' | 'summer_house';
+  house_type: string | null;
   price: number;
   currency: string;
   address: string;
@@ -19,7 +20,10 @@ export interface Listing {
   available_from: string | null;
   available_until: string | null;
   is_furnished: boolean;
+  furnished_details: string | null;
   allows_pets: boolean;
+  pets_details: string | null;
+  move_in_immediately: boolean;
   images: string[];
   floor_plan_url: string | null;
   floor_plan_urls: string[];
@@ -40,18 +44,67 @@ export interface Listing {
   terrace_sqm: number | null;
   has_garden: boolean;
   garden_sqm: number | null;
+  has_rooftop_terrace: boolean;
+  has_bbq_area: boolean;
+  has_playground: boolean;
+  has_waterfront: boolean;
+  has_view: boolean;
+  view_type: string | null;
   
   // Parking
   has_parking: boolean;
   parking_type: 'street' | 'designated' | 'underground' | 'private' | null;
   parking_spaces: number | null;
   has_garage: boolean;
+  has_carport: boolean;
+  has_ev_charging: boolean;
+  has_bicycle_storage: boolean;
+  has_basement: boolean;
   
-  // Amenities
+  // Building Amenities (for apartments)
+  has_shared_laundry: boolean;
+  has_gym: boolean;
+  has_sauna: boolean;
+  has_pool: boolean;
+  has_common_room: boolean;
+  has_concierge: boolean;
+  has_security: boolean;
+  
+  // Equipment & Appliances
   has_storage: boolean;
   has_air_conditioning: boolean;
   has_dishwasher: boolean;
   has_washing_machine: boolean;
+  has_dryer: boolean;
+  
+  // Energy & Comfort
+  has_fireplace: boolean;
+  has_floor_heating: boolean;
+  has_district_heating: boolean;
+  has_heat_pump: boolean;
+  has_ventilation: boolean;
+  has_solar_panels: boolean;
+  
+  // Interior Highlights
+  has_high_ceilings: boolean;
+  has_large_windows: boolean;
+  has_smart_home: boolean;
+  has_built_in_wardrobes: boolean;
+  orientation: string | null;
+  
+  // Accessibility
+  has_step_free_access: boolean;
+  has_wheelchair_accessible: boolean;
+  has_wide_doorways: boolean;
+  has_ground_floor_access: boolean;
+  has_elevator_from_garage: boolean;
+  
+  // Safety & Privacy
+  has_secure_entrance: boolean;
+  has_intercom: boolean;
+  has_gated_community: boolean;
+  has_fire_safety: boolean;
+  has_soundproofing: boolean;
   
   // Building info
   heating_type: 'central' | 'electric' | 'gas' | 'heat_pump' | 'other' | null;
@@ -64,6 +117,8 @@ export interface Listing {
   min_lease_months: number | null;
   internet_included: 'yes' | 'no' | 'available' | null;
   utilities_included: 'yes' | 'no' | 'partial' | null;
+  utility_cost_estimate: number | null;
+  monthly_expenses: number | null;
 }
 
 export interface Profile {

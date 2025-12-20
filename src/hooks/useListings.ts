@@ -259,19 +259,33 @@ export function useSimilarListings(listing: Listing | null | undefined, limit: n
 type CreateListingInput = Omit<Listing, 'id' | 'created_at' | 'updated_at' | 
   'floor_number' | 'total_floors_building' | 'property_floors' | 'has_elevator' |
   'has_balcony' | 'balcony_sqm' | 'has_terrace' | 'terrace_sqm' | 'has_garden' | 'garden_sqm' |
+  'has_rooftop_terrace' | 'has_bbq_area' | 'has_playground' | 'has_waterfront' | 'has_view' | 'view_type' |
   'has_parking' | 'parking_type' | 'parking_spaces' | 'has_garage' |
-  'has_storage' | 'has_air_conditioning' | 'has_dishwasher' | 'has_washing_machine' |
+  'has_carport' | 'has_ev_charging' | 'has_bicycle_storage' | 'has_basement' |
+  'has_shared_laundry' | 'has_gym' | 'has_sauna' | 'has_pool' | 'has_common_room' | 'has_concierge' | 'has_security' |
+  'has_storage' | 'has_air_conditioning' | 'has_dishwasher' | 'has_washing_machine' | 'has_dryer' |
+  'has_fireplace' | 'has_floor_heating' | 'has_district_heating' | 'has_heat_pump' | 'has_ventilation' | 'has_solar_panels' |
+  'has_high_ceilings' | 'has_large_windows' | 'has_smart_home' | 'has_built_in_wardrobes' | 'orientation' |
+  'has_step_free_access' | 'has_wheelchair_accessible' | 'has_wide_doorways' | 'has_ground_floor_access' | 'has_elevator_from_garage' |
+  'has_secure_entrance' | 'has_intercom' | 'has_gated_community' | 'has_fire_safety' | 'has_soundproofing' |
   'heating_type' | 'energy_rating' | 'year_built' | 'property_condition' |
-  'deposit_amount' | 'min_lease_months' | 'internet_included' | 'utilities_included' |
-  'floor_plan_url' | 'floor_plan_urls'
+  'deposit_amount' | 'min_lease_months' | 'internet_included' | 'utilities_included' | 'utility_cost_estimate' | 'monthly_expenses' |
+  'floor_plan_url' | 'floor_plan_urls' | 'house_type' | 'furnished_details' | 'pets_details' | 'move_in_immediately'
 > & Partial<Pick<Listing,
   'floor_number' | 'total_floors_building' | 'property_floors' | 'has_elevator' |
   'has_balcony' | 'balcony_sqm' | 'has_terrace' | 'terrace_sqm' | 'has_garden' | 'garden_sqm' |
+  'has_rooftop_terrace' | 'has_bbq_area' | 'has_playground' | 'has_waterfront' | 'has_view' | 'view_type' |
   'has_parking' | 'parking_type' | 'parking_spaces' | 'has_garage' |
-  'has_storage' | 'has_air_conditioning' | 'has_dishwasher' | 'has_washing_machine' |
+  'has_carport' | 'has_ev_charging' | 'has_bicycle_storage' | 'has_basement' |
+  'has_shared_laundry' | 'has_gym' | 'has_sauna' | 'has_pool' | 'has_common_room' | 'has_concierge' | 'has_security' |
+  'has_storage' | 'has_air_conditioning' | 'has_dishwasher' | 'has_washing_machine' | 'has_dryer' |
+  'has_fireplace' | 'has_floor_heating' | 'has_district_heating' | 'has_heat_pump' | 'has_ventilation' | 'has_solar_panels' |
+  'has_high_ceilings' | 'has_large_windows' | 'has_smart_home' | 'has_built_in_wardrobes' | 'orientation' |
+  'has_step_free_access' | 'has_wheelchair_accessible' | 'has_wide_doorways' | 'has_ground_floor_access' | 'has_elevator_from_garage' |
+  'has_secure_entrance' | 'has_intercom' | 'has_gated_community' | 'has_fire_safety' | 'has_soundproofing' |
   'heating_type' | 'energy_rating' | 'year_built' | 'property_condition' |
-  'deposit_amount' | 'min_lease_months' | 'internet_included' | 'utilities_included' |
-  'floor_plan_url' | 'floor_plan_urls'
+  'deposit_amount' | 'min_lease_months' | 'internet_included' | 'utilities_included' | 'utility_cost_estimate' | 'monthly_expenses' |
+  'floor_plan_url' | 'floor_plan_urls' | 'house_type' | 'furnished_details' | 'pets_details' | 'move_in_immediately'
 >>;
 
 export function useCreateListing() {
