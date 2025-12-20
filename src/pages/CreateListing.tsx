@@ -30,6 +30,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { CURRENCIES, CURRENCY_SYMBOLS, type Currency } from '@/lib/exchangeRates';
 import { ListingPreviewModal } from '@/components/ListingPreviewModal';
+import { FormCompletionChecklist, type ChecklistItem } from '@/components/FormCompletionChecklist';
 import { useTranslation } from '@/hooks/useTranslation';
 
 // Validation schema for listing data
@@ -315,6 +316,58 @@ export default function CreateListing() {
     setShowPreview(true);
   };
 
+  // Refs for scrolling to fields
+  const titleRef = useRef<HTMLDivElement>(null);
+  const priceRef = useRef<HTMLDivElement>(null);
+  const addressRef = useRef<HTMLDivElement>(null);
+  const cityRef = useRef<HTMLDivElement>(null);
+  const imagesRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to field helper
+  const scrollToField = (ref: React.RefObject<HTMLElement>) => {
+    ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  // Checklist items
+  const checklistItems: ChecklistItem[] = [
+    {
+      id: 'title',
+      label: t('checklist.title'),
+      isComplete: !!formData.title?.trim() && formData.title.trim().length >= 5,
+      onClick: () => scrollToField(titleRef),
+    },
+    {
+      id: 'price',
+      label: t('checklist.price'),
+      isComplete: !!formData.price && parseFloat(formData.price) > 0,
+      onClick: () => scrollToField(priceRef),
+    },
+    {
+      id: 'address',
+      label: t('checklist.address'),
+      isComplete: !!formData.address?.trim(),
+      onClick: () => scrollToField(addressRef),
+    },
+    {
+      id: 'city',
+      label: t('checklist.city'),
+      isComplete: !!formData.city?.trim(),
+      onClick: () => scrollToField(cityRef),
+    },
+    {
+      id: 'location',
+      label: t('checklist.location'),
+      isComplete: !!(coordinates || manualCoordinates),
+      onClick: () => scrollToField(addressRef),
+    },
+    {
+      id: 'images',
+      label: t('checklist.images'),
+      isComplete: uploadedImages.length > 0,
+      onClick: () => scrollToField(imagesRef),
+    },
+  ];
+
   const checkServerRateLimit = async (): Promise<boolean> => {
     try {
       if (!user) return false;
@@ -541,6 +594,9 @@ export default function CreateListing() {
             Fill in the details about your property
           </p>
 
+          {/* Form Completion Checklist */}
+          <FormCompletionChecklist items={checklistItems} />
+
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Honeypot field for bot detection */}
             <HoneypotField value={honeypot} onChange={setHoneypot} />
@@ -617,22 +673,24 @@ export default function CreateListing() {
                 </FormField>
               )}
 
-              <FormField
-                label="Title"
-                htmlFor="title"
-                required
-                error={getError('title')}
-              >
-                <Input
-                  id="title"
-                  placeholder="Cozy 2-bedroom apartment in city center"
-                  value={formData.title}
-                  onChange={(e) => handleChange('title', e.target.value)}
-                  onBlur={() => handleBlur('title')}
-                  className={cn(getError('title') && 'border-destructive')}
-                  data-error={!!getError('title')}
-                />
-              </FormField>
+              <div ref={titleRef}>
+                <FormField
+                  label="Title"
+                  htmlFor="title"
+                  required
+                  error={getError('title')}
+                >
+                  <Input
+                    id="title"
+                    placeholder="Cozy 2-bedroom apartment in city center"
+                    value={formData.title}
+                    onChange={(e) => handleChange('title', e.target.value)}
+                    onBlur={() => handleBlur('title')}
+                    className={cn(getError('title') && 'border-destructive')}
+                    data-error={!!getError('title')}
+                  />
+                </FormField>
+              </div>
 
               <FormField
                 label="Description"
@@ -650,40 +708,42 @@ export default function CreateListing() {
                 />
               </FormField>
 
-              <FormField
-                label={`Price ${isRental ? 'per month' : ''}`}
-                htmlFor="price"
-                required
-                error={getError('price')}
-              >
-                <div className="flex gap-2">
-                  <Select
-                    value={formData.currency}
-                    onValueChange={(value) => handleChange('currency', value as Currency)}
-                  >
-                    <SelectTrigger className="w-24 shrink-0">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CURRENCIES.map((curr) => (
-                        <SelectItem key={curr} value={curr}>
-                          {CURRENCY_SYMBOLS[curr]} {curr}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    id="price"
-                    type="number"
-                    placeholder={isRental ? '12000' : '2500000'}
-                    value={formData.price}
-                    onChange={(e) => handleChange('price', e.target.value)}
-                    onBlur={() => handleBlur('price')}
-                    className={cn(getError('price') && 'border-destructive', 'flex-1')}
-                    data-error={!!getError('price')}
-                  />
-                </div>
-              </FormField>
+              <div ref={priceRef}>
+                <FormField
+                  label={`Price ${isRental ? 'per month' : ''}`}
+                  htmlFor="price"
+                  required
+                  error={getError('price')}
+                >
+                  <div className="flex gap-2">
+                    <Select
+                      value={formData.currency}
+                      onValueChange={(value) => handleChange('currency', value as Currency)}
+                    >
+                      <SelectTrigger className="w-24 shrink-0">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CURRENCIES.map((curr) => (
+                          <SelectItem key={curr} value={curr}>
+                            {CURRENCY_SYMBOLS[curr]} {curr}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      id="price"
+                      type="number"
+                      placeholder={isRental ? '12000' : '2500000'}
+                      value={formData.price}
+                      onChange={(e) => handleChange('price', e.target.value)}
+                      onBlur={() => handleBlur('price')}
+                      className={cn(getError('price') && 'border-destructive', 'flex-1')}
+                      data-error={!!getError('price')}
+                    />
+                  </div>
+                </FormField>
+              </div>
             </div>
 
             {/* Location */}
@@ -693,33 +753,35 @@ export default function CreateListing() {
                 Enter the address and we'll automatically find the location on the map.
               </p>
               
-              <FormField
-                label="Address"
-                htmlFor="address"
-                required
-                error={getError('address')}
-              >
-                <AddressAutocomplete
-                  value={formData.address}
-                  onChange={(value) => handleChange('address', value)}
-                  onSelect={(suggestion) => {
-                    handleChange('address', suggestion.address);
-                    if (suggestion.city) {
-                      handleChange('city', suggestion.city);
-                    }
-                    if (suggestion.postalCode) {
-                      handleChange('postal_code', suggestion.postalCode);
-                    }
-                    // Reset manual coordinates when a new address is selected
-                    setManualCoordinates(null);
-                  }}
-                  onBlur={() => handleBlur('address')}
-                  placeholder="Start typing an address..."
-                  hasError={!!getError('address')}
-                />
-              </FormField>
+              <div ref={addressRef}>
+                <FormField
+                  label="Address"
+                  htmlFor="address"
+                  required
+                  error={getError('address')}
+                >
+                  <AddressAutocomplete
+                    value={formData.address}
+                    onChange={(value) => handleChange('address', value)}
+                    onSelect={(suggestion) => {
+                      handleChange('address', suggestion.address);
+                      if (suggestion.city) {
+                        handleChange('city', suggestion.city);
+                      }
+                      if (suggestion.postalCode) {
+                        handleChange('postal_code', suggestion.postalCode);
+                      }
+                      // Reset manual coordinates when a new address is selected
+                      setManualCoordinates(null);
+                    }}
+                    onBlur={() => handleBlur('address')}
+                    placeholder="Start typing an address..."
+                    hasError={!!getError('address')}
+                  />
+                </FormField>
+              </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div ref={cityRef} className="grid sm:grid-cols-2 gap-4">
                 <FormField
                   label="City"
                   htmlFor="city"
@@ -1255,7 +1317,7 @@ export default function CreateListing() {
             )}
 
             {/* Images */}
-            <div className="space-y-4">
+            <div ref={imagesRef} className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Images</h2>
               <p className="text-sm text-muted-foreground">
                 Drag and drop images or click to upload. Images will be automatically compressed.
