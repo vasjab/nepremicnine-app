@@ -404,8 +404,8 @@
 
 .mapboxgl-popup-close-button {
   position: absolute;
-  top: 12px;
-  right: 12px;
+  top: 4px;
+  right: 4px;
   width: 32px;
   height: 32px;
   display: flex;
@@ -414,8 +414,9 @@
   background: hsl(0, 0%, 100%);
   border-radius: 50%;
   font-size: 20px;
-  line-height: 1;
+  line-height: 32px;
   padding: 0;
+  padding-bottom: 2px;
   font-family: system-ui, -apple-system, sans-serif;
   color: hsl(25, 30%, 30%);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
@@ -431,12 +432,13 @@
 
 /* Force-close button placement (Mapbox adds inline styles in some builds) */
 .mapboxgl-popup .mapboxgl-popup-close-button {
-  top: 8px !important;
-  right: 8px !important;
+  top: 4px !important;
+  right: 4px !important;
   width: 32px !important;
   height: 32px !important;
   padding: 0 !important;
-  line-height: 1 !important;
+  padding-bottom: 2px !important;
+  line-height: 32px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
