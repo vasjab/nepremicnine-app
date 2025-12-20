@@ -195,7 +195,6 @@ const Index = () => {
             >
               <MemoizedListingCard
                 listing={listing}
-                isActive={listing.id === activeListingId}
                 onClick={() => handleListingClick(listing)}
               />
             </div>

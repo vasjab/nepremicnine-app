@@ -210,7 +210,6 @@ const LandlordProfile = () => {
                   <ListingCard
                     key={listing.id}
                     listing={listing}
-                    isActive={listing.id === activeListingId}
                     onClick={() => navigate(`/listing/${listing.id}`)}
                   />
                 ))}
