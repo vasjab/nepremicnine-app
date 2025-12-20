@@ -115,13 +115,16 @@ const Index = () => {
   }, [activeListingId]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen flex flex-col bg-background">
       <Header />
       
-      <main className="pt-16 h-screen flex flex-col lg:flex-row">
+      {/* Spacer for fixed header */}
+      <div className="h-14 shrink-0" />
+      
+      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
         {/* Left panel - Listings */}
-        <div className={`w-full lg:w-[480px] xl:w-[540px] flex flex-col lg:h-full border-r border-border ${
-          mobileView === 'map' ? 'hidden lg:flex' : 'flex h-[calc(100vh-4rem)]'
+        <div className={`w-full lg:w-[480px] xl:w-[540px] flex flex-col border-r border-border overflow-hidden ${
+          mobileView === 'map' ? 'hidden lg:flex' : 'flex flex-1 min-h-0'
         }`}>
           <FilterBar 
             filters={filters} 
@@ -174,7 +177,7 @@ const Index = () => {
         </div>
 
         {/* Right panel - Map */}
-        <div className={`flex-1 h-[calc(100vh-4rem)] lg:h-full ${
+        <div className={`flex-1 ${
           mobileView === 'list' ? 'hidden lg:block' : 'block'
         }`}>
           <MapView
