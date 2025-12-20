@@ -66,8 +66,6 @@ interface FilterBarProps {
   onSortChange: (sort: SortOption) => void;
   totalCount?: number;
   userId?: string;
-  isCollapsed?: boolean;
-  showListingTypeTabs?: boolean;
 }
 
 // Price ranges by listing type
@@ -657,7 +655,7 @@ function FilterContent({
   );
 }
 
-export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount, userId, isCollapsed = false, showListingTypeTabs = false }: FilterBarProps) {
+export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount, userId }: FilterBarProps) {
   const { trigger: haptic } = useHapticFeedback();
   const { t } = useTranslation();
   const { formatPriceLabel, currencySymbol } = useFormattedPrice();
@@ -665,6 +663,8 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   const [searchValue, setSearchValue] = useState(filters.search || '');
   const [isOpen, setIsOpen] = useState(false);
   const [areaUnit, setAreaUnit] = useState<AreaUnit>('sqm');
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const OWNER_FILTERS: { value: OwnerFilter; label: string; icon: React.ElementType }[] = [
@@ -976,177 +976,155 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
   return (
     <div className="bg-background border-b border-border/50">
-      <div className="px-4 pt-4 pb-3">
-        {/* Collapsible Section - unified animation */}
-        <div className={cn(
-          "grid transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[grid-template-rows,opacity]",
-          isCollapsed 
-            ? "grid-rows-[0fr] opacity-0" 
-            : "grid-rows-[1fr] opacity-100"
-        )}>
-          <div className="overflow-hidden">
-            {/* Rent/Sale Tabs - only shown when prop is true */}
-            {showListingTypeTabs && (
-              <div className="flex bg-secondary rounded-xl p-1 gap-1 mb-3">
+      <div className="px-4 py-3">
+        {/* Single-line toolbar: Search + Count + Sort + Filters */}
+        <div className="flex items-center gap-2 w-full">
+          {/* Collapsible Search */}
+          {isSearchExpanded || searchValue ? (
+            <form onSubmit={handleSearch} className="relative flex-1 min-w-0 animate-in slide-in-from-left-2 duration-200">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+              <Input
+                ref={searchInputRef}
+                autoFocus
+                placeholder={t('nav.searchPlaceholder')}
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                onBlur={() => !searchValue && setIsSearchExpanded(false)}
+                className="w-full pl-10 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl transition-all duration-200 hover:bg-accent/15 hover:shadow-md hover:ring-1 hover:ring-accent/30 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0"
+              />
+              {searchValue && (
                 <button
-                  onClick={() => onFiltersChange({ ...filters, listing_type: null })}
-                  className={cn(
-                    "flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-                    !filters.listing_type
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
+                  type="button"
+                  onClick={clearSearch}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent/20 rounded-full transition-all duration-200"
                 >
-                  All
+                  <X className="h-3.5 w-3.5" />
                 </button>
-                <button
-                  onClick={() => onFiltersChange({ ...filters, listing_type: 'rent' })}
-                  className={cn(
-                    "flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-                    filters.listing_type === 'rent'
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  <Key className="h-4 w-4" />
-                  {t('listingTypes.rent')}
-                </button>
-                <button
-                  onClick={() => onFiltersChange({ ...filters, listing_type: 'sale' })}
-                  className={cn(
-                    "flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-                    filters.listing_type === 'sale'
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  <Banknote className="h-4 w-4" />
-                  {t('listingTypes.sale')}
-                </button>
-              </div>
-            )}
-
-            {/* Compact toolbar: Search + Count + Sort + Filters - all in one line */}
-            <div className="flex items-center gap-2 w-full">
-              {/* Search input with hover effect */}
-              <form onSubmit={handleSearch} className="relative flex-1 min-w-0">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
-                <Input
-                  placeholder={t('nav.searchPlaceholder')}
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  className="w-full pl-10 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl transition-all duration-200 hover:bg-secondary/80 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0 focus-visible:ring-inset"
-                />
-                {searchValue && (
-                  <button
-                    type="button"
-                    onClick={clearSearch}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-all duration-200"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                )}
-              </form>
-
-              {/* Listings count as subtle pill - hidden on small screens */}
-              {totalCount !== undefined && (
-                <div className="hidden md:flex items-center px-3 py-1.5 bg-muted/50 rounded-full text-xs text-muted-foreground whitespace-nowrap transition-all duration-200 hover:bg-muted cursor-default">
-                  <span className="font-medium">{totalCount.toLocaleString()}</span>
-                  <span className="ml-1 opacity-70">{totalCount === 1 ? 'listing' : 'listings'}</span>
-                </div>
               )}
+            </form>
+          ) : (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSearchExpanded(true)}
+              className="shrink-0 rounded-xl h-10 w-10 bg-secondary hover:bg-accent/20 hover:text-accent-foreground hover:shadow-md transition-all duration-200"
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+          )}
 
-              {/* Sort dropdown with hover effect */}
-              <div className="shrink-0">
-                <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
-                  <SelectTrigger className="h-9 w-[115px] px-2.5 text-xs bg-secondary/80 border-0 rounded-xl transition-all duration-200 hover:bg-accent/10 hover:scale-[1.02] hover:shadow-sm">
-                    <ArrowUpDown className="h-3 w-3 mr-1 text-muted-foreground shrink-0" />
-                    <SelectValue placeholder={t('filters.sortBy')} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover rounded-xl shadow-lg">
-                    <SelectItem value="newest">{t('filters.newest')}</SelectItem>
-                    <SelectItem value="oldest">{t('filters.oldest')}</SelectItem>
-                    <SelectItem value="price_asc">{t('filters.priceAsc')}</SelectItem>
-                    <SelectItem value="price_desc">{t('filters.priceDesc')}</SelectItem>
-                    <SelectItem value="size_asc">{t('filters.sizeAsc')}</SelectItem>
-                    <SelectItem value="size_desc">{t('filters.sizeDesc')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Filter button - Drawer on mobile, Dialog on desktop */}
-              {isMobile ? (
-                <Drawer open={isOpen} onOpenChange={setIsOpen}>
-                  <DrawerTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      className="relative shrink-0 rounded-xl h-10 w-10 border-border/50 transition-all duration-200 hover:bg-accent hover:text-accent-foreground hover:scale-105 hover:shadow-md hover:border-accent"
-                    >
-                      <SlidersHorizontal className="h-4 w-4" />
-                      {totalActiveFilters > 0 && (
-                        <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground animate-scale-in">
-                          {totalActiveFilters}
-                        </Badge>
-                      )}
-                    </Button>
-                  </DrawerTrigger>
-                  <DrawerContent className="max-h-[85vh]">
-                    <DrawerHeader className="pb-2">
-                      <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
-                    </DrawerHeader>
-                    <ScrollArea className="flex-1 px-4 pb-8 overflow-y-auto">
-                      <FilterContent {...filterContentProps} />
-                    </ScrollArea>
-                  </DrawerContent>
-                </Drawer>
-              ) : (
-                <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      className="relative shrink-0 rounded-xl h-10 w-10 border-border/50 transition-all duration-200 hover:bg-accent hover:text-accent-foreground hover:scale-105 hover:shadow-md hover:border-accent"
-                    >
-                      <SlidersHorizontal className="h-4 w-4" />
-                      {totalActiveFilters > 0 && (
-                        <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground animate-scale-in">
-                          {totalActiveFilters}
-                        </Badge>
-                      )}
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md max-h-[85vh] p-0 rounded-2xl">
-                    <DialogHeader className="p-4 pb-2">
-                      <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
-                    </DialogHeader>
-                    <ScrollArea className="max-h-[calc(85vh-80px)] px-4 pb-6">
-                      <FilterContent {...filterContentProps} />
-                    </ScrollArea>
-                  </DialogContent>
-                </Dialog>
-              )}
+          {/* Listings count as subtle pill */}
+          {totalCount !== undefined && (
+            <div className={cn(
+              "hidden md:flex items-center px-3 py-1.5 bg-muted/50 rounded-full text-xs text-muted-foreground whitespace-nowrap transition-all duration-200 hover:bg-accent/15 hover:text-accent-foreground cursor-default",
+              isSearchExpanded && "md:hidden lg:flex"
+            )}>
+              <span className="font-medium">{totalCount.toLocaleString()}</span>
+              {!isSearchExpanded && <span className="ml-1 opacity-70">{totalCount === 1 ? 'listing' : 'listings'}</span>}
             </div>
+          )}
 
-            {/* Active filter chips */}
-            {activeChips.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap mt-3">
-                {activeChips.map((chip) => (
-                  <Badge
-                    key={chip.label}
-                    variant="secondary"
-                    className="pl-3 pr-2 py-1 gap-1.5 cursor-pointer hover:bg-secondary/80 transition-all rounded-full text-xs font-medium press-effect"
-                    onClick={chip.onRemove}
-                  >
-                    {chip.label}
-                    <X className="h-3 w-3" />
-                  </Badge>
-                ))}
-              </div>
-            )}
+          {/* Sort dropdown */}
+          <div className="shrink-0">
+            <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
+              <SelectTrigger className={cn(
+                "h-9 px-2.5 text-xs bg-secondary/80 border-0 rounded-xl transition-all duration-200 hover:bg-accent/20 hover:text-accent-foreground hover:shadow-md",
+                isSearchExpanded ? "w-[80px]" : "w-[115px]"
+              )}>
+                <ArrowUpDown className="h-3 w-3 mr-1 text-muted-foreground shrink-0" />
+                <SelectValue placeholder={t('filters.sortBy')} />
+              </SelectTrigger>
+              <SelectContent className="bg-popover rounded-xl shadow-lg">
+                <SelectItem value="newest">{t('filters.newest')}</SelectItem>
+                <SelectItem value="oldest">{t('filters.oldest')}</SelectItem>
+                <SelectItem value="price_asc">{t('filters.priceAsc')}</SelectItem>
+                <SelectItem value="price_desc">{t('filters.priceDesc')}</SelectItem>
+                <SelectItem value="size_asc">{t('filters.sizeAsc')}</SelectItem>
+                <SelectItem value="size_desc">{t('filters.sizeDesc')}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
+          {/* Prominent Filter button - Drawer on mobile, Dialog on desktop */}
+          {isMobile ? (
+            <Drawer open={isOpen} onOpenChange={setIsOpen}>
+              <DrawerTrigger asChild>
+                <Button 
+                  className={cn(
+                    "relative shrink-0 rounded-xl h-10 border-0",
+                    "bg-accent text-accent-foreground font-medium",
+                    "hover:bg-accent/90 hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-accent/40",
+                    "transition-all duration-200",
+                    isSearchExpanded ? "w-10 px-0" : "w-auto px-4"
+                  )}
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  {!isSearchExpanded && <span className="ml-2">Filters</span>}
+                  {totalActiveFilters > 0 && (
+                    <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-foreground text-background animate-scale-in">
+                      {totalActiveFilters}
+                    </Badge>
+                  )}
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent className="max-h-[85vh]">
+                <DrawerHeader className="pb-2">
+                  <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
+                </DrawerHeader>
+                <ScrollArea className="flex-1 px-4 pb-8 overflow-y-auto">
+                  <FilterContent {...filterContentProps} />
+                </ScrollArea>
+              </DrawerContent>
+            </Drawer>
+          ) : (
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  className={cn(
+                    "relative shrink-0 rounded-xl h-10 border-0",
+                    "bg-accent text-accent-foreground font-medium",
+                    "hover:bg-accent/90 hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-accent/40",
+                    "transition-all duration-200",
+                    isSearchExpanded ? "w-10 px-0" : "w-auto px-4"
+                  )}
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  {!isSearchExpanded && <span className="ml-2 hidden sm:inline">Filters</span>}
+                  {totalActiveFilters > 0 && (
+                    <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-foreground text-background animate-scale-in">
+                      {totalActiveFilters}
+                    </Badge>
+                  )}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md max-h-[85vh] p-0 rounded-2xl">
+                <DialogHeader className="p-4 pb-2">
+                  <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="max-h-[calc(85vh-80px)] px-4 pb-6">
+                  <FilterContent {...filterContentProps} />
+                </ScrollArea>
+              </DialogContent>
+            </Dialog>
+          )}
         </div>
 
+        {/* Active filter chips */}
+        {activeChips.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap mt-3">
+            {activeChips.map((chip) => (
+              <Badge
+                key={chip.label}
+                variant="secondary"
+                className="pl-3 pr-2 py-1 gap-1.5 cursor-pointer hover:bg-accent/15 hover:text-accent-foreground transition-all rounded-full text-xs font-medium press-effect"
+                onClick={chip.onRemove}
+              >
+                {chip.label}
+                <X className="h-3 w-3" />
+              </Badge>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

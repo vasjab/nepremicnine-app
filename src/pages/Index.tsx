@@ -30,61 +30,6 @@ interface MapBounds {
 // Memoized listing card wrapper for performance
 const MemoizedListingCard = memo(ListingCard);
 
-// Custom hook for scroll-based header collapse - improved to reappear on scroll up
-function useScrollCollapse(containerRef: React.RefObject<HTMLDivElement>) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isReady, setIsReady] = useState(false);
-  const lastScrollTop = useRef(0);
-  const isCollapsedRef = useRef(false);
-  const scrollThreshold = 15;
-
-  // Keep ref in sync with state to avoid stale closure
-  useEffect(() => {
-    isCollapsedRef.current = isCollapsed;
-  }, [isCollapsed]);
-
-  // Check when container becomes available
-  useEffect(() => {
-    const checkReady = () => {
-      if (containerRef.current && !isReady) {
-        setIsReady(true);
-      }
-    };
-    checkReady();
-    const interval = setInterval(checkReady, 100);
-    if (isReady) clearInterval(interval);
-    return () => clearInterval(interval);
-  }, [containerRef, isReady]);
-
-  useEffect(() => {
-    if (!isReady) return;
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handleScroll = () => {
-      const scrollTop = container.scrollTop;
-      const scrollDelta = scrollTop - lastScrollTop.current;
-      
-      if (Math.abs(scrollDelta) < scrollThreshold) return;
-      
-      const isScrollingDown = scrollDelta > 0 && scrollTop > 80;
-      const isScrollingUp = scrollDelta < 0;
-      
-      if (isScrollingDown && !isCollapsedRef.current) {
-        setIsCollapsed(true);
-      } else if (isScrollingUp && isCollapsedRef.current) {
-        setIsCollapsed(false);
-      }
-      
-      lastScrollTop.current = scrollTop;
-    };
-
-    container.addEventListener('scroll', handleScroll, { passive: true });
-    return () => container.removeEventListener('scroll', handleScroll);
-  }, [isReady, containerRef]);
-
-  return isCollapsed;
-}
 
 
 const Index = () => {
@@ -104,8 +49,6 @@ const Index = () => {
   const listingRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const listContainerRef = useRef<HTMLDivElement>(null);
   
-  // Use scroll collapse for mobile header
-  const isHeaderCollapsed = useScrollCollapse(listContainerRef);
   
   
   const landlordId = searchParams.get('landlord');
@@ -318,8 +261,6 @@ const Index = () => {
                   onSortChange={setSortBy}
                   totalCount={visibleListings.length}
                   userId={user?.id}
-                  isCollapsed={isHeaderCollapsed && mobileView === 'list'}
-                  showListingTypeTabs={true}
                 />
 
                 <div ref={listContainerRef} className="flex-1 overflow-y-auto p-3 sm:p-4 overscroll-contain">
@@ -421,8 +362,6 @@ const Index = () => {
                 onSortChange={setSortBy}
                 totalCount={visibleListings.length}
                 userId={user?.id}
-                isCollapsed={isHeaderCollapsed}
-                showListingTypeTabs={true}
               />
 
               <div ref={!isMobileLayout ? listContainerRef : undefined} className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 @container">
