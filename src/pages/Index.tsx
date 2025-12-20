@@ -34,7 +34,13 @@ const MemoizedListingCard = memo(ListingCard);
 function useScrollCollapse(containerRef: React.RefObject<HTMLDivElement>) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const lastScrollTop = useRef(0);
-  const scrollThreshold = 20; // Minimum scroll distance to trigger collapse
+  const isCollapsedRef = useRef(false);
+  const scrollThreshold = 20;
+
+  // Keep ref in sync with state to avoid stale closure
+  useEffect(() => {
+    isCollapsedRef.current = isCollapsed;
+  }, [isCollapsed]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -44,16 +50,14 @@ function useScrollCollapse(containerRef: React.RefObject<HTMLDivElement>) {
       const scrollTop = container.scrollTop;
       const scrollDelta = scrollTop - lastScrollTop.current;
       
-      // Only trigger on significant scroll
       if (Math.abs(scrollDelta) < scrollThreshold) return;
       
       const isScrollingDown = scrollDelta > 0 && scrollTop > 80;
       const isScrollingUp = scrollDelta < 0;
       
-      if (isScrollingDown && !isCollapsed) {
+      if (isScrollingDown && !isCollapsedRef.current) {
         setIsCollapsed(true);
-      } else if (isScrollingUp && isCollapsed) {
-        // Reappear immediately when scrolling up
+      } else if (isScrollingUp && isCollapsedRef.current) {
         setIsCollapsed(false);
       }
       
@@ -62,7 +66,7 @@ function useScrollCollapse(containerRef: React.RefObject<HTMLDivElement>) {
 
     container.addEventListener('scroll', handleScroll, { passive: true });
     return () => container.removeEventListener('scroll', handleScroll);
-  }, [containerRef, isCollapsed]);
+  }, [containerRef]);
 
   return isCollapsed;
 }
