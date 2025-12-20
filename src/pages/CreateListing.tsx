@@ -21,6 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { CountrySelect } from '@/components/CountrySelect';
+import { getCountryCode } from '@/lib/countries';
 import { useToast } from '@/hooks/use-toast';
 import { HoneypotField, isHoneypotTriggered } from '@/components/HoneypotField';
 import { useRateLimit, LISTING_RATE_LIMIT } from '@/hooks/useRateLimit';
@@ -229,32 +231,6 @@ export default function CreateListing() {
   const isRental = formData.listing_type === 'rent';
   const isSale = formData.listing_type === 'sale';
 
-  // Country code mapping for Mapbox API
-  const getCountryCode = (country: string): string => {
-    const countryMap: Record<string, string> = {
-      'Sweden': 'SE',
-      'Norway': 'NO',
-      'Denmark': 'DK',
-      'Finland': 'FI',
-      'Germany': 'DE',
-      'Netherlands': 'NL',
-      'United Kingdom': 'GB',
-      'France': 'FR',
-      'Spain': 'ES',
-      'Italy': 'IT',
-      'Portugal': 'PT',
-      'Belgium': 'BE',
-      'Austria': 'AT',
-      'Switzerland': 'CH',
-      'Poland': 'PL',
-      'Czech Republic': 'CZ',
-      'Ireland': 'IE',
-      'United States': 'US',
-      'Canada': 'CA',
-      'Australia': 'AU',
-    };
-    return countryMap[country] || 'SE';
-  };
 
   // Auto-geocoding from address
   const { coordinates, isGeocoding, status: geocodingStatus } = useAddressGeocoding({
@@ -889,36 +865,10 @@ export default function CreateListing() {
                 htmlFor="country"
                 required
               >
-                <Select
+                <CountrySelect
                   value={formData.country}
                   onValueChange={(value) => handleChange('country', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Sweden">Sweden</SelectItem>
-                    <SelectItem value="Norway">Norway</SelectItem>
-                    <SelectItem value="Denmark">Denmark</SelectItem>
-                    <SelectItem value="Finland">Finland</SelectItem>
-                    <SelectItem value="Germany">Germany</SelectItem>
-                    <SelectItem value="Netherlands">Netherlands</SelectItem>
-                    <SelectItem value="United Kingdom">United Kingdom</SelectItem>
-                    <SelectItem value="France">France</SelectItem>
-                    <SelectItem value="Spain">Spain</SelectItem>
-                    <SelectItem value="Italy">Italy</SelectItem>
-                    <SelectItem value="Portugal">Portugal</SelectItem>
-                    <SelectItem value="Belgium">Belgium</SelectItem>
-                    <SelectItem value="Austria">Austria</SelectItem>
-                    <SelectItem value="Switzerland">Switzerland</SelectItem>
-                    <SelectItem value="Poland">Poland</SelectItem>
-                    <SelectItem value="Czech Republic">Czech Republic</SelectItem>
-                    <SelectItem value="Ireland">Ireland</SelectItem>
-                    <SelectItem value="United States">United States</SelectItem>
-                    <SelectItem value="Canada">Canada</SelectItem>
-                    <SelectItem value="Australia">Australia</SelectItem>
-                  </SelectContent>
-                </Select>
+                />
               </FormField>
 
               {/* City and Postal Code */}
