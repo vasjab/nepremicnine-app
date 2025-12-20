@@ -34,6 +34,7 @@ interface ClimateAppliancesStepProps {
   // Energy Systems
   hasSolarPanels: boolean;
   hasHomeBattery: boolean;
+  batteryCapacityKwh: string;
   // Appliances (only shown when furnished)
   hasOven: boolean;
   hasMicrowave: boolean;
@@ -106,6 +107,7 @@ export function ClimateAppliancesStep({
   hasHeatRecoveryVentilation,
   hasSolarPanels,
   hasHomeBattery,
+  batteryCapacityKwh,
   hasOven,
   hasMicrowave,
   hobType,
@@ -125,7 +127,7 @@ export function ClimateAppliancesStep({
     has_dryer: hasDryer,
   } : {};
 
-  const featureValues: Record<string, boolean> = {
+  const featureValues: Record<string, boolean | string> = {
     has_fireplace: hasFireplace,
     has_floor_heating: hasFloorHeating,
     has_floor_cooling: hasFloorCooling,
@@ -134,6 +136,7 @@ export function ClimateAppliancesStep({
     has_heat_recovery_ventilation: hasHeatRecoveryVentilation,
     has_solar_panels: hasSolarPanels,
     has_home_battery: hasHomeBattery,
+    battery_capacity_kwh: batteryCapacityKwh,
     ...applianceValues,
   };
 
@@ -254,6 +257,29 @@ export function ClimateAppliancesStep({
             Energy Systems
           </h3>
           {renderFeatureGrid(ENERGY_FEATURES, 2)}
+          
+          {/* Battery Capacity input - show when Home Battery is selected */}
+          {hasHomeBattery && (
+            <div className="p-4 rounded-lg bg-secondary/50 space-y-2">
+              <div className="flex items-center gap-2">
+                <Label htmlFor="battery_capacity">Battery Capacity</Label>
+                <InfoTooltip content="Total storage capacity of the home battery system in kilowatt-hours" />
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="battery_capacity"
+                  type="number"
+                  min="1"
+                  max="500"
+                  value={(featureValues as any).battery_capacity_kwh || ''}
+                  onChange={(e) => onChange('battery_capacity_kwh', e.target.value)}
+                  placeholder="e.g. 13.5"
+                  className="max-w-24"
+                />
+                <span className="text-sm text-muted-foreground">kWh</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Kitchen Appliances Section - only show if furnished */}

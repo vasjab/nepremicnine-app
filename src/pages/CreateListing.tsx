@@ -149,6 +149,7 @@ export default function CreateListing() {
     has_heat_recovery_ventilation: false,
     has_solar_panels: false,
     has_home_battery: false,
+    battery_capacity_kwh: '',
     // Kitchen Equipment
     has_oven: false,
     has_microwave: false,
@@ -347,6 +348,7 @@ export default function CreateListing() {
         has_heat_recovery_ventilation: (draftListing as any).has_heat_recovery_ventilation || false,
         has_solar_panels: (draftListing as any).has_solar_panels || false,
         has_home_battery: (draftListing as any).has_home_battery || false,
+        battery_capacity_kwh: (draftListing as any).battery_capacity_kwh?.toString() || '',
         // Kitchen Equipment
         has_oven: (draftListing as any).has_oven || false,
         has_microwave: (draftListing as any).has_microwave || false,
@@ -981,6 +983,7 @@ export default function CreateListing() {
             hasHeatRecoveryVentilation={formData.has_heat_recovery_ventilation}
             hasSolarPanels={formData.has_solar_panels}
             hasHomeBattery={formData.has_home_battery}
+            batteryCapacityKwh={(formData as any).battery_capacity_kwh || ''}
             hasOven={formData.has_oven}
             hasMicrowave={formData.has_microwave}
             hobType={formData.hob_type}
