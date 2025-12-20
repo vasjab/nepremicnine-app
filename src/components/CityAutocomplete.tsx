@@ -14,12 +14,14 @@ interface CitySuggestion {
   id: string;
   city: string;
   region?: string;
+  postalCode?: string;
   fullName: string;
 }
 
 interface CityAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
+  onSelect?: (suggestion: { city: string; postalCode?: string; region?: string }) => void;
   onBlur?: () => void;
   placeholder?: string;
   className?: string;
@@ -30,6 +32,7 @@ interface CityAutocompleteProps {
 export function CityAutocomplete({
   value,
   onChange,
+  onSelect,
   onBlur,
   placeholder = 'Start typing a city...',
   className,
@@ -42,12 +45,19 @@ export function CityAutocomplete({
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const justSelectedRef = useRef(false);
 
   const debouncedQuery = useDebounce(value, 300);
 
   // Fetch suggestions when query changes
   useEffect(() => {
     const fetchSuggestions = async () => {
+      // Skip fetching if we just selected a suggestion
+      if (justSelectedRef.current) {
+        justSelectedRef.current = false;
+        return;
+      }
+
       if (!debouncedQuery || debouncedQuery.length < 2) {
         setSuggestions([]);
         return;
@@ -73,14 +83,16 @@ export function CityAutocomplete({
         const data = await response.json();
         
         const mappedSuggestions: CitySuggestion[] = data.features.map((feature: any) => {
-          // Extract region from context
+          // Extract region and postal code from context
           let region = '';
+          let postalCode = '';
           
           if (feature.context) {
             for (const ctx of feature.context) {
               if (ctx.id.startsWith('region')) {
                 region = ctx.text;
-                break;
+              } else if (ctx.id.startsWith('postcode')) {
+                postalCode = ctx.text;
               }
             }
           }
@@ -89,6 +101,7 @@ export function CityAutocomplete({
             id: feature.id,
             city: feature.text,
             region,
+            postalCode,
             fullName: feature.place_name,
           };
         });
@@ -119,7 +132,9 @@ export function CityAutocomplete({
   }, []);
 
   const handleSelect = (suggestion: CitySuggestion) => {
+    justSelectedRef.current = true;
     onChange(suggestion.city);
+    onSelect?.({ city: suggestion.city, postalCode: suggestion.postalCode, region: suggestion.region });
     setIsOpen(false);
     setSuggestions([]);
     setSelectedIndex(-1);

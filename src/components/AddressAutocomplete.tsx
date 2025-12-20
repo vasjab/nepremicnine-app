@@ -28,6 +28,7 @@ interface AddressAutocompleteProps {
   className?: string;
   hasError?: boolean;
   country?: string;
+  city?: string; // Used to bias results toward this city
 }
 
 export function AddressAutocomplete({
@@ -39,6 +40,7 @@ export function AddressAutocomplete({
   className,
   hasError,
   country = 'SE',
+  city,
 }: AddressAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -65,9 +67,14 @@ export function AddressAutocomplete({
 
       setIsLoading(true);
       try {
+        // Include city in search query to bias results toward that city
+        const searchQuery = city 
+          ? `${debouncedQuery}, ${city}`
+          : debouncedQuery;
+
         const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(debouncedQuery)}.json?` +
-          `access_token=${token}&autocomplete=true&country=${country}&types=address,place&limit=5`
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?` +
+          `access_token=${token}&autocomplete=true&country=${country}&types=address&limit=5`
         );
 
         if (!response.ok) {
@@ -78,13 +85,13 @@ export function AddressAutocomplete({
         
         const mappedSuggestions: AddressSuggestion[] = data.features.map((feature: any) => {
           // Extract city and postal code from context
-          let city = '';
+          let featureCity = '';
           let postalCode = '';
           
           if (feature.context) {
             for (const ctx of feature.context) {
               if (ctx.id.startsWith('place')) {
-                city = ctx.text;
+                featureCity = ctx.text;
               } else if (ctx.id.startsWith('postcode')) {
                 postalCode = ctx.text;
               }
@@ -95,11 +102,22 @@ export function AddressAutocomplete({
             id: feature.id,
             address: feature.text + (feature.address ? ` ${feature.address}` : ''),
             fullAddress: feature.place_name,
-            city,
+            city: featureCity,
             postalCode,
             coordinates: feature.center as [number, number],
           };
         });
+
+        // Sort results: prioritize addresses in the selected city
+        if (city) {
+          mappedSuggestions.sort((a, b) => {
+            const aInCity = a.city?.toLowerCase() === city.toLowerCase();
+            const bInCity = b.city?.toLowerCase() === city.toLowerCase();
+            if (aInCity && !bInCity) return -1;
+            if (!aInCity && bInCity) return 1;
+            return 0;
+          });
+        }
 
         setSuggestions(mappedSuggestions);
         setIsOpen(mappedSuggestions.length > 0);
@@ -112,7 +130,7 @@ export function AddressAutocomplete({
     };
 
     fetchSuggestions();
-  }, [debouncedQuery, country]);
+  }, [debouncedQuery, country, city]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
