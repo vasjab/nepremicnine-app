@@ -53,67 +53,67 @@ interface PropertyFeaturesProps {
   listing: Listing;
 }
 
-// Section theme configurations
+// Section theme configurations - toned down neutral colors with subtle accents
 const sectionThemes = {
   outdoor: {
-    bg: 'bg-emerald-50/60 dark:bg-emerald-950/30',
-    iconBg: 'bg-emerald-100 dark:bg-emerald-900/50',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-    border: 'border-emerald-200/50 dark:border-emerald-800/30',
+    bg: 'bg-muted/30 dark:bg-muted/20',
+    iconBg: 'bg-emerald-100/60 dark:bg-emerald-900/30',
+    iconColor: 'text-emerald-600/80 dark:text-emerald-400/80',
+    border: 'border-border/40',
   },
   parking: {
-    bg: 'bg-blue-50/60 dark:bg-blue-950/30',
-    iconBg: 'bg-blue-100 dark:bg-blue-900/50',
-    iconColor: 'text-blue-600 dark:text-blue-400',
-    border: 'border-blue-200/50 dark:border-blue-800/30',
+    bg: 'bg-muted/30 dark:bg-muted/20',
+    iconBg: 'bg-blue-100/60 dark:bg-blue-900/30',
+    iconColor: 'text-blue-600/80 dark:text-blue-400/80',
+    border: 'border-border/40',
   },
   building: {
-    bg: 'bg-purple-50/60 dark:bg-purple-950/30',
-    iconBg: 'bg-purple-100 dark:bg-purple-900/50',
-    iconColor: 'text-purple-600 dark:text-purple-400',
-    border: 'border-purple-200/50 dark:border-purple-800/30',
+    bg: 'bg-muted/30 dark:bg-muted/20',
+    iconBg: 'bg-violet-100/60 dark:bg-violet-900/30',
+    iconColor: 'text-violet-600/80 dark:text-violet-400/80',
+    border: 'border-border/40',
   },
   energy: {
-    bg: 'bg-amber-50/60 dark:bg-amber-950/30',
-    iconBg: 'bg-amber-100 dark:bg-amber-900/50',
-    iconColor: 'text-amber-600 dark:text-amber-400',
-    border: 'border-amber-200/50 dark:border-amber-800/30',
+    bg: 'bg-muted/30 dark:bg-muted/20',
+    iconBg: 'bg-amber-100/60 dark:bg-amber-900/30',
+    iconColor: 'text-amber-600/80 dark:text-amber-400/80',
+    border: 'border-border/40',
   },
   equipment: {
-    bg: 'bg-sky-50/60 dark:bg-sky-950/30',
-    iconBg: 'bg-sky-100 dark:bg-sky-900/50',
-    iconColor: 'text-sky-600 dark:text-sky-400',
-    border: 'border-sky-200/50 dark:border-sky-800/30',
+    bg: 'bg-muted/30 dark:bg-muted/20',
+    iconBg: 'bg-sky-100/60 dark:bg-sky-900/30',
+    iconColor: 'text-sky-600/80 dark:text-sky-400/80',
+    border: 'border-border/40',
   },
   interior: {
-    bg: 'bg-pink-50/60 dark:bg-pink-950/30',
-    iconBg: 'bg-pink-100 dark:bg-pink-900/50',
-    iconColor: 'text-pink-600 dark:text-pink-400',
-    border: 'border-pink-200/50 dark:border-pink-800/30',
+    bg: 'bg-muted/30 dark:bg-muted/20',
+    iconBg: 'bg-rose-100/60 dark:bg-rose-900/30',
+    iconColor: 'text-rose-600/80 dark:text-rose-400/80',
+    border: 'border-border/40',
   },
   accessibility: {
-    bg: 'bg-teal-50/60 dark:bg-teal-950/30',
-    iconBg: 'bg-teal-100 dark:bg-teal-900/50',
-    iconColor: 'text-teal-600 dark:text-teal-400',
-    border: 'border-teal-200/50 dark:border-teal-800/30',
+    bg: 'bg-muted/30 dark:bg-muted/20',
+    iconBg: 'bg-teal-100/60 dark:bg-teal-900/30',
+    iconColor: 'text-teal-600/80 dark:text-teal-400/80',
+    border: 'border-border/40',
   },
   safety: {
-    bg: 'bg-slate-50/60 dark:bg-slate-900/40',
-    iconBg: 'bg-slate-200 dark:bg-slate-800',
-    iconColor: 'text-slate-600 dark:text-slate-400',
-    border: 'border-slate-200/50 dark:border-slate-700/30',
+    bg: 'bg-muted/30 dark:bg-muted/20',
+    iconBg: 'bg-slate-200/60 dark:bg-slate-800/50',
+    iconColor: 'text-slate-600/80 dark:text-slate-400/80',
+    border: 'border-border/40',
   },
   basic: {
-    bg: 'bg-secondary/50',
+    bg: 'bg-muted/30 dark:bg-muted/20',
     iconBg: 'bg-primary/10',
-    iconColor: 'text-primary',
-    border: 'border-border/30',
+    iconColor: 'text-primary/80',
+    border: 'border-border/40',
   },
   info: {
-    bg: 'bg-muted/50',
+    bg: 'bg-muted/30 dark:bg-muted/20',
     iconBg: 'bg-muted',
     iconColor: 'text-muted-foreground',
-    border: 'border-border/30',
+    border: 'border-border/40',
   },
 };
 
@@ -142,13 +142,13 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     if (!value) return null;
     const themeConfig = sectionThemes[theme];
     return (
-      <div className="flex items-center gap-3 py-1">
-        <div className={cn("flex items-center justify-center w-10 h-10 rounded-xl", themeConfig.iconBg)}>
-          <Icon className={cn("h-5 w-5", themeConfig.iconColor)} />
+      <div className="flex items-center gap-2 sm:gap-3 py-1 min-w-0">
+        <div className={cn("flex-shrink-0 flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl", themeConfig.iconBg)}>
+          <Icon className={cn("h-4 w-4 sm:h-[18px] sm:w-[18px]", themeConfig.iconColor)} />
         </div>
-        <span className="text-foreground font-medium">
+        <span className="text-foreground font-medium text-sm sm:text-base truncate">
           {label}
-          {detail && <span className="text-muted-foreground font-normal ml-1.5">({detail})</span>}
+          {detail && <span className="text-muted-foreground font-normal ml-1 text-xs sm:text-sm">({detail})</span>}
         </span>
       </div>
     );
@@ -169,13 +169,13 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     if (!value) return null;
     const themeConfig = sectionThemes[theme];
     return (
-      <div className="flex items-center gap-3 py-2">
-        <div className={cn("flex items-center justify-center w-10 h-10 rounded-xl", themeConfig.iconBg)}>
-          <Icon className={cn("h-5 w-5", themeConfig.iconColor)} />
+      <div className="flex items-center gap-2 sm:gap-3 py-1.5 sm:py-2 min-w-0">
+        <div className={cn("flex-shrink-0 flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl", themeConfig.iconBg)}>
+          <Icon className={cn("h-4 w-4 sm:h-[18px] sm:w-[18px]", themeConfig.iconColor)} />
         </div>
-        <div>
-          <p className="text-sm text-muted-foreground">{label}</p>
-          <p className="font-semibold text-foreground">{value}</p>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs sm:text-sm text-muted-foreground truncate">{label}</p>
+          <p className="font-semibold text-foreground text-sm sm:text-base truncate">{value}</p>
         </div>
       </div>
     );
@@ -197,21 +197,21 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
   }) => {
     const themeConfig = sectionThemes[theme];
     return (
-      <div className={cn("rounded-2xl p-5 sm:p-6 border shadow-sm", themeConfig.bg, themeConfig.border)}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="flex items-center gap-2.5 text-sm font-semibold text-foreground uppercase tracking-wide">
-            <div className={cn("flex items-center justify-center w-8 h-8 rounded-lg", themeConfig.iconBg)}>
-              <Icon className={cn("h-4 w-4", themeConfig.iconColor)} />
+      <div className={cn("rounded-xl sm:rounded-2xl p-4 sm:p-5 border", themeConfig.bg, themeConfig.border)}>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3 sm:mb-4">
+          <h3 className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wide">
+            <div className={cn("flex-shrink-0 flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-md sm:rounded-lg", themeConfig.iconBg)}>
+              <Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", themeConfig.iconColor)} />
             </div>
-            {title}
+            <span className="truncate">{title}</span>
           </h3>
           {featureCount && featureCount > 0 && (
-            <span className={cn("text-xs font-medium px-2.5 py-1 rounded-full", themeConfig.iconBg, themeConfig.iconColor)}>
-              {featureCount} features
+            <span className={cn("self-start sm:self-auto text-[10px] sm:text-xs font-medium px-2 py-0.5 sm:py-1 rounded-full bg-muted text-muted-foreground")}>
+              {featureCount}
             </span>
           )}
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
           {children}
         </div>
       </div>
