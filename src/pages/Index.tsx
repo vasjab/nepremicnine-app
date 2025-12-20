@@ -159,10 +159,9 @@ const Index = () => {
       <div className="h-14 shrink-0" />
       
       <main className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
-        {/* Mobile view - non-resizable */}
-        <div className={`lg:hidden w-full flex flex-col overflow-hidden ${
-          mobileView === 'map' ? 'hidden' : 'flex flex-1 min-h-0'
-        }`}>
+        {/* Mobile list view - only show when mobileView is 'list' */}
+        {mobileView === 'list' && (
+        <div className="lg:hidden w-full flex flex-col flex-1 min-h-0 overflow-hidden">
           {/* For Rent / For Sale Tabs */}
           <div className="px-4 pt-4 pb-0">
             <div className="flex bg-secondary rounded-xl p-1 gap-1">
@@ -277,11 +276,11 @@ const Index = () => {
             )}
           </div>
         </div>
+        )}
 
-        {/* Mobile map view */}
-        <div className={`lg:hidden flex-1 h-full min-h-0 relative ${
-          mobileView === 'list' ? 'hidden' : 'block'
-        }`}>
+        {/* Mobile map view - only show when mobileView is 'map' */}
+        {mobileView === 'map' && (
+        <div className="lg:hidden flex-1 h-full min-h-0 relative">
           <MapView
             listings={allListings || []}
             activeListing={activeListingId}
@@ -299,6 +298,7 @@ const Index = () => {
             </div>
           )}
         </div>
+        )}
 
         {/* Desktop view - resizable panels */}
         <ResizablePanelGroup 
@@ -381,11 +381,11 @@ const Index = () => {
                 userId={user?.id}
               />
               
-              <div ref={listContainerRef} className="flex-1 overflow-y-auto p-3 sm:p-4">
+              <div ref={listContainerRef} className="flex-1 overflow-y-auto p-3 sm:p-4 @container">
                 {isLoading ? (
                   <ListingSkeletonGrid count={4} />
                 ) : visibleListings.length > 0 ? (
-                  <div className="grid grid-cols-1 2xl:grid-cols-2 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-1 @[500px]:grid-cols-2 gap-3 sm:gap-4">
                     {visibleListings.map((listing, index) => (
                       <div
                         key={listing.id}
