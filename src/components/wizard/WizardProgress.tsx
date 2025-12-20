@@ -53,12 +53,17 @@ export function WizardProgress({ steps, currentStep, onStepClick, completedSteps
               >
                 {isCompleted ? <Check className="h-5 w-5" /> : step.emoji}
               </div>
-              <span className={cn(
-                "text-xs font-medium whitespace-nowrap transition-colors",
-                isCurrent ? "text-foreground" : "text-muted-foreground"
-              )}>
-                {step.title}
-              </span>
+              <div className="flex flex-col items-center">
+                <span className={cn(
+                  "text-xs font-medium whitespace-nowrap transition-colors",
+                  isCurrent ? "text-foreground" : "text-muted-foreground"
+                )}>
+                  {step.title}
+                </span>
+                {step.isOptional && (
+                  <span className="text-[10px] text-muted-foreground/70">(optional)</span>
+                )}
+              </div>
             </button>
           );
         })}
