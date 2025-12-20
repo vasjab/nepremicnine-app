@@ -422,19 +422,17 @@
   cursor: pointer;
   z-index: 20;
   border: none;
-  transform: translateY(-1px);
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition: background 0.15s ease;
 }
 
 .mapboxgl-popup-close-button:hover {
   background: hsl(0, 0%, 95%);
-  transform: translateY(-1px) scale(1.1);
 }
 
 /* Force-close button placement (Mapbox adds inline styles in some builds) */
 .mapboxgl-popup .mapboxgl-popup-close-button {
-  top: 12px !important;
-  right: 12px !important;
+  top: 8px !important;
+  right: 8px !important;
   width: 32px !important;
   height: 32px !important;
   padding: 0 !important;
@@ -443,6 +441,7 @@
   align-items: center !important;
   justify-content: center !important;
 }
+
 
 /* Custom scrollbar for webkit */
 ::-webkit-scrollbar {
