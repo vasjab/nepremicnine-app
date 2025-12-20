@@ -14,6 +14,7 @@ import { useFloorPlanUpload } from '@/hooks/useFloorPlanUpload';
 import { supabase } from '@/integrations/supabase/client';
 import { type Currency } from '@/lib/exchangeRates';
 import { ListingPreviewModal } from '@/components/ListingPreviewModal';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -55,6 +56,7 @@ export default function CreateListing() {
   const resumeId = searchParams.get('resume');
   const { user } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const createListing = useCreateListing();
   const updateListing = useUpdateListing();
   
@@ -390,181 +392,135 @@ export default function CreateListing() {
         utilities_included: draftListing.utilities_included || '',
         utilities_included_description: (draftListing as any).utilities_included_description || '',
         utilities_not_included_description: (draftListing as any).utilities_not_included_description || '',
-        utility_cost_estimate: (draftListing as any).utility_cost_estimate?.toString() || '',
+        utility_cost_estimate: draftListing.utility_cost_estimate?.toString() || '',
         // Sale expenses
-        monthly_expenses: (draftListing as any).monthly_expenses?.toString() || '',
-        expense_breakdown_enabled: (draftListing as any).expense_breakdown_enabled || false,
-        expense_hoa_fees: (draftListing as any).expense_hoa_fees?.toString() || '',
-        expense_maintenance: (draftListing as any).expense_maintenance?.toString() || '',
-        expense_property_tax: (draftListing as any).expense_property_tax?.toString() || '',
-        expense_utilities: (draftListing as any).expense_utilities?.toString() || '',
-        expense_insurance: (draftListing as any).expense_insurance?.toString() || '',
-        expense_other: (draftListing as any).expense_other?.toString() || '',
+        monthly_expenses: draftListing.monthly_expenses?.toString() || '',
+        expense_breakdown_enabled: draftListing.expense_breakdown_enabled || false,
+        expense_hoa_fees: draftListing.expense_hoa_fees?.toString() || '',
+        expense_maintenance: draftListing.expense_maintenance?.toString() || '',
+        expense_property_tax: draftListing.expense_property_tax?.toString() || '',
+        expense_utilities: draftListing.expense_utilities?.toString() || '',
+        expense_insurance: draftListing.expense_insurance?.toString() || '',
+        expense_other: draftListing.expense_other?.toString() || '',
       });
       
-      // Set coordinates
-      if (draftListing.latitude && draftListing.longitude) {
-        setManualCoordinates({ latitude: draftListing.latitude, longitude: draftListing.longitude });
-      }
-      
-      // Set images
+      // Set images if available
       if (draftListing.images && draftListing.images.length > 0) {
-        setImages(draftListing.images.map((url, index) => ({
-          id: `existing-${index}`,
-          url,
-          name: `Image ${index + 1}`,
-          size: 0,
-        })));
+        setImages(draftListing.images);
       }
       
-      // Set floor plans
+      // Set floor plans if available
       if (draftListing.floor_plan_urls && draftListing.floor_plan_urls.length > 0) {
-        setFloorPlans(draftListing.floor_plan_urls.map((url, index) => ({
-          id: `existing-fp-${index}`,
-          url,
-          name: `Floor Plan ${index + 1}`,
-          size: 0,
-        })));
+        setFloorPlans(draftListing.floor_plan_urls);
       }
       
-      // Resume at saved step
-      if ((draftListing as any).current_step) {
-        setCurrentStep((draftListing as any).current_step);
+      // Set manual coordinates if available
+      if (draftListing.latitude && draftListing.longitude) {
+        setManualCoordinates({
+          latitude: draftListing.latitude,
+          longitude: draftListing.longitude,
+        });
+      }
+      
+      // Set current step if available
+      if (draftListing.current_step) {
+        setCurrentStep(draftListing.current_step);
       }
       
       setIsFormInitialized(true);
     }
   }, [draftListing, isFormInitialized, setImages, setFloorPlans]);
 
-  const handleChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleChange = useCallback((field: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => { const n = { ...prev }; delete n[field]; return n; });
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
-  };
+  }, [errors]);
 
-  // Check if mandatory fields for preview are complete
-  const canPreview = (): boolean => {
-    const hasPropertyType = !!formData.property_type;
-    const hasTitle = formData.title.length >= 5;
-    const hasLocation = !!formData.address && !!formData.city && !!(coordinates || manualCoordinates);
-    const hasPrice = !!formData.price && parseFloat(formData.price) > 0;
-    return hasPropertyType && hasTitle && hasLocation && hasPrice; // Photos no longer required
-  };
-
-  const canProceed = (): boolean => {
-    const stepId = WIZARD_STEPS[currentStep]?.id;
-    switch (stepId) {
-      case 'listing_type': return !!formData.listing_type;
-      case 'type': return !!formData.property_type;
-      case 'house_type': return !!formData.house_type;
-      case 'title': return formData.title.length >= 5;
-      case 'location': return !!formData.address && !!formData.city && !!(coordinates || manualCoordinates);
-      case 'price': return !!formData.price && parseFloat(formData.price) > 0;
-      case 'photos': return true; // Now optional
-      case 'floorplans': return true;
-      case 'details': return true;
-      case 'outdoor': return true;
-      case 'parking': return true;
-      case 'amenities': return true;
-      case 'energy': return true;
-      case 'equipment': return true;
-      case 'interior': return true;
-      case 'building_info': return true;
-      case 'rental': return true;
-      case 'sale_costs': return true;
-      case 'review': return formData.title.length >= 5 && !!formData.price && !!(coordinates || manualCoordinates);
-      default: return true;
+  const handleStepClick = (stepIndex: number) => {
+    // Only allow clicking on completed or current step
+    if (completedSteps.has(stepIndex) || stepIndex <= currentStep) {
+      setCurrentStep(stepIndex);
     }
   };
 
   const handleNext = () => {
-    if (canProceed()) {
-      setCompletedSteps(prev => new Set([...prev, currentStep]));
-      setCurrentStep(prev => Math.min(prev + 1, WIZARD_STEPS.length - 1));
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (currentStep < WIZARD_STEPS.length - 1) {
+      setCompletedSteps((prev) => new Set([...prev, currentStep]));
+      setCurrentStep((prev) => prev + 1);
     }
   };
 
   const handleBack = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 0));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (currentStep > 0) {
+      setCurrentStep((prev) => prev - 1);
+    }
   };
 
   const handleSkip = () => {
-    setCurrentStep(prev => Math.min(prev + 1, WIZARD_STEPS.length - 1));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleStepClick = (index: number) => {
-    if (completedSteps.has(index) || index <= currentStep) {
-      setCurrentStep(index);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (currentStep < WIZARD_STEPS.length - 1) {
+      setCurrentStep((prev) => prev + 1);
     }
   };
 
-  const checkServerRateLimit = async (): Promise<boolean> => {
-    try {
-      if (!user) return false;
-      const { data, error } = await supabase.functions.invoke('check-rate-limit', {
-        body: { identifier: user.id, action: 'create_listing' },
-      });
-      if (error) return true;
-      return data?.allowed !== false;
-    } catch {
-      return true;
+  // Prepare listing data for submission
+  const prepareListingData = () => {
+    const coords = manualCoordinates || coordinates;
+    
+    // Parse heating type
+    let heatingType = '';
+    if (formData.heating_source === 'heat_pump' && formData.heat_pump_type) {
+      heatingType = `heat_pump_${formData.heat_pump_type}`;
+    } else if (formData.heating_source === 'other' && formData.heating_type_other) {
+      heatingType = formData.heating_type_other;
+    } else if (formData.heating_source) {
+      heatingType = formData.heating_source;
     }
-  };
-
-  // Build the complete listing data
-  const buildListingData = (isDraft: boolean = false) => {
-    const finalCoords = manualCoordinates || coordinates;
+    
     return {
-      user_id: user!.id,
-      title: formData.title || 'Draft Listing',
+      title: formData.title,
       description: formData.description || null,
       listing_type: formData.listing_type,
-      property_type: (formData.property_type === 'summer_house' ? 'house' : formData.property_type) as 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other',
+      property_type: formData.property_type === 'other' ? 'other' : formData.property_type,
+      house_type: formData.house_type || null,
       price: parseFloat(formData.price) || 0,
       currency: formData.currency,
-      address: formData.address || 'Draft Address',
-      city: formData.city || 'Draft City',
-      postal_code: formData.postal_code || null,
       country: formData.country,
-      latitude: finalCoords?.latitude || 0,
-      longitude: finalCoords?.longitude || 0,
+      address: formData.address,
+      city: formData.city,
+      postal_code: formData.postal_code || null,
+      latitude: coords?.latitude || 0,
+      longitude: coords?.longitude || 0,
       bedrooms: parseInt(formData.bedrooms) || 0,
       bathrooms: parseInt(formData.bathrooms) || 1,
-      area_sqm: formData.area_sqm ? parseFloat(formData.area_sqm) : null,
-      available_from: formData.listing_type === 'rent' && !formData.move_in_immediately ? (formData.available_from || null) : null,
-      available_until: formData.listing_type === 'rent' ? (formData.available_until || null) : null,
+      living_rooms: parseInt(formData.living_rooms) || 1,
+      area_sqm: parseFloat(formData.area_sqm) || null,
+      available_from: formData.available_from || null,
+      available_until: formData.available_until || null,
       is_furnished: formData.is_furnished,
       furnished_details: formData.furnished_details || null,
       allows_pets: formData.allows_pets,
       pets_details: formData.pets_details || null,
       move_in_immediately: formData.move_in_immediately,
-      images: images.map(img => img.url),
-      floor_plan_urls: floorPlans.map(fp => fp.url),
-      is_active: !isDraft,
-      is_draft: isDraft,
-      current_step: isDraft ? currentStep : null,
-      // Outdoor features
+      // Outdoor
       has_balcony: formData.has_balcony,
-      balcony_sqm: formData.balcony_sqm ? parseFloat(formData.balcony_sqm) : null,
+      balcony_sqm: parseFloat(formData.balcony_sqm) || null,
       has_terrace: formData.has_terrace,
-      terrace_sqm: formData.terrace_sqm ? parseFloat(formData.terrace_sqm) : null,
+      terrace_sqm: parseFloat(formData.terrace_sqm) || null,
       has_rooftop_terrace: formData.has_rooftop_terrace,
       has_garden: formData.has_garden,
-      garden_sqm: formData.garden_sqm ? parseFloat(formData.garden_sqm) : null,
+      garden_sqm: parseFloat(formData.garden_sqm) || null,
       has_bbq_area: formData.has_bbq_area,
       has_playground: formData.has_playground,
       has_waterfront: formData.has_waterfront,
+      waterfront_distance_m: parseInt(formData.waterfront_distance_m) || null,
       has_view: formData.has_view,
       view_type: formData.view_type || null,
       // Parking & Storage
       has_parking: formData.has_parking,
-      parking_type: (formData.parking_type || null) as 'street' | 'designated' | 'underground' | 'private' | null,
-      parking_spaces: formData.parking_spaces ? parseInt(formData.parking_spaces) : null,
+      parking_type: formData.parking_type || null,
+      parking_spaces: parseInt(formData.parking_spaces) || null,
       has_garage: formData.has_garage,
       has_carport: formData.has_carport,
       has_ev_charging: formData.has_ev_charging,
@@ -572,7 +528,7 @@ export default function CreateListing() {
       has_bicycle_storage: formData.has_bicycle_storage,
       has_stroller_storage: formData.has_stroller_storage,
       has_storage: formData.has_storage,
-      // Building amenities
+      // Building
       has_elevator: formData.has_elevator,
       elevator_condition: formData.elevator_condition || null,
       has_shared_laundry: formData.has_shared_laundry,
@@ -584,22 +540,22 @@ export default function CreateListing() {
       has_security: formData.has_security,
       has_alarm_system: formData.has_alarm_system,
       has_cctv: formData.has_cctv,
-      // Climate & Comfort
+      // Climate
       has_fireplace: formData.has_fireplace,
       has_floor_heating: formData.has_floor_heating,
       has_floor_cooling: formData.has_floor_cooling,
       has_air_conditioning: formData.has_air_conditioning,
       ac_type: formData.ac_type || null,
-      ac_unit_count: formData.ac_unit_count ? parseInt(formData.ac_unit_count) : null,
+      ac_unit_count: parseInt(formData.ac_unit_count) || null,
       has_ventilation: formData.has_ventilation,
       has_heat_recovery_ventilation: formData.has_heat_recovery_ventilation,
       has_solar_panels: formData.has_solar_panels,
       has_home_battery: formData.has_home_battery,
-      // Equipment
+      // Kitchen
       has_dishwasher: formData.has_dishwasher,
       has_washing_machine: formData.has_washing_machine,
       has_dryer: formData.has_dryer,
-      // Interior Highlights
+      // Interior
       has_high_ceilings: formData.has_high_ceilings,
       has_large_windows: formData.has_large_windows,
       has_smart_home: formData.has_smart_home,
@@ -613,183 +569,249 @@ export default function CreateListing() {
       has_wide_doorways: formData.has_wide_doorways,
       has_ground_floor_access: formData.has_ground_floor_access,
       has_elevator_from_garage: formData.has_elevator_from_garage,
-      // Safety & Privacy
+      // Safety
       has_secure_entrance: formData.has_secure_entrance,
       has_intercom: formData.has_intercom,
       has_gated_community: formData.has_gated_community,
       has_fire_safety: formData.has_fire_safety,
       has_soundproofing: formData.has_soundproofing,
       // Building info
-      floor_number: formData.floor_number ? parseInt(formData.floor_number) : null,
-      total_floors_building: formData.total_floors_building ? parseInt(formData.total_floors_building) : null,
-      property_floors: formData.property_floors ? parseInt(formData.property_floors) : null,
-      heating_type: (formData.heating_source || formData.heating_distribution || null) as 'central' | 'electric' | 'gas' | 'heat_pump' | 'other' | null,
-      energy_rating: (formData.energy_rating || null) as 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | null,
-      year_built: formData.year_built ? parseInt(formData.year_built) : null,
-      property_condition: (formData.property_condition || null) as 'new' | 'renovated' | 'good' | 'needs_work' | null,
-      house_type: formData.house_type || null,
+      floor_number: parseInt(formData.floor_number) || null,
+      total_floors_building: parseInt(formData.total_floors_building) || null,
+      property_floors: parseInt(formData.property_floors) || null,
+      heating_type: heatingType || null,
+      energy_rating: formData.energy_rating || null,
+      year_built: parseInt(formData.year_built) || null,
+      property_condition: formData.property_condition || null,
       // Rental terms
-      deposit_amount: formData.deposit_amount ? parseFloat(formData.deposit_amount) : null,
-      min_lease_months: formData.min_lease_months ? parseInt(formData.min_lease_months) : null,
-      internet_included: (formData.internet_included || null) as 'yes' | 'no' | 'available' | null,
-      utilities_included: (formData.utilities_included || null) as 'yes' | 'no' | 'partial' | null,
-      utility_cost_estimate: formData.utility_cost_estimate ? parseFloat(formData.utility_cost_estimate) : null,
-      // Sale costs
-      monthly_expenses: formData.monthly_expenses ? parseFloat(formData.monthly_expenses) : null,
+      deposit_amount: parseFloat(formData.deposit_amount) || null,
+      min_lease_months: parseInt(formData.min_lease_months) || null,
+      internet_included: formData.internet_included || null,
+      utilities_included: formData.utilities_included || null,
+      utility_cost_estimate: parseFloat(formData.utility_cost_estimate) || null,
+      // Sale expenses
+      monthly_expenses: parseFloat(formData.monthly_expenses) || null,
       expense_breakdown_enabled: formData.expense_breakdown_enabled,
-      expense_hoa_fees: formData.expense_hoa_fees ? parseFloat(formData.expense_hoa_fees) : null,
-      expense_maintenance: formData.expense_maintenance ? parseFloat(formData.expense_maintenance) : null,
-      expense_property_tax: formData.expense_property_tax ? parseFloat(formData.expense_property_tax) : null,
-      expense_utilities: formData.expense_utilities ? parseFloat(formData.expense_utilities) : null,
-      expense_insurance: formData.expense_insurance ? parseFloat(formData.expense_insurance) : null,
-      expense_other: formData.expense_other ? parseFloat(formData.expense_other) : null,
+      expense_hoa_fees: parseFloat(formData.expense_hoa_fees) || null,
+      expense_maintenance: parseFloat(formData.expense_maintenance) || null,
+      expense_property_tax: parseFloat(formData.expense_property_tax) || null,
+      expense_utilities: parseFloat(formData.expense_utilities) || null,
+      expense_insurance: parseFloat(formData.expense_insurance) || null,
+      expense_other: parseFloat(formData.expense_other) || null,
+      // Images
+      images: images.length > 0 ? images : null,
+      floor_plan_urls: floorPlans.length > 0 ? floorPlans : null,
     };
   };
 
   const handleSaveDraft = async () => {
     if (!user) return;
+    
     setIsSavingDraft(true);
-
-    const listingData = buildListingData(true);
-
-    if (resumeId) {
-      // Update existing draft
-      updateListing.mutate(
-        { id: resumeId, ...listingData },
-        {
-          onSuccess: () => {
-            toast({ title: '💾 Draft saved!', description: 'You can continue editing anytime.' });
-            navigate('/my-listings');
-          },
-          onError: () => {
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save draft.' });
-          },
-          onSettled: () => setIsSavingDraft(false),
-        }
-      );
-    } else {
-      // Create new draft
-      createListing.mutate(listingData, {
-        onSuccess: () => {
-          toast({ title: '💾 Draft saved!', description: 'You can continue editing anytime.' });
-          navigate('/my-listings');
-        },
-        onError: () => {
-          toast({ variant: 'destructive', title: 'Error', description: 'Failed to save draft.' });
-        },
-        onSettled: () => setIsSavingDraft(false),
+    
+    try {
+      const listingData = prepareListingData();
+      
+      if (resumeId) {
+        // Update existing draft
+        await updateListing.mutateAsync({
+          id: resumeId,
+          ...listingData,
+          is_draft: true,
+          current_step: currentStep,
+        });
+      } else {
+        // Create new draft
+        const { data, error } = await supabase
+          .from('listings')
+          .insert({
+            ...listingData,
+            user_id: user.id,
+            is_draft: true,
+            is_active: false,
+            current_step: currentStep,
+          })
+          .select('id')
+          .single();
+        
+        if (error) throw error;
+        
+        // Update URL to include resume param without navigation
+        window.history.replaceState({}, '', `/create-listing?resume=${data.id}`);
+      }
+      
+      toast({
+        title: 'Draft saved',
+        description: 'Your listing has been saved as a draft.',
       });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to save draft',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSavingDraft(false);
     }
   };
 
   const handleSubmit = async () => {
-    if (!user) return;
     if (isHoneypotTriggered(honeypot)) {
-      await new Promise(r => setTimeout(r, 2000));
-      toast({ title: 'Listing created!', description: 'Your property is now live.' });
-      return;
-    }
-    if (!checkRateLimit()) {
-      toast({ variant: 'destructive', title: 'Too many listings', description: `Please wait ${Math.ceil(remainingTime / 60)} minutes.` });
-      return;
-    }
-    const serverAllowed = await checkServerRateLimit();
-    if (!serverAllowed) {
-      toast({ variant: 'destructive', title: 'Too many listings', description: 'Please wait before creating more.' });
+      toast({
+        title: 'Error',
+        description: 'Submission blocked',
+        variant: 'destructive',
+      });
       return;
     }
 
-    const finalCoords = manualCoordinates || coordinates;
-    if (!finalCoords) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Location not found.' });
+    const allowed = await checkRateLimit('create_listing', user?.id || 'anonymous');
+    if (!allowed) {
+      toast({
+        title: 'Rate limit exceeded',
+        description: `Please wait ${remainingTime} before creating another listing.`,
+        variant: 'destructive',
+      });
       return;
     }
 
-    const listingData = buildListingData(false);
+    const coords = manualCoordinates || coordinates;
+    if (!coords) {
+      toast({
+        title: 'Error',
+        description: 'Please enter a valid address',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-    if (resumeId) {
-      // Update the draft to publish it
-      updateListing.mutate(
-        { id: resumeId, ...listingData },
-        {
-          onSuccess: () => {
-            toast({ title: '🎉 Listing published!', description: 'Your property is now live.' });
-            navigate('/my-listings');
-          },
-          onError: () => {
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to publish listing.' });
-          },
-        }
-      );
-    } else {
-      createListing.mutate(listingData, {
-        onSuccess: () => {
-          toast({ title: '🎉 Listing created!', description: 'Your property is now live.' });
-          navigate('/my-listings');
-        },
-        onError: () => {
-          toast({ variant: 'destructive', title: 'Error', description: 'Failed to create listing.' });
-        },
+    try {
+      const listingData = prepareListingData();
+      
+      if (resumeId) {
+        // Update existing draft and publish
+        await updateListing.mutateAsync({
+          id: resumeId,
+          ...listingData,
+          is_draft: false,
+          is_active: true,
+          current_step: null,
+          completed_at: new Date().toISOString(),
+        });
+      } else {
+        // Create new listing
+        await createListing.mutateAsync({
+          ...listingData,
+          user_id: user!.id,
+          is_draft: false,
+          is_active: true,
+        });
+      }
+
+      toast({
+        title: 'Success!',
+        description: 'Your listing has been published.',
+      });
+      navigate('/my-listings');
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create listing',
+        variant: 'destructive',
       });
     }
   };
 
-  if (!user) return null;
+  const canProceed = () => {
+    const step = WIZARD_STEPS[currentStep]?.id;
+    
+    switch (step) {
+      case 'listing_type':
+        return !!formData.listing_type;
+      case 'type':
+        return !!formData.property_type;
+      case 'house_type':
+        return !!formData.house_type;
+      case 'title':
+        return formData.title.length >= 5;
+      case 'location':
+        return formData.address.length > 0 && formData.city.length > 0 && (coordinates || manualCoordinates);
+      case 'price':
+        return parseFloat(formData.price) > 0;
+      case 'photos':
+      case 'floorplans':
+      case 'details':
+      case 'outdoor':
+      case 'parking':
+      case 'amenities':
+      case 'climate_appliances':
+      case 'interior':
+      case 'building_info':
+      case 'rental':
+      case 'sale_costs':
+        return true;
+      case 'review':
+        return true;
+      default:
+        return false;
+    }
+  };
+
+  const canPreview = () => {
+    return (
+      formData.title.length >= 5 &&
+      formData.address.length > 0 &&
+      formData.city.length > 0 &&
+      parseFloat(formData.price) > 0 &&
+      (coordinates || manualCoordinates)
+    );
+  };
 
   const renderStep = () => {
-    const stepId = WIZARD_STEPS[currentStep]?.id;
-    switch (stepId) {
+    const step = WIZARD_STEPS[currentStep]?.id;
+    
+    switch (step) {
       case 'listing_type':
         return (
           <ListingTypeStep
-            listingType={formData.listing_type}
-            onListingTypeChange={v => handleChange('listing_type', v)}
+            value={formData.listing_type}
+            onChange={(v) => handleChange('listing_type', v)}
           />
         );
       case 'type':
         return (
           <PropertyTypeStep
-            propertyType={formData.property_type}
-            propertyTypeOther={formData.property_type_other}
-            onPropertyTypeChange={v => handleChange('property_type', v)}
-            onPropertyTypeOtherChange={v => handleChange('property_type_other', v)}
+            value={formData.property_type}
+            onChange={(v) => handleChange('property_type', v)}
           />
         );
       case 'house_type':
         return (
           <HouseTypeStep
-            houseType={formData.house_type}
-            propertyType={formData.property_type as 'house' | 'summer_house'}
-            onHouseTypeChange={v => handleChange('house_type', v)}
+            value={formData.house_type}
+            onChange={(v) => handleChange('house_type', v)}
           />
         );
       case 'title':
-        return <TitleStep title={formData.title} onTitleChange={v => handleChange('title', v)} error={errors.title} />;
+        return (
+          <TitleStep
+            title={formData.title}
+            description={formData.description}
+            onChange={handleChange}
+          />
+        );
       case 'location':
         return (
           <LocationStep
             country={formData.country}
-            city={formData.city}
             address={formData.address}
+            city={formData.city}
             postalCode={formData.postal_code}
-            coordinates={coordinates}
-            manualCoordinates={manualCoordinates}
-            isGeocoding={isGeocoding}
+            coordinates={manualCoordinates || coordinates}
             geocodingStatus={geocodingStatus}
-            onCountryChange={v => handleChange('country', v)}
-            onCityChange={v => handleChange('city', v)}
-            onAddressChange={v => handleChange('address', v)}
-            onPostalCodeChange={v => handleChange('postal_code', v)}
-            onAddressSelect={s => { handleChange('address', s.address); if (s.city) handleChange('city', s.city); if (s.postalCode) handleChange('postal_code', s.postalCode); setManualCoordinates(null); }}
-            onCoordinatesChange={(lat, lng) => setManualCoordinates({ latitude: lat, longitude: lng })}
-            onReverseGeocode={({ address, city, postalCode, country }) => {
-              if (address) handleChange('address', address);
-              if (city) handleChange('city', city);
-              if (postalCode) handleChange('postal_code', postalCode);
-              if (country) handleChange('country', country);
-            }}
-            onResetLocation={() => setManualCoordinates(null)}
-            errors={{ city: errors.city, address: errors.address }}
+            isGeocoding={isGeocoding}
+            onChange={handleChange}
+            onManualCoordinates={setManualCoordinates}
           />
         );
       case 'price':
@@ -798,13 +820,20 @@ export default function CreateListing() {
             price={formData.price}
             currency={formData.currency}
             listingType={formData.listing_type}
-            onPriceChange={v => handleChange('price', v)}
-            onCurrencyChange={v => handleChange('currency', v)}
-            error={errors.price}
+            onChange={handleChange}
           />
         );
       case 'photos':
-        return <PhotosStep images={images} isUploading={isUploading} uploadProgress={uploadProgress} onUpload={uploadImages} onRemove={removeImage} onReorder={reorderImages} disabled={!user} />;
+        return (
+          <PhotosStep
+            images={images}
+            isUploading={isUploading}
+            uploadProgress={uploadProgress}
+            onUpload={uploadImages}
+            onRemove={removeImage}
+            onReorder={reorderImages}
+          />
+        );
       case 'floorplans':
         return (
           <FloorPlansStep
@@ -814,37 +843,24 @@ export default function CreateListing() {
             onUpload={uploadFloorPlans}
             onRemove={removeFloorPlan}
             onReorder={reorderFloorPlans}
-            disabled={!user}
           />
         );
       case 'details':
         return (
           <DetailsStep
-            description={formData.description}
             bedrooms={formData.bedrooms}
             bathrooms={formData.bathrooms}
             livingRooms={formData.living_rooms}
             areaSqm={formData.area_sqm}
-            availableFrom={formData.available_from}
-            availableUntil={formData.available_until}
             isFurnished={formData.is_furnished}
             furnishedDetails={formData.furnished_details}
             allowsPets={formData.allows_pets}
             petsDetails={formData.pets_details}
             moveInImmediately={formData.move_in_immediately}
+            availableFrom={formData.available_from}
+            availableUntil={formData.available_until}
             listingType={formData.listing_type}
-            onDescriptionChange={v => handleChange('description', v)}
-            onBedroomsChange={v => handleChange('bedrooms', v)}
-            onBathroomsChange={v => handleChange('bathrooms', v)}
-            onLivingRoomsChange={v => handleChange('living_rooms', v)}
-            onAreaChange={v => handleChange('area_sqm', v)}
-            onAvailableFromChange={v => handleChange('available_from', v)}
-            onAvailableUntilChange={v => handleChange('available_until', v)}
-            onFurnishedChange={v => handleChange('is_furnished', v)}
-            onFurnishedDetailsChange={v => handleChange('furnished_details', v)}
-            onPetsChange={v => handleChange('allows_pets', v)}
-            onPetsDetailsChange={v => handleChange('pets_details', v)}
-            onMoveInImmediatelyChange={v => handleChange('move_in_immediately', v)}
+            onChange={handleChange}
           />
         );
       case 'outdoor':
@@ -863,7 +879,6 @@ export default function CreateListing() {
             waterfrontDistanceM={formData.waterfront_distance_m}
             hasView={formData.has_view}
             viewType={formData.view_type}
-            onFeatureToggle={(f, v) => handleChange(f, v)}
             onChange={handleChange}
           />
         );
@@ -880,7 +895,6 @@ export default function CreateListing() {
             hasBicycleStorage={formData.has_bicycle_storage}
             hasStrollerStorage={formData.has_stroller_storage}
             hasStorage={formData.has_storage}
-            onFeatureToggle={(f, v) => handleChange(f, v)}
             onChange={handleChange}
           />
         );
@@ -898,9 +912,6 @@ export default function CreateListing() {
             hasSecurity={formData.has_security}
             hasAlarmSystem={formData.has_alarm_system}
             hasCctv={formData.has_cctv}
-            hasPhysicalProtection={formData.has_physical_protection}
-            hasVideoDoorbell={formData.has_video_doorbell}
-            onFeatureToggle={(f, v) => handleChange(f, v)}
             onChange={handleChange}
           />
         );
@@ -917,14 +928,9 @@ export default function CreateListing() {
             hasHeatRecoveryVentilation={formData.has_heat_recovery_ventilation}
             hasSolarPanels={formData.has_solar_panels}
             hasHomeBattery={formData.has_home_battery}
-            hasOven={formData.has_oven}
-            hasMicrowave={formData.has_microwave}
-            hobType={formData.hob_type}
             hasDishwasher={formData.has_dishwasher}
             hasWashingMachine={formData.has_washing_machine}
             hasDryer={formData.has_dryer}
-            isFurnished={formData.is_furnished}
-            onFeatureToggle={(f, v) => handleChange(f, v)}
             onChange={handleChange}
           />
         );
@@ -940,12 +946,14 @@ export default function CreateListing() {
             orientation={formData.orientation}
             hasStepFreeAccess={formData.has_step_free_access}
             hasWheelchairAccessible={formData.has_wheelchair_accessible}
+            hasWideDoorways={formData.has_wide_doorways}
+            hasGroundFloorAccess={formData.has_ground_floor_access}
+            hasElevatorFromGarage={formData.has_elevator_from_garage}
             hasSecureEntrance={formData.has_secure_entrance}
             hasIntercom={formData.has_intercom}
-            hasSoundproofing={formData.has_soundproofing}
             hasGatedCommunity={formData.has_gated_community}
             hasFireSafety={formData.has_fire_safety}
-            onFeatureToggle={(f, v) => handleChange(f, v)}
+            hasSoundproofing={formData.has_soundproofing}
             onChange={handleChange}
           />
         );
@@ -1057,6 +1065,77 @@ export default function CreateListing() {
     navigate(-1);
   };
 
+  // Mobile fullscreen layout
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-background pb-24 flex flex-col">
+        {/* Mobile header with close button only */}
+        <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border h-14 flex items-center px-4">
+          <Button variant="ghost" size="icon" onClick={handleCloseClick} className="mr-2">
+            <X className="h-5 w-5" />
+          </Button>
+          <span className="font-medium text-foreground">
+            {resumeId ? 'Edit Listing' : 'New Listing'}
+          </span>
+        </div>
+        
+        <main className="pt-14 flex-1">
+          <div className="container mx-auto px-4 py-4">
+            <WizardProgress steps={WIZARD_STEPS} currentStep={currentStep} onStepClick={handleStepClick} completedSteps={completedSteps} />
+
+            <div className="mt-6 max-w-3xl mx-auto">
+              <HoneypotField value={honeypot} onChange={setHoneypot} />
+              {renderStep()}
+            </div>
+          </div>
+        </main>
+
+        <WizardNavigation
+          currentStep={currentStep}
+          totalSteps={WIZARD_STEPS.length}
+          canProceed={canProceed()}
+          isOptionalStep={WIZARD_STEPS[currentStep]?.isOptional || false}
+          isSubmitting={createListing.isPending || updateListing.isPending || isSavingDraft}
+          canPreview={canPreview()}
+          canSaveDraft={true}
+          isResumingDraft={!!resumeId}
+          isMobile={true}
+          onBack={handleBack}
+          onNext={handleNext}
+          onSkip={handleSkip}
+          onSubmit={handleSubmit}
+          onPreview={() => setShowPreview(true)}
+          onSaveDraft={handleSaveDraft}
+        />
+
+        <ListingPreviewModal
+          formData={previewFormData}
+          uploadedImages={images}
+          coordinates={manualCoordinates || coordinates}
+          isOpen={showPreview}
+          onClose={() => setShowPreview(false)}
+        />
+
+        {/* Close Confirmation Dialog */}
+        <AlertDialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Save your progress?</AlertDialogTitle>
+              <AlertDialogDescription>
+                You have unsaved changes. Would you like to save your listing as a draft before closing?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={handleDiscardAndClose}>Discard</AlertDialogCancel>
+              <AlertDialogAction onClick={handleSaveAndClose}>Save Draft</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    );
+  }
+
+  // Desktop layout (unchanged)
   return (
     <div className="min-h-screen bg-background pb-24">
       <Header />
@@ -1084,6 +1163,7 @@ export default function CreateListing() {
         canPreview={canPreview()}
         canSaveDraft={true}
         isResumingDraft={!!resumeId}
+        isMobile={false}
         onBack={handleBack}
         onNext={handleNext}
         onSkip={handleSkip}

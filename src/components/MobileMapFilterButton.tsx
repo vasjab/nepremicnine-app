@@ -93,7 +93,7 @@ function FilterSection({
   
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="flex w-full items-center justify-between py-3 text-sm font-medium transition-colors hover:text-foreground">
+      <CollapsibleTrigger className="flex w-full items-center justify-between py-3 text-sm font-medium transition-colors hover:text-foreground will-change-transform">
         <span className="flex items-center gap-2">
           {title}
           {hasActiveFilters && (
@@ -101,11 +101,11 @@ function FilterSection({
           )}
         </span>
         <ChevronDown className={cn(
-          "h-4 w-4 text-muted-foreground transition-transform duration-200",
+          "h-4 w-4 text-muted-foreground transition-transform duration-150 ease-out",
           isOpen && "rotate-180"
         )} />
       </CollapsibleTrigger>
-      <CollapsibleContent className="space-y-3 pt-1 pb-4 animate-accordion-down">
+      <CollapsibleContent className="space-y-3 pt-1 pb-4">
         {children}
       </CollapsibleContent>
     </Collapsible>
