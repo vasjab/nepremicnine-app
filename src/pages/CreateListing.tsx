@@ -172,6 +172,7 @@ export default function CreateListing() {
     property_type_other: '',
     price: '',
     currency: 'SEK' as Currency,
+    country: 'Sweden',
     address: '',
     city: '',
     postal_code: '',
@@ -228,12 +229,39 @@ export default function CreateListing() {
   const isRental = formData.listing_type === 'rent';
   const isSale = formData.listing_type === 'sale';
 
+  // Country code mapping for Mapbox API
+  const getCountryCode = (country: string): string => {
+    const countryMap: Record<string, string> = {
+      'Sweden': 'SE',
+      'Norway': 'NO',
+      'Denmark': 'DK',
+      'Finland': 'FI',
+      'Germany': 'DE',
+      'Netherlands': 'NL',
+      'United Kingdom': 'GB',
+      'France': 'FR',
+      'Spain': 'ES',
+      'Italy': 'IT',
+      'Portugal': 'PT',
+      'Belgium': 'BE',
+      'Austria': 'AT',
+      'Switzerland': 'CH',
+      'Poland': 'PL',
+      'Czech Republic': 'CZ',
+      'Ireland': 'IE',
+      'United States': 'US',
+      'Canada': 'CA',
+      'Australia': 'AU',
+    };
+    return countryMap[country] || 'SE';
+  };
+
   // Auto-geocoding from address
   const { coordinates, isGeocoding, status: geocodingStatus } = useAddressGeocoding({
     address: formData.address,
     city: formData.city,
     postalCode: formData.postal_code,
-    country: 'Sweden',
+    country: formData.country,
   });
 
   useEffect(() => {
@@ -852,37 +880,48 @@ export default function CreateListing() {
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Location</h2>
               <p className="text-sm text-muted-foreground">
-                Enter the address and we'll automatically find the location on the map.
+                Select country and city first for better address suggestions.
               </p>
               
-              <div ref={addressRef}>
-                <FormField
-                  label="Address"
-                  htmlFor="address"
-                  required
-                  error={getError('address')}
+              {/* Country */}
+              <FormField
+                label="Country"
+                htmlFor="country"
+                required
+              >
+                <Select
+                  value={formData.country}
+                  onValueChange={(value) => handleChange('country', value)}
                 >
-                  <AddressAutocomplete
-                    value={formData.address}
-                    onChange={(value) => handleChange('address', value)}
-                    onSelect={(suggestion) => {
-                      handleChange('address', suggestion.address);
-                      if (suggestion.city) {
-                        handleChange('city', suggestion.city);
-                      }
-                      if (suggestion.postalCode) {
-                        handleChange('postal_code', suggestion.postalCode);
-                      }
-                      // Reset manual coordinates when a new address is selected
-                      setManualCoordinates(null);
-                    }}
-                    onBlur={() => handleBlur('address')}
-                    placeholder="Start typing an address..."
-                    hasError={!!getError('address')}
-                  />
-                </FormField>
-              </div>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Sweden">Sweden</SelectItem>
+                    <SelectItem value="Norway">Norway</SelectItem>
+                    <SelectItem value="Denmark">Denmark</SelectItem>
+                    <SelectItem value="Finland">Finland</SelectItem>
+                    <SelectItem value="Germany">Germany</SelectItem>
+                    <SelectItem value="Netherlands">Netherlands</SelectItem>
+                    <SelectItem value="United Kingdom">United Kingdom</SelectItem>
+                    <SelectItem value="France">France</SelectItem>
+                    <SelectItem value="Spain">Spain</SelectItem>
+                    <SelectItem value="Italy">Italy</SelectItem>
+                    <SelectItem value="Portugal">Portugal</SelectItem>
+                    <SelectItem value="Belgium">Belgium</SelectItem>
+                    <SelectItem value="Austria">Austria</SelectItem>
+                    <SelectItem value="Switzerland">Switzerland</SelectItem>
+                    <SelectItem value="Poland">Poland</SelectItem>
+                    <SelectItem value="Czech Republic">Czech Republic</SelectItem>
+                    <SelectItem value="Ireland">Ireland</SelectItem>
+                    <SelectItem value="United States">United States</SelectItem>
+                    <SelectItem value="Canada">Canada</SelectItem>
+                    <SelectItem value="Australia">Australia</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormField>
 
+              {/* City and Postal Code */}
               <div ref={cityRef} className="grid sm:grid-cols-2 gap-4">
                 <FormField
                   label="City"
@@ -912,6 +951,36 @@ export default function CreateListing() {
                     onChange={(e) => handleChange('postal_code', e.target.value)}
                     onBlur={() => handleBlur('postal_code')}
                     className={cn(getError('postal_code') && 'border-destructive')}
+                  />
+                </FormField>
+              </div>
+
+              {/* Address with autocomplete - now last for better suggestions */}
+              <div ref={addressRef}>
+                <FormField
+                  label="Address"
+                  htmlFor="address"
+                  required
+                  error={getError('address')}
+                >
+                  <AddressAutocomplete
+                    value={formData.address}
+                    onChange={(value) => handleChange('address', value)}
+                    onSelect={(suggestion) => {
+                      handleChange('address', suggestion.address);
+                      if (suggestion.city) {
+                        handleChange('city', suggestion.city);
+                      }
+                      if (suggestion.postalCode) {
+                        handleChange('postal_code', suggestion.postalCode);
+                      }
+                      // Reset manual coordinates when a new address is selected
+                      setManualCoordinates(null);
+                    }}
+                    onBlur={() => handleBlur('address')}
+                    placeholder="Start typing an address..."
+                    hasError={!!getError('address')}
+                    country={getCountryCode(formData.country)}
                   />
                 </FormField>
               </div>
