@@ -32,23 +32,46 @@ export function TitleStep({ title, onTitleChange, error }: TitleStepProps) {
           <textarea
             value={title}
             onChange={(e) => onTitleChange(e.target.value)}
+            onTouchStart={(e) => {
+              // Ensure focus on iOS Safari
+              e.currentTarget.focus();
+            }}
+            onFocus={(e) => {
+              // Scroll into view on focus for mobile
+              setTimeout(() => {
+                e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }, 100);
+            }}
             placeholder="Cozy 2-bedroom in Södermalm with balcony..."
             rows={3}
+            inputMode="text"
+            autoComplete="off"
+            autoCorrect="on"
+            spellCheck="true"
+            enterKeyHint="done"
             className={cn(
               "w-full p-6 text-xl md:text-2xl font-medium bg-card border-2 rounded-2xl resize-none transition-all duration-300",
               "placeholder:text-muted-foreground/50",
               "focus:outline-none focus:ring-0",
+              // iOS Safari touch optimization
+              "touch-action-auto",
               error 
                 ? "border-destructive focus:border-destructive" 
                 : isValid 
                   ? "border-success focus:border-success"
                   : "border-border focus:border-accent"
             )}
+            style={{ 
+              WebkitUserSelect: 'text',
+              userSelect: 'text',
+              WebkitAppearance: 'none',
+              fontSize: '16px', // Prevents iOS zoom on focus
+            }}
           />
           
           {/* Character Count */}
           <div className={cn(
-            "absolute bottom-3 right-4 text-sm font-medium transition-colors",
+            "absolute bottom-3 right-4 text-sm font-medium transition-colors pointer-events-none",
             charCount > maxChars ? "text-destructive" : charCount >= minChars ? "text-success" : "text-muted-foreground"
           )}>
             {charCount} / {maxChars}

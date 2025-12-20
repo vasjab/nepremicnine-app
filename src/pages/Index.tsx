@@ -30,10 +30,11 @@ interface MapBounds {
 // Memoized listing card wrapper for performance
 const MemoizedListingCard = memo(ListingCard);
 
-// Custom hook for scroll-based header collapse
+// Custom hook for scroll-based header collapse - improved to reappear on scroll up
 function useScrollCollapse(containerRef: React.RefObject<HTMLDivElement>) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const lastScrollTop = useRef(0);
+  const scrollThreshold = 20; // Minimum scroll distance to trigger collapse
 
   useEffect(() => {
     const container = containerRef.current;
@@ -41,12 +42,18 @@ function useScrollCollapse(containerRef: React.RefObject<HTMLDivElement>) {
 
     const handleScroll = () => {
       const scrollTop = container.scrollTop;
-      const isScrollingDown = scrollTop > lastScrollTop.current && scrollTop > 50;
-      const isScrollingUp = scrollTop < lastScrollTop.current;
+      const scrollDelta = scrollTop - lastScrollTop.current;
+      
+      // Only trigger on significant scroll
+      if (Math.abs(scrollDelta) < scrollThreshold) return;
+      
+      const isScrollingDown = scrollDelta > 0 && scrollTop > 80;
+      const isScrollingUp = scrollDelta < 0;
       
       if (isScrollingDown && !isCollapsed) {
         setIsCollapsed(true);
-      } else if (isScrollingUp && scrollTop < 100) {
+      } else if (isScrollingUp && isCollapsed) {
+        // Reappear immediately when scrolling up
         setIsCollapsed(false);
       }
       
@@ -386,39 +393,43 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Mobile view toggle */}
+            {/* Mobile view toggle - iOS Safari optimized */}
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
               <div className="flex bg-card rounded-full shadow-lg border border-border p-1">
-                <Button
-                  variant={mobileView === 'list' ? 'default' : 'ghost'}
-                  size="sm"
+                <button
+                  type="button"
                   className={cn(
-                    'rounded-full px-4',
-                    mobileView === 'list' && 'bg-accent text-accent-foreground',
+                    'flex items-center justify-center rounded-full px-4 py-2.5 min-h-[44px] min-w-[80px] text-sm font-medium transition-colors touch-safe-button',
+                    mobileView === 'list' 
+                      ? 'bg-accent text-accent-foreground' 
+                      : 'text-muted-foreground hover:text-foreground',
                   )}
                   onClick={() => {
                     haptic('medium');
                     setMobileView('list');
                   }}
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                   <List className="h-4 w-4 mr-2" />
                   {t('map.list')}
-                </Button>
-                <Button
-                  variant={mobileView === 'map' ? 'default' : 'ghost'}
-                  size="sm"
+                </button>
+                <button
+                  type="button"
                   className={cn(
-                    'rounded-full px-4',
-                    mobileView === 'map' && 'bg-accent text-accent-foreground',
+                    'flex items-center justify-center rounded-full px-4 py-2.5 min-h-[44px] min-w-[80px] text-sm font-medium transition-colors touch-safe-button',
+                    mobileView === 'map' 
+                      ? 'bg-accent text-accent-foreground' 
+                      : 'text-muted-foreground hover:text-foreground',
                   )}
                   onClick={() => {
                     haptic('medium');
                     setMobileView('map');
                   }}
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                   <MapIcon className="h-4 w-4 mr-2" />
                   {t('map.map')}
-                </Button>
+                </button>
               </div>
             </div>
           </>

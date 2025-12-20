@@ -39,6 +39,7 @@ const translations = {
       saved: 'Saved',
       myListings: 'My Listings',
       dashboard: 'Dashboard',
+      searchPlaceholder: 'Search listings...',
     },
     propertyTypes: {
       apartment: 'Apartment',
@@ -521,6 +522,7 @@ const translations = {
       saved: 'Shranjeno',
       myListings: 'Moji oglasi',
       dashboard: 'Nadzorna plošča',
+      searchPlaceholder: 'Išči oglase...',
     },
     propertyTypes: {
       apartment: 'Stanovanje',

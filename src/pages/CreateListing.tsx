@@ -1119,14 +1119,30 @@ export default function CreateListing() {
   if (isMobile) {
     return (
       <div className="min-h-screen bg-background pb-24 flex flex-col">
-        {/* Mobile header with close button only */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border h-14 flex items-center px-4">
-          <Button variant="ghost" size="icon" onClick={handleCloseClick} className="mr-2">
+        {/* Mobile header with close button on left and Save Draft on right */}
+        <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border h-14 flex items-center justify-between px-4">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={handleCloseClick} 
+            className="touch-safe-button min-w-[44px] min-h-[44px]"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
             <X className="h-5 w-5" />
           </Button>
           <span className="font-medium text-foreground">
             {resumeId ? 'Edit Listing' : 'New Listing'}
           </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSaveDraft}
+            disabled={createListing.isPending || updateListing.isPending || isSavingDraft}
+            className="text-muted-foreground touch-safe-button min-h-[44px]"
+            style={{ WebkitTapHighlightColor: 'transparent' }}
+          >
+            Save Draft
+          </Button>
         </div>
         
         <main className="pt-14 flex-1">
@@ -1147,7 +1163,7 @@ export default function CreateListing() {
           isOptionalStep={WIZARD_STEPS[currentStep]?.isOptional || false}
           isSubmitting={createListing.isPending || updateListing.isPending || isSavingDraft}
           canPreview={canPreview()}
-          canSaveDraft={true}
+          canSaveDraft={false}
           isResumingDraft={!!resumeId}
           isMobile={true}
           onBack={handleBack}
