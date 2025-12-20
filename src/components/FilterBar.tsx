@@ -900,6 +900,22 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
       });
     }
 
+    if (filters.min_area || filters.max_area) {
+      let sizeLabel = '';
+      const unit = areaUnit === 'sqft' ? 'ft²' : 'm²';
+      if (filters.min_area && filters.max_area) {
+        sizeLabel = `${filters.min_area} - ${filters.max_area} ${unit}`;
+      } else if (filters.min_area) {
+        sizeLabel = `Min ${filters.min_area} ${unit}`;
+      } else if (filters.max_area) {
+        sizeLabel = `Max ${filters.max_area} ${unit}`;
+      }
+      chips.push({
+        label: sizeLabel,
+        onRemove: () => onFiltersChange({ ...filters, min_area: null, max_area: null }),
+      });
+    }
+
     // Feature chips
     if (filters.is_furnished) chips.push({ label: t('filters.furnished'), onRemove: () => handleBooleanFilter('is_furnished', false) });
     if (filters.allows_pets) chips.push({ label: t('filters.petsAllowed'), onRemove: () => handleBooleanFilter('allows_pets', false) });
