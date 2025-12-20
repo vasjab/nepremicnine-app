@@ -130,7 +130,7 @@ export function ListingCard({ listing, isActive, onClick, showStatusOverlay = fa
             src={listing.images[currentImageIndex]}
             alt={`${listing.title} - Photo ${currentImageIndex + 1}`}
             className={cn(
-              "w-full h-full object-cover transition-transform duration-500 ease-out-expo group-hover:scale-[1.03]",
+              "w-full h-full object-cover transition-transform duration-500 ease-out-expo group-hover:scale-[1.015]",
               isSoldOrRented && showStatusOverlay && "saturate-[0.7]"
             )}
           />

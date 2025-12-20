@@ -135,9 +135,9 @@
   }
 
   .listing-card:hover {
-    box-shadow: 0 8px 24px -4px hsl(25 30% 12% / 0.08), 
-                0 16px 48px -8px hsl(25 30% 12% / 0.1);
-    transform: translateY(-2px);
+    box-shadow: 0 4px 16px -4px hsl(25 30% 12% / 0.06), 
+                0 8px 24px -6px hsl(25 30% 12% / 0.08);
+    transform: translateY(-1px);
   }
 
   .listing-card:active {
