@@ -653,15 +653,15 @@ export default function CreateListing() {
           .single();
         
         if (error) throw error;
-        
-        // Update URL to include resume param without navigation
-        window.history.replaceState({}, '', `/create-listing?resume=${data.id}`);
       }
       
       toast({
         title: 'Draft saved',
         description: 'Your listing has been saved as a draft.',
       });
+      
+      // Navigate to My Listings after saving draft
+      navigate('/my-listings');
     } catch (error: any) {
       toast({
         title: 'Error',
