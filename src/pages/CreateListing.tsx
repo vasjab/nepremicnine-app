@@ -28,6 +28,7 @@ import { BuildingFeaturesStep } from '@/components/wizard/steps/BuildingFeatures
 import { EquipmentStep } from '@/components/wizard/steps/EquipmentStep';
 import { BuildingInfoStep } from '@/components/wizard/steps/BuildingInfoStep';
 import { RentalTermsStep } from '@/components/wizard/steps/RentalTermsStep';
+import { SaleCostsStep } from '@/components/wizard/steps/SaleCostsStep';
 import { ReviewStep } from '@/components/wizard/steps/ReviewStep';
 
 type PropertyType = 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'summer_house' | 'other';
@@ -252,7 +253,7 @@ export default function CreateListing() {
       title: formData.title,
       description: formData.description || null,
       listing_type: formData.listing_type,
-      property_type: formData.property_type as 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other',
+      property_type: (formData.property_type === 'summer_house' ? 'house' : formData.property_type) as 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other',
       price: parseFloat(formData.price),
       currency: formData.currency,
       address: formData.address,
@@ -264,14 +265,14 @@ export default function CreateListing() {
       bedrooms: parseInt(formData.bedrooms) || 0,
       bathrooms: parseInt(formData.bathrooms) || 1,
       area_sqm: formData.area_sqm ? parseFloat(formData.area_sqm) : null,
-      available_from: formData.listing_type === 'rent' ? (formData.available_from || null) : null,
+      available_from: formData.listing_type === 'rent' && !formData.move_in_immediately ? (formData.available_from || null) : null,
       available_until: formData.listing_type === 'rent' ? (formData.available_until || null) : null,
       is_furnished: formData.is_furnished,
       allows_pets: formData.allows_pets,
       images: images.map(img => img.url),
       floor_plan_urls: floorPlans.map(fp => fp.url),
       is_active: true,
-      // Features
+      // Building features
       has_elevator: formData.has_elevator,
       has_balcony: formData.has_balcony,
       balcony_sqm: formData.balcony_sqm ? parseFloat(formData.balcony_sqm) : null,
@@ -283,10 +284,11 @@ export default function CreateListing() {
       parking_type: (formData.parking_type || null) as 'street' | 'designated' | 'underground' | 'private' | null,
       parking_spaces: formData.parking_spaces ? parseInt(formData.parking_spaces) : null,
       has_garage: formData.has_garage,
+      has_storage: formData.has_storage,
+      // Equipment
       has_air_conditioning: formData.has_air_conditioning,
       has_dishwasher: formData.has_dishwasher,
       has_washing_machine: formData.has_washing_machine,
-      has_storage: formData.has_storage,
       // Building info
       floor_number: formData.floor_number ? parseInt(formData.floor_number) : null,
       total_floors_building: formData.total_floors_building ? parseInt(formData.total_floors_building) : null,
@@ -322,9 +324,11 @@ export default function CreateListing() {
             propertyType={formData.property_type}
             listingType={formData.listing_type}
             propertyTypeOther={formData.property_type_other}
+            houseType={formData.house_type}
             onPropertyTypeChange={v => handleChange('property_type', v)}
             onListingTypeChange={v => handleChange('listing_type', v)}
             onPropertyTypeOtherChange={v => handleChange('property_type_other', v)}
+            onHouseTypeChange={v => handleChange('house_type', v)}
           />
         );
       case 'title':
@@ -363,6 +367,18 @@ export default function CreateListing() {
         );
       case 'photos':
         return <PhotosStep images={images} isUploading={isUploading} uploadProgress={uploadProgress} onUpload={uploadImages} onRemove={removeImage} onReorder={reorderImages} disabled={!user} />;
+      case 'floorplans':
+        return (
+          <FloorPlansStep
+            floorPlans={floorPlans}
+            isUploading={isUploadingFloorPlans}
+            uploadProgress={floorPlanProgress}
+            onUpload={uploadFloorPlans}
+            onRemove={removeFloorPlan}
+            onReorder={reorderFloorPlans}
+            disabled={!user}
+          />
+        );
       case 'details':
         return (
           <DetailsStep
@@ -374,6 +390,7 @@ export default function CreateListing() {
             availableUntil={formData.available_until}
             isFurnished={formData.is_furnished}
             allowsPets={formData.allows_pets}
+            moveInImmediately={formData.move_in_immediately}
             listingType={formData.listing_type}
             onDescriptionChange={v => handleChange('description', v)}
             onBedroomsChange={v => handleChange('bedrooms', v)}
@@ -383,11 +400,12 @@ export default function CreateListing() {
             onAvailableUntilChange={v => handleChange('available_until', v)}
             onFurnishedChange={v => handleChange('is_furnished', v)}
             onPetsChange={v => handleChange('allows_pets', v)}
+            onMoveInImmediatelyChange={v => handleChange('move_in_immediately', v)}
           />
         );
-      case 'features':
+      case 'building_features':
         return (
-          <FeaturesStep
+          <BuildingFeaturesStep
             hasElevator={formData.has_elevator}
             hasBalcony={formData.has_balcony}
             balconySqm={formData.balcony_sqm}
@@ -399,16 +417,24 @@ export default function CreateListing() {
             parkingType={formData.parking_type}
             parkingSpaces={formData.parking_spaces}
             hasGarage={formData.has_garage}
-            hasAirConditioning={formData.has_air_conditioning}
-            hasDishwasher={formData.has_dishwasher}
-            hasWashingMachine={formData.has_washing_machine}
             hasStorage={formData.has_storage}
+            hasFireplace={formData.has_fireplace}
             propertyType={formData.property_type}
             onFeatureToggle={(f, v) => handleChange(f, v)}
             onChange={handleChange}
           />
         );
-      case 'building':
+      case 'equipment':
+        return (
+          <EquipmentStep
+            hasAirConditioning={formData.has_air_conditioning}
+            hasDishwasher={formData.has_dishwasher}
+            hasWashingMachine={formData.has_washing_machine}
+            hasDryer={formData.has_dryer}
+            onFeatureToggle={(f, v) => handleChange(f, v)}
+          />
+        );
+      case 'building_info':
         return (
           <BuildingInfoStep
             floorNumber={formData.floor_number}
@@ -430,20 +456,30 @@ export default function CreateListing() {
             minLeaseMonths={formData.min_lease_months}
             internetIncluded={formData.internet_included}
             utilitiesIncluded={formData.utilities_included}
+            utilityCostEstimate={formData.utility_cost_estimate}
+            currency={formData.currency}
+            onChange={handleChange}
+          />
+        );
+      case 'sale_costs':
+        return (
+          <SaleCostsStep
+            monthlyExpenses={formData.monthly_expenses}
             currency={formData.currency}
             onChange={handleChange}
           />
         );
       case 'review':
-        return <ReviewStep formData={formData} images={images} hasValidLocation={!!(coordinates || manualCoordinates)} onEditStep={setCurrentStep} />;
+        return <ReviewStep formData={formData as any} images={images} hasValidLocation={!!(coordinates || manualCoordinates)} onEditStep={setCurrentStep} />;
       default:
         return null;
     }
   };
 
-  // Convert formData to preview format
+  // Convert formData to preview format - cast property_type for compatibility
   const previewFormData = {
     ...formData,
+    property_type: formData.property_type === 'summer_house' ? 'house' : formData.property_type,
     floor_number: formData.floor_number,
     total_floors_building: formData.total_floors_building,
     property_floors: formData.property_floors,
@@ -460,7 +496,7 @@ export default function CreateListing() {
     min_lease_months: formData.min_lease_months,
     internet_included: formData.internet_included,
     utilities_included: formData.utilities_included,
-  };
+  } as any;
 
   return (
     <div className="min-h-screen bg-background pb-24">
