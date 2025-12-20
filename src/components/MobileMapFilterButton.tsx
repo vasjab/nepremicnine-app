@@ -98,25 +98,41 @@ function FilterSection({
   hasActiveFilters?: boolean;
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open && sectionRef.current) {
+      // Small delay to allow the content to expand first
+      setTimeout(() => {
+        sectionRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 50);
+    }
+  };
   
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border-b border-border/50">
-      <CollapsibleTrigger className="flex w-full items-center justify-between py-5 text-sm font-medium transition-colors hover:text-foreground will-change-transform">
-        <span className="flex items-center gap-3">
-          {title}
-          {hasActiveFilters && (
-            <span className="h-2 w-2 rounded-full bg-accent animate-pulse-ring" />
-          )}
-        </span>
-        <ChevronDown className={cn(
-          "h-4 w-4 text-muted-foreground transition-transform duration-150 ease-out",
-          isOpen && "rotate-180"
-        )} />
-      </CollapsibleTrigger>
-      <CollapsibleContent className="space-y-3 pt-2 pb-6">
-        {children}
-      </CollapsibleContent>
-    </Collapsible>
+    <div ref={sectionRef}>
+      <Collapsible open={isOpen} onOpenChange={handleOpenChange} className="border-b border-border/50">
+        <CollapsibleTrigger className="flex w-full items-center justify-between py-5 text-sm font-medium transition-colors hover:text-foreground will-change-transform">
+          <span className="flex items-center gap-3">
+            {title}
+            {hasActiveFilters && (
+              <span className="h-2 w-2 rounded-full bg-accent animate-pulse-ring" />
+            )}
+          </span>
+          <ChevronDown className={cn(
+            "h-4 w-4 text-muted-foreground transition-transform duration-150 ease-out",
+            isOpen && "rotate-180"
+          )} />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-3 pt-2 pb-6">
+          {children}
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
   );
 }
 
