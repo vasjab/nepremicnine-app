@@ -868,7 +868,11 @@ export default function CreateListing() {
               >
                 <CountrySelect
                   value={formData.country}
-                  onValueChange={(value) => handleChange('country', value)}
+                  onValueChange={(value) => {
+                    handleChange('country', value);
+                    // Clear city when country changes to avoid mismatches
+                    handleChange('city', '');
+                  }}
                 />
               </FormField>
 
