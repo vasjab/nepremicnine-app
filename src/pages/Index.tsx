@@ -251,11 +251,12 @@ const Index = () => {
   // Shared rent/sale tabs component
   const RentSaleTabs = ({ collapsed = false }: { collapsed?: boolean }) => (
     <div className={cn(
-      "px-4 pt-4 pb-0 overflow-hidden transition-[transform,opacity] duration-200 ease-out will-change-transform",
+      "grid transition-all duration-400 ease-in-out will-change-[grid-template-rows,opacity,transform]",
       collapsed 
-        ? "h-0 opacity-0 -translate-y-full pointer-events-none" 
-        : "h-auto opacity-100 translate-y-0"
+        ? "grid-rows-[0fr] opacity-0 -translate-y-2 pointer-events-none" 
+        : "grid-rows-[1fr] opacity-100 translate-y-0"
     )}>
+      <div className="overflow-hidden px-4 pt-4 pb-0">
       <div className="flex bg-secondary rounded-xl p-1 gap-1">
         <button
           onClick={() => setFilters({ ...filters, listing_type: null })}
@@ -292,6 +293,7 @@ const Index = () => {
           <Banknote className="h-4 w-4" />
           {t('listingTypes.sale')}
         </button>
+      </div>
       </div>
     </div>
   );

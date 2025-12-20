@@ -967,7 +967,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
       <div className="p-4">
         {/* Collapsible Title & Search Section */}
         <div className={cn(
-          "grid transition-[grid-template-rows,opacity] duration-200 ease-out will-change-[grid-template-rows,opacity]",
+          "grid transition-all duration-400 ease-in-out will-change-[grid-template-rows,opacity]",
           isCollapsed 
             ? "grid-rows-[0fr] opacity-0" 
             : "grid-rows-[1fr] opacity-100"
