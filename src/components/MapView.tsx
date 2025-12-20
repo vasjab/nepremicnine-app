@@ -388,7 +388,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
               opacity: 1 !important;
             }
           </style>
-          <div class="popup-content-${listing.id}" style="width: 280px; font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer; overflow: visible; background: white; border-radius: 16px;">
+          <div class="popup-content-${listing.id}" style="width: 240px; font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer; overflow: visible; background: white; border-radius: 16px;">
             <div class="popup-img-container-${listing.id}" style="position: relative; width: 100%; height: 160px; overflow: hidden; border-radius: 16px 16px 0 0;">
               <img class="popup-img-${listing.id}" src="${images[0]}" alt="${listing.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s ease;" />
               ${arrowsHtml}
