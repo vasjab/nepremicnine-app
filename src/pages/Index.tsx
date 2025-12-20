@@ -174,8 +174,8 @@ const Index = () => {
         </div>
 
         {/* Right panel - Map */}
-        <div className={`flex-1 lg:h-full ${
-          mobileView === 'list' ? 'hidden lg:block' : 'block h-[calc(100vh-4rem)]'
+        <div className={`flex-1 h-[calc(100vh-4rem)] lg:h-full ${
+          mobileView === 'list' ? 'hidden lg:block' : 'block'
         }`}>
           <MapView
             listings={allListings || []}
