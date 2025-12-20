@@ -65,9 +65,7 @@ const Index = () => {
     
     const fetchLandlordName = async () => {
       const { data } = await supabase
-        .from('profiles')
-        .select('full_name')
-        .eq('user_id', landlordId)
+        .rpc('get_profile_for_viewer', { p_profile_user_id: landlordId })
         .single();
       setLandlordName(data?.full_name || 'Landlord');
     };

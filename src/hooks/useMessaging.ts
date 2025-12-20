@@ -59,14 +59,15 @@ export interface MessageAttachment {
   created_at: string;
 }
 
-// Fetch all conversations for current user
+// Fetch all conversations for current user with optimized batched queries
 export function useConversations(userId: string | undefined) {
   return useQuery({
     queryKey: ['conversations', userId],
     queryFn: async () => {
       if (!userId) return [];
 
-      const { data, error } = await supabase
+      // Step 1: Get all conversations with listings
+      const { data: conversations, error } = await supabase
         .from('conversations')
         .select(`
           *,
@@ -76,44 +77,75 @@ export function useConversations(userId: string | undefined) {
         .order('last_message_at', { ascending: false });
 
       if (error) throw error;
+      if (!conversations || conversations.length === 0) return [];
 
-      // Fetch last message and unread count for each conversation
-      const conversationsWithDetails = await Promise.all(
-        (data || []).map(async (conv) => {
-          // Get last message (excluding deleted)
-          const { data: messages } = await supabase
-            .from('messages')
-            .select('content, sender_id, created_at, is_read, is_deleted')
-            .eq('conversation_id', conv.id)
-            .eq('is_deleted', false)
-            .order('created_at', { ascending: false })
-            .limit(1);
+      const conversationIds = conversations.map(c => c.id);
+      
+      // Step 2: Batch fetch last messages for all conversations
+      const { data: allMessages } = await supabase
+        .from('messages')
+        .select('conversation_id, content, sender_id, created_at, is_read, is_deleted')
+        .in('conversation_id', conversationIds)
+        .eq('is_deleted', false)
+        .order('created_at', { ascending: false });
 
-          // Get unread count (excluding deleted)
-          const { count } = await supabase
-            .from('messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('conversation_id', conv.id)
-            .eq('is_read', false)
-            .eq('is_deleted', false)
-            .neq('sender_id', userId);
+      // Group messages by conversation and get the latest
+      const lastMessageMap = new Map<string, typeof allMessages extends (infer T)[] ? T : never>();
+      allMessages?.forEach(msg => {
+        if (!lastMessageMap.has(msg.conversation_id)) {
+          lastMessageMap.set(msg.conversation_id, msg);
+        }
+      });
 
-          // Get other user's profile using secure function
-          const otherUserId = conv.renter_id === userId ? conv.landlord_id : conv.renter_id;
-          const { data: profile } = await supabase
-            .rpc('get_profile_for_viewer', { p_profile_user_id: otherUserId })
+      // Step 3: Batch fetch unread counts
+      const { data: unreadMessages } = await supabase
+        .from('messages')
+        .select('conversation_id')
+        .in('conversation_id', conversationIds)
+        .eq('is_read', false)
+        .eq('is_deleted', false)
+        .neq('sender_id', userId);
+
+      // Count unread per conversation
+      const unreadCountMap = new Map<string, number>();
+      unreadMessages?.forEach(msg => {
+        unreadCountMap.set(msg.conversation_id, (unreadCountMap.get(msg.conversation_id) || 0) + 1);
+      });
+
+      // Step 4: Batch fetch profiles for other users
+      const otherUserIds = conversations.map(conv => 
+        conv.renter_id === userId ? conv.landlord_id : conv.renter_id
+      );
+      const uniqueUserIds = [...new Set(otherUserIds)];
+      
+      const profileResults = await Promise.all(
+        uniqueUserIds.map(async (uid) => {
+          const { data } = await supabase
+            .rpc('get_profile_for_viewer', { p_profile_user_id: uid })
             .single();
-
-          return {
-            ...conv,
-            last_message: messages?.[0] || null,
-            unread_count: count || 0,
-            other_user: profile || { id: otherUserId, full_name: null, avatar_url: null },
-          } as Conversation;
+          return { id: uid, profile: data };
         })
       );
+      
+      const profileMap = new Map<string, any>();
+      profileResults.forEach(({ id, profile }) => {
+        profileMap.set(id, profile);
+      });
 
-      return conversationsWithDetails;
+      // Step 5: Combine all data
+      return conversations.map(conv => {
+        const otherUserId = conv.renter_id === userId ? conv.landlord_id : conv.renter_id;
+        const profile = profileMap.get(otherUserId);
+        
+        return {
+          ...conv,
+          last_message: lastMessageMap.get(conv.id) || null,
+          unread_count: unreadCountMap.get(conv.id) || 0,
+          other_user: profile 
+            ? { id: profile.user_id, full_name: profile.full_name, avatar_url: profile.avatar_url }
+            : { id: otherUserId, full_name: null, avatar_url: null },
+        } as Conversation;
+      });
     },
     enabled: !!userId,
   });
