@@ -1181,6 +1181,7 @@ export default function CreateListing() {
           onSubmit={handleSubmit}
           onPreview={() => setShowPreview(true)}
           onSaveDraft={handleSaveDraft}
+          onClose={handleCloseClick}
         />
 
         <ListingPreviewModal
@@ -1210,26 +1211,17 @@ export default function CreateListing() {
     );
   }
 
-  // Desktop layout (unchanged)
+  // Desktop layout
   return (
     <div className="min-h-screen bg-background pb-24">
       <Header />
-      
-      {/* Sticky close button */}
-      <div className="fixed top-20 left-4 z-40">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={handleCloseClick}
-          className="bg-background/80 backdrop-blur-sm border-border shadow-sm"
-        >
-          <X className="h-4 w-4 mr-2" /> Close
-        </Button>
-      </div>
 
-      <main className="pt-16">
-        <div className="container mx-auto px-4 py-6">
-          <WizardProgress steps={WIZARD_STEPS} currentStep={currentStep} onStepClick={handleStepClick} completedSteps={completedSteps} />
+      <main className="pt-8">
+        <div className="container mx-auto px-4">
+          {/* Sticky progress bar on desktop */}
+          <div className="sticky top-16 z-30 bg-background/95 backdrop-blur-md border-b border-border py-4 -mx-4 px-4">
+            <WizardProgress steps={WIZARD_STEPS} currentStep={currentStep} onStepClick={handleStepClick} completedSteps={completedSteps} />
+          </div>
 
           <div className="mt-8 max-w-3xl mx-auto">
             <HoneypotField value={honeypot} onChange={setHoneypot} />
@@ -1253,6 +1245,7 @@ export default function CreateListing() {
         onSubmit={handleSubmit}
         onPreview={() => setShowPreview(true)}
         onSaveDraft={handleSaveDraft}
+        onClose={handleCloseClick}
       />
 
       <ListingPreviewModal

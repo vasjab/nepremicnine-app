@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, Check, Loader2, Eye, Save } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2, Eye, Save, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface WizardNavigationProps {
@@ -17,6 +17,7 @@ interface WizardNavigationProps {
   onSubmit: () => void;
   onPreview: () => void;
   onSaveDraft?: () => void;
+  onClose?: () => void;
 }
 
 export function WizardNavigation({
@@ -34,6 +35,7 @@ export function WizardNavigation({
   onSubmit,
   onPreview,
   onSaveDraft,
+  onClose,
 }: WizardNavigationProps) {
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === totalSteps - 1;
@@ -52,9 +54,22 @@ export function WizardNavigation({
           <span className="hidden sm:inline">Back</span>
         </Button>
 
-        {/* Center actions: Preview + Save Draft */}
+        {/* Center actions: Exit + Save Draft + Preview */}
         <div className="flex items-center gap-2">
-          {/* Save as Draft button - show text on mobile */}
+          {/* Exit button */}
+          {onClose && (
+            <Button
+              variant="ghost"
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="gap-1 sm:gap-2 text-sm"
+            >
+              <X className="h-4 w-4" />
+              <span className="hidden sm:inline">Exit</span>
+            </Button>
+          )}
+
+          {/* Save as Draft button */}
           {canSaveDraft && onSaveDraft && (
             <Button
               variant="outline"
