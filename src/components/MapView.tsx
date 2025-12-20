@@ -396,7 +396,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
             </div>
             <div style="padding: 14px;">
               <div style="font-size: 11px; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px;">
-                ${propertyTypeLabels[listing.property_type] || t('propertyTypes.other')} • ${listing.listing_type === 'rent' ? t('map.forRent') : t('map.forSale')}
+                ${propertyTypeLabels[listing.property_type] || t('propertyTypes.other')}${!isCompleted ? ` • ${listing.listing_type === 'rent' ? t('map.forRent') : t('map.forSale')}` : ''}
               </div>
               ${!isCompleted && popupFormattedDate ? `<div style="font-size: 10px; color: #999; margin-bottom: 6px;">${popupFormattedDate}</div>` : ''}
               ${isCompleted ? soldRentedSectionHtml : ''}
