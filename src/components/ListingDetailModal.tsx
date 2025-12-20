@@ -141,22 +141,7 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
             : "opacity-0 translate-y-4 scale-[0.98]"
         )}
       >
-        {/* Close button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn(
-            "fixed top-4 left-4 z-50 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm",
-            "hover:bg-card hover:scale-105 active:scale-95",
-            "shadow-lg transition-all duration-200",
-            "touch-target"
-          )}
-          onClick={handleClose}
-        >
-          <X className="h-5 w-5" />
-        </Button>
-
-        {/* Save button */}
+        {/* Close button - fixed to top right corner */}
         <Button
           variant="ghost"
           size="icon"
@@ -164,15 +149,11 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
             "fixed top-4 right-4 z-50 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm",
             "hover:bg-card hover:scale-105 active:scale-95",
             "shadow-lg transition-all duration-200",
-            "touch-target",
-            isSaved && "text-accent"
+            "touch-target"
           )}
-          onClick={handleSaveClick}
+          onClick={handleClose}
         >
-          <Heart className={cn(
-            'h-5 w-5 transition-transform duration-200',
-            isSaved && 'fill-current animate-heart-beat'
-          )} />
+          <X className="h-5 w-5" />
         </Button>
 
         {/* Image gallery preview */}
