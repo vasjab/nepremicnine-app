@@ -366,6 +366,7 @@ const Index = () => {
                   onSortChange={setSortBy}
                   totalCount={visibleListings.length}
                   userId={user?.id}
+                  isCollapsed={isHeaderCollapsed && mobileView === 'list'}
                 />
 
                 <div ref={listContainerRef} className="flex-1 overflow-y-auto p-3 sm:p-4 overscroll-contain">
