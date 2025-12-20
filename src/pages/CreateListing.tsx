@@ -18,6 +18,7 @@ import { ListingPreviewModal } from '@/components/ListingPreviewModal';
 import { WizardProgress, type WizardStep } from '@/components/wizard/WizardProgress';
 import { WizardNavigation } from '@/components/wizard/WizardNavigation';
 import { PropertyTypeStep } from '@/components/wizard/steps/PropertyTypeStep';
+import { HouseTypeStep } from '@/components/wizard/steps/HouseTypeStep';
 import { TitleStep } from '@/components/wizard/steps/TitleStep';
 import { LocationStep } from '@/components/wizard/steps/LocationStep';
 import { PriceStep } from '@/components/wizard/steps/PriceStep';
@@ -118,10 +119,18 @@ export default function CreateListing() {
     country: formData.country,
   });
 
-  // Dynamic steps based on listing type
+  // Dynamic steps based on listing type and property type
   const getWizardSteps = (): WizardStep[] => {
-    const baseSteps: WizardStep[] = [
+    const steps: WizardStep[] = [
       { id: 'type', title: 'Type', emoji: '🏠' },
+    ];
+    
+    // Add house type step only for house/summer_house
+    if (formData.property_type === 'house' || formData.property_type === 'summer_house') {
+      steps.push({ id: 'house_type', title: 'Style', emoji: '🏡' });
+    }
+    
+    steps.push(
       { id: 'title', title: 'Title', emoji: '✨' },
       { id: 'location', title: 'Location', emoji: '📍' },
       { id: 'price', title: 'Price', emoji: '💰' },
@@ -131,18 +140,18 @@ export default function CreateListing() {
       { id: 'building_features', title: 'Building', emoji: '🏗️', isOptional: true },
       { id: 'equipment', title: 'Equipment', emoji: '🔌', isOptional: true },
       { id: 'building_info', title: 'Info', emoji: '📊', isOptional: true },
-    ];
+    );
     
     // Add rental terms step only for rentals
     if (formData.listing_type === 'rent') {
-      baseSteps.push({ id: 'rental', title: 'Terms', emoji: '📋', isOptional: true });
+      steps.push({ id: 'rental', title: 'Terms', emoji: '📋', isOptional: true });
     } else {
-      baseSteps.push({ id: 'sale_costs', title: 'Costs', emoji: '💵', isOptional: true });
+      steps.push({ id: 'sale_costs', title: 'Costs', emoji: '💵', isOptional: true });
     }
     
-    baseSteps.push({ id: 'review', title: 'Review', emoji: '🎉' });
+    steps.push({ id: 'review', title: 'Review', emoji: '🎉' });
     
-    return baseSteps;
+    return steps;
   };
 
   const WIZARD_STEPS = getWizardSteps();
@@ -171,6 +180,7 @@ export default function CreateListing() {
     const stepId = WIZARD_STEPS[currentStep]?.id;
     switch (stepId) {
       case 'type': return !!formData.property_type;
+      case 'house_type': return !!formData.house_type;
       case 'title': return formData.title.length >= 5;
       case 'location': return !!formData.address && !!formData.city && !!(coordinates || manualCoordinates);
       case 'price': return !!formData.price && parseFloat(formData.price) > 0;
@@ -324,10 +334,16 @@ export default function CreateListing() {
             propertyType={formData.property_type}
             listingType={formData.listing_type}
             propertyTypeOther={formData.property_type_other}
-            houseType={formData.house_type}
             onPropertyTypeChange={v => handleChange('property_type', v)}
             onListingTypeChange={v => handleChange('listing_type', v)}
             onPropertyTypeOtherChange={v => handleChange('property_type_other', v)}
+          />
+        );
+      case 'house_type':
+        return (
+          <HouseTypeStep
+            houseType={formData.house_type}
+            propertyType={formData.property_type as 'house' | 'summer_house'}
             onHouseTypeChange={v => handleChange('house_type', v)}
           />
         );
