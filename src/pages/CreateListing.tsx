@@ -184,6 +184,7 @@ export default function CreateListing() {
     heating_source: '',
     heat_pump_type: '',
     heating_type_other: '',
+    individual_heater_types: [] as string[],
     energy_rating: '',
     year_built: '',
     property_condition: '',
@@ -381,6 +382,7 @@ export default function CreateListing() {
         heating_source: (draftListing as any).heating_source || '',
         heat_pump_type: (draftListing as any).heat_pump_type || '',
         heating_type_other: '',
+        individual_heater_types: (draftListing as any).individual_heater_types || [],
         energy_rating: draftListing.energy_rating || '',
         year_built: draftListing.year_built?.toString() || '',
         property_condition: draftListing.property_condition || '',
@@ -1021,6 +1023,7 @@ export default function CreateListing() {
             heatingSource={formData.heating_source}
             heatPumpType={formData.heat_pump_type}
             heatingTypeOther={formData.heating_type_other}
+            individualHeaterTypes={formData.individual_heater_types}
             energyRating={formData.energy_rating}
             yearBuilt={formData.year_built}
             propertyCondition={formData.property_condition}

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { 
   Building2, 
   Car, 
@@ -41,7 +40,9 @@ import {
   ThermometerSun,
   Factory,
   PlayCircle,
-  ChevronDown,
+  Heater,
+  Camera,
+  AlertTriangle,
   LucideIcon
 } from 'lucide-react';
 import { Listing } from '@/types/listing';
@@ -265,7 +266,6 @@ function CategorySection({
 export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
   const { t } = useTranslation();
   const { formatPrice } = useFormattedPrice();
-  const [showAll, setShowAll] = useState(false);
 
   const isApartmentType = ['apartment', 'room', 'studio'].includes(listing.property_type);
   const isHouseType = ['house', 'villa'].includes(listing.property_type);
@@ -285,6 +285,19 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     gas: t('filters.heatingGas'),
     heat_pump: t('filters.heatingHeatPump'),
     other: t('filters.heatingOther'),
+  };
+
+  const heatingDistributionLabels: Record<string, string> = {
+    central: 'Central Heating',
+    individual: 'Individual Heaters',
+    both: 'Central + Individual',
+  };
+
+  const elevatorConditionLabels: Record<string, string> = {
+    new: 'New / Recently installed',
+    good: 'Good condition',
+    old: 'Older model',
+    needs_repair: 'Needs repair',
   };
 
   const conditionLabels: Record<string, string> = {
@@ -325,9 +338,6 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     'north-east': 'Northeast Facing',
     'north-west': 'Northwest Facing',
   };
-
-  // Note: Some detailed properties like ev_charger_power, waterfront_distance_m, etc.
-  // are stored in the database but not yet exposed in the Listing type interface.
 
   // Build feature lists by category
   const outdoorFeatures: Feature[] = [];
@@ -398,10 +408,13 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     outdoorFeatures.push({ id: 'playground', icon: PlayCircle, label: 'Playground', category: 'outdoor' });
   }
   if (listing.has_waterfront) {
+    // Show waterfront with distance if available
+    const waterfrontDistance = (listing as any).waterfront_distance_m;
     outdoorFeatures.push({ 
       id: 'waterfront', 
       icon: Waves, 
       label: 'Waterfront',
+      detail: waterfrontDistance ? `${waterfrontDistance}m to water` : null,
       category: 'outdoor' 
     });
   }
@@ -438,10 +451,12 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     parkingFeatures.push({ id: 'carport', icon: SquareParking, label: 'Carport', category: 'parking' });
   }
   if (listing.has_ev_charging) {
+    const evPower = (listing as any).ev_charger_power;
     parkingFeatures.push({ 
       id: 'ev', 
       icon: Zap, 
       label: 'EV Charging',
+      detail: evPower || null,
       category: 'parking' 
     });
   }
@@ -458,10 +473,13 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
   // Building amenities (apartments)
   if (isApartmentType) {
     if (listing.has_elevator) {
+      // Show elevator with condition if available
+      const elevatorCondition = (listing as any).elevator_condition;
       buildingFeatures.push({ 
         id: 'elevator', 
         icon: ArrowUp, 
         label: t('listing.elevator'),
+        detail: elevatorCondition ? elevatorConditionLabels[elevatorCondition] || elevatorCondition : null,
         category: 'building' 
       });
     }
@@ -484,7 +502,17 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
       buildingFeatures.push({ id: 'concierge', icon: Bell, label: 'Concierge', category: 'building' });
     }
     if (listing.has_security) {
-      buildingFeatures.push({ id: 'security', icon: Shield, label: 'Building Security', category: 'building' });
+      // Show security with sub-details if available
+      const securityDetails: string[] = [];
+      if ((listing as any).has_alarm_system) securityDetails.push('Alarm System');
+      if ((listing as any).has_cctv) securityDetails.push('CCTV');
+      buildingFeatures.push({ 
+        id: 'security', 
+        icon: Shield, 
+        label: 'Building Security',
+        detail: securityDetails.length > 0 ? securityDetails.join(' • ') : null,
+        category: 'building' 
+      });
     }
   }
 
@@ -502,10 +530,20 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     energyFeatures.push({ id: 'heatPump', icon: RefreshCw, label: 'Heat Pump', category: 'energy' });
   }
   if (listing.has_air_conditioning) {
+    const acType = (listing as any).ac_type;
+    const acCount = (listing as any).ac_unit_count;
+    let acDetail = null;
+    if (acType || acCount) {
+      const parts: string[] = [];
+      if (acType) parts.push(acType);
+      if (acCount && acCount > 1) parts.push(`${acCount} units`);
+      acDetail = parts.join(' • ');
+    }
     energyFeatures.push({ 
       id: 'ac', 
       icon: Wind, 
       label: 'Air Conditioning',
+      detail: acDetail,
       category: 'energy' 
     });
   }
@@ -577,7 +615,7 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     safetyFeatures.push({ id: 'gated', icon: Shield, label: 'Gated Community', category: 'safety' });
   }
   if (listing.has_fire_safety) {
-    safetyFeatures.push({ id: 'fire', icon: Flame, label: 'Fire Safety System', category: 'safety' });
+    safetyFeatures.push({ id: 'fire', icon: AlertTriangle, label: 'Fire Safety System', category: 'safety' });
   }
   if (listing.has_soundproofing) {
     safetyFeatures.push({ id: 'sound', icon: VolumeX, label: 'Soundproofing', category: 'safety' });
@@ -596,7 +634,7 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     ...safetyFeatures,
   ];
 
-  // Categories to show (in order)
+  // Categories to show (in order) - show ALL categories, no more "show more/less"
   const categories = [
     { key: 'basic' as const, features: basicFeatures },
     { key: 'outdoor' as const, features: outdoorFeatures },
@@ -608,11 +646,6 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     { key: 'accessibility' as const, features: accessibilityFeatures },
     { key: 'safety' as const, features: safetyFeatures },
   ].filter(cat => cat.features.length > 0);
-
-  // For "show more/less" functionality
-  const INITIAL_CATEGORIES = 4;
-  const displayedCategories = showAll ? categories : categories.slice(0, INITIAL_CATEGORIES);
-  const hiddenCategoryCount = categories.length - INITIAL_CATEGORIES;
 
   // Building info cards (always shown separately)
   const buildingInfoCards: { icon: LucideIcon; label: string; value: string | number }[] = [];
@@ -626,6 +659,16 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
 
   if (isHouseType && listing.property_floors != null) {
     buildingInfoCards.push({ icon: Home, label: t('filters.propertyFloors'), value: listing.property_floors });
+  }
+
+  // Show heating distribution if available
+  const heatingDistribution = (listing as any).heating_distribution;
+  if (heatingDistribution) {
+    buildingInfoCards.push({ 
+      icon: Heater, 
+      label: 'Heat Distribution', 
+      value: heatingDistributionLabels[heatingDistribution] || heatingDistribution 
+    });
   }
 
   if (listing.heating_type) {
@@ -714,36 +757,16 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
         </div>
       )}
 
-      {/* Feature Categories */}
+      {/* Feature Categories - show ALL, no show more/less */}
       {allFeatures.length > 0 && (
         <div className="space-y-5">
-          {displayedCategories.map((cat) => (
+          {categories.map((cat) => (
             <CategorySection 
               key={cat.key} 
               categoryKey={cat.key} 
               features={cat.features} 
             />
           ))}
-
-          {/* Show All Button */}
-          {hiddenCategoryCount > 0 && (
-            <button
-              onClick={() => setShowAll(!showAll)}
-              className={cn(
-                "flex items-center gap-2 text-sm font-medium transition-colors",
-                "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <ChevronDown className={cn(
-                "h-4 w-4 transition-transform duration-200",
-                showAll && "rotate-180"
-              )} />
-              {showAll 
-                ? 'Show less' 
-                : `Show ${hiddenCategoryCount} more categories (${allFeatures.length} features total)`
-              }
-            </button>
-          )}
         </div>
       )}
 

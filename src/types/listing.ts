@@ -110,6 +110,8 @@ export interface Listing {
   
   // Building info
   heating_type: 'central' | 'electric' | 'gas' | 'heat_pump' | 'other' | null;
+  heating_distribution: 'central' | 'individual' | 'both' | null;
+  individual_heater_types: string[] | null;
   energy_rating: 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | null;
   year_built: number | null;
   property_condition: 'new' | 'renovated' | 'good' | 'needs_work' | null;

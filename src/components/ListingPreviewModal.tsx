@@ -222,6 +222,8 @@ function formDataToListing(formData: FormData, uploadedImages: UploadedImage[], 
     has_soundproofing: formData.has_soundproofing || false,
     // Building Info
     heating_type: (formData.heating_type || null) as 'central' | 'electric' | 'gas' | 'heat_pump' | 'other' | null,
+    heating_distribution: null,
+    individual_heater_types: null,
     energy_rating: (formData.energy_rating || null) as 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | null,
     year_built: formData.year_built ? parseInt(formData.year_built) : null,
     property_condition: (formData.property_condition || null) as 'new' | 'renovated' | 'good' | 'needs_work' | null,
