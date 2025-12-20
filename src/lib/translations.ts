@@ -75,6 +75,8 @@ const translations = {
       priceDesc: 'Price: High to Low',
       sizeAsc: 'Size: Small to Large',
       sizeDesc: 'Size: Large to Small',
+      pricePerSqmAsc: 'Price/m²: Low to High',
+      pricePerSqmDesc: 'Price/m²: High to Low',
       // New filter sections
       features: 'Features',
       buildingFloor: 'Building & Floor',
@@ -565,6 +567,8 @@ const translations = {
       priceDesc: 'Cena: od najvišje',
       sizeAsc: 'Velikost: od najmanjše',
       sizeDesc: 'Velikost: od največje',
+      pricePerSqmAsc: 'Cena/m²: od najnižje',
+      pricePerSqmDesc: 'Cena/m²: od najvišje',
       // New filter sections
       features: 'Značilnosti',
       buildingFloor: 'Zgradba in nadstropje',
