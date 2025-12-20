@@ -154,40 +154,6 @@ export function ListingCard({ listing, isActive, onClick, showStatusOverlay = fa
           </div>
         )}
 
-        {/* Final price overlay for sold/rented */}
-        {isSoldOrRented && showStatusOverlay && hasFinalPrice && (
-          <div className="absolute bottom-12 left-3 right-3 z-20">
-            <div className="bg-background/95 backdrop-blur-sm rounded-xl p-2.5 shadow-lg border border-border/50">
-              <div className="flex items-center justify-between gap-2 text-sm">
-                <div>
-                  <p className="text-muted-foreground text-xs mb-0.5">
-                    {isSold ? t('listing.soldFor') : t('listing.rentedFor')}
-                  </p>
-                  <p className="font-bold text-foreground text-sm">
-                    {formatPrice(listing.final_price!, listing.currency, { isRental, showPeriod: isRental })}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-1 justify-end">
-                    {priceDiff > 0 ? (
-                      <TrendingUp className="h-3 w-3 text-emerald-500" />
-                    ) : priceDiff < 0 ? (
-                      <TrendingDown className="h-3 w-3 text-red-500" />
-                    ) : (
-                      <Minus className="h-3 w-3 text-muted-foreground" />
-                    )}
-                    <span className={cn(
-                      "text-xs font-medium",
-                      priceDiff > 0 ? "text-emerald-500" : priceDiff < 0 ? "text-red-500" : "text-muted-foreground"
-                    )}>
-                      {priceDiff > 0 ? '+' : ''}{priceDiffPercent}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Navigation arrows - always visible on mobile, hover on desktop */}
         {hasMultipleImages && (
@@ -303,12 +269,37 @@ export function ListingCard({ listing, isActive, onClick, showStatusOverlay = fa
 
         <div className="flex items-center justify-between pt-1">
           <div className="flex flex-col">
-            <span className="text-lg font-bold text-foreground">
-              {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
-            </span>
+            {/* For sold/rented listings with final price */}
+            {isSoldOrRented && showStatusOverlay && hasFinalPrice ? (
+              <>
+                {/* Final price with percentage difference */}
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-bold text-foreground">
+                    {formatPrice(listing.final_price!, listing.currency, { isRental, showPeriod: isRental })}
+                  </span>
+                  <span className={cn(
+                    "text-xs font-medium flex items-center gap-0.5",
+                    priceDiff < 0 ? "text-red-500" : priceDiff > 0 ? "text-emerald-500" : "text-muted-foreground"
+                  )}>
+                    {priceDiff < 0 ? <TrendingDown className="h-3 w-3" /> : priceDiff > 0 ? <TrendingUp className="h-3 w-3" /> : null}
+                    {priceDiff !== 0 && `${priceDiff > 0 ? '+' : ''}${priceDiffPercent}%`}
+                  </span>
+                </div>
+                {/* Original listed price - strikethrough */}
+                <span className="text-xs text-muted-foreground line-through">
+                  {formatPrice(listing.price, listing.currency, { isRental, showPeriod: false })}
+                </span>
+              </>
+            ) : (
+              /* Regular listing price */
+              <span className="text-lg font-bold text-foreground">
+                {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
+              </span>
+            )}
+            {/* Price per sqm - always show */}
             {listing.area_sqm && listing.area_sqm > 0 && (
               <span className="text-xs text-muted-foreground">
-                {formatPrice(listing.price / listing.area_sqm, listing.currency, { compact: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
+                {formatPrice((hasFinalPrice && isSoldOrRented && showStatusOverlay ? listing.final_price! : listing.price) / listing.area_sqm, listing.currency, { compact: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
               </span>
             )}
           </div>
