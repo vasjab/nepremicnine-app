@@ -308,13 +308,13 @@ export default function ListingDetail() {
         )}
 
         {/* Content */}
-        <div className="container mx-auto px-4 py-6 sm:py-8">
-          <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+          <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
             {/* Main content */}
-            <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+            <div className="lg:col-span-2 space-y-8 sm:space-y-10">
               {/* Header */}
               <div>
-                <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-2">
+                <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-3">
                   {listing.title}
                 </h1>
                 <div className="flex items-center gap-2 text-muted-foreground">
@@ -325,23 +325,23 @@ export default function ListingDetail() {
 
               {/* Quick stats */}
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-                <div className="bg-secondary rounded-xl p-4">
-                  <Bed className="h-5 w-5 text-muted-foreground mb-2" />
+                <div className="bg-secondary/50 rounded-2xl p-5 border border-border/30 hover:bg-secondary/70 transition-colors">
+                  <Bed className="h-5 w-5 text-primary mb-2" />
                   <p className="text-sm text-muted-foreground">{t('listing.bedrooms')}</p>
                   <p className="text-lg font-semibold text-foreground">{listing.bedrooms}</p>
                 </div>
-                <div className="bg-secondary rounded-xl p-4">
-                  <Bath className="h-5 w-5 text-muted-foreground mb-2" />
+                <div className="bg-secondary/50 rounded-2xl p-5 border border-border/30 hover:bg-secondary/70 transition-colors">
+                  <Bath className="h-5 w-5 text-primary mb-2" />
                   <p className="text-sm text-muted-foreground">{t('listing.bathrooms')}</p>
                   <p className="text-lg font-semibold text-foreground">{listing.bathrooms}</p>
                 </div>
-                <div className="bg-secondary rounded-xl p-4">
-                  <Square className="h-5 w-5 text-muted-foreground mb-2" />
+                <div className="bg-secondary/50 rounded-2xl p-5 border border-border/30 hover:bg-secondary/70 transition-colors">
+                  <Square className="h-5 w-5 text-primary mb-2" />
                   <p className="text-sm text-muted-foreground">{t('listing.area')}</p>
                   <p className="text-lg font-semibold text-foreground">{formatArea(listing.area_sqm)}</p>
                 </div>
-                <div className="bg-secondary rounded-xl p-4">
-                  <Calendar className="h-5 w-5 text-muted-foreground mb-2" />
+                <div className="bg-secondary/50 rounded-2xl p-5 border border-border/30 hover:bg-secondary/70 transition-colors">
+                  <Calendar className="h-5 w-5 text-primary mb-2" />
                   <p className="text-sm text-muted-foreground">{t('listing.available')}</p>
                   <p className="text-lg font-semibold text-foreground">{formatDate(listing.available_from)}</p>
                 </div>
@@ -349,24 +349,26 @@ export default function ListingDetail() {
 
               {/* Description */}
               {listing.description && (
-                <div>
-                  <h2 className="text-xl font-semibold text-foreground mb-3">{t('listing.description')}</h2>
-                  <p className="text-muted-foreground whitespace-pre-line">{listing.description}</p>
+                <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
+                  <h2 className="text-lg font-semibold text-foreground mb-4 pb-3 border-b border-border/50">{t('listing.description')}</h2>
+                  <p className="text-muted-foreground whitespace-pre-line leading-relaxed">{listing.description}</p>
                 </div>
               )}
 
               {/* Property Features */}
-              <PropertyFeatures listing={listing} />
+              <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
+                <PropertyFeatures listing={listing} />
+              </div>
 
               {/* Location Map */}
-              <div>
-                <h2 className="text-xl font-semibold text-foreground mb-3">{t('listing.location')}</h2>
+              <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
+                <h2 className="text-lg font-semibold text-foreground mb-4 pb-3 border-b border-border/50">{t('listing.location')}</h2>
                 <ListingLocationMap
                   latitude={listing.latitude}
                   longitude={listing.longitude}
                   address={listing.address}
                 />
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-sm text-muted-foreground mt-3">
                   {listing.address}, {listing.city}
                 </p>
               </div>
@@ -374,8 +376,9 @@ export default function ListingDetail() {
 
             {/* Sidebar */}
             <div className="lg:col-span-1">
-              <div className="sticky top-24 bg-card rounded-2xl p-6 shadow-card">
-                <div className="mb-6">
+              <div className="sticky top-24 bg-card rounded-2xl p-6 sm:p-8 shadow-lg border border-border/50">
+                {/* Price section */}
+                <div className="mb-6 pb-6 border-b border-border/50">
                   <p className="text-sm text-muted-foreground mb-1">
                     {propertyTypeLabels[listing.property_type]}
                   </p>
@@ -388,25 +391,25 @@ export default function ListingDetail() {
                 </div>
 
                 {/* Listing Stats */}
-                <div className="grid grid-cols-3 gap-2 mb-6 py-4 border-t border-b border-border">
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-semibold">{listingStats?.viewCount ?? 0}</span>
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                  <div className="text-center bg-secondary/50 rounded-xl p-3">
+                    <div className="flex items-center justify-center gap-1.5 mb-1">
+                      <Eye className="h-4 w-4 text-primary" />
+                      <span className="font-bold text-lg">{listingStats?.viewCount ?? 0}</span>
                     </div>
                     <p className="text-xs text-muted-foreground">{t('listing.views')}</p>
                   </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-semibold">{listingStats?.daysListed ?? 0}</span>
+                  <div className="text-center bg-secondary/50 rounded-xl p-3">
+                    <div className="flex items-center justify-center gap-1.5 mb-1">
+                      <Clock className="h-4 w-4 text-primary" />
+                      <span className="font-bold text-lg">{listingStats?.daysListed ?? 0}</span>
                     </div>
                     <p className="text-xs text-muted-foreground">{t('listing.daysListed')}</p>
                   </div>
-                  <div className="text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <MessageCircle className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-semibold">{listingStats?.contactCount ?? 0}</span>
+                  <div className="text-center bg-secondary/50 rounded-xl p-3">
+                    <div className="flex items-center justify-center gap-1.5 mb-1">
+                      <MessageCircle className="h-4 w-4 text-primary" />
+                      <span className="font-bold text-lg">{listingStats?.contactCount ?? 0}</span>
                     </div>
                     <p className="text-xs text-muted-foreground">{t('listing.inquiries')}</p>
                   </div>
@@ -414,7 +417,7 @@ export default function ListingDetail() {
 
                 {/* Hot listing badge */}
                 {listingStats?.isHotListing && (
-                  <div className="flex items-center gap-2 bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-300 rounded-lg px-3 py-2 mb-4">
+                  <div className="flex items-center justify-center gap-2 bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-300 rounded-xl px-4 py-2.5 mb-6">
                     <Flame className="h-4 w-4" />
                     <span className="text-sm font-medium">{t('listing.hotListing')}</span>
                   </div>
