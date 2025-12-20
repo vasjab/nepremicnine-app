@@ -13,7 +13,9 @@ interface DetailsStepProps {
   availableFrom: string;
   availableUntil: string;
   isFurnished: boolean;
+  furnishedDetails: string;
   allowsPets: boolean;
+  petsDetails: string;
   moveInImmediately: boolean;
   listingType: 'rent' | 'sale';
   onDescriptionChange: (value: string) => void;
@@ -23,7 +25,9 @@ interface DetailsStepProps {
   onAvailableFromChange: (value: string) => void;
   onAvailableUntilChange: (value: string) => void;
   onFurnishedChange: (value: boolean) => void;
+  onFurnishedDetailsChange: (value: string) => void;
   onPetsChange: (value: boolean) => void;
+  onPetsDetailsChange: (value: string) => void;
   onMoveInImmediatelyChange: (value: boolean) => void;
 }
 
@@ -85,7 +89,9 @@ export function DetailsStep({
   availableFrom,
   availableUntil,
   isFurnished,
+  furnishedDetails,
   allowsPets,
+  petsDetails,
   moveInImmediately,
   listingType,
   onDescriptionChange,
@@ -95,7 +101,9 @@ export function DetailsStep({
   onAvailableFromChange,
   onAvailableUntilChange,
   onFurnishedChange,
+  onFurnishedDetailsChange,
   onPetsChange,
+  onPetsDetailsChange,
   onMoveInImmediatelyChange,
 }: DetailsStepProps) {
   const isRental = listingType === 'rent';
@@ -218,20 +226,44 @@ export function DetailsStep({
 
             {/* Toggles */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-card rounded-xl border border-border">
-                <div>
-                  <p className="font-medium">🛋️ Furnished</p>
-                  <p className="text-sm text-muted-foreground">Property comes with furniture</p>
+              <div className="p-4 bg-card rounded-xl border border-border space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">🛋️ Furnished</p>
+                    <p className="text-sm text-muted-foreground">Property comes with furniture</p>
+                  </div>
+                  <Switch checked={isFurnished} onCheckedChange={onFurnishedChange} />
                 </div>
-                <Switch checked={isFurnished} onCheckedChange={onFurnishedChange} />
+                {isFurnished && (
+                  <input
+                    type="text"
+                    value={furnishedDetails}
+                    onChange={(e) => onFurnishedDetailsChange(e.target.value)}
+                    placeholder="e.g., Fully furnished with bed, sofa, and kitchen appliances..."
+                    maxLength={200}
+                    className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground"
+                  />
+                )}
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-card rounded-xl border border-border">
-                <div>
-                  <p className="font-medium">🐕 Pets Allowed</p>
-                  <p className="text-sm text-muted-foreground">Tenants can have pets</p>
+              <div className="p-4 bg-card rounded-xl border border-border space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">🐕 Pets Allowed</p>
+                    <p className="text-sm text-muted-foreground">Tenants can have pets</p>
+                  </div>
+                  <Switch checked={allowsPets} onCheckedChange={onPetsChange} />
                 </div>
-                <Switch checked={allowsPets} onCheckedChange={onPetsChange} />
+                {allowsPets && (
+                  <input
+                    type="text"
+                    value={petsDetails}
+                    onChange={(e) => onPetsDetailsChange(e.target.value)}
+                    placeholder="e.g., Cats and small dogs welcome, no exotic pets..."
+                    maxLength={200}
+                    className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground"
+                  />
+                )}
               </div>
             </div>
           </div>

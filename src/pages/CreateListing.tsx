@@ -69,7 +69,9 @@ export default function CreateListing() {
     available_from: '',
     available_until: '',
     is_furnished: false,
+    furnished_details: '',
     allows_pets: false,
+    pets_details: '',
     move_in_immediately: true,
     // Building features
     has_elevator: false,
@@ -405,7 +407,9 @@ export default function CreateListing() {
             availableFrom={formData.available_from}
             availableUntil={formData.available_until}
             isFurnished={formData.is_furnished}
+            furnishedDetails={formData.furnished_details}
             allowsPets={formData.allows_pets}
+            petsDetails={formData.pets_details}
             moveInImmediately={formData.move_in_immediately}
             listingType={formData.listing_type}
             onDescriptionChange={v => handleChange('description', v)}
@@ -415,7 +419,9 @@ export default function CreateListing() {
             onAvailableFromChange={v => handleChange('available_from', v)}
             onAvailableUntilChange={v => handleChange('available_until', v)}
             onFurnishedChange={v => handleChange('is_furnished', v)}
+            onFurnishedDetailsChange={v => handleChange('furnished_details', v)}
             onPetsChange={v => handleChange('allows_pets', v)}
+            onPetsDetailsChange={v => handleChange('pets_details', v)}
             onMoveInImmediatelyChange={v => handleChange('move_in_immediately', v)}
           />
         );

@@ -101,6 +101,7 @@ export type Database = {
           floor_number: number | null
           floor_plan_url: string | null
           floor_plan_urls: string[] | null
+          furnished_details: string | null
           garden_sqm: number | null
           has_air_conditioning: boolean | null
           has_balcony: boolean | null
@@ -129,6 +130,7 @@ export type Database = {
           move_in_immediately: boolean | null
           parking_spaces: number | null
           parking_type: string | null
+          pets_details: string | null
           postal_code: string | null
           price: number
           property_condition: string | null
@@ -162,6 +164,7 @@ export type Database = {
           floor_number?: number | null
           floor_plan_url?: string | null
           floor_plan_urls?: string[] | null
+          furnished_details?: string | null
           garden_sqm?: number | null
           has_air_conditioning?: boolean | null
           has_balcony?: boolean | null
@@ -190,6 +193,7 @@ export type Database = {
           move_in_immediately?: boolean | null
           parking_spaces?: number | null
           parking_type?: string | null
+          pets_details?: string | null
           postal_code?: string | null
           price: number
           property_condition?: string | null
@@ -223,6 +227,7 @@ export type Database = {
           floor_number?: number | null
           floor_plan_url?: string | null
           floor_plan_urls?: string[] | null
+          furnished_details?: string | null
           garden_sqm?: number | null
           has_air_conditioning?: boolean | null
           has_balcony?: boolean | null
@@ -251,6 +256,7 @@ export type Database = {
           move_in_immediately?: boolean | null
           parking_spaces?: number | null
           parking_type?: string | null
+          pets_details?: string | null
           postal_code?: string | null
           price?: number
           property_condition?: string | null
