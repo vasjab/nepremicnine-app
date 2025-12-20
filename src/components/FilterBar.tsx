@@ -1030,9 +1030,9 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           
           {/* Sort dropdown */}
           <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
-            <SelectTrigger className="shrink-0 w-auto max-w-[120px] h-10 px-3 text-sm bg-secondary border-0 rounded-xl">
-              <ArrowUpDown className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
-              <span className="truncate">
+            <SelectTrigger className="shrink-0 w-10 md:w-auto md:max-w-[120px] h-10 px-3 text-sm bg-secondary border-0 rounded-xl">
+              <ArrowUpDown className="h-4 w-4 md:mr-2 text-muted-foreground shrink-0" />
+              <span className="hidden md:inline truncate">
                 <SelectValue placeholder={t('filters.sortBy')} />
               </span>
             </SelectTrigger>
@@ -1051,9 +1051,8 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
             <Drawer open={isOpen} onOpenChange={setIsOpen}>
               <div className="relative shrink-0">
                 <DrawerTrigger asChild>
-                  <button className={`flex items-center gap-1.5 rounded-xl h-10 px-3 text-sm font-medium transition-all ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-foreground hover:bg-muted'}`}>
+                <button className={`flex items-center justify-center rounded-xl h-10 w-10 text-sm font-medium transition-all ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-foreground hover:bg-muted'}`}>
                     <SlidersHorizontal className="h-4 w-4" />
-                    <span>Filters</span>
                   </button>
                 </DrawerTrigger>
                 {totalActiveFilters > 0 && (
