@@ -628,21 +628,31 @@ function FilterContent({
             </div>
           </FilterSection>
         )}
-      </div>
+    </div>
 
-      {hasActiveFilters && (
+      {/* Action buttons at bottom */}
+      <div className="space-y-2 mt-4 sticky bottom-0 bg-background pt-2 pb-1">
         <Button
-          variant="outline"
           className="w-full h-12 rounded-xl"
-          onClick={() => {
-            clearFilters();
-            setIsOpen(false);
-          }}
+          onClick={() => setIsOpen(false)}
         >
-          <X className="h-4 w-4 mr-2" />
-          {t('filters.clearAllFilters')}
+          {t('filters.applyFilters')}
         </Button>
-      )}
+        
+        {hasActiveFilters && (
+          <Button
+            variant="outline"
+            className="w-full h-12 rounded-xl"
+            onClick={() => {
+              clearFilters();
+              setIsOpen(false);
+            }}
+          >
+            <X className="h-4 w-4 mr-2" />
+            {t('filters.clearAllFilters')}
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
@@ -1055,7 +1065,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   placeholder={t('nav.searchPlaceholder')}
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
-                  className="w-full pl-10 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0 overflow-hidden"
+                  className="w-full pl-10 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0 focus-visible:ring-inset"
                 />
                 {searchValue && (
                   <button
