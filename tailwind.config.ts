@@ -151,6 +151,9 @@ export default {
         spring: "cubic-bezier(0.34, 1.56, 0.64, 1)",
         "out-expo": "cubic-bezier(0.16, 1, 0.3, 1)",
       },
+      transitionDuration: {
+        '400': '400ms',
+      },
     },
   },
   plugins: [require("tailwindcss-animate"), require("@tailwindcss/container-queries")],
