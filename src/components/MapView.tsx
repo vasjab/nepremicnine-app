@@ -25,6 +25,32 @@ interface MapViewProps {
 }
 
 const MAPBOX_TOKEN_KEY = 'hemma_mapbox_token';
+const MAP_STATE_KEY = 'hemma_map_state';
+
+interface MapState {
+  center: [number, number];
+  zoom: number;
+}
+
+const getStoredMapState = (): MapState | null => {
+  try {
+    const stored = sessionStorage.getItem(MAP_STATE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return null;
+};
+
+const saveMapState = (center: [number, number], zoom: number) => {
+  try {
+    sessionStorage.setItem(MAP_STATE_KEY, JSON.stringify({ center, zoom }));
+  } catch {
+    // Ignore storage errors
+  }
+};
 
 export function MapView({ listings, activeListing, onListingClick, onPopupClick, onMapMove }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -82,11 +108,16 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
     try {
       mapboxgl.accessToken = mapboxToken;
 
+      // Restore saved map state or use defaults
+      const savedState = getStoredMapState();
+      const initialCenter: [number, number] = savedState?.center || [14.5058, 46.0515];
+      const initialZoom = savedState?.zoom || 12;
+
       const mapInstance = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
-        center: [14.5058, 46.0515], // Ljubljana center
-        zoom: 12,
+        center: initialCenter,
+        zoom: initialZoom,
       });
 
       mapInstance.on('error', () => {
@@ -125,6 +156,11 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
       });
 
       mapInstance.on('moveend', () => {
+        // Save map state to sessionStorage for persistence
+        const center = mapInstance.getCenter();
+        const zoom = mapInstance.getZoom();
+        saveMapState([center.lng, center.lat], zoom);
+
         if (onMapMoveRef.current) {
           const bounds = mapInstance.getBounds();
           onMapMoveRef.current({
