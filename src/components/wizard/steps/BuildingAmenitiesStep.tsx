@@ -13,7 +13,9 @@ import {
   Bell, 
   Shield,
   Siren,
-  Camera
+  Camera,
+  Lock,
+  Video
 } from 'lucide-react';
 
 interface BuildingAmenitiesStepProps {
@@ -28,6 +30,8 @@ interface BuildingAmenitiesStepProps {
   hasSecurity: boolean;
   hasAlarmSystem: boolean;
   hasCctv: boolean;
+  hasPhysicalProtection: boolean;
+  hasVideoDoorbell: boolean;
   onFeatureToggle: (feature: string, value: boolean) => void;
   onChange: (field: string, value: string) => void;
 }
@@ -51,8 +55,10 @@ const BUILDING_AMENITIES: FeatureCard[] = [
 ];
 
 const SECURITY_SUB_OPTIONS: FeatureCard[] = [
-  { id: 'has_alarm_system', label: 'Alarm System', icon: Siren, info: 'Burglar alarm or security alarm installed' },
-  { id: 'has_cctv', label: 'CCTV Cameras', icon: Camera, info: 'Video surveillance in common areas' },
+  { id: 'has_alarm_system', label: 'Alarm System', icon: Siren, info: 'Burglar alarm or security alarm installed in the unit' },
+  { id: 'has_cctv', label: 'CCTV Cameras', icon: Camera, info: 'Video surveillance in common areas or around the property' },
+  { id: 'has_physical_protection', label: 'Physical Protection', icon: Lock, info: 'Security bars, grilles, or reinforced doors/windows' },
+  { id: 'has_video_doorbell', label: 'Video Doorbell', icon: Video, info: 'Smart doorbell with camera to see visitors remotely' },
 ];
 
 const ELEVATOR_CONDITIONS = [
@@ -73,6 +79,8 @@ export function BuildingAmenitiesStep({
   hasSecurity,
   hasAlarmSystem,
   hasCctv,
+  hasPhysicalProtection,
+  hasVideoDoorbell,
   onFeatureToggle,
   onChange,
 }: BuildingAmenitiesStepProps) {
@@ -90,6 +98,8 @@ export function BuildingAmenitiesStep({
   const securitySubValues: Record<string, boolean> = {
     has_alarm_system: hasAlarmSystem,
     has_cctv: hasCctv,
+    has_physical_protection: hasPhysicalProtection,
+    has_video_doorbell: hasVideoDoorbell,
   };
 
   const selectedCount = Object.values(featureValues).filter(Boolean).length + 
@@ -171,7 +181,7 @@ export function BuildingAmenitiesStep({
           <div className="p-4 rounded-lg bg-secondary/50 space-y-3">
             <div className="flex items-center gap-2">
               <Label className="text-sm font-medium">Security Features</Label>
-              <InfoTooltip content="Select specific security features available in the building" />
+              <InfoTooltip content="Select specific security features available in the building or unit" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               {SECURITY_SUB_OPTIONS.map(({ id, label, icon: Icon, info }) => {

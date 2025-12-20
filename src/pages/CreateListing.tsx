@@ -123,6 +123,8 @@ export default function CreateListing() {
     has_security: false,
     has_alarm_system: false,
     has_cctv: false,
+    has_physical_protection: false,
+    has_video_doorbell: false,
     // Climate & Comfort
     has_fireplace: false,
     has_floor_heating: false,
@@ -134,7 +136,10 @@ export default function CreateListing() {
     has_heat_recovery_ventilation: false,
     has_solar_panels: false,
     has_home_battery: false,
-    // Equipment
+    // Kitchen Equipment
+    has_oven: false,
+    has_microwave: false,
+    hob_type: '',
     has_dishwasher: false,
     has_washing_machine: false,
     has_dryer: false,
@@ -315,6 +320,8 @@ export default function CreateListing() {
         has_security: (draftListing as any).has_security || false,
         has_alarm_system: (draftListing as any).has_alarm_system || false,
         has_cctv: (draftListing as any).has_cctv || false,
+        has_physical_protection: (draftListing as any).has_physical_protection || false,
+        has_video_doorbell: (draftListing as any).has_video_doorbell || false,
         // Climate & Comfort
         has_fireplace: (draftListing as any).has_fireplace || false,
         has_floor_heating: (draftListing as any).has_floor_heating || false,
@@ -326,7 +333,10 @@ export default function CreateListing() {
         has_heat_recovery_ventilation: (draftListing as any).has_heat_recovery_ventilation || false,
         has_solar_panels: (draftListing as any).has_solar_panels || false,
         has_home_battery: (draftListing as any).has_home_battery || false,
-        // Equipment
+        // Kitchen Equipment
+        has_oven: (draftListing as any).has_oven || false,
+        has_microwave: (draftListing as any).has_microwave || false,
+        hob_type: (draftListing as any).hob_type || '',
         has_dishwasher: draftListing.has_dishwasher || false,
         has_washing_machine: draftListing.has_washing_machine || false,
         has_dryer: (draftListing as any).has_dryer || false,
@@ -871,6 +881,8 @@ export default function CreateListing() {
             hasSecurity={formData.has_security}
             hasAlarmSystem={formData.has_alarm_system}
             hasCctv={formData.has_cctv}
+            hasPhysicalProtection={formData.has_physical_protection}
+            hasVideoDoorbell={formData.has_video_doorbell}
             onFeatureToggle={(f, v) => handleChange(f, v)}
             onChange={handleChange}
           />
@@ -888,6 +900,9 @@ export default function CreateListing() {
             hasHeatRecoveryVentilation={formData.has_heat_recovery_ventilation}
             hasSolarPanels={formData.has_solar_panels}
             hasHomeBattery={formData.has_home_battery}
+            hasOven={formData.has_oven}
+            hasMicrowave={formData.has_microwave}
+            hobType={formData.hob_type}
             hasDishwasher={formData.has_dishwasher}
             hasWashingMachine={formData.has_washing_machine}
             hasDryer={formData.has_dryer}
