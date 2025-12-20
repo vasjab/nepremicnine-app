@@ -109,13 +109,16 @@ export default function MyListings() {
             <MyListingSkeletonGrid count={3} />
           ) : listings && listings.length > 0 ? (
             <div className="space-y-4">
-              {listings.map((listing, index) => (
+              {listings.map((listing, index) => {
+                const isDraft = (listing as any).is_draft;
+                return (
                 <div
                   key={listing.id}
                   className={cn(
                     "bg-card rounded-xl p-4 flex flex-col sm:flex-row gap-4 shadow-card",
                     "opacity-0 animate-slide-up-spring",
-                    "hover:shadow-elevated transition-all duration-300"
+                    "hover:shadow-elevated transition-all duration-300",
+                    isDraft && "border-2 border-dashed border-amber-400/50"
                   )}
                   style={{ 
                     animationDelay: `${index * 0.08}s`,
@@ -149,52 +152,69 @@ export default function MyListings() {
                         </p>
                       </div>
                       <span className={`px-2 py-1 rounded-md text-xs font-medium ${
-                        listing.is_active
+                        isDraft
+                          ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                          : listing.is_active
                           ? 'bg-success/10 text-success'
                           : 'bg-muted text-muted-foreground'
                       }`}>
-                        {listing.is_active ? t('myListings.active') : t('myListings.inactive')}
+                        {isDraft ? t('myListings.draft') || 'Draft' : listing.is_active ? t('myListings.active') : t('myListings.inactive')}
                       </span>
                     </div>
 
                     <p className="text-lg font-bold text-foreground mt-2">
                       {formatPrice(listing.price, listing.currency, { isRental: listing.listing_type === 'rent', showPeriod: listing.listing_type === 'rent' })}
                     </p>
+                    </p>
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 mt-4">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/listing/${listing.id}`)}
-                      >
-                        {t('common.view')}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigate(`/edit-listing/${listing.id}`)}
-                      >
-                        <Edit className="h-4 w-4 mr-1" />
-                        {t('common.edit')}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleToggleActive(listing.id, listing.is_active)}
-                      >
-                        {listing.is_active ? (
-                          <>
-                            <EyeOff className="h-4 w-4 mr-1" />
-                            {t('myListings.hide')}
-                          </>
-                        ) : (
-                          <>
-                            <Eye className="h-4 w-4 mr-1" />
-                            {t('myListings.show')}
-                          </>
-                        )}
-                      </Button>
+                      {isDraft ? (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => navigate(`/create-listing?resume=${listing.id}`)}
+                          className="bg-amber-500 hover:bg-amber-600 text-white"
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          {t('myListings.continueDraft') || 'Continue Editing'}
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/listing/${listing.id}`)}
+                          >
+                            {t('common.view')}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/edit-listing/${listing.id}`)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            {t('common.edit')}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleToggleActive(listing.id, listing.is_active)}
+                          >
+                            {listing.is_active ? (
+                              <>
+                                <EyeOff className="h-4 w-4 mr-1" />
+                                {t('myListings.hide')}
+                              </>
+                            ) : (
+                              <>
+                                <Eye className="h-4 w-4 mr-1" />
+                                {t('myListings.show')}
+                              </>
+                            )}
+                          </Button>
+                        </>
+                      )}
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
@@ -222,7 +242,7 @@ export default function MyListings() {
                     </div>
                   </div>
                 </div>
-              ))}
+              );})}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
