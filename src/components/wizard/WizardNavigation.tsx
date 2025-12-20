@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, SkipForward, Check, Loader2, Eye } from 'lucide-react';
+import { ArrowLeft, ArrowRight, SkipForward, Check, Loader2, Eye, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface WizardNavigationProps {
@@ -9,11 +9,14 @@ interface WizardNavigationProps {
   isOptionalStep: boolean;
   isSubmitting: boolean;
   canPreview: boolean;
+  canSaveDraft?: boolean;
+  isResumingDraft?: boolean;
   onBack: () => void;
   onNext: () => void;
   onSkip?: () => void;
   onSubmit: () => void;
   onPreview: () => void;
+  onSaveDraft?: () => void;
 }
 
 export function WizardNavigation({
@@ -23,11 +26,14 @@ export function WizardNavigation({
   isOptionalStep,
   isSubmitting,
   canPreview,
+  canSaveDraft = true,
+  isResumingDraft = false,
   onBack,
   onNext,
   onSkip,
   onSubmit,
   onPreview,
+  onSaveDraft,
 }: WizardNavigationProps) {
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === totalSteps - 1;
@@ -46,8 +52,21 @@ export function WizardNavigation({
           <span className="hidden sm:inline">Back</span>
         </Button>
 
-        {/* Center actions: Preview + Skip */}
+        {/* Center actions: Preview + Skip + Save Draft */}
         <div className="flex items-center gap-2">
+          {/* Save as Draft button */}
+          {canSaveDraft && onSaveDraft && (
+            <Button
+              variant="outline"
+              onClick={onSaveDraft}
+              disabled={isSubmitting}
+              className="gap-1 sm:gap-2 text-sm text-muted-foreground"
+            >
+              <Save className="h-4 w-4" />
+              <span className="hidden sm:inline">Save Draft</span>
+            </Button>
+          )}
+
           {/* Preview button - available after mandatory fields */}
           {canPreview && (
             <Button
@@ -90,7 +109,7 @@ export function WizardNavigation({
             ) : (
               <>
                 <Check className="h-4 w-4" />
-                <span className="hidden sm:inline">Publish</span>
+                <span className="hidden sm:inline">{isResumingDraft ? 'Publish' : 'Publish'}</span>
                 <span className="sm:hidden">Publish</span>
               </>
             )}

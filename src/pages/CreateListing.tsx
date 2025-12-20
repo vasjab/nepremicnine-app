@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCreateListing } from '@/hooks/useListings';
+import { useCreateListing, useUpdateListing, useListing } from '@/hooks/useListings';
 import { useAddressGeocoding } from '@/hooks/useAddressGeocoding';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -41,18 +41,26 @@ type HouseType = 'detached' | 'semi_detached' | 'terraced' | 'end_terrace' | 'bu
 
 export default function CreateListing() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const resumeId = searchParams.get('resume');
   const { user } = useAuth();
   const { toast } = useToast();
   const createListing = useCreateListing();
+  const updateListing = useUpdateListing();
+  
+  // Fetch draft if resuming
+  const { data: draftListing, isLoading: isDraftLoading } = useListing(resumeId || undefined);
+  const [isFormInitialized, setIsFormInitialized] = useState(false);
   
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [honeypot, setHoneypot] = useState('');
   const [showPreview, setShowPreview] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
   const { checkRateLimit, isLimited, remainingTime } = useRateLimit(LISTING_RATE_LIMIT);
 
-  const { images, isUploading, uploadProgress, uploadImages, removeImage, reorderImages } = useImageUpload({ userId: user?.id || '' });
-  const { floorPlans, isUploading: isUploadingFloorPlans, uploadProgress: floorPlanProgress, uploadFloorPlans, removeFloorPlan, reorderFloorPlans } = useFloorPlanUpload({ userId: user?.id || '' });
+  const { images, isUploading, uploadProgress, uploadImages, removeImage, reorderImages, setImages } = useImageUpload({ userId: user?.id || '' });
+  const { floorPlans, isUploading: isUploadingFloorPlans, uploadProgress: floorPlanProgress, uploadFloorPlans, removeFloorPlan, reorderFloorPlans, setFloorPlans } = useFloorPlanUpload({ userId: user?.id || '' });
 
   const [formData, setFormData] = useState({
     title: '',
@@ -220,6 +228,147 @@ export default function CreateListing() {
     if (!user) navigate('/auth');
   }, [user, navigate]);
 
+  // Populate form when resuming a draft
+  useEffect(() => {
+    if (draftListing && !isFormInitialized) {
+      setFormData({
+        title: draftListing.title || '',
+        description: draftListing.description || '',
+        listing_type: draftListing.listing_type || 'rent',
+        property_type: (draftListing.property_type || 'apartment') as any,
+        property_type_other: '',
+        house_type: (draftListing as any).house_type || '',
+        price: draftListing.price?.toString() || '',
+        currency: (draftListing.currency as Currency) || 'SEK',
+        country: draftListing.country || 'Sweden',
+        address: draftListing.address || '',
+        city: draftListing.city || '',
+        postal_code: draftListing.postal_code || '',
+        bedrooms: draftListing.bedrooms?.toString() || '1',
+        bathrooms: draftListing.bathrooms?.toString() || '1',
+        area_sqm: draftListing.area_sqm?.toString() || '',
+        available_from: draftListing.available_from || '',
+        available_until: draftListing.available_until || '',
+        is_furnished: draftListing.is_furnished || false,
+        furnished_details: (draftListing as any).furnished_details || '',
+        allows_pets: draftListing.allows_pets || false,
+        pets_details: (draftListing as any).pets_details || '',
+        move_in_immediately: (draftListing as any).move_in_immediately ?? true,
+        // Outdoor features
+        has_balcony: draftListing.has_balcony || false,
+        balcony_sqm: draftListing.balcony_sqm?.toString() || '',
+        has_terrace: draftListing.has_terrace || false,
+        terrace_sqm: draftListing.terrace_sqm?.toString() || '',
+        has_rooftop_terrace: (draftListing as any).has_rooftop_terrace || false,
+        has_garden: draftListing.has_garden || false,
+        garden_sqm: draftListing.garden_sqm?.toString() || '',
+        has_bbq_area: (draftListing as any).has_bbq_area || false,
+        has_playground: (draftListing as any).has_playground || false,
+        has_waterfront: (draftListing as any).has_waterfront || false,
+        has_view: (draftListing as any).has_view || false,
+        view_type: (draftListing as any).view_type || '',
+        // Parking & Storage
+        has_parking: draftListing.has_parking || false,
+        parking_type: draftListing.parking_type || '',
+        parking_spaces: draftListing.parking_spaces?.toString() || '',
+        has_garage: draftListing.has_garage || false,
+        has_carport: (draftListing as any).has_carport || false,
+        has_ev_charging: (draftListing as any).has_ev_charging || false,
+        has_bicycle_storage: (draftListing as any).has_bicycle_storage || false,
+        has_storage: draftListing.has_storage || false,
+        has_basement: (draftListing as any).has_basement || false,
+        // Building amenities
+        has_elevator: draftListing.has_elevator || false,
+        has_shared_laundry: (draftListing as any).has_shared_laundry || false,
+        has_gym: (draftListing as any).has_gym || false,
+        has_sauna: (draftListing as any).has_sauna || false,
+        has_pool: (draftListing as any).has_pool || false,
+        has_common_room: (draftListing as any).has_common_room || false,
+        has_concierge: (draftListing as any).has_concierge || false,
+        has_security: (draftListing as any).has_security || false,
+        // Energy & Comfort
+        has_fireplace: (draftListing as any).has_fireplace || false,
+        has_floor_heating: (draftListing as any).has_floor_heating || false,
+        has_district_heating: (draftListing as any).has_district_heating || false,
+        has_heat_pump: (draftListing as any).has_heat_pump || false,
+        has_air_conditioning: draftListing.has_air_conditioning || false,
+        has_ventilation: (draftListing as any).has_ventilation || false,
+        has_solar_panels: (draftListing as any).has_solar_panels || false,
+        // Equipment
+        has_dishwasher: draftListing.has_dishwasher || false,
+        has_washing_machine: draftListing.has_washing_machine || false,
+        has_dryer: (draftListing as any).has_dryer || false,
+        // Interior Highlights
+        has_high_ceilings: (draftListing as any).has_high_ceilings || false,
+        has_large_windows: (draftListing as any).has_large_windows || false,
+        has_smart_home: (draftListing as any).has_smart_home || false,
+        has_built_in_wardrobes: (draftListing as any).has_built_in_wardrobes || false,
+        orientation: (draftListing as any).orientation || '',
+        // Accessibility
+        has_step_free_access: (draftListing as any).has_step_free_access || false,
+        has_wheelchair_accessible: (draftListing as any).has_wheelchair_accessible || false,
+        has_wide_doorways: (draftListing as any).has_wide_doorways || false,
+        has_ground_floor_access: (draftListing as any).has_ground_floor_access || false,
+        has_elevator_from_garage: (draftListing as any).has_elevator_from_garage || false,
+        // Safety & Privacy
+        has_secure_entrance: (draftListing as any).has_secure_entrance || false,
+        has_intercom: (draftListing as any).has_intercom || false,
+        has_gated_community: (draftListing as any).has_gated_community || false,
+        has_fire_safety: (draftListing as any).has_fire_safety || false,
+        has_soundproofing: (draftListing as any).has_soundproofing || false,
+        // Building info
+        floor_number: draftListing.floor_number?.toString() || '',
+        total_floors_building: draftListing.total_floors_building?.toString() || '',
+        property_floors: draftListing.property_floors?.toString() || '',
+        heating_type: draftListing.heating_type || '',
+        heating_type_other: '',
+        energy_rating: draftListing.energy_rating || '',
+        year_built: draftListing.year_built?.toString() || '',
+        property_condition: draftListing.property_condition || '',
+        // Rental terms
+        deposit_amount: draftListing.deposit_amount?.toString() || '',
+        min_lease_months: draftListing.min_lease_months?.toString() || '',
+        internet_included: draftListing.internet_included || '',
+        utilities_included: draftListing.utilities_included || '',
+        utility_cost_estimate: (draftListing as any).utility_cost_estimate?.toString() || '',
+        // Sale expenses
+        monthly_expenses: (draftListing as any).monthly_expenses?.toString() || '',
+      });
+      
+      // Set coordinates
+      if (draftListing.latitude && draftListing.longitude) {
+        setManualCoordinates({ latitude: draftListing.latitude, longitude: draftListing.longitude });
+      }
+      
+      // Set images
+      if (draftListing.images && draftListing.images.length > 0) {
+        setImages(draftListing.images.map((url, index) => ({
+          id: `existing-${index}`,
+          url,
+          name: `Image ${index + 1}`,
+          size: 0,
+        })));
+      }
+      
+      // Set floor plans
+      if (draftListing.floor_plan_urls && draftListing.floor_plan_urls.length > 0) {
+        setFloorPlans(draftListing.floor_plan_urls.map((url, index) => ({
+          id: `existing-fp-${index}`,
+          url,
+          name: `Floor Plan ${index + 1}`,
+          size: 0,
+        })));
+      }
+      
+      // Resume at saved step
+      if ((draftListing as any).current_step) {
+        setCurrentStep((draftListing as any).current_step);
+      }
+      
+      setIsFormInitialized(true);
+    }
+  }, [draftListing, isFormInitialized, setImages, setFloorPlans]);
+
   const handleChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -299,6 +448,156 @@ export default function CreateListing() {
     }
   };
 
+  // Build the complete listing data
+  const buildListingData = (isDraft: boolean = false) => {
+    const finalCoords = manualCoordinates || coordinates;
+    return {
+      user_id: user!.id,
+      title: formData.title || 'Draft Listing',
+      description: formData.description || null,
+      listing_type: formData.listing_type,
+      property_type: (formData.property_type === 'summer_house' ? 'house' : formData.property_type) as 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other',
+      price: parseFloat(formData.price) || 0,
+      currency: formData.currency,
+      address: formData.address || 'Draft Address',
+      city: formData.city || 'Draft City',
+      postal_code: formData.postal_code || null,
+      country: formData.country,
+      latitude: finalCoords?.latitude || 0,
+      longitude: finalCoords?.longitude || 0,
+      bedrooms: parseInt(formData.bedrooms) || 0,
+      bathrooms: parseInt(formData.bathrooms) || 1,
+      area_sqm: formData.area_sqm ? parseFloat(formData.area_sqm) : null,
+      available_from: formData.listing_type === 'rent' && !formData.move_in_immediately ? (formData.available_from || null) : null,
+      available_until: formData.listing_type === 'rent' ? (formData.available_until || null) : null,
+      is_furnished: formData.is_furnished,
+      furnished_details: formData.furnished_details || null,
+      allows_pets: formData.allows_pets,
+      pets_details: formData.pets_details || null,
+      move_in_immediately: formData.move_in_immediately,
+      images: images.map(img => img.url),
+      floor_plan_urls: floorPlans.map(fp => fp.url),
+      is_active: !isDraft,
+      is_draft: isDraft,
+      current_step: isDraft ? currentStep : null,
+      // Outdoor features
+      has_balcony: formData.has_balcony,
+      balcony_sqm: formData.balcony_sqm ? parseFloat(formData.balcony_sqm) : null,
+      has_terrace: formData.has_terrace,
+      terrace_sqm: formData.terrace_sqm ? parseFloat(formData.terrace_sqm) : null,
+      has_rooftop_terrace: formData.has_rooftop_terrace,
+      has_garden: formData.has_garden,
+      garden_sqm: formData.garden_sqm ? parseFloat(formData.garden_sqm) : null,
+      has_bbq_area: formData.has_bbq_area,
+      has_playground: formData.has_playground,
+      has_waterfront: formData.has_waterfront,
+      has_view: formData.has_view,
+      view_type: formData.view_type || null,
+      // Parking & Storage
+      has_parking: formData.has_parking,
+      parking_type: (formData.parking_type || null) as 'street' | 'designated' | 'underground' | 'private' | null,
+      parking_spaces: formData.parking_spaces ? parseInt(formData.parking_spaces) : null,
+      has_garage: formData.has_garage,
+      has_carport: formData.has_carport,
+      has_ev_charging: formData.has_ev_charging,
+      has_bicycle_storage: formData.has_bicycle_storage,
+      has_storage: formData.has_storage,
+      has_basement: formData.has_basement,
+      // Building amenities
+      has_elevator: formData.has_elevator,
+      has_shared_laundry: formData.has_shared_laundry,
+      has_gym: formData.has_gym,
+      has_sauna: formData.has_sauna,
+      has_pool: formData.has_pool,
+      has_common_room: formData.has_common_room,
+      has_concierge: formData.has_concierge,
+      has_security: formData.has_security,
+      // Energy & Comfort
+      has_fireplace: formData.has_fireplace,
+      has_floor_heating: formData.has_floor_heating,
+      has_district_heating: formData.has_district_heating,
+      has_heat_pump: formData.has_heat_pump,
+      has_air_conditioning: formData.has_air_conditioning,
+      has_ventilation: formData.has_ventilation,
+      has_solar_panels: formData.has_solar_panels,
+      // Equipment
+      has_dishwasher: formData.has_dishwasher,
+      has_washing_machine: formData.has_washing_machine,
+      has_dryer: formData.has_dryer,
+      // Interior Highlights
+      has_high_ceilings: formData.has_high_ceilings,
+      has_large_windows: formData.has_large_windows,
+      has_smart_home: formData.has_smart_home,
+      has_built_in_wardrobes: formData.has_built_in_wardrobes,
+      orientation: formData.orientation || null,
+      // Accessibility
+      has_step_free_access: formData.has_step_free_access,
+      has_wheelchair_accessible: formData.has_wheelchair_accessible,
+      has_wide_doorways: formData.has_wide_doorways,
+      has_ground_floor_access: formData.has_ground_floor_access,
+      has_elevator_from_garage: formData.has_elevator_from_garage,
+      // Safety & Privacy
+      has_secure_entrance: formData.has_secure_entrance,
+      has_intercom: formData.has_intercom,
+      has_gated_community: formData.has_gated_community,
+      has_fire_safety: formData.has_fire_safety,
+      has_soundproofing: formData.has_soundproofing,
+      // Building info
+      floor_number: formData.floor_number ? parseInt(formData.floor_number) : null,
+      total_floors_building: formData.total_floors_building ? parseInt(formData.total_floors_building) : null,
+      property_floors: formData.property_floors ? parseInt(formData.property_floors) : null,
+      heating_type: (formData.heating_type || null) as 'central' | 'electric' | 'gas' | 'heat_pump' | 'other' | null,
+      energy_rating: (formData.energy_rating || null) as 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | null,
+      year_built: formData.year_built ? parseInt(formData.year_built) : null,
+      property_condition: (formData.property_condition || null) as 'new' | 'renovated' | 'good' | 'needs_work' | null,
+      house_type: formData.house_type || null,
+      // Rental terms
+      deposit_amount: formData.deposit_amount ? parseFloat(formData.deposit_amount) : null,
+      min_lease_months: formData.min_lease_months ? parseInt(formData.min_lease_months) : null,
+      internet_included: (formData.internet_included || null) as 'yes' | 'no' | 'available' | null,
+      utilities_included: (formData.utilities_included || null) as 'yes' | 'no' | 'partial' | null,
+      utility_cost_estimate: formData.utility_cost_estimate ? parseFloat(formData.utility_cost_estimate) : null,
+      // Sale costs
+      monthly_expenses: formData.monthly_expenses ? parseFloat(formData.monthly_expenses) : null,
+    };
+  };
+
+  const handleSaveDraft = async () => {
+    if (!user) return;
+    setIsSavingDraft(true);
+
+    const listingData = buildListingData(true);
+
+    if (resumeId) {
+      // Update existing draft
+      updateListing.mutate(
+        { id: resumeId, ...listingData },
+        {
+          onSuccess: () => {
+            toast({ title: '💾 Draft saved!', description: 'You can continue editing anytime.' });
+            navigate('/my-listings');
+          },
+          onError: () => {
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to save draft.' });
+          },
+          onSettled: () => setIsSavingDraft(false),
+        }
+      );
+    } else {
+      // Create new draft
+      createListing.mutate(listingData, {
+        onSuccess: () => {
+          toast({ title: '💾 Draft saved!', description: 'You can continue editing anytime.' });
+          navigate('/my-listings');
+        },
+        onError: () => {
+          toast({ variant: 'destructive', title: 'Error', description: 'Failed to save draft.' });
+        },
+        onSettled: () => setIsSavingDraft(false),
+      });
+    }
+  };
+
   const handleSubmit = async () => {
     if (!user) return;
     if (isHoneypotTriggered(honeypot)) {
@@ -322,69 +621,33 @@ export default function CreateListing() {
       return;
     }
 
-    createListing.mutate({
-      user_id: user.id,
-      title: formData.title,
-      description: formData.description || null,
-      listing_type: formData.listing_type,
-      property_type: (formData.property_type === 'summer_house' ? 'house' : formData.property_type) as 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other',
-      price: parseFloat(formData.price),
-      currency: formData.currency,
-      address: formData.address,
-      city: formData.city,
-      postal_code: formData.postal_code || null,
-      country: formData.country,
-      latitude: finalCoords.latitude,
-      longitude: finalCoords.longitude,
-      bedrooms: parseInt(formData.bedrooms) || 0,
-      bathrooms: parseInt(formData.bathrooms) || 1,
-      area_sqm: formData.area_sqm ? parseFloat(formData.area_sqm) : null,
-      available_from: formData.listing_type === 'rent' && !formData.move_in_immediately ? (formData.available_from || null) : null,
-      available_until: formData.listing_type === 'rent' ? (formData.available_until || null) : null,
-      is_furnished: formData.is_furnished,
-      allows_pets: formData.allows_pets,
-      images: images.map(img => img.url),
-      floor_plan_urls: floorPlans.map(fp => fp.url),
-      is_active: true,
-      // Building features
-      has_elevator: formData.has_elevator,
-      has_balcony: formData.has_balcony,
-      balcony_sqm: formData.balcony_sqm ? parseFloat(formData.balcony_sqm) : null,
-      has_terrace: formData.has_terrace,
-      terrace_sqm: formData.terrace_sqm ? parseFloat(formData.terrace_sqm) : null,
-      has_garden: formData.has_garden,
-      garden_sqm: formData.garden_sqm ? parseFloat(formData.garden_sqm) : null,
-      has_parking: formData.has_parking,
-      parking_type: (formData.parking_type || null) as 'street' | 'designated' | 'underground' | 'private' | null,
-      parking_spaces: formData.parking_spaces ? parseInt(formData.parking_spaces) : null,
-      has_garage: formData.has_garage,
-      has_storage: formData.has_storage,
-      // Equipment
-      has_air_conditioning: formData.has_air_conditioning,
-      has_dishwasher: formData.has_dishwasher,
-      has_washing_machine: formData.has_washing_machine,
-      // Building info
-      floor_number: formData.floor_number ? parseInt(formData.floor_number) : null,
-      total_floors_building: formData.total_floors_building ? parseInt(formData.total_floors_building) : null,
-      property_floors: formData.property_floors ? parseInt(formData.property_floors) : null,
-      heating_type: (formData.heating_type || null) as 'central' | 'electric' | 'gas' | 'heat_pump' | 'other' | null,
-      energy_rating: (formData.energy_rating || null) as 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | null,
-      year_built: formData.year_built ? parseInt(formData.year_built) : null,
-      property_condition: (formData.property_condition || null) as 'new' | 'renovated' | 'good' | 'needs_work' | null,
-      // Rental terms
-      deposit_amount: formData.deposit_amount ? parseFloat(formData.deposit_amount) : null,
-      min_lease_months: formData.min_lease_months ? parseInt(formData.min_lease_months) : null,
-      internet_included: (formData.internet_included || null) as 'yes' | 'no' | 'available' | null,
-      utilities_included: (formData.utilities_included || null) as 'yes' | 'no' | 'partial' | null,
-    }, {
-      onSuccess: () => {
-        toast({ title: '🎉 Listing created!', description: 'Your property is now live.' });
-        navigate('/my-listings');
-      },
-      onError: () => {
-        toast({ variant: 'destructive', title: 'Error', description: 'Failed to create listing.' });
-      },
-    });
+    const listingData = buildListingData(false);
+
+    if (resumeId) {
+      // Update the draft to publish it
+      updateListing.mutate(
+        { id: resumeId, ...listingData },
+        {
+          onSuccess: () => {
+            toast({ title: '🎉 Listing published!', description: 'Your property is now live.' });
+            navigate('/my-listings');
+          },
+          onError: () => {
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to publish listing.' });
+          },
+        }
+      );
+    } else {
+      createListing.mutate(listingData, {
+        onSuccess: () => {
+          toast({ title: '🎉 Listing created!', description: 'Your property is now live.' });
+          navigate('/my-listings');
+        },
+        onError: () => {
+          toast({ variant: 'destructive', title: 'Error', description: 'Failed to create listing.' });
+        },
+      });
+    }
   };
 
   if (!user) return null;
@@ -665,13 +928,16 @@ export default function CreateListing() {
         totalSteps={WIZARD_STEPS.length}
         canProceed={canProceed()}
         isOptionalStep={WIZARD_STEPS[currentStep]?.isOptional || false}
-        isSubmitting={createListing.isPending}
+        isSubmitting={createListing.isPending || updateListing.isPending || isSavingDraft}
         canPreview={canPreview()}
+        canSaveDraft={true}
+        isResumingDraft={!!resumeId}
         onBack={handleBack}
         onNext={handleNext}
         onSkip={handleSkip}
         onSubmit={handleSubmit}
         onPreview={() => setShowPreview(true)}
+        onSaveDraft={handleSaveDraft}
       />
 
       <ListingPreviewModal

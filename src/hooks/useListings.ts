@@ -351,7 +351,8 @@ type CreateListingInput = Omit<Listing, 'id' | 'created_at' | 'updated_at' |
   'has_secure_entrance' | 'has_intercom' | 'has_gated_community' | 'has_fire_safety' | 'has_soundproofing' |
   'heating_type' | 'energy_rating' | 'year_built' | 'property_condition' |
   'deposit_amount' | 'min_lease_months' | 'internet_included' | 'utilities_included' | 'utility_cost_estimate' | 'monthly_expenses' |
-  'floor_plan_url' | 'floor_plan_urls' | 'house_type' | 'furnished_details' | 'pets_details' | 'move_in_immediately'
+  'floor_plan_url' | 'floor_plan_urls' | 'house_type' | 'furnished_details' | 'pets_details' | 'move_in_immediately' |
+  'is_draft' | 'current_step'
 > & Partial<Pick<Listing,
   'floor_number' | 'total_floors_building' | 'property_floors' | 'has_elevator' |
   'has_balcony' | 'balcony_sqm' | 'has_terrace' | 'terrace_sqm' | 'has_garden' | 'garden_sqm' |
@@ -366,7 +367,8 @@ type CreateListingInput = Omit<Listing, 'id' | 'created_at' | 'updated_at' |
   'has_secure_entrance' | 'has_intercom' | 'has_gated_community' | 'has_fire_safety' | 'has_soundproofing' |
   'heating_type' | 'energy_rating' | 'year_built' | 'property_condition' |
   'deposit_amount' | 'min_lease_months' | 'internet_included' | 'utilities_included' | 'utility_cost_estimate' | 'monthly_expenses' |
-  'floor_plan_url' | 'floor_plan_urls' | 'house_type' | 'furnished_details' | 'pets_details' | 'move_in_immediately'
+  'floor_plan_url' | 'floor_plan_urls' | 'house_type' | 'furnished_details' | 'pets_details' | 'move_in_immediately' |
+  'is_draft' | 'current_step'
 >>;
 
 export function useCreateListing() {

@@ -95,6 +95,7 @@ export type Database = {
           country: string
           created_at: string
           currency: string
+          current_step: number | null
           deposit_amount: number | null
           description: string | null
           energy_rating: string | null
@@ -156,6 +157,7 @@ export type Database = {
           images: string[] | null
           internet_included: string | null
           is_active: boolean
+          is_draft: boolean
           is_furnished: boolean | null
           latitude: number
           listing_type: Database["public"]["Enums"]["listing_type"]
@@ -195,6 +197,7 @@ export type Database = {
           country?: string
           created_at?: string
           currency?: string
+          current_step?: number | null
           deposit_amount?: number | null
           description?: string | null
           energy_rating?: string | null
@@ -256,6 +259,7 @@ export type Database = {
           images?: string[] | null
           internet_included?: string | null
           is_active?: boolean
+          is_draft?: boolean
           is_furnished?: boolean | null
           latitude: number
           listing_type?: Database["public"]["Enums"]["listing_type"]
@@ -295,6 +299,7 @@ export type Database = {
           country?: string
           created_at?: string
           currency?: string
+          current_step?: number | null
           deposit_amount?: number | null
           description?: string | null
           energy_rating?: string | null
@@ -356,6 +361,7 @@ export type Database = {
           images?: string[] | null
           internet_included?: string | null
           is_active?: boolean
+          is_draft?: boolean
           is_furnished?: boolean | null
           latitude?: number
           listing_type?: Database["public"]["Enums"]["listing_type"]
