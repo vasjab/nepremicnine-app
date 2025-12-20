@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { format, isToday, isYesterday, differenceInMinutes } from 'date-fns';
-import { ArrowLeft, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, MoreVertical, User, Trash2 } from 'lucide-react';
 import { Message, Conversation, useMessages, useSendMessage, useMarkMessagesRead, useEditMessage, useDeleteMessage } from '@/hooks/useMessaging';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTypingIndicator } from '@/hooks/useTypingIndicator';
+import { useDeleteConversation } from '@/hooks/useDeleteConversation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -15,12 +16,31 @@ import { MessageContextMenu } from './MessageContextMenu';
 import { MessageEditForm } from './MessageEditForm';
 import { AttachmentUploader, AttachmentPreview } from './AttachmentUploader';
 import { MessageAttachment } from './MessageAttachment';
+import { ImageViewerModal } from './ImageViewerModal';
+import { UserProfileModal } from './UserProfileModal';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface ChatWindowProps {
   conversation: Conversation;
   onBack?: () => void;
   showBackButton?: boolean;
   highlightMessageId?: string;
+  onConversationDeleted?: () => void;
 }
 
 function formatMessageDate(dateString: string) {
@@ -59,7 +79,7 @@ function formatGroupDate(dateString: string) {
 
 const EDIT_TIME_LIMIT_MINUTES = 15;
 
-export function ChatWindow({ conversation, onBack, showBackButton, highlightMessageId }: ChatWindowProps) {
+export function ChatWindow({ conversation, onBack, showBackButton, highlightMessageId, onConversationDeleted }: ChatWindowProps) {
   const { user } = useAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
@@ -67,16 +87,24 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
   const [newMessage, setNewMessage] = useState('');
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<AttachmentPreview[]>([]);
+  
+  // Modal states
+  const [imageViewerOpen, setImageViewerOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<{ url: string; fileName: string } | null>(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const { data: messages = [], isLoading, refetch } = useMessages(conversation.id);
   const sendMessage = useSendMessage();
   const markAsRead = useMarkMessagesRead();
   const editMessage = useEditMessage();
   const deleteMessage = useDeleteMessage();
+  const deleteConversation = useDeleteConversation();
 
   const isRenter = conversation.renter_id === user?.id;
   const otherUser = conversation.other_user;
   const recipientId = isRenter ? conversation.landlord_id : conversation.renter_id;
+  const otherUserId = isRenter ? conversation.landlord_id : conversation.renter_id;
 
   // Typing indicator
   const { isOtherTyping, setTyping } = useTypingIndicator(conversation.id, user?.id);
@@ -188,6 +216,21 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
     return message.sender_id === user?.id && !message.is_deleted;
   };
 
+  const handleImageClick = (url: string, fileName: string) => {
+    setSelectedImage({ url, fileName });
+    setImageViewerOpen(true);
+  };
+
+  const handleDeleteConversation = async () => {
+    try {
+      await deleteConversation.mutateAsync(conversation.id);
+      setDeleteDialogOpen(false);
+      onConversationDeleted?.();
+    } catch (error) {
+      console.error('Failed to delete conversation:', error);
+    }
+  };
+
   const messageGroups = groupMessagesByDate(messages);
 
   return (
@@ -200,21 +243,48 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
           </Button>
         )}
 
-        <Avatar className="h-10 w-10">
-          <AvatarImage src={otherUser?.avatar_url || undefined} />
-          <AvatarFallback className="bg-accent text-accent-foreground">
-            {otherUser?.full_name?.[0]?.toUpperCase() || (isRenter ? 'L' : 'R')}
-          </AvatarFallback>
-        </Avatar>
+        <button
+          onClick={() => setProfileModalOpen(true)}
+          className="flex items-center gap-3 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+        >
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={otherUser?.avatar_url || undefined} />
+            <AvatarFallback className="bg-accent text-accent-foreground">
+              {otherUser?.full_name?.[0]?.toUpperCase() || (isRenter ? 'L' : 'R')}
+            </AvatarFallback>
+          </Avatar>
 
-        <div className="flex-1 min-w-0">
-          <h2 className="font-semibold text-foreground truncate">
-            {otherUser?.full_name || (isRenter ? 'Landlord' : 'Renter')}
-          </h2>
-          <p className="text-xs text-muted-foreground truncate">
-            {conversation.listing?.title}
-          </p>
-        </div>
+          <div className="flex-1 min-w-0 text-left">
+            <h2 className="font-semibold text-foreground truncate">
+              {otherUser?.full_name || (isRenter ? 'Landlord' : 'Renter')}
+            </h2>
+            <p className="text-xs text-muted-foreground truncate">
+              {conversation.listing?.title}
+            </p>
+          </div>
+        </button>
+
+        {/* Options menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" className="flex-shrink-0">
+              <MoreVertical className="h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setProfileModalOpen(true)}>
+              <User className="h-4 w-4 mr-2" />
+              View Profile
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => setDeleteDialogOpen(true)}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Conversation
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Messages */}
@@ -298,6 +368,8 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
                                     fileName={att.file_name}
                                     fileType={att.file_type as 'image' | 'document' | 'other'}
                                     fileSize={att.file_size}
+                                    mimeType={att.mime_type || undefined}
+                                    onImageClick={handleImageClick}
                                   />
                                 ))}
                               </div>
@@ -393,6 +465,50 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
           </Button>
         </div>
       </div>
+
+      {/* Image Viewer Modal */}
+      <ImageViewerModal
+        isOpen={imageViewerOpen}
+        onClose={() => {
+          setImageViewerOpen(false);
+          setSelectedImage(null);
+        }}
+        imageUrl={selectedImage?.url || ''}
+        fileName={selectedImage?.fileName}
+      />
+
+      {/* User Profile Modal */}
+      <UserProfileModal
+        isOpen={profileModalOpen}
+        onClose={() => setProfileModalOpen(false)}
+        userId={otherUserId}
+        userName={otherUser?.full_name || undefined}
+        userAvatar={otherUser?.avatar_url || undefined}
+      />
+
+      {/* Delete Conversation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Conversation</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this conversation? This will permanently remove all messages and cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConversation}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteConversation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
