@@ -818,6 +818,7 @@ export default function CreateListing() {
             hasDishwasher={formData.has_dishwasher}
             hasWashingMachine={formData.has_washing_machine}
             hasDryer={formData.has_dryer}
+            isFurnished={formData.is_furnished}
             onFeatureToggle={(f, v) => handleChange(f, v)}
           />
         );

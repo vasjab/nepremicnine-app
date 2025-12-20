@@ -26,6 +26,8 @@ interface ClimateAppliancesStepProps {
   hasDishwasher: boolean;
   hasWashingMachine: boolean;
   hasDryer: boolean;
+  // Furnished status - controls visibility of appliances section
+  isFurnished: boolean;
   onFeatureToggle: (feature: string, value: boolean) => void;
 }
 
@@ -65,8 +67,16 @@ export function ClimateAppliancesStep({
   hasDishwasher,
   hasWashingMachine,
   hasDryer,
+  isFurnished,
   onFeatureToggle,
 }: ClimateAppliancesStepProps) {
+  // Only include appliance values in count when furnished
+  const applianceValues = isFurnished ? {
+    has_dishwasher: hasDishwasher,
+    has_washing_machine: hasWashingMachine,
+    has_dryer: hasDryer,
+  } : {};
+
   const featureValues: Record<string, boolean> = {
     has_fireplace: hasFireplace,
     has_floor_heating: hasFloorHeating,
@@ -75,9 +85,7 @@ export function ClimateAppliancesStep({
     has_air_conditioning: hasAirConditioning,
     has_ventilation: hasVentilation,
     has_solar_panels: hasSolarPanels,
-    has_dishwasher: hasDishwasher,
-    has_washing_machine: hasWashingMachine,
-    has_dryer: hasDryer,
+    ...applianceValues,
   };
 
   const selectedCount = Object.values(featureValues).filter(Boolean).length;
@@ -123,7 +131,9 @@ export function ClimateAppliancesStep({
   return (
     <WizardStepWrapper
       title="Climate & Appliances"
-      subtitle="Heating, cooling, energy systems, and included appliances"
+      subtitle={isFurnished 
+        ? "Heating, cooling, energy systems, and included appliances" 
+        : "Heating, cooling, and energy systems"}
       emoji="🌡️"
     >
       <div className="max-w-2xl mx-auto w-full space-y-8">
@@ -143,13 +153,15 @@ export function ClimateAppliancesStep({
           {renderFeatureGrid(ENERGY_FEATURES)}
         </div>
 
-        {/* Appliances Section */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Kitchen & Laundry
-          </h3>
-          {renderFeatureGrid(APPLIANCE_FEATURES)}
-        </div>
+        {/* Appliances Section - only show if furnished */}
+        {isFurnished && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Kitchen & Laundry
+            </h3>
+            {renderFeatureGrid(APPLIANCE_FEATURES)}
+          </div>
+        )}
 
         {/* Counter */}
         <p className="text-center text-sm text-muted-foreground">
