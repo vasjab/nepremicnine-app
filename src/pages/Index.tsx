@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { List, MapIcon, X } from 'lucide-react';
 import { Listing, ListingFilters, SortOption } from '@/types/listing';
 import { useListings } from '@/hooks/useListings';
@@ -14,6 +14,7 @@ import { ListingSkeletonGrid } from '@/components/ListingSkeleton';
 import { MobileMapFilterButton } from '@/components/MobileMapFilterButton';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
+import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 interface MapBounds {
   north: number;
@@ -37,8 +38,28 @@ const Index = () => {
   const listContainerRef = useRef<HTMLDivElement>(null);
   
   const landlordId = searchParams.get('landlord');
+  const [landlordName, setLandlordName] = useState<string | null>(null);
   
   const { data: allListings, isLoading } = useListings(filters, user?.id);
+
+  // Fetch landlord name when filtering by landlord
+  useEffect(() => {
+    if (!landlordId) {
+      setLandlordName(null);
+      return;
+    }
+    
+    const fetchLandlordName = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', landlordId)
+        .single();
+      setLandlordName(data?.full_name || 'Landlord');
+    };
+    
+    fetchLandlordName();
+  }, [landlordId]);
 
   // Filter listings based on map bounds and landlord filter
   const filteredListings = useMemo(() => {
@@ -144,7 +165,15 @@ const Index = () => {
           {landlordId && (
             <div className="px-4 pt-3 pb-0">
               <div className="flex items-center gap-2 bg-accent/10 text-accent-foreground rounded-lg px-3 py-2 text-sm">
-                <span>Showing listings from this landlord</span>
+                <span>
+                  Showing listings from{' '}
+                  <Link 
+                    to={`/landlord/${landlordId}`}
+                    className="font-medium hover:underline"
+                  >
+                    {landlordName || 'loading...'}
+                  </Link>
+                </span>
                 <Button
                   variant="ghost"
                   size="sm"

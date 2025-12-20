@@ -146,7 +146,7 @@ export function UserProfileModal({ isOpen, onClose, userId, userName, userAvatar
             <Button
               onClick={() => {
                 onClose();
-                navigate(`/?landlord=${userId}`);
+                navigate(`/landlord/${userId}`);
               }}
               className="w-full"
             >
