@@ -5,6 +5,13 @@ import { MapPin, Loader2, RotateCcw, MousePointer2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
+interface ReverseGeocodedAddress {
+  address: string;
+  city: string;
+  postalCode: string;
+  country: string;
+}
+
 interface LocationPreviewMapProps {
   latitude: number | null;
   longitude: number | null;
@@ -12,6 +19,7 @@ interface LocationPreviewMapProps {
   formattedAddress?: string;
   isGeocoding: boolean;
   onLocationChange?: (lat: number, lng: number) => void;
+  onReverseGeocode?: (address: ReverseGeocodedAddress) => void;
   manualCoordinates?: { latitude: number; longitude: number } | null;
   onResetLocation?: () => void;
   defaultCenter?: { lat: number; lng: number };
@@ -31,6 +39,7 @@ export function LocationPreviewMap({
   formattedAddress,
   isGeocoding,
   onLocationChange,
+  onReverseGeocode,
   manualCoordinates,
   onResetLocation,
   defaultCenter = { lat: 59.3293, lng: 18.0686 }, // Stockholm default
@@ -41,6 +50,7 @@ export function LocationPreviewMap({
   const marker = useRef<mapboxgl.Marker | null>(null);
   const [mapReady, setMapReady] = useState(false);
   const [hasToken, setHasToken] = useState(false);
+  const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
 
   // Use manual coordinates if available, otherwise use geocoded coordinates
   const displayLat = manualCoordinates?.latitude ?? latitude;
@@ -54,13 +64,66 @@ export function LocationPreviewMap({
     setHasToken(!!token);
   }, []);
 
+  // Reverse geocode function
+  const reverseGeocode = useCallback(async (lat: number, lng: number) => {
+    if (!onReverseGeocode) return;
+    
+    const token = getMapboxToken();
+    if (!token) return;
+
+    setIsReverseGeocoding(true);
+    try {
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${token}&types=address,place&limit=1`
+      );
+      const data = await response.json();
+      
+      if (data.features && data.features.length > 0) {
+        const feature = data.features[0];
+        const context = feature.context || [];
+        
+        // Extract address components
+        let address = feature.text || '';
+        let city = '';
+        let postalCode = '';
+        let country = '';
+
+        // If it's a full address, use the place_name but extract street
+        if (feature.properties?.address) {
+          address = `${feature.properties.address} ${feature.text}`;
+        } else if (feature.address) {
+          address = `${feature.address} ${feature.text}`;
+        }
+
+        // Extract city, postal code, country from context
+        for (const ctx of context) {
+          if (ctx.id.startsWith('place')) {
+            city = ctx.text;
+          } else if (ctx.id.startsWith('postcode')) {
+            postalCode = ctx.text;
+          } else if (ctx.id.startsWith('country')) {
+            country = ctx.text;
+          }
+        }
+
+        onReverseGeocode({ address, city, postalCode, country });
+      }
+    } catch (error) {
+      console.error('Reverse geocoding failed:', error);
+    } finally {
+      setIsReverseGeocoding(false);
+    }
+  }, [onReverseGeocode]);
+
   // Handle marker position update
   const updateMarkerPosition = useCallback((lng: number, lat: number) => {
     if (marker.current && map.current) {
       marker.current.setLngLat([lng, lat]);
     }
     onLocationChange?.(lat, lng);
-  }, [onLocationChange]);
+    // Trigger reverse geocoding when pin is placed/moved
+    reverseGeocode(lat, lng);
+  }, [onLocationChange, reverseGeocode]);
 
   // Initialize map - always show it even without coordinates
   useEffect(() => {
@@ -108,6 +171,7 @@ export function LocationPreviewMap({
             const lngLat = marker.current?.getLngLat();
             if (lngLat) {
               onLocationChange?.(lngLat.lat, lngLat.lng);
+              reverseGeocode(lngLat.lat, lngLat.lng);
             }
           });
         }
@@ -140,6 +204,7 @@ export function LocationPreviewMap({
           const lngLat = marker.current?.getLngLat();
           if (lngLat) {
             onLocationChange?.(lngLat.lat, lngLat.lng);
+            reverseGeocode(lngLat.lat, lngLat.lng);
           }
         });
       }
