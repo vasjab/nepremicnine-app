@@ -195,7 +195,7 @@ const Index = () => {
           
           {/* Mobile Map Filter Button - only visible on mobile map view */}
           {mobileView === 'map' && (
-            <div className="lg:hidden absolute top-4 right-4 z-30">
+            <div className="lg:hidden absolute top-4 left-4 z-30">
               <MobileMapFilterButton 
                 filters={filters} 
                 onFiltersChange={setFilters} 
