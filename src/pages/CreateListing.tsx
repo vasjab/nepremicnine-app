@@ -395,23 +395,33 @@ export default function CreateListing() {
         utility_cost_estimate: draftListing.utility_cost_estimate?.toString() || '',
         // Sale expenses
         monthly_expenses: draftListing.monthly_expenses?.toString() || '',
-        expense_breakdown_enabled: draftListing.expense_breakdown_enabled || false,
-        expense_hoa_fees: draftListing.expense_hoa_fees?.toString() || '',
-        expense_maintenance: draftListing.expense_maintenance?.toString() || '',
-        expense_property_tax: draftListing.expense_property_tax?.toString() || '',
-        expense_utilities: draftListing.expense_utilities?.toString() || '',
-        expense_insurance: draftListing.expense_insurance?.toString() || '',
-        expense_other: draftListing.expense_other?.toString() || '',
+        expense_breakdown_enabled: (draftListing as any).expense_breakdown_enabled || false,
+        expense_hoa_fees: (draftListing as any).expense_hoa_fees?.toString() || '',
+        expense_maintenance: (draftListing as any).expense_maintenance?.toString() || '',
+        expense_property_tax: (draftListing as any).expense_property_tax?.toString() || '',
+        expense_utilities: (draftListing as any).expense_utilities?.toString() || '',
+        expense_insurance: (draftListing as any).expense_insurance?.toString() || '',
+        expense_other: (draftListing as any).expense_other?.toString() || '',
       });
       
-      // Set images if available
+      // Set images if available - convert string[] to UploadedImage[]
       if (draftListing.images && draftListing.images.length > 0) {
-        setImages(draftListing.images);
+        setImages(draftListing.images.map((url, index) => ({
+          id: `draft-image-${index}`,
+          url,
+          name: `Image ${index + 1}`,
+          size: 0,
+        })));
       }
       
-      // Set floor plans if available
+      // Set floor plans if available - convert string[] to UploadedFloorPlan[]
       if (draftListing.floor_plan_urls && draftListing.floor_plan_urls.length > 0) {
-        setFloorPlans(draftListing.floor_plan_urls);
+        setFloorPlans(draftListing.floor_plan_urls.map((url, index) => ({
+          id: `draft-floorplan-${index}`,
+          url,
+          name: `Floor Plan ${index + 1}`,
+          size: 0,
+        })));
       }
       
       // Set manual coordinates if available
@@ -482,7 +492,7 @@ export default function CreateListing() {
       title: formData.title,
       description: formData.description || null,
       listing_type: formData.listing_type,
-      property_type: formData.property_type === 'other' ? 'other' : formData.property_type,
+      property_type: formData.property_type as 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'summer_house' | 'other',
       house_type: formData.house_type || null,
       price: parseFloat(formData.price) || 0,
       currency: formData.currency,
@@ -598,10 +608,10 @@ export default function CreateListing() {
       expense_utilities: parseFloat(formData.expense_utilities) || null,
       expense_insurance: parseFloat(formData.expense_insurance) || null,
       expense_other: parseFloat(formData.expense_other) || null,
-      // Images
-      images: images.length > 0 ? images : null,
-      floor_plan_urls: floorPlans.length > 0 ? floorPlans : null,
-    };
+      // Images - convert UploadedImage[] to string[] of URLs
+      images: images.length > 0 ? images.map(img => img.url) : null,
+      floor_plan_urls: floorPlans.length > 0 ? floorPlans.map(fp => fp.url) : null,
+    } as any;
   };
 
   const handleSaveDraft = async () => {
@@ -665,7 +675,7 @@ export default function CreateListing() {
       return;
     }
 
-    const allowed = await checkRateLimit('create_listing', user?.id || 'anonymous');
+    const allowed = checkRateLimit();
     if (!allowed) {
       toast({
         title: 'Rate limit exceeded',
@@ -735,7 +745,7 @@ export default function CreateListing() {
       case 'title':
         return formData.title.length >= 5;
       case 'location':
-        return formData.address.length > 0 && formData.city.length > 0 && (coordinates || manualCoordinates);
+        return formData.address.length > 0 && formData.city.length > 0 && !!(coordinates || manualCoordinates);
       case 'price':
         return parseFloat(formData.price) > 0;
       case 'photos':
@@ -763,7 +773,7 @@ export default function CreateListing() {
       formData.address.length > 0 &&
       formData.city.length > 0 &&
       parseFloat(formData.price) > 0 &&
-      (coordinates || manualCoordinates)
+      !!(coordinates || manualCoordinates)
     );
   };
 
@@ -774,44 +784,63 @@ export default function CreateListing() {
       case 'listing_type':
         return (
           <ListingTypeStep
-            value={formData.listing_type}
-            onChange={(v) => handleChange('listing_type', v)}
+            listingType={formData.listing_type}
+            onListingTypeChange={(v) => handleChange('listing_type', v)}
           />
         );
       case 'type':
         return (
           <PropertyTypeStep
-            value={formData.property_type}
-            onChange={(v) => handleChange('property_type', v)}
+            propertyType={formData.property_type}
+            propertyTypeOther={formData.property_type_other}
+            onPropertyTypeChange={(v) => handleChange('property_type', v)}
+            onPropertyTypeOtherChange={(v) => handleChange('property_type_other', v)}
           />
         );
       case 'house_type':
         return (
           <HouseTypeStep
-            value={formData.house_type}
-            onChange={(v) => handleChange('house_type', v)}
+            houseType={formData.house_type}
+            propertyType={formData.property_type as 'house' | 'summer_house'}
+            onHouseTypeChange={(v) => handleChange('house_type', v)}
           />
         );
       case 'title':
         return (
           <TitleStep
             title={formData.title}
-            description={formData.description}
-            onChange={handleChange}
+            onTitleChange={(v) => handleChange('title', v)}
           />
         );
       case 'location':
         return (
           <LocationStep
             country={formData.country}
-            address={formData.address}
             city={formData.city}
+            address={formData.address}
             postalCode={formData.postal_code}
-            coordinates={manualCoordinates || coordinates}
-            geocodingStatus={geocodingStatus}
+            coordinates={coordinates}
+            manualCoordinates={manualCoordinates}
             isGeocoding={isGeocoding}
-            onChange={handleChange}
-            onManualCoordinates={setManualCoordinates}
+            geocodingStatus={geocodingStatus}
+            onCountryChange={(v) => handleChange('country', v)}
+            onCityChange={(v) => handleChange('city', v)}
+            onAddressChange={(v) => handleChange('address', v)}
+            onPostalCodeChange={(v) => handleChange('postal_code', v)}
+            onAddressSelect={(suggestion) => {
+              handleChange('address', suggestion.address);
+              if (suggestion.city) handleChange('city', suggestion.city);
+              if (suggestion.postalCode) handleChange('postal_code', suggestion.postalCode);
+            }}
+            onCoordinatesChange={(lat, lng) => setManualCoordinates({ latitude: lat, longitude: lng })}
+            onReverseGeocode={(addr) => {
+              handleChange('address', addr.address);
+              handleChange('city', addr.city);
+              handleChange('postal_code', addr.postalCode);
+              handleChange('country', addr.country);
+            }}
+            onResetLocation={() => setManualCoordinates(null)}
+            errors={errors}
           />
         );
       case 'price':
@@ -820,7 +849,8 @@ export default function CreateListing() {
             price={formData.price}
             currency={formData.currency}
             listingType={formData.listing_type}
-            onChange={handleChange}
+            onPriceChange={(v) => handleChange('price', v)}
+            onCurrencyChange={(v) => handleChange('currency', v)}
           />
         );
       case 'photos':
@@ -848,19 +878,31 @@ export default function CreateListing() {
       case 'details':
         return (
           <DetailsStep
+            description={formData.description}
             bedrooms={formData.bedrooms}
             bathrooms={formData.bathrooms}
             livingRooms={formData.living_rooms}
             areaSqm={formData.area_sqm}
+            availableFrom={formData.available_from}
+            availableUntil={formData.available_until}
             isFurnished={formData.is_furnished}
             furnishedDetails={formData.furnished_details}
             allowsPets={formData.allows_pets}
             petsDetails={formData.pets_details}
             moveInImmediately={formData.move_in_immediately}
-            availableFrom={formData.available_from}
-            availableUntil={formData.available_until}
             listingType={formData.listing_type}
-            onChange={handleChange}
+            onDescriptionChange={(v) => handleChange('description', v)}
+            onBedroomsChange={(v) => handleChange('bedrooms', v)}
+            onBathroomsChange={(v) => handleChange('bathrooms', v)}
+            onLivingRoomsChange={(v) => handleChange('living_rooms', v)}
+            onAreaChange={(v) => handleChange('area_sqm', v)}
+            onAvailableFromChange={(v) => handleChange('available_from', v)}
+            onAvailableUntilChange={(v) => handleChange('available_until', v)}
+            onFurnishedChange={(v) => handleChange('is_furnished', v)}
+            onFurnishedDetailsChange={(v) => handleChange('furnished_details', v)}
+            onPetsChange={(v) => handleChange('allows_pets', v)}
+            onPetsDetailsChange={(v) => handleChange('pets_details', v)}
+            onMoveInImmediatelyChange={(v) => handleChange('move_in_immediately', v)}
           />
         );
       case 'outdoor':
@@ -879,6 +921,7 @@ export default function CreateListing() {
             waterfrontDistanceM={formData.waterfront_distance_m}
             hasView={formData.has_view}
             viewType={formData.view_type}
+            onFeatureToggle={(feature, value) => handleChange(feature, value)}
             onChange={handleChange}
           />
         );
@@ -895,6 +938,7 @@ export default function CreateListing() {
             hasBicycleStorage={formData.has_bicycle_storage}
             hasStrollerStorage={formData.has_stroller_storage}
             hasStorage={formData.has_storage}
+            onFeatureToggle={(feature, value) => handleChange(feature, value)}
             onChange={handleChange}
           />
         );
@@ -912,6 +956,9 @@ export default function CreateListing() {
             hasSecurity={formData.has_security}
             hasAlarmSystem={formData.has_alarm_system}
             hasCctv={formData.has_cctv}
+            hasPhysicalProtection={formData.has_physical_protection}
+            hasVideoDoorbell={formData.has_video_doorbell}
+            onFeatureToggle={(feature, value) => handleChange(feature, value)}
             onChange={handleChange}
           />
         );
@@ -928,9 +975,14 @@ export default function CreateListing() {
             hasHeatRecoveryVentilation={formData.has_heat_recovery_ventilation}
             hasSolarPanels={formData.has_solar_panels}
             hasHomeBattery={formData.has_home_battery}
+            hasOven={formData.has_oven}
+            hasMicrowave={formData.has_microwave}
+            hobType={formData.hob_type}
             hasDishwasher={formData.has_dishwasher}
             hasWashingMachine={formData.has_washing_machine}
             hasDryer={formData.has_dryer}
+            isFurnished={formData.is_furnished}
+            onFeatureToggle={(feature, value) => handleChange(feature, value)}
             onChange={handleChange}
           />
         );
@@ -946,14 +998,12 @@ export default function CreateListing() {
             orientation={formData.orientation}
             hasStepFreeAccess={formData.has_step_free_access}
             hasWheelchairAccessible={formData.has_wheelchair_accessible}
-            hasWideDoorways={formData.has_wide_doorways}
-            hasGroundFloorAccess={formData.has_ground_floor_access}
-            hasElevatorFromGarage={formData.has_elevator_from_garage}
             hasSecureEntrance={formData.has_secure_entrance}
             hasIntercom={formData.has_intercom}
+            hasSoundproofing={formData.has_soundproofing}
             hasGatedCommunity={formData.has_gated_community}
             hasFireSafety={formData.has_fire_safety}
-            hasSoundproofing={formData.has_soundproofing}
+            onFeatureToggle={(feature, value) => handleChange(feature, value)}
             onChange={handleChange}
           />
         );
