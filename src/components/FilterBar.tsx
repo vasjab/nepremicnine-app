@@ -281,11 +281,15 @@ function FilterContent({
       </div>
 
       {/* Price Range Slider */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <Label className="text-sm font-medium">
           {filters.listing_type === 'rent' ? t('filters.monthlyCost') : filters.listing_type === 'sale' ? t('filters.totalPrice') : t('filters.price')}
         </Label>
-        <div className="pt-2 px-2">
+        <div className="flex justify-between text-sm text-muted-foreground px-1">
+          <span>{formatPriceLabelLocal(priceRangeValues[0])}</span>
+          <span>{priceRangeValues[1] >= priceConfig.max ? `${formatPriceLabelLocal(priceConfig.max)}+` : formatPriceLabelLocal(priceRangeValues[1])}</span>
+        </div>
+        <div className="px-2">
           <Slider
             value={priceRangeValues}
             min={priceConfig.min}
@@ -296,14 +300,10 @@ function FilterContent({
             className="touch-none"
           />
         </div>
-        <div className="flex justify-between text-sm text-muted-foreground px-1">
-          <span>{formatPriceLabelLocal(priceRangeValues[0])}</span>
-          <span>{priceRangeValues[1] >= priceConfig.max ? `${formatPriceLabelLocal(priceConfig.max)}+` : formatPriceLabelLocal(priceRangeValues[1])}</span>
-        </div>
       </div>
 
       {/* Size Range Slider */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
           <Label className="text-sm font-medium">{t('filters.size')}</Label>
           <div className="flex items-center gap-2">
@@ -315,7 +315,11 @@ function FilterContent({
             <span className={cn("text-xs transition-colors", areaUnit === 'sqft' ? 'text-foreground font-medium' : 'text-muted-foreground')}>ft²</span>
           </div>
         </div>
-        <div className="pt-2 px-2">
+        <div className="flex justify-between text-sm text-muted-foreground px-1">
+          <span>{sizeRangeValues[0]} {sizeConfig.label}</span>
+          <span>{sizeRangeValues[1] >= sizeConfig.max ? `${sizeConfig.max}+ ${sizeConfig.label}` : `${sizeRangeValues[1]} ${sizeConfig.label}`}</span>
+        </div>
+        <div className="px-2">
           <Slider
             value={sizeRangeValues}
             min={sizeConfig.min}
@@ -325,10 +329,6 @@ function FilterContent({
             onValueChange={handleSizeRangeChange}
             className="touch-none"
           />
-        </div>
-        <div className="flex justify-between text-sm text-muted-foreground px-1">
-          <span>{sizeRangeValues[0]} {sizeConfig.label}</span>
-          <span>{sizeRangeValues[1] >= sizeConfig.max ? `${sizeConfig.max}+ ${sizeConfig.label}` : `${sizeRangeValues[1]} ${sizeConfig.label}`}</span>
         </div>
       </div>
 
@@ -631,7 +631,7 @@ function FilterContent({
       {/* Action buttons at bottom */}
       <div className="space-y-2 mt-4 sticky bottom-0 bg-background pt-2 pb-1">
         <Button
-          className="w-full h-12 rounded-xl"
+          className="w-full h-12 rounded-xl bg-accent text-accent-foreground font-medium hover:bg-accent/90 hover:shadow-lg transition-all duration-200"
           onClick={() => setIsOpen(false)}
         >
           {t('filters.applyFilters')}
@@ -666,6 +666,13 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Focus input when search expands
+  useEffect(() => {
+    if (isSearchExpanded && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchExpanded]);
 
   const OWNER_FILTERS: { value: OwnerFilter; label: string; icon: React.ElementType }[] = [
     { value: 'all', label: t('filters.allListings'), icon: Users },
@@ -979,16 +986,40 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
       <div className="px-4 py-3">
         {/* Single-line toolbar: Search + Count + Sort + Filters */}
         <div className="flex items-center gap-2 w-full">
-          {/* Collapsible Search */}
-          {isSearchExpanded || searchValue ? (
-            <form onSubmit={handleSearch} className="relative flex-1 min-w-0 animate-in slide-in-from-left-2 duration-200">
+          {/* Collapsible Search - both elements always rendered for smooth transitions */}
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            {/* Search icon button - fades out when expanded */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsSearchExpanded(true)}
+              className={cn(
+                "shrink-0 rounded-xl h-10 bg-secondary transition-all duration-300 ease-out-expo",
+                isSearchExpanded || searchValue
+                  ? "w-0 opacity-0 overflow-hidden p-0" 
+                  : "w-10 opacity-100 hover:bg-accent/20 hover:text-accent-foreground hover:shadow-md"
+              )}
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+            
+            {/* Search input - expands/collapses smoothly */}
+            <form 
+              onSubmit={handleSearch} 
+              className={cn(
+                "relative transition-all duration-300 ease-out-expo overflow-hidden",
+                isSearchExpanded || searchValue 
+                  ? "flex-1 opacity-100" 
+                  : "w-0 opacity-0"
+              )}
+            >
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
               <Input
                 ref={searchInputRef}
-                autoFocus
                 placeholder={t('nav.searchPlaceholder')}
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}
+                onFocus={() => setIsSearchExpanded(true)}
                 onBlur={() => !searchValue && setIsSearchExpanded(false)}
                 className="w-full pl-10 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl transition-all duration-200 hover:bg-accent/15 hover:shadow-md hover:ring-1 hover:ring-accent/30 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0"
               />
@@ -1002,16 +1033,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                 </button>
               )}
             </form>
-          ) : (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsSearchExpanded(true)}
-              className="shrink-0 rounded-xl h-10 w-10 bg-secondary hover:bg-accent/20 hover:text-accent-foreground hover:shadow-md transition-all duration-200"
-            >
-              <Search className="h-4 w-4" />
-            </Button>
-          )}
+          </div>
 
           {/* Listings count as subtle pill */}
           {totalCount !== undefined && (
