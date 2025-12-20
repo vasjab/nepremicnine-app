@@ -29,8 +29,7 @@ import { DetailsStep } from '@/components/wizard/steps/DetailsStep';
 import { OutdoorFeaturesStep } from '@/components/wizard/steps/OutdoorFeaturesStep';
 import { ParkingStorageStep } from '@/components/wizard/steps/ParkingStorageStep';
 import { BuildingAmenitiesStep } from '@/components/wizard/steps/BuildingAmenitiesStep';
-import { EnergyComfortStep } from '@/components/wizard/steps/EnergyComfortStep';
-import { EquipmentStep } from '@/components/wizard/steps/EquipmentStep';
+import { ClimateAppliancesStep } from '@/components/wizard/steps/ClimateAppliancesStep';
 import { InteriorHighlightsStep } from '@/components/wizard/steps/InteriorHighlightsStep';
 import { BuildingInfoStep } from '@/components/wizard/steps/BuildingInfoStep';
 import { RentalTermsStep } from '@/components/wizard/steps/RentalTermsStep';
@@ -206,8 +205,7 @@ export default function CreateListing() {
     }
     
     steps.push(
-      { id: 'energy', title: 'Energy', emoji: '⚡', isOptional: true },
-      { id: 'equipment', title: 'Equipment', emoji: '🔌', isOptional: true },
+      { id: 'climate_appliances', title: 'Climate', emoji: '🌡️', isOptional: true },
       { id: 'interior', title: 'Interior', emoji: '✨', isOptional: true },
       { id: 'building_info', title: 'Info', emoji: '📊', isOptional: true },
     );
@@ -807,9 +805,9 @@ export default function CreateListing() {
             onFeatureToggle={(f, v) => handleChange(f, v)}
           />
         );
-      case 'energy':
+      case 'climate_appliances':
         return (
-          <EnergyComfortStep
+          <ClimateAppliancesStep
             hasFireplace={formData.has_fireplace}
             hasFloorHeating={formData.has_floor_heating}
             hasDistrictHeating={formData.has_district_heating}
@@ -817,13 +815,6 @@ export default function CreateListing() {
             hasAirConditioning={formData.has_air_conditioning}
             hasVentilation={formData.has_ventilation}
             hasSolarPanels={formData.has_solar_panels}
-            onFeatureToggle={(f, v) => handleChange(f, v)}
-          />
-        );
-      case 'equipment':
-        return (
-          <EquipmentStep
-            hasAirConditioning={formData.has_air_conditioning}
             hasDishwasher={formData.has_dishwasher}
             hasWashingMachine={formData.has_washing_machine}
             hasDryer={formData.has_dryer}
