@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { User, Home, Calendar, Phone, Mail, X } from 'lucide-react';
+import { Home, Calendar, Phone, ExternalLink } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -26,6 +27,7 @@ interface UserProfileModalProps {
 }
 
 export function UserProfileModal({ isOpen, onClose, userId, userName, userAvatar }: UserProfileModalProps) {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [listingsCount, setListingsCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -139,13 +141,27 @@ export function UserProfileModal({ isOpen, onClose, userId, userName, userAvatar
           </div>
         </div>
 
-        <Button
-          variant="outline"
-          onClick={onClose}
-          className="mt-4"
-        >
-          Close
-        </Button>
+        <div className="flex flex-col gap-2 mt-4">
+          {listingsCount > 0 && (
+            <Button
+              onClick={() => {
+                onClose();
+                navigate(`/?landlord=${userId}`);
+              }}
+              className="w-full"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              View all listings ({listingsCount})
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="w-full"
+          >
+            Close
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
