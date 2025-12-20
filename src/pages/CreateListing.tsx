@@ -1178,7 +1178,6 @@ export default function CreateListing() {
           isMobile={true}
           onBack={handleBack}
           onNext={handleNext}
-          onSkip={handleSkip}
           onSubmit={handleSubmit}
           onPreview={() => setShowPreview(true)}
           onSaveDraft={handleSaveDraft}
@@ -1242,7 +1241,6 @@ export default function CreateListing() {
         isMobile={false}
         onBack={handleBack}
         onNext={handleNext}
-        onSkip={handleSkip}
         onSubmit={handleSubmit}
         onPreview={() => setShowPreview(true)}
         onSaveDraft={handleSaveDraft}

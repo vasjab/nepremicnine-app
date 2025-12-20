@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ArrowRight, SkipForward, Check, Loader2, Eye, Save } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Loader2, Eye, Save } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface WizardNavigationProps {
@@ -14,7 +14,6 @@ interface WizardNavigationProps {
   isMobile?: boolean;
   onBack: () => void;
   onNext: () => void;
-  onSkip?: () => void;
   onSubmit: () => void;
   onPreview: () => void;
   onSaveDraft?: () => void;
@@ -32,7 +31,6 @@ export function WizardNavigation({
   isMobile = false,
   onBack,
   onNext,
-  onSkip,
   onSubmit,
   onPreview,
   onSaveDraft,
@@ -54,7 +52,7 @@ export function WizardNavigation({
           <span className="hidden sm:inline">Back</span>
         </Button>
 
-        {/* Center actions: Preview + Skip + Save Draft */}
+        {/* Center actions: Preview + Save Draft */}
         <div className="flex items-center gap-2">
           {/* Save as Draft button - show text on mobile */}
           {canSaveDraft && onSaveDraft && (
@@ -81,19 +79,6 @@ export function WizardNavigation({
             >
               <Eye className="h-4 w-4" />
               <span>Preview</span>
-            </Button>
-          )}
-
-          {/* Skip button for optional steps */}
-          {isOptionalStep && !isLastStep && onSkip && (
-            <Button
-              variant="outline"
-              onClick={onSkip}
-              disabled={isSubmitting}
-              className="text-muted-foreground gap-1 sm:gap-2"
-            >
-              <SkipForward className="h-4 w-4" />
-              <span>Skip</span>
             </Button>
           )}
         </div>
