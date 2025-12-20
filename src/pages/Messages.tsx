@@ -7,7 +7,7 @@ import { ConversationsList } from '@/components/messaging/ConversationsList';
 import { ChatWindow } from '@/components/messaging/ChatWindow';
 import { MessageSearch } from '@/components/messaging/MessageSearch';
 import { cn } from '@/lib/utils';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,10 +15,25 @@ import { supabase } from '@/integrations/supabase/client';
 export default function Messages() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const location = useLocation();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [highlightMessageId, setHighlightMessageId] = useState<string | undefined>();
   
   const { data: conversations = [], isLoading, refetch } = useConversations(user?.id);
+
+  // Auto-select conversation from navigation state (e.g., from "Contact Landlord")
+  const stateConversationId = (location.state as { conversationId?: string })?.conversationId;
+  
+  useEffect(() => {
+    if (stateConversationId && conversations.length > 0 && !selectedConversation) {
+      const convo = conversations.find(c => c.id === stateConversationId);
+      if (convo) {
+        setSelectedConversation(convo);
+        // Clear the state so it doesn't re-trigger
+        window.history.replaceState({}, document.title);
+      }
+    }
+  }, [stateConversationId, conversations, selectedConversation]);
 
   // Subscribe to realtime updates for conversations
   useEffect(() => {
