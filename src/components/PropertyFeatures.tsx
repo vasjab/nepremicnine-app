@@ -126,7 +126,7 @@ const categoryThemes = {
   },
 };
 
-// Simple Feature Card (no detail)
+// Simple Feature Card (no detail) - Taller, centered layout
 function FeatureCard({ 
   icon: Icon, 
   label, 
@@ -140,24 +140,24 @@ function FeatureCard({
   
   return (
     <div className={cn(
-      "flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all duration-200",
+      "flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl h-24 transition-all duration-200",
       "bg-secondary/50 hover:bg-secondary border border-transparent hover:border-border/50",
       "cursor-default group"
     )}>
       <div className={cn(
-        "w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105",
+        "w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105",
         theme.iconBg
       )}>
-        <Icon className={cn("h-5 w-5", theme.iconColor)} />
+        <Icon className={cn("h-6 w-6", theme.iconColor)} />
       </div>
-      <span className="text-xs font-medium text-foreground text-center leading-tight">
+      <span className="text-sm font-medium text-foreground text-center leading-tight">
         {label}
       </span>
     </div>
   );
 }
 
-// Detail Feature Card - larger, shows extra info inline
+// Detail Feature Card - horizontal layout with icon left, label and detail stacked
 function DetailFeatureCard({ 
   icon: Icon, 
   label, 
@@ -173,15 +173,15 @@ function DetailFeatureCard({
   
   return (
     <div className={cn(
-      "flex items-center gap-3 p-3 rounded-xl transition-all duration-200",
+      "flex items-center gap-3 p-4 rounded-xl h-24 transition-all duration-200",
       "bg-secondary/50 hover:bg-secondary border border-transparent hover:border-border/50",
-      "cursor-default group col-span-2"
+      "cursor-default group"
     )}>
       <div className={cn(
-        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105",
+        "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105",
         theme.iconBg
       )}>
-        <Icon className={cn("h-5 w-5", theme.iconColor)} />
+        <Icon className={cn("h-6 w-6", theme.iconColor)} />
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-foreground">{label}</p>
@@ -238,7 +238,7 @@ function CategorySection({
       <h3 className={cn("text-xs font-semibold uppercase tracking-wide", theme.headerColor)}>
         {theme.label}
       </h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {features.map((feature) => (
           feature.detail ? (
             <DetailFeatureCard
