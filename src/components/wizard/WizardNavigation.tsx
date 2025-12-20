@@ -11,6 +11,7 @@ interface WizardNavigationProps {
   canPreview: boolean;
   canSaveDraft?: boolean;
   isResumingDraft?: boolean;
+  isMobile?: boolean;
   onBack: () => void;
   onNext: () => void;
   onSkip?: () => void;
@@ -28,6 +29,7 @@ export function WizardNavigation({
   canPreview,
   canSaveDraft = true,
   isResumingDraft = false,
+  isMobile = false,
   onBack,
   onNext,
   onSkip,
@@ -54,7 +56,7 @@ export function WizardNavigation({
 
         {/* Center actions: Preview + Skip + Save Draft */}
         <div className="flex items-center gap-2">
-          {/* Save as Draft button */}
+          {/* Save as Draft button - show text on mobile */}
           {canSaveDraft && onSaveDraft && (
             <Button
               variant="outline"
@@ -63,7 +65,9 @@ export function WizardNavigation({
               className="gap-1 sm:gap-2 text-sm text-muted-foreground"
             >
               <Save className="h-4 w-4" />
-              <span className="hidden sm:inline">Save Draft</span>
+              <span className={cn(isMobile ? "inline" : "hidden sm:inline")}>
+                {isMobile ? "Draft" : "Save Draft"}
+              </span>
             </Button>
           )}
 
