@@ -567,22 +567,31 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
                 </FilterSection>
               )}
             </div>
-
-            {hasActiveFilters && (
-              <Button
-                variant="outline"
-                className="w-full h-12 rounded-xl"
-                onClick={() => {
-                  clearFilters();
-                  setIsOpen(false);
-                }}
-              >
-                <X className="h-4 w-4 mr-2" />
-                {t('filters.clearAllFilters')}
-              </Button>
-            )}
           </div>
         </ScrollArea>
+        
+        {/* Sticky footer with Apply button */}
+        <div className="sticky bottom-0 left-0 right-0 p-4 bg-background border-t border-border space-y-2">
+          {hasActiveFilters && (
+            <Button
+              variant="outline"
+              className="w-full h-12 rounded-xl"
+              onClick={() => {
+                clearFilters();
+              }}
+            >
+              <X className="h-4 w-4 mr-2" />
+              {t('filters.clearAllFilters')}
+            </Button>
+          )}
+          <Button
+            variant="default"
+            className="w-full h-12 rounded-xl bg-accent text-accent-foreground hover:bg-accent/90"
+            onClick={() => setIsOpen(false)}
+          >
+            {t('filters.applyFilters')}
+          </Button>
+        </div>
       </DrawerContent>
     </Drawer>
   );

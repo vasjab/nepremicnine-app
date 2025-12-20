@@ -302,6 +302,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
           let currentIndex = 0;
           const popupEl = document.querySelector(`.popup-content-${listing.id}`);
           const imgEl = document.querySelector(`.popup-img-${listing.id}`) as HTMLImageElement;
+          const imgContainer = document.querySelector(`.popup-img-container-${listing.id}`) as HTMLElement;
           const prevBtn = document.querySelector(`.popup-prev-${listing.id}`);
           const nextBtn = document.querySelector(`.popup-next-${listing.id}`);
           const dots = document.querySelectorAll(`.popup-dot-${listing.id}`);
@@ -316,6 +317,34 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
               (dot as HTMLElement).style.width = i === currentIndex ? '12px' : '6px';
             });
           };
+
+          // Touch swipe support for mobile
+          if (imgContainer && hasMultipleImages) {
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            imgContainer.addEventListener('touchstart', (e) => {
+              touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            imgContainer.addEventListener('touchend', (e) => {
+              touchEndX = e.changedTouches[0].screenX;
+              const diff = touchStartX - touchEndX;
+              
+              // Only trigger swipe if horizontal movement is significant (>50px)
+              if (Math.abs(diff) > 50) {
+                if (diff > 0) {
+                  // Swipe left → next image
+                  const newIndex = currentIndex === images.length - 1 ? 0 : currentIndex + 1;
+                  updateImage(newIndex);
+                } else {
+                  // Swipe right → previous image
+                  const newIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
+                  updateImage(newIndex);
+                }
+              }
+            }, { passive: true });
+          }
 
           if (prevBtn) {
             prevBtn.addEventListener('click', (e) => {
