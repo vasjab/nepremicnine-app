@@ -389,7 +389,7 @@ const Index = () => {
           </>
         ) : (
           /* Desktop: Fixed 50-50 split view */
-          <div className="flex-1 flex">
+          <div className="flex-1 flex min-h-0 h-full">
             {/* Left panel - Listings (50%) */}
             <div className="w-1/2 flex flex-col h-full min-h-0 border-r border-border overflow-hidden">
 
