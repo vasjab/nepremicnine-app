@@ -986,15 +986,15 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
               onChange={(e) => setSearchValue(e.target.value)}
               className="w-full pl-9 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl"
             />
-            {searchValue && (
-              <button
-                type="button"
-                onClick={clearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={clearSearch}
+              className={`absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full transition-opacity ${
+                searchValue ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
           </form>
           
           {/* Sort dropdown */}
@@ -1020,10 +1020,10 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
             <Drawer open={isOpen} onOpenChange={setIsOpen}>
               <div className="relative shrink-0">
                 <DrawerTrigger asChild>
-                  <Button className={`rounded-xl h-10 px-3 border-0 font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                  <button className={`flex items-center rounded-xl h-10 px-3 font-medium transition-all ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
                     <SlidersHorizontal className="h-4 w-4 mr-2" />
                     Filters
-                  </Button>
+                  </button>
                 </DrawerTrigger>
                 {totalActiveFilters > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 h-5 min-w-5 px-1.5 flex items-center justify-center text-xs font-semibold rounded-full bg-accent text-accent-foreground border-2 border-background pointer-events-none">
@@ -1044,10 +1044,10 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <div className="relative shrink-0">
                 <DialogTrigger asChild>
-                  <Button className={`rounded-xl h-10 px-3 border-0 font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                  <button className={`flex items-center rounded-xl h-10 px-3 font-medium transition-all ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
                     <SlidersHorizontal className="h-4 w-4 mr-2" />
                     Filters
-                  </Button>
+                  </button>
                 </DialogTrigger>
                 {totalActiveFilters > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 h-5 min-w-5 px-1.5 flex items-center justify-center text-xs font-semibold rounded-full bg-accent text-accent-foreground border-2 border-background pointer-events-none">
