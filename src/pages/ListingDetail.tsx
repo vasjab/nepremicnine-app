@@ -266,21 +266,6 @@ export default function ListingDetail() {
             </div>
           )}
 
-          {/* Save button */}
-          {user && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                'absolute top-4 right-4 h-10 w-10 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card',
-                isSaved && 'text-accent'
-              )}
-              onClick={(e) => { e.stopPropagation(); handleSaveClick(); }}
-            >
-              <Heart className={cn('h-5 w-5', isSaved && 'fill-current')} />
-            </Button>
-          )}
-
           {/* Type badge */}
           <div className="absolute top-4 left-16">
             <span className="px-3 py-1.5 rounded-lg bg-card/90 backdrop-blur-sm text-sm font-medium">
@@ -387,6 +372,119 @@ export default function ListingDetail() {
                 </div>
               )}
 
+              {/* Mobile-only: Sidebar content shown here (after description) */}
+              <div className="lg:hidden">
+                <div className="bg-card rounded-3xl p-6 shadow-lg border border-border/50">
+                  {/* Price section */}
+                  <div className="mb-6 pb-6 border-b border-border/50">
+                    <p className="text-sm text-muted-foreground mb-1">
+                      {propertyTypeLabels[listing.property_type]}
+                    </p>
+                    <p className="text-3xl font-bold text-foreground">
+                      {formatPrice(listing.price, listing.currency, { 
+                        isRental: listing.listing_type === 'rent',
+                        showPeriod: listing.listing_type === 'rent'
+                      })}
+                    </p>
+                    {listing.area_sqm && listing.area_sqm > 0 && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {formatPrice(listing.price / listing.area_sqm, listing.currency, { compact: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Listing Stats */}
+                  <div className="grid grid-cols-3 gap-2 mb-6">
+                    <div className="text-center bg-secondary/50 rounded-lg p-2">
+                      <div className="flex items-center justify-center gap-1 mb-0.5">
+                        <Eye className="h-3.5 w-3.5 text-primary" />
+                        <span className="font-bold text-base">{listingStats?.viewCount ?? 0}</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground truncate">{t('listing.views')}</p>
+                    </div>
+                    <div className="text-center bg-secondary/50 rounded-lg p-2">
+                      <div className="flex items-center justify-center gap-1 mb-0.5">
+                        <Clock className="h-3.5 w-3.5 text-primary" />
+                        <span className="font-bold text-base">{listingStats?.daysListed ?? 0}</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground truncate">{t('listing.daysListed')}</p>
+                    </div>
+                    <div className="text-center bg-secondary/50 rounded-lg p-2">
+                      <div className="flex items-center justify-center gap-1 mb-0.5">
+                        <MessageCircle className="h-3.5 w-3.5 text-primary" />
+                        <span className="font-bold text-base">{listingStats?.contactCount ?? 0}</span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground truncate">{t('listing.inquiries')}</p>
+                    </div>
+                  </div>
+
+                  {/* Hot listing badge */}
+                  {listingStats?.isHotListing && (
+                    <div className="flex items-center justify-center gap-2 bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-300 rounded-xl px-4 py-2.5 mb-6">
+                      <Flame className="h-4 w-4" />
+                      <span className="text-sm font-medium">{t('listing.hotListing')}</span>
+                    </div>
+                  )}
+
+                  <Button
+                    className="w-full bg-accent text-accent-foreground hover:bg-accent/90 mb-3"
+                    disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
+                    onClick={async () => {
+                      if (!user) {
+                        navigate('/auth');
+                        return;
+                      }
+                      if (!listing.user_id) {
+                        toast({ variant: 'destructive', title: 'Unable to contact', description: 'This listing has no owner' });
+                        return;
+                      }
+                      try {
+                        const data = await getOrCreateConversation.mutateAsync({
+                          listingId: listing.id,
+                          renterId: user.id,
+                          landlordId: listing.user_id,
+                        });
+                        navigate('/messages', { state: { conversationId: data.id } });
+                      } catch (error) {
+                        toast({ variant: 'destructive', title: 'Error', description: 'Failed to start conversation' });
+                      }
+                    }}
+                  >
+                    {getOrCreateConversation.isPending ? 'Starting chat...' : t('listing.contactLandlord')}
+                  </Button>
+
+                  {user ? (
+                    <Button
+                      variant="outline"
+                      className="w-full mb-3"
+                      onClick={handleSaveClick}
+                    >
+                      <Heart className={cn('h-4 w-4 mr-2', isSaved && 'fill-current text-accent')} />
+                      {isSaved ? t('common.saved') : t('listing.saveListing')}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      className="w-full mb-3"
+                      onClick={() => navigate('/auth')}
+                    >
+                      {t('listing.signInToSave')}
+                    </Button>
+                  )}
+
+                  {listing.user_id && (
+                    <Button
+                      variant="ghost"
+                      className="w-full text-muted-foreground hover:text-foreground"
+                      onClick={() => navigate(`/landlord/${listing.user_id}`)}
+                    >
+                      <User className="h-4 w-4 mr-2" />
+                      View landlord profile
+                    </Button>
+                  )}
+                </div>
+              </div>
+
               {/* Property Features */}
               <div className="bg-card rounded-3xl p-6 sm:p-8 shadow-sm border border-border/50">
                 <PropertyFeatures listing={listing} />
@@ -406,8 +504,8 @@ export default function ListingDetail() {
               </div>
             </div>
 
-            {/* Sidebar */}
-            <div className="lg:col-span-1">
+            {/* Desktop Sidebar - hidden on mobile */}
+            <div className="hidden lg:block lg:col-span-1">
               <div className="sticky top-24 bg-card rounded-3xl p-6 sm:p-8 shadow-lg border border-border/50">
                 {/* Price section */}
                 <div className="mb-6 pb-6 border-b border-border/50">

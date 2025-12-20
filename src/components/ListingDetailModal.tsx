@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
-import { X, Heart, MapPin, Bed, Bath, Square, Calendar, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink, CheckCircle } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -141,19 +141,19 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
             : "opacity-0 translate-y-4 scale-[0.98]"
         )}
       >
-        {/* Close button - fixed to top right corner */}
+        {/* Back button - fixed to top left corner */}
         <Button
           variant="ghost"
           size="icon"
           className={cn(
-            "fixed top-4 right-4 z-50 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm",
+            "fixed top-4 left-4 z-50 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm",
             "hover:bg-card hover:scale-105 active:scale-95",
             "shadow-lg transition-all duration-200",
             "touch-target"
           )}
           onClick={handleClose}
         >
-          <X className="h-5 w-5" />
+          <ArrowLeft className="h-5 w-5" />
         </Button>
 
         {/* Image gallery preview */}
