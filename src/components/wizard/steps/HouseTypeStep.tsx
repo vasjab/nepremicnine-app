@@ -52,7 +52,7 @@ export function HouseTypeStep({
               <Icon className="h-6 w-6 md:h-8 md:w-8" />
             </div>
             <span className="font-semibold text-foreground text-center">{label}</span>
-            <span className="text-xs text-muted-foreground mt-1 text-center hidden md:block">{description}</span>
+            <span className="text-xs text-muted-foreground mt-1 text-center">{description}</span>
             
             {houseType === value && (
               <div className="absolute top-2 right-2 w-5 h-5 bg-accent rounded-full flex items-center justify-center">

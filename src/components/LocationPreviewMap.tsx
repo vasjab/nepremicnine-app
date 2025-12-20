@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { MapPin, Loader2, CheckCircle2, AlertCircle, RotateCcw } from 'lucide-react';
+import { MapPin, Loader2, RotateCcw, MousePointer2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -14,6 +14,8 @@ interface LocationPreviewMapProps {
   onLocationChange?: (lat: number, lng: number) => void;
   manualCoordinates?: { latitude: number; longitude: number } | null;
   onResetLocation?: () => void;
+  defaultCenter?: { lat: number; lng: number };
+  showClickPrompt?: boolean;
 }
 
 const MAPBOX_TOKEN_KEY = 'hemma_mapbox_token';
@@ -31,6 +33,8 @@ export function LocationPreviewMap({
   onLocationChange,
   manualCoordinates,
   onResetLocation,
+  defaultCenter = { lat: 59.3293, lng: 18.0686 }, // Stockholm default
+  showClickPrompt = false,
 }: LocationPreviewMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -42,6 +46,7 @@ export function LocationPreviewMap({
   const displayLat = manualCoordinates?.latitude ?? latitude;
   const displayLng = manualCoordinates?.longitude ?? longitude;
   const isManuallyAdjusted = manualCoordinates !== null && manualCoordinates !== undefined;
+  const hasLocation = displayLat !== null && displayLng !== null;
 
   // Check for token on mount
   useEffect(() => {
@@ -51,74 +56,99 @@ export function LocationPreviewMap({
 
   // Handle marker position update
   const updateMarkerPosition = useCallback((lng: number, lat: number) => {
-    if (marker.current) {
+    if (marker.current && map.current) {
       marker.current.setLngLat([lng, lat]);
     }
     onLocationChange?.(lat, lng);
   }, [onLocationChange]);
 
-  // Initialize map when we have valid coordinates
+  // Initialize map - always show it even without coordinates
   useEffect(() => {
     if (!mapContainer.current || !hasToken) return;
-    if (displayLat === null || displayLng === null) return;
 
     const token = getMapboxToken();
     if (!token) return;
 
     mapboxgl.accessToken = token;
 
+    // If map doesn't exist yet, create it
     if (!map.current) {
+      const initialCenter: [number, number] = hasLocation 
+        ? [displayLng!, displayLat!] 
+        : [defaultCenter.lng, defaultCenter.lat];
+      
+      const initialZoom = hasLocation ? 15 : 5;
+
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [displayLng, displayLat],
-        zoom: 15,
-        interactive: true, // Enable interactivity
+        center: initialCenter,
+        zoom: initialZoom,
+        interactive: true,
       });
 
       map.current.on('load', () => {
         setMapReady(true);
       });
 
-      // Add click handler to reposition marker
+      // Add click handler to position marker
       map.current.on('click', (e) => {
         updateMarkerPosition(e.lngLat.lng, e.lngLat.lat);
+        
+        // Add or update marker on click
+        if (!marker.current && map.current) {
+          marker.current = new mapboxgl.Marker({ 
+            color: '#ef4444',
+            draggable: true,
+          })
+            .setLngLat([e.lngLat.lng, e.lngLat.lat])
+            .addTo(map.current);
+
+          marker.current.on('dragend', () => {
+            const lngLat = marker.current?.getLngLat();
+            if (lngLat) {
+              onLocationChange?.(lngLat.lat, lngLat.lng);
+            }
+          });
+        }
       });
 
       // Add navigation controls
       map.current.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
-    } else {
+    }
+
+    // If we have coordinates, fly to them and add/update marker
+    if (hasLocation && map.current) {
       map.current.flyTo({
-        center: [displayLng, displayLat],
+        center: [displayLng!, displayLat!],
         zoom: 15,
         duration: 1000,
       });
-    }
 
-    // Update or create marker
-    if (marker.current) {
-      marker.current.setLngLat([displayLng, displayLat]);
-    } else {
-      marker.current = new mapboxgl.Marker({ 
-        color: '#ef4444',
-        draggable: true, // Enable dragging
-      })
-        .setLngLat([displayLng, displayLat])
-        .addTo(map.current);
+      // Update or create marker
+      if (marker.current) {
+        marker.current.setLngLat([displayLng!, displayLat!]);
+      } else {
+        marker.current = new mapboxgl.Marker({ 
+          color: '#ef4444',
+          draggable: true,
+        })
+          .setLngLat([displayLng!, displayLat!])
+          .addTo(map.current);
 
-      // Handle marker drag end
-      marker.current.on('dragend', () => {
-        const lngLat = marker.current?.getLngLat();
-        if (lngLat) {
-          onLocationChange?.(lngLat.lat, lngLat.lng);
-        }
-      });
+        marker.current.on('dragend', () => {
+          const lngLat = marker.current?.getLngLat();
+          if (lngLat) {
+            onLocationChange?.(lngLat.lat, lngLat.lng);
+          }
+        });
+      }
     }
 
     return () => {
       // Don't remove map on cleanup, just update coordinates
     };
-  }, [displayLat, displayLng, hasToken, updateMarkerPosition, onLocationChange]);
+  }, [displayLat, displayLng, hasToken, hasLocation, defaultCenter, updateMarkerPosition, onLocationChange]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -134,66 +164,8 @@ export function LocationPreviewMap({
     };
   }, []);
 
-  // Show status indicator
-  const renderStatus = () => {
-    if (isGeocoding) {
-      return (
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-sm">Searching for location...</span>
-        </div>
-      );
-    }
-
-    switch (status) {
-      case 'found':
-        return (
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 text-green-600 min-w-0">
-              <CheckCircle2 className="h-4 w-4 shrink-0" />
-              <span className="text-sm truncate">
-                {isManuallyAdjusted ? 'Location manually adjusted' : formattedAddress || 'Location found'}
-              </span>
-            </div>
-            {isManuallyAdjusted && onResetLocation && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={onResetLocation}
-                className="shrink-0 h-7 text-xs"
-              >
-                <RotateCcw className="h-3 w-3 mr-1" />
-                Reset
-              </Button>
-            )}
-          </div>
-        );
-      case 'not_found':
-        return (
-          <div className="flex items-center gap-2 text-amber-600">
-            <AlertCircle className="h-4 w-4" />
-            <span className="text-sm">Could not find location</span>
-          </div>
-        );
-      case 'error':
-        return (
-          <div className="flex items-center gap-2 text-destructive">
-            <AlertCircle className="h-4 w-4" />
-            <span className="text-sm">Error looking up location</span>
-          </div>
-        );
-      default:
-        return (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <MapPin className="h-4 w-4" />
-            <span className="text-sm">Enter address to see location</span>
-          </div>
-        );
-    }
-  };
-
-  const showMap = hasToken && displayLat !== null && displayLng !== null && (status === 'found' || isManuallyAdjusted);
+  // Show map if we have a token (always show, even without location)
+  const showMap = hasToken;
 
   return (
     <div className="h-full w-full relative">
@@ -213,11 +185,23 @@ export function LocationPreviewMap({
         </div>
       )}
       
-      {/* Idle state placeholder */}
-      {!showMap && (
+      {/* No token state */}
+      {!hasToken && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/50 text-muted-foreground">
           <MapPin className="h-12 w-12 mb-2 opacity-30" />
-          <span className="text-sm">Enter address to see location</span>
+          <span className="text-sm">Map unavailable</span>
+        </div>
+      )}
+      
+      {/* Click to drop pin prompt - shown when map is ready but no location yet */}
+      {showMap && mapReady && !hasLocation && showClickPrompt && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="bg-background/95 backdrop-blur-sm rounded-xl px-6 py-4 shadow-lg border-2 border-accent/50 animate-pulse">
+            <div className="flex items-center gap-3 text-foreground">
+              <MousePointer2 className="h-6 w-6 text-accent" />
+              <span className="font-medium">Click anywhere to drop a pin</span>
+            </div>
+          </div>
         </div>
       )}
       
@@ -235,8 +219,8 @@ export function LocationPreviewMap({
         </Button>
       )}
 
-      {/* Help text overlay */}
-      {showMap && mapReady && onLocationChange && (
+      {/* Help text overlay - shown when location exists */}
+      {showMap && mapReady && hasLocation && onLocationChange && (
         <div className="absolute bottom-2 left-2 right-2 bg-background/90 backdrop-blur-sm rounded px-2 py-1 text-xs text-muted-foreground text-center">
           Click or drag the marker to adjust location
         </div>

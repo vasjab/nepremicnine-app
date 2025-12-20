@@ -15,7 +15,9 @@ import {
   RefreshCcw,
   Snowflake,
   Battery,
-  ThermometerSnowflake
+  ThermometerSnowflake,
+  CookingPot,
+  Zap
 } from 'lucide-react';
 
 interface ClimateAppliancesStepProps {
@@ -33,6 +35,9 @@ interface ClimateAppliancesStepProps {
   hasSolarPanels: boolean;
   hasHomeBattery: boolean;
   // Appliances (only shown when furnished)
+  hasOven: boolean;
+  hasMicrowave: boolean;
+  hobType: string;
   hasDishwasher: boolean;
   hasWashingMachine: boolean;
   hasDryer: boolean;
@@ -66,8 +71,13 @@ const ENERGY_FEATURES: FeatureCard[] = [
   { id: 'has_home_battery', label: 'Home Battery', icon: Battery, info: 'Battery storage system to store excess solar energy or off-peak electricity' },
 ];
 
-const APPLIANCE_FEATURES: FeatureCard[] = [
+const KITCHEN_FEATURES: FeatureCard[] = [
+  { id: 'has_oven', label: 'Oven', icon: CookingPot, info: 'Built-in or standalone oven for cooking and baking' },
+  { id: 'has_microwave', label: 'Microwave', icon: Zap, info: 'Microwave oven for quick heating and cooking' },
   { id: 'has_dishwasher', label: 'Dishwasher', icon: UtensilsCrossed, info: 'Built-in dishwasher included' },
+];
+
+const LAUNDRY_FEATURES: FeatureCard[] = [
   { id: 'has_washing_machine', label: 'Washing Machine', icon: Shirt, info: 'In-unit washing machine included' },
   { id: 'has_dryer', label: 'Dryer', icon: Wind, info: 'Tumble dryer or heat pump dryer included' },
 ];
@@ -75,6 +85,14 @@ const APPLIANCE_FEATURES: FeatureCard[] = [
 const AC_TYPES = [
   { value: 'central', label: 'Central AC' },
   { value: 'unit', label: 'Unit/Split AC' },
+];
+
+const HOB_TYPES = [
+  { value: 'gas', label: 'Gas Hob' },
+  { value: 'electric', label: 'Electric Hob' },
+  { value: 'induction', label: 'Induction Hob' },
+  { value: 'ceramic', label: 'Ceramic Hob' },
+  { value: 'none', label: 'No Hob' },
 ];
 
 export function ClimateAppliancesStep({
@@ -88,6 +106,9 @@ export function ClimateAppliancesStep({
   hasHeatRecoveryVentilation,
   hasSolarPanels,
   hasHomeBattery,
+  hasOven,
+  hasMicrowave,
+  hobType,
   hasDishwasher,
   hasWashingMachine,
   hasDryer,
@@ -97,6 +118,8 @@ export function ClimateAppliancesStep({
 }: ClimateAppliancesStepProps) {
   // Only include appliance values in count when furnished
   const applianceValues = isFurnished ? {
+    has_oven: hasOven,
+    has_microwave: hasMicrowave,
     has_dishwasher: hasDishwasher,
     has_washing_machine: hasWashingMachine,
     has_dryer: hasDryer,
@@ -233,13 +256,43 @@ export function ClimateAppliancesStep({
           {renderFeatureGrid(ENERGY_FEATURES, 2)}
         </div>
 
-        {/* Appliances Section - only show if furnished */}
+        {/* Kitchen Appliances Section - only show if furnished */}
         {isFurnished && (
           <div className="space-y-3">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Kitchen & Laundry
+              Kitchen
             </h3>
-            {renderFeatureGrid(APPLIANCE_FEATURES)}
+            {renderFeatureGrid(KITCHEN_FEATURES)}
+            
+            {/* Hob Type selector */}
+            <div className="p-4 rounded-lg bg-secondary/50 space-y-2">
+              <div className="flex items-center gap-2">
+                <Label>Hob / Stovetop Type</Label>
+                <InfoTooltip content="The type of cooking hob or stovetop in the kitchen" />
+              </div>
+              <Select value={hobType} onValueChange={(v) => onChange('hob_type', v)}>
+                <SelectTrigger className="max-w-48">
+                  <SelectValue placeholder="Select hob type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {HOB_TYPES.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
+
+        {/* Laundry Section - only show if furnished */}
+        {isFurnished && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Laundry
+            </h3>
+            {renderFeatureGrid(LAUNDRY_FEATURES, 2)}
           </div>
         )}
 
