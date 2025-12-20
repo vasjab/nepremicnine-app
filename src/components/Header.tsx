@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Heart, PlusCircle, User, Menu, X, MessageCircle, BarChart3 } from 'lucide-react';
+import { Home, Heart, PlusCircle, User, Menu, X, MessageCircle, BarChart3, History } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -51,6 +51,20 @@ export function Header() {
             >
               {t('nav.findHome')}
               {isActive('/') && (
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent" />
+              )}
+            </Link>
+            <Link
+              to="/sold-rented"
+              className={cn(
+                'relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
+                isActive('/sold-rented') 
+                  ? 'text-foreground' 
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              {t('soldRented.recentlySold')}
+              {isActive('/sold-rented') && (
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent" />
               )}
             </Link>

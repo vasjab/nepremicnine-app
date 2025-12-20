@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import ListingDetail from "./pages/ListingDetail";
 import SavedListings from "./pages/SavedListings";
+import SoldRentedListings from "./pages/SoldRentedListings";
 import MyListings from "./pages/MyListings";
 import CreateListing from "./pages/CreateListing";
 import EditListing from "./pages/EditListing";
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/listing/:id" element={<ListingDetail />} />
               <Route path="/saved" element={<SavedListings />} />
+              <Route path="/sold-rented" element={<SoldRentedListings />} />
               <Route path="/my-listings" element={<MyListings />} />
               <Route path="/create-listing" element={<CreateListing />} />
               <Route path="/edit-listing/:id" element={<EditListing />} />
