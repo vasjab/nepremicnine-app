@@ -1020,9 +1020,9 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
             <Drawer open={isOpen} onOpenChange={setIsOpen}>
               <div className="relative shrink-0">
                 <DrawerTrigger asChild>
-                  <button className={`flex items-center rounded-xl h-10 px-3 font-medium transition-all ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
-                    <SlidersHorizontal className="h-4 w-4 mr-2" />
-                    Filters
+                  <button className={`flex items-center gap-1.5 rounded-xl h-10 px-3 text-sm font-medium transition-all ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                    <SlidersHorizontal className="h-4 w-4" />
+                    <span>Filters</span>
                   </button>
                 </DrawerTrigger>
                 {totalActiveFilters > 0 && (
@@ -1044,9 +1044,9 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <div className="relative shrink-0">
                 <DialogTrigger asChild>
-                  <button className={`flex items-center rounded-xl h-10 px-3 font-medium transition-all ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
-                    <SlidersHorizontal className="h-4 w-4 mr-2" />
-                    Filters
+                  <button className={`flex items-center gap-1.5 rounded-xl h-10 px-3 text-sm font-medium transition-all ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                    <SlidersHorizontal className="h-4 w-4" />
+                    <span>Filters</span>
                   </button>
                 </DialogTrigger>
                 {totalActiveFilters > 0 && (
