@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-import { ArrowLeft, Home, Calendar, Phone } from 'lucide-react';
+import { ArrowLeft, Home, Calendar, Phone, List, MapIcon } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { ListingCard } from '@/components/ListingCard';
 import { ListingSkeletonGrid } from '@/components/ListingSkeleton';
+import { MapView } from '@/components/MapView';
+import { ListingDetailModal } from '@/components/ListingDetailModal';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -30,6 +32,9 @@ const LandlordProfile = () => {
   const [listings, setListings] = useState<Listing[]>([]);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isLoadingListings, setIsLoadingListings] = useState(true);
+  const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
+  const [activeListingId, setActiveListingId] = useState<string | null>(null);
+  const [modalListing, setModalListing] = useState<Listing | null>(null);
 
   useEffect(() => {
     if (!userId) return;
@@ -70,6 +75,14 @@ const LandlordProfile = () => {
   }, [userId]);
 
   const displayName = profile?.full_name || 'Landlord';
+
+  const handleMarkerClick = useCallback((listing: Listing) => {
+    setActiveListingId(listing.id);
+  }, []);
+
+  const handlePopupClick = useCallback((listing: Listing) => {
+    setModalListing(listing);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -159,22 +172,59 @@ const LandlordProfile = () => {
 
         {/* Listings Section */}
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-4">
-            Listings by {displayName}
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-foreground">
+              Listings by {displayName}
+            </h2>
+            
+            {listings.length > 0 && (
+              <div className="flex bg-card rounded-lg border border-border p-1">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="sm"
+                  className="rounded-md px-3"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <List className="h-4 w-4 mr-2" />
+                  Grid
+                </Button>
+                <Button
+                  variant={viewMode === 'map' ? 'default' : 'ghost'}
+                  size="sm"
+                  className="rounded-md px-3"
+                  onClick={() => setViewMode('map')}
+                >
+                  <MapIcon className="h-4 w-4 mr-2" />
+                  Map
+                </Button>
+              </div>
+            )}
+          </div>
           
           {isLoadingListings ? (
             <ListingSkeletonGrid count={6} />
           ) : listings.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {listings.map((listing) => (
-                <ListingCard
-                  key={listing.id}
-                  listing={listing}
-                  onClick={() => navigate(`/listing/${listing.id}`)}
+            viewMode === 'grid' ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {listings.map((listing) => (
+                  <ListingCard
+                    key={listing.id}
+                    listing={listing}
+                    isActive={listing.id === activeListingId}
+                    onClick={() => navigate(`/listing/${listing.id}`)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="h-[500px] rounded-xl overflow-hidden border border-border">
+                <MapView
+                  listings={listings}
+                  activeListing={activeListingId}
+                  onListingClick={handleMarkerClick}
+                  onPopupClick={handlePopupClick}
                 />
-              ))}
-            </div>
+              </div>
+            )
           ) : (
             <div className="text-center py-12 text-muted-foreground">
               <Home className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -183,6 +233,15 @@ const LandlordProfile = () => {
           )}
         </div>
       </main>
+
+      {/* Listing Detail Modal */}
+      {modalListing && (
+        <ListingDetailModal
+          listing={modalListing}
+          isOpen={!!modalListing}
+          onClose={() => setModalListing(null)}
+        />
+      )}
     </div>
   );
 };
