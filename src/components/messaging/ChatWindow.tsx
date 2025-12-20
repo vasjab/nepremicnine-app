@@ -431,6 +431,7 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
             <AttachmentUploader
               attachments={attachments}
               onAttachmentsChange={setAttachments}
+              onImagePreviewClick={handleImageClick}
               disabled={sendMessage.isPending}
             />
           </div>
@@ -440,6 +441,7 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
           <AttachmentUploader
             attachments={attachments}
             onAttachmentsChange={setAttachments}
+            onImagePreviewClick={handleImageClick}
             disabled={sendMessage.isPending}
           />
           <Textarea

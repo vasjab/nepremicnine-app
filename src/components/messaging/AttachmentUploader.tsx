@@ -13,6 +13,7 @@ interface AttachmentPreview {
 interface AttachmentUploaderProps {
   attachments: AttachmentPreview[];
   onAttachmentsChange: (attachments: AttachmentPreview[]) => void;
+  onImagePreviewClick?: (url: string, fileName: string) => void;
   disabled?: boolean;
   maxFiles?: number;
   maxSizeMB?: number;
@@ -38,6 +39,7 @@ function formatFileSize(bytes: number): string {
 export function AttachmentUploader({
   attachments,
   onAttachmentsChange,
+  onImagePreviewClick,
   disabled,
   maxFiles = 5,
   maxSizeMB = 10,
@@ -127,7 +129,8 @@ export function AttachmentUploader({
                 <img
                   src={attachment.preview}
                   alt={attachment.file.name}
-                  className="w-16 h-16 object-cover"
+                  className="w-16 h-16 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => onImagePreviewClick?.(attachment.preview, attachment.file.name)}
                 />
               ) : (
                 <div className="w-16 h-16 flex flex-col items-center justify-center p-1">

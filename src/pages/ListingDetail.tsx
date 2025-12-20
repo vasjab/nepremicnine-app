@@ -401,12 +401,12 @@ export default function ListingDetail() {
                       return;
                     }
                     try {
-                      await getOrCreateConversation.mutateAsync({
+                      const data = await getOrCreateConversation.mutateAsync({
                         listingId: listing.id,
                         renterId: user.id,
                         landlordId: listing.user_id,
                       });
-                      navigate('/messages');
+                      navigate('/messages', { state: { conversationId: data.id } });
                     } catch (error) {
                       toast({ variant: 'destructive', title: 'Error', description: 'Failed to start conversation' });
                     }
