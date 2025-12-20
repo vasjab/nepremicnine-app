@@ -456,6 +456,7 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
       <ImageGalleryModal
         images={listing.images || []}
         floorPlanUrl={listing.floor_plan_url}
+        floorPlanUrls={(listing as any).floor_plan_urls || []}
         isOpen={showGallery}
         onClose={() => {
           setShowGallery(false);

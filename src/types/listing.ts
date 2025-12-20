@@ -22,6 +22,7 @@ export interface Listing {
   allows_pets: boolean;
   images: string[];
   floor_plan_url: string | null;
+  floor_plan_urls: string[];
   is_active: boolean;
   created_at: string;
   updated_at: string;

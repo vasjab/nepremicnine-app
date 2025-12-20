@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 interface ImageGalleryModalProps {
   images: string[];
   floorPlanUrl?: string | null;
+  floorPlanUrls?: string[];
   isOpen: boolean;
   onClose: () => void;
   title?: string;
   initialScrollToFloorPlan?: boolean;
 }
 
-export function ImageGalleryModal({ images, floorPlanUrl, isOpen, onClose, title, initialScrollToFloorPlan }: ImageGalleryModalProps) {
+export function ImageGalleryModal({ images, floorPlanUrl, floorPlanUrls = [], isOpen, onClose, title, initialScrollToFloorPlan }: ImageGalleryModalProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const floorPlanRef = useRef<HTMLDivElement>(null);
   const [showFloatingButtons, setShowFloatingButtons] = useState(false);
@@ -30,11 +31,17 @@ export function ImageGalleryModal({ images, floorPlanUrl, isOpen, onClose, title
     return () => container?.removeEventListener('scroll', handleScroll);
   }, [isOpen]);
 
+  // Combine legacy floorPlanUrl with new floorPlanUrls array
+  const allFloorPlans = floorPlanUrls.length > 0 
+    ? floorPlanUrls 
+    : (floorPlanUrl ? [floorPlanUrl] : []);
+  const hasFloorPlans = allFloorPlans.length > 0;
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       // Scroll to floor plan if requested
-      if (initialScrollToFloorPlan && floorPlanUrl && floorPlanRef.current) {
+      if (initialScrollToFloorPlan && hasFloorPlans && floorPlanRef.current) {
         setTimeout(() => {
           floorPlanRef.current?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
@@ -45,7 +52,7 @@ export function ImageGalleryModal({ images, floorPlanUrl, isOpen, onClose, title
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen, initialScrollToFloorPlan, floorPlanUrl]);
+  }, [isOpen, initialScrollToFloorPlan, hasFloorPlans]);
 
   const scrollToTop = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -89,7 +96,7 @@ export function ImageGalleryModal({ images, floorPlanUrl, isOpen, onClose, title
           {/* Photo count */}
           <p className="text-sm text-muted-foreground">
             {allImages.length} photo{allImages.length !== 1 ? 's' : ''}
-            {floorPlanUrl && ' • 1 floor plan'}
+            {hasFloorPlans && ` • ${allFloorPlans.length} floor plan${allFloorPlans.length !== 1 ? 's' : ''}`}
           </p>
 
           {/* All images stacked vertically */}
@@ -108,18 +115,22 @@ export function ImageGalleryModal({ images, floorPlanUrl, isOpen, onClose, title
           ))}
 
           {/* Floor plan section */}
-          {floorPlanUrl && (
+          {hasFloorPlans && (
             <div ref={floorPlanRef} className="pt-8">
               <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                 <LayoutGrid className="h-5 w-5" />
-                Floor plan
+                Floor plan{allFloorPlans.length !== 1 ? 's' : ''}
               </h3>
-              <div className="relative rounded-xl overflow-hidden bg-muted border border-border">
-                <img
-                  src={floorPlanUrl}
-                  alt="Floor plan"
-                  className="w-full h-auto object-contain bg-white"
-                />
+              <div className="space-y-4">
+                {allFloorPlans.map((url, index) => (
+                  <div key={index} className="relative rounded-xl overflow-hidden bg-muted border border-border">
+                    <img
+                      src={url}
+                      alt={`Floor plan ${index + 1}`}
+                      className="w-full h-auto object-contain bg-white"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           )}
@@ -137,14 +148,14 @@ export function ImageGalleryModal({ images, floorPlanUrl, isOpen, onClose, title
             : 'opacity-0 translate-y-4 pointer-events-none'
         }`}
       >
-        {floorPlanUrl && (
+        {hasFloorPlans && (
           <Button
             onClick={scrollToFloorPlan}
             className="bg-card text-foreground border border-border shadow-lg hover:bg-muted rounded-full px-5"
             variant="ghost"
           >
             <LayoutGrid className="h-4 w-4 mr-2" />
-            Floor plan
+            Floor plan{allFloorPlans.length !== 1 ? 's' : ''}
           </Button>
         )}
         <Button

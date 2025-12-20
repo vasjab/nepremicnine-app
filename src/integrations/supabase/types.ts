@@ -70,6 +70,7 @@ export type Database = {
           energy_rating: string | null
           floor_number: number | null
           floor_plan_url: string | null
+          floor_plan_urls: string[] | null
           garden_sqm: number | null
           has_air_conditioning: boolean | null
           has_balcony: boolean | null
@@ -122,6 +123,7 @@ export type Database = {
           energy_rating?: string | null
           floor_number?: number | null
           floor_plan_url?: string | null
+          floor_plan_urls?: string[] | null
           garden_sqm?: number | null
           has_air_conditioning?: boolean | null
           has_balcony?: boolean | null
@@ -174,6 +176,7 @@ export type Database = {
           energy_rating?: string | null
           floor_number?: number | null
           floor_plan_url?: string | null
+          floor_plan_urls?: string[] | null
           garden_sqm?: number | null
           has_air_conditioning?: boolean | null
           has_balcony?: boolean | null

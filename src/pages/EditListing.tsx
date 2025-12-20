@@ -25,6 +25,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { ImageUploader } from '@/components/ImageUploader';
 import { useImageUpload, type UploadedImage } from '@/hooks/useImageUpload';
+import { useFloorPlanUpload, type UploadedFloorPlan } from '@/hooks/useFloorPlanUpload';
 import { cn } from '@/lib/utils';
 import { CURRENCIES, CURRENCY_SYMBOLS, type Currency } from '@/lib/exchangeRates';
 import { ListingPreviewModal } from '@/components/ListingPreviewModal';
@@ -149,6 +150,17 @@ export default function EditListing() {
     reorderImages,
     setImages,
   } = useImageUpload({ userId: user?.id || '' });
+
+  // Floor plan upload hook
+  const {
+    floorPlans: uploadedFloorPlans,
+    isUploading: isUploadingFloorPlans,
+    uploadProgress: floorPlanUploadProgress,
+    uploadFloorPlans,
+    removeFloorPlan,
+    reorderFloorPlans,
+    setFloorPlans,
+  } = useFloorPlanUpload({ userId: user?.id || '', maxFloorPlans: 5 });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -299,9 +311,29 @@ export default function EditListing() {
         setImages(existingImages);
       }
 
+      // Set existing floor plans
+      const floorPlanUrlsFromListing = (listing as any).floor_plan_urls || [];
+      if (floorPlanUrlsFromListing.length > 0) {
+        const existingFloorPlans: UploadedFloorPlan[] = floorPlanUrlsFromListing.map((url: string, index: number) => ({
+          id: `existing-fp-${index}`,
+          url,
+          name: `Floor Plan ${index + 1}`,
+          size: 0,
+        }));
+        setFloorPlans(existingFloorPlans);
+      } else if (listing.floor_plan_url) {
+        // Fallback to legacy single floor plan
+        setFloorPlans([{
+          id: 'existing-fp-0',
+          url: listing.floor_plan_url,
+          name: 'Floor Plan 1',
+          size: 0,
+        }]);
+      }
+
       setIsFormInitialized(true);
     }
-  }, [listing, isFormInitialized, setImages]);
+  }, [listing, isFormInitialized, setImages, setFloorPlans]);
 
   // Check authorization
   const isAuthorized = listing && user && listing.user_id === user.id;
@@ -406,6 +438,7 @@ export default function EditListing() {
   const amenitiesRef = useRef<HTMLDivElement>(null);
   const buildingInfoRef = useRef<HTMLDivElement>(null);
   const rentalTermsRef = useRef<HTMLDivElement>(null);
+  const floorPlansRef = useRef<HTMLDivElement>(null);
 
   // Scroll to field helper
   const scrollToField = (ref: React.RefObject<HTMLElement>) => {
@@ -519,6 +552,13 @@ export default function EditListing() {
         onClick: () => scrollToField(rentalTermsRef),
       },
     ] : []),
+    {
+      id: 'floorPlans',
+      label: t('checklist.floorPlans'),
+      isComplete: uploadedFloorPlans.length > 0,
+      isOptional: true,
+      onClick: () => scrollToField(floorPlansRef),
+    },
   ];
 
   const checklistItems: ChecklistItem[] = [...requiredChecklistItems, ...bonusChecklistItems];
@@ -629,6 +669,8 @@ export default function EditListing() {
         is_furnished: validatedData.is_furnished,
         allows_pets: validatedData.allows_pets,
         images: validatedData.images,
+        floor_plan_url: uploadedFloorPlans.length > 0 ? uploadedFloorPlans[0].url : null,
+        floor_plan_urls: uploadedFloorPlans.map(fp => fp.url),
         // Building & Floor
         floor_number: formData.floor_number ? parseInt(formData.floor_number) : null,
         total_floors_building: formData.total_floors_building ? parseInt(formData.total_floors_building) : null,
@@ -1444,6 +1486,24 @@ export default function EditListing() {
                 onUpload={uploadImages}
                 onRemove={removeImage}
                 onReorder={reorderImages}
+              />
+            </div>
+
+            {/* Floor Plans */}
+            <div ref={floorPlansRef} className="space-y-4">
+              <h2 className="text-xl font-semibold text-foreground">Floor Plans</h2>
+              <p className="text-sm text-muted-foreground">
+                Upload floor plans, blueprints, or layout diagrams.
+              </p>
+              
+              <ImageUploader
+                images={uploadedFloorPlans}
+                isUploading={isUploadingFloorPlans}
+                uploadProgress={floorPlanUploadProgress}
+                onUpload={uploadFloorPlans}
+                onRemove={removeFloorPlan}
+                onReorder={reorderFloorPlans}
+                maxImages={5}
               />
             </div>
 
