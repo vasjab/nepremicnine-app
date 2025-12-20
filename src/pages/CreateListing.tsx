@@ -78,7 +78,7 @@ export default function CreateListing() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    listing_type: 'rent' as 'rent' | 'sale',
+    listing_type: null as 'rent' | 'sale' | null,
     property_type: 'apartment' as PropertyType,
     property_type_other: '',
     house_type: '' as HouseType,

@@ -15,7 +15,7 @@ import { ListingDetailModal } from '@/components/ListingDetailModal';
 import { ListingSkeletonGrid } from '@/components/ListingSkeleton';
 import { MobileMapFilterButton } from '@/components/MobileMapFilterButton';
 import { Button } from '@/components/ui/button';
-import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
+
 import { useTranslation } from '@/hooks/useTranslation';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -86,8 +86,6 @@ function useScrollCollapse(containerRef: React.RefObject<HTMLDivElement>) {
   return isCollapsed;
 }
 
-// LocalStorage key for panel sizes
-const PANEL_SIZES_KEY = 'lovable-panel-sizes';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -109,15 +107,6 @@ const Index = () => {
   // Use scroll collapse for mobile header
   const isHeaderCollapsed = useScrollCollapse(listContainerRef);
   
-  // Load saved panel sizes from localStorage
-  const [savedPanelSizes, setSavedPanelSizes] = useState<number[] | null>(() => {
-    try {
-      const saved = localStorage.getItem(PANEL_SIZES_KEY);
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
   
   const landlordId = searchParams.get('landlord');
   const [landlordName, setLandlordName] = useState<string | null>(null);
@@ -224,15 +213,6 @@ const Index = () => {
     setModalListing(listing);
   }, []);
 
-  // Save panel sizes to localStorage
-  const handlePanelResize = useCallback((sizes: number[]) => {
-    try {
-      localStorage.setItem(PANEL_SIZES_KEY, JSON.stringify(sizes));
-      setSavedPanelSizes(sizes);
-    } catch {
-      // Ignore storage errors
-    }
-  }, []);
 
   // Clear highlight after a delay when set via marker click
   useEffect(() => {
@@ -255,7 +235,7 @@ const Index = () => {
       {isLoading ? (
         <ListingSkeletonGrid count={4} />
       ) : visibleListings.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 @[500px]:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 @[600px]:grid-cols-2 gap-3 sm:gap-4">
           {visibleListings.map((listing, index) => (
             <div
               key={listing.id}
@@ -408,76 +388,59 @@ const Index = () => {
             </div>
           </>
         ) : (
-          /* Desktop: resizable split view with persistent sizes */
-          <ResizablePanelGroup 
-            direction="horizontal" 
-            className="flex-1"
-            onLayout={handlePanelResize}
-          >
-            {/* Left panel - Listings */}
-            <ResizablePanel 
-              defaultSize={savedPanelSizes?.[0] ?? 35} 
-              minSize={30} 
-              maxSize={55}
-            >
-              <div className="flex flex-col h-full border-r border-border overflow-hidden">
+          /* Desktop: Fixed 50-50 split view */
+          <div className="flex-1 flex">
+            {/* Left panel - Listings (50%) */}
+            <div className="w-1/2 flex flex-col h-full border-r border-border overflow-hidden">
 
-                {landlordId && (
-                  <div className="px-4 pt-3 pb-0">
-                    <div className="flex items-center gap-2 bg-accent/10 text-accent-foreground rounded-lg px-3 py-2 text-sm">
-                      <span>
-                        Showing listings from{' '}
-                        <Link to={`/landlord/${landlordId}`} className="font-medium hover:underline">
-                          {landlordName || 'loading...'}
-                        </Link>
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0 ml-auto"
-                        onClick={clearLandlordFilter}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
+              {landlordId && (
+                <div className="px-4 pt-3 pb-0">
+                  <div className="flex items-center gap-2 bg-accent/10 text-accent-foreground rounded-lg px-3 py-2 text-sm">
+                    <span>
+                      Showing listings from{' '}
+                      <Link to={`/landlord/${landlordId}`} className="font-medium hover:underline">
+                        {landlordName || 'loading...'}
+                      </Link>
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 ml-auto"
+                      onClick={clearLandlordFilter}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
-                )}
-
-                <FilterBar
-                  filters={filters}
-                  onFiltersChange={setFilters}
-                  sortBy={sortBy}
-                  onSortChange={setSortBy}
-                  totalCount={visibleListings.length}
-                  userId={user?.id}
-                  isCollapsed={isHeaderCollapsed}
-                  showListingTypeTabs={true}
-                />
-
-                <div ref={!isMobileLayout ? listContainerRef : undefined} className="flex-1 overflow-y-auto p-3 sm:p-4 @container">
-                  <ListingsGrid showAnimations={false} />
                 </div>
-              </div>
-            </ResizablePanel>
+              )}
 
-            <ResizableHandle withHandle />
+              <FilterBar
+                filters={filters}
+                onFiltersChange={setFilters}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+                totalCount={visibleListings.length}
+                userId={user?.id}
+                isCollapsed={isHeaderCollapsed}
+                showListingTypeTabs={true}
+              />
 
-            {/* Right panel - Map */}
-            <ResizablePanel 
-              defaultSize={savedPanelSizes?.[1] ?? 65} 
-              minSize={45}
-            >
-              <div className="h-full relative">
-                <MapView
-                  listings={allListings || []}
-                  activeListing={activeListingId}
-                  onListingClick={handleMarkerClick}
-                  onPopupClick={handlePopupClick}
-                  onMapMove={handleMapMove}
-                />
+              <div ref={!isMobileLayout ? listContainerRef : undefined} className="flex-1 overflow-y-auto p-3 sm:p-4 @container">
+                <ListingsGrid showAnimations={false} />
               </div>
-            </ResizablePanel>
-          </ResizablePanelGroup>
+            </div>
+
+            {/* Right panel - Map (50%) */}
+            <div className="w-1/2 h-full relative">
+              <MapView
+                listings={allListings || []}
+                activeListing={activeListingId}
+                onListingClick={handleMarkerClick}
+                onPopupClick={handlePopupClick}
+                onMapMove={handleMapMove}
+              />
+            </div>
+          </div>
         )}
       </main>
 

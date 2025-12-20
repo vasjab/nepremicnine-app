@@ -2,11 +2,11 @@ import { WizardStepWrapper } from '../WizardStepWrapper';
 import { cn } from '@/lib/utils';
 import { Key, Banknote } from 'lucide-react';
 
-type ListingType = 'rent' | 'sale';
+type ListingType = 'rent' | 'sale' | null;
 
 interface ListingTypeStepProps {
   listingType: ListingType;
-  onListingTypeChange: (type: ListingType) => void;
+  onListingTypeChange: (type: 'rent' | 'sale') => void;
 }
 
 const LISTING_TYPES = [

@@ -23,7 +23,7 @@ interface ListingCardProps {
 export function ListingCard({ listing, isActive, onClick, showStatusOverlay = false }: ListingCardProps) {
   const { user } = useAuth();
   const { t } = useTranslation();
-  const { formatPrice, formatArea } = useFormattedPrice();
+  const { formatPrice, formatArea, areaUnit } = useFormattedPrice();
   const { data: isSaved } = useIsListingSaved(user?.id, listing.id);
   const saveListing = useSaveListing();
   const unsaveListing = useUnsaveListing();
@@ -302,9 +302,16 @@ export function ListingCard({ listing, isActive, onClick, showStatusOverlay = fa
         )}
 
         <div className="flex items-center justify-between pt-1">
-          <span className="text-lg font-bold text-foreground">
-            {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
-          </span>
+          <div className="flex flex-col">
+            <span className="text-lg font-bold text-foreground">
+              {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
+            </span>
+            {listing.area_sqm && listing.area_sqm > 0 && (
+              <span className="text-xs text-muted-foreground">
+                {formatPrice(listing.price / listing.area_sqm, listing.currency, { compact: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
+              </span>
+            )}
+          </div>
           <span className="text-xs text-muted-foreground font-medium">
             {listing.city}
           </span>
