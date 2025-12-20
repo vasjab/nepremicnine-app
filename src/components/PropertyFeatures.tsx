@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { 
   Check, 
   X, 
@@ -42,12 +43,14 @@ import {
   Wind,
   ThermometerSun,
   Factory,
-  PlayCircle
+  PlayCircle,
+  ChevronDown
 } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { cn } from '@/lib/utils';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface PropertyFeaturesProps {
   listing: Listing;
@@ -181,40 +184,60 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     );
   };
 
-  // Section wrapper component
+  // Collapsible Section wrapper component
   const Section = ({ 
     title, 
     icon: Icon, 
     theme,
     featureCount,
     children,
+    defaultOpen = true,
   }: { 
     title: string;
     icon: React.ComponentType<{ className?: string }>;
     theme: keyof typeof sectionThemes;
     featureCount?: number;
     children: React.ReactNode;
+    defaultOpen?: boolean;
   }) => {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
     const themeConfig = sectionThemes[theme];
+    
     return (
-      <div className={cn("rounded-xl sm:rounded-2xl p-4 sm:p-5 border", themeConfig.bg, themeConfig.border)}>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3 sm:mb-4">
-          <h3 className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wide">
-            <div className={cn("flex-shrink-0 flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-md sm:rounded-lg", themeConfig.iconBg)}>
-              <Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", themeConfig.iconColor)} />
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <div className={cn("rounded-xl sm:rounded-2xl border overflow-hidden", themeConfig.bg, themeConfig.border)}>
+          <CollapsibleTrigger className="w-full">
+            <div className="flex items-center justify-between p-4 sm:p-5 cursor-pointer hover:bg-muted/20 transition-colors">
+              <h3 className="flex items-center gap-2 text-xs sm:text-sm font-semibold text-foreground uppercase tracking-wide">
+                <div className={cn("flex-shrink-0 flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-md sm:rounded-lg", themeConfig.iconBg)}>
+                  <Icon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", themeConfig.iconColor)} />
+                </div>
+                <span className="truncate">{title}</span>
+              </h3>
+              <div className="flex items-center gap-2">
+                {featureCount && featureCount > 0 && (
+                  <span className={cn("text-[10px] sm:text-xs font-medium px-2 py-0.5 sm:py-1 rounded-full bg-muted text-muted-foreground")}>
+                    {featureCount}
+                  </span>
+                )}
+                <ChevronDown 
+                  className={cn(
+                    "h-4 w-4 text-muted-foreground transition-transform duration-200",
+                    isOpen && "rotate-180"
+                  )} 
+                />
+              </div>
             </div>
-            <span className="truncate">{title}</span>
-          </h3>
-          {featureCount && featureCount > 0 && (
-            <span className={cn("self-start sm:self-auto text-[10px] sm:text-xs font-medium px-2 py-0.5 sm:py-1 rounded-full bg-muted text-muted-foreground")}>
-              {featureCount}
-            </span>
-          )}
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="px-4 sm:px-5 pb-4 sm:pb-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                {children}
+              </div>
+            </div>
+          </CollapsibleContent>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-          {children}
-        </div>
-      </div>
+      </Collapsible>
     );
   };
 
@@ -321,7 +344,7 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     : (isHouseType && listing.property_floors != null);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Section Header */}
       <h2 className="text-xl font-semibold text-foreground pb-4 border-b border-border/50">
         {t('listing.features')}

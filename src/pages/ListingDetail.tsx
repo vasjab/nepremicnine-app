@@ -16,6 +16,7 @@ import { ListingLocationMap } from '@/components/ListingLocationMap';
 import { SimilarListings } from '@/components/SimilarListings';
 import { RecentlyViewedListings } from '@/components/RecentlyViewedListings';
 import { PropertyFeatures } from '@/components/PropertyFeatures';
+import { FeatureHighlightBadges } from '@/components/FeatureHighlightBadges';
 import { cn } from '@/lib/utils';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -346,6 +347,9 @@ export default function ListingDetail() {
                   <p className="text-lg font-semibold text-foreground">{formatDate(listing.available_from)}</p>
                 </div>
               </div>
+
+              {/* Feature Highlight Badges */}
+              <FeatureHighlightBadges listing={listing} maxBadges={8} />
 
               {/* Description */}
               {listing.description && (
