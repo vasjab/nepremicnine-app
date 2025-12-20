@@ -11,6 +11,7 @@ import { ListingCard } from '@/components/ListingCard';
 import { MapView } from '@/components/MapView';
 import { ListingDetailModal } from '@/components/ListingDetailModal';
 import { ListingSkeletonGrid } from '@/components/ListingSkeleton';
+import { MobileMapFilterButton } from '@/components/MobileMapFilterButton';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
@@ -181,7 +182,7 @@ const Index = () => {
         </div>
 
         {/* Right panel - Map */}
-        <div className={`flex-1 h-full min-h-0 ${
+        <div className={`flex-1 h-full min-h-0 relative ${
           mobileView === 'list' ? 'hidden lg:block' : 'block'
         }`}>
           <MapView
@@ -191,6 +192,16 @@ const Index = () => {
             onPopupClick={handlePopupClick}
             onMapMove={handleMapMove}
           />
+          
+          {/* Mobile Map Filter Button - only visible on mobile map view */}
+          {mobileView === 'map' && (
+            <div className="lg:hidden absolute top-4 right-4 z-30">
+              <MobileMapFilterButton 
+                filters={filters} 
+                onFiltersChange={setFilters} 
+              />
+            </div>
+          )}
         </div>
 
         {/* Mobile view toggle */}
