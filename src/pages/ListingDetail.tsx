@@ -8,6 +8,7 @@ import { useTrackListingView, useTrackLocalListingView } from '@/hooks/useRecent
 import { useGetOrCreateConversation } from '@/hooks/useMessaging';
 import { useSwipe } from '@/hooks/useSwipe';
 import { useListingStats } from '@/hooks/useListingStats';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -21,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -36,6 +38,8 @@ export default function ListingDetail() {
   const { t, language } = useTranslation();
   const { toast } = useToast();
   const { data: listingStats } = useListingStats(id, listing?.created_at);
+  const { trigger: haptic } = useHapticFeedback();
+  const isMobile = useIsMobile();
   const [showGallery, setShowGallery] = useState(false);
   const [scrollToFloorPlan, setScrollToFloorPlan] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -102,6 +106,8 @@ export default function ListingDetail() {
   const handleSaveClick = () => {
     if (!user || !id) return;
 
+    haptic(isSaved ? 'light' : 'success');
+    
     if (isSaved) {
       unsaveListing.mutate({ userId: user.id, listingId: id });
     } else {

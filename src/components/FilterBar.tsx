@@ -28,6 +28,7 @@ import { Switch } from '@/components/ui/switch';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import {
   Select,
   SelectContent,
@@ -129,20 +130,27 @@ function ToggleFilter({
   label, 
   icon: Icon,
   checked, 
-  onChange 
+  onChange,
+  onHaptic,
 }: { 
   label: string; 
   icon?: React.ElementType;
   checked: boolean; 
   onChange: (checked: boolean) => void;
+  onHaptic?: () => void;
 }) {
+  const handleChange = (value: boolean) => {
+    onHaptic?.();
+    onChange(value);
+  };
+
   return (
     <div 
       className={cn(
         "flex items-center justify-between min-h-[44px] px-3 py-2 rounded-lg transition-all cursor-pointer",
         checked ? "bg-accent/10 border border-accent/20" : "hover:bg-secondary/50"
       )}
-      onClick={() => onChange(!checked)}
+      onClick={() => handleChange(!checked)}
     >
       <div className="flex items-center gap-2.5">
         {Icon && <Icon className={cn("h-4 w-4", checked ? "text-accent" : "text-muted-foreground")} />}
@@ -152,7 +160,7 @@ function ToggleFilter({
       </div>
       <Switch 
         checked={checked} 
-        onCheckedChange={onChange}
+        onCheckedChange={handleChange}
         className="data-[state=checked]:bg-accent"
         onClick={(e) => e.stopPropagation()}
       />
