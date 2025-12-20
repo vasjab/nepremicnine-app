@@ -404,19 +404,18 @@
 
 .mapboxgl-popup-close-button {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  width: 28px;
-  height: 28px;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: hsl(0, 0%, 100%);
   border-radius: 50%;
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1;
   padding: 0;
-  padding-bottom: 2px;
   font-family: system-ui, -apple-system, sans-serif;
   color: hsl(25, 30%, 30%);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
