@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { List, MapIcon } from 'lucide-react';
 import { Listing, ListingFilters, SortOption } from '@/types/listing';
 import { useListings } from '@/hooks/useListings';
+import { useMobileViewPreference } from '@/hooks/useMobileViewPreference';
 import { Header } from '@/components/Header';
 import { FilterBar } from '@/components/FilterBar';
 import { ListingCard } from '@/components/ListingCard';
@@ -27,7 +28,7 @@ const Index = () => {
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
   const [modalListing, setModalListing] = useState<Listing | null>(null);
-  const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
+  const [mobileView, setMobileView] = useMobileViewPreference();
   const listingRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const listContainerRef = useRef<HTMLDivElement>(null);
   
