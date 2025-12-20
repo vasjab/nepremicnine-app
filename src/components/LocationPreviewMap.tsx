@@ -196,32 +196,37 @@ export function LocationPreviewMap({
   const showMap = hasToken && displayLat !== null && displayLng !== null && (status === 'found' || isManuallyAdjusted);
 
   return (
-    <div className="space-y-3">
-      {/* Status indicator */}
-      <div className="p-3 rounded-lg bg-muted/50">
-        {renderStatus()}
-      </div>
-
-      {/* Map preview */}
+    <div className="h-full w-full relative">
+      {/* Map container - fills entire parent */}
       <div
+        ref={mapContainer}
         className={cn(
-          'relative rounded-lg overflow-hidden border border-border transition-all duration-300',
-          showMap ? 'h-48 opacity-100' : 'h-0 opacity-0 border-0'
+          'absolute inset-0 transition-opacity duration-300',
+          showMap ? 'opacity-100' : 'opacity-0'
         )}
-      >
-        <div ref={mapContainer} className="absolute inset-0" />
-        {!mapReady && showMap && (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        )}
-        {/* Help text overlay */}
-        {showMap && mapReady && onLocationChange && (
-          <div className="absolute bottom-2 left-2 right-2 bg-background/90 backdrop-blur-sm rounded px-2 py-1 text-xs text-muted-foreground text-center">
-            Click or drag the marker to adjust location
-          </div>
-        )}
-      </div>
+      />
+      
+      {/* Loading overlay */}
+      {!mapReady && showMap && (
+        <div className="absolute inset-0 flex items-center justify-center bg-muted">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
+      
+      {/* Idle state placeholder */}
+      {!showMap && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-muted/50 text-muted-foreground">
+          <MapPin className="h-12 w-12 mb-2 opacity-30" />
+          <span className="text-sm">Enter address to see location</span>
+        </div>
+      )}
+      
+      {/* Help text overlay */}
+      {showMap && mapReady && onLocationChange && (
+        <div className="absolute bottom-2 left-2 right-2 bg-background/90 backdrop-blur-sm rounded px-2 py-1 text-xs text-muted-foreground text-center">
+          Click or drag the marker to adjust location
+        </div>
+      )}
     </div>
   );
 }

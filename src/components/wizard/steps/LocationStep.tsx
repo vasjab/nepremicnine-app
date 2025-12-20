@@ -78,6 +78,12 @@ export function LocationStep({
             <CityAutocomplete
               value={city}
               onChange={onCityChange}
+              onSelect={(suggestion) => {
+                onCityChange(suggestion.city);
+                if (suggestion.postalCode) {
+                  onPostalCodeChange(suggestion.postalCode);
+                }
+              }}
               placeholder="Start typing a city..."
               hasError={!!errors.city}
               country={getCountryCode(country)}
@@ -116,6 +122,7 @@ export function LocationStep({
               placeholder="Start typing an address..."
               hasError={!!errors.address}
               country={getCountryCode(country)}
+              city={city}
             />
             {errors.address && (
               <p className="text-sm text-destructive">{errors.address}</p>
