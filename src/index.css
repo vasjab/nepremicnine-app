@@ -4,7 +4,13 @@
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 
-/* Modern Scandinavian design system - Airbnb inspired */
+/* Modern Scandinavian design system - Airbnb inspired
+ *
+ * Hover Color System:
+ * - bg-secondary (gray): Default hover for buttons, controls, neutral actions
+ * - bg-accent/20 (pink tint): Selection hover in menus, active filter states
+ * - bg-card/95: Glass elements hover (subtle opacity increase)
+ */
 
 @layer base {
   :root {
@@ -198,13 +204,37 @@
     @apply bg-white w-6;
   }
 
-  /* Glass effect for overlays */
+  /**
+   * Glass Effects - Apple-inspired translucent elements
+   * Modern glass morphism with subtle borders and inner glow
+   */
   .glass {
-    @apply bg-card/80 backdrop-blur-md;
+    @apply bg-card/80 backdrop-blur-md transition-colors;
+    border: 1px solid hsl(0 0% 100% / 0.1);
+    box-shadow: 
+      0 4px 24px -8px hsl(25 30% 12% / 0.08),
+      inset 0 1px 0 hsl(0 0% 100% / 0.1);
+  }
+
+  .glass:hover {
+    @apply bg-card/95;
+  }
+
+  .glass-strong {
+    @apply bg-card/90 backdrop-blur-xl transition-colors;
+    border: 1px solid hsl(0 0% 100% / 0.15);
+    box-shadow: 
+      0 8px 32px -8px hsl(25 30% 12% / 0.12),
+      inset 0 1px 0 hsl(0 0% 100% / 0.15);
+  }
+
+  .glass-subtle {
+    @apply bg-card/60 backdrop-blur-sm transition-colors;
+    border: 1px solid hsl(0 0% 100% / 0.05);
   }
 
   .glass-dark {
-    @apply bg-foreground/80 backdrop-blur-md text-background;
+    @apply bg-foreground/80 backdrop-blur-md text-background transition-colors;
   }
 
   /* Skeleton shimmer */
