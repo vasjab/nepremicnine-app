@@ -44,6 +44,7 @@ export interface Message {
   is_edited?: boolean;
   edited_at?: string | null;
   original_content?: string | null;
+  reply_to_message_id?: string | null;
   attachments?: MessageAttachment[];
 }
 
@@ -177,6 +178,7 @@ export function useSendMessage() {
       senderName, 
       listingTitle,
       attachmentFiles,
+      replyToMessageId,
     }: {
       conversationId: string;
       senderId: string;
@@ -185,6 +187,7 @@ export function useSendMessage() {
       senderName?: string;
       listingTitle?: string;
       attachmentFiles?: { file: File; type: string }[];
+      replyToMessageId?: string;
     }) => {
       const { data: message, error } = await supabase
         .from('messages')
@@ -192,6 +195,7 @@ export function useSendMessage() {
           conversation_id: conversationId,
           sender_id: senderId,
           content: content.trim(),
+          reply_to_message_id: replyToMessageId || null,
         })
         .select()
         .single();

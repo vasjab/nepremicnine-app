@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { format, isToday, isYesterday, differenceInMinutes } from 'date-fns';
-import { ArrowLeft, Send, Loader2, MoreVertical, User, Trash2 } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, MoreVertical, User, Trash2, Reply } from 'lucide-react';
 import { Message, Conversation, useMessages, useSendMessage, useMarkMessagesRead, useEditMessage, useDeleteMessage } from '@/hooks/useMessaging';
+import { useMessageReactions, useToggleReaction } from '@/hooks/useMessageReactions';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 import { useDeleteConversation } from '@/hooks/useDeleteConversation';
@@ -18,6 +19,9 @@ import { AttachmentUploader, AttachmentPreview } from './AttachmentUploader';
 import { MessageAttachment } from './MessageAttachment';
 import { ImageViewerModal } from './ImageViewerModal';
 import { UserProfileModal } from './UserProfileModal';
+import { EmojiReactionPicker } from './EmojiReactionPicker';
+import { MessageReactions, Reaction } from './MessageReactions';
+import { ReplyPreview, QuotedMessage } from './ReplyPreview';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -93,6 +97,7 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
   const [selectedImage, setSelectedImage] = useState<{ url: string; fileName: string } | null>(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
 
   const { data: messages = [], isLoading, refetch } = useMessages(conversation.id);
   const sendMessage = useSendMessage();
@@ -100,6 +105,36 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
   const editMessage = useEditMessage();
   const deleteMessage = useDeleteMessage();
   const deleteConversation = useDeleteConversation();
+  const toggleReaction = useToggleReaction();
+
+  // Fetch reactions for all messages
+  const messageIds = useMemo(() => messages.map(m => m.id), [messages]);
+  const { data: allReactions = [], refetch: refetchReactions } = useMessageReactions(messageIds);
+
+  // Build a map of reactions per message
+  const reactionsMap = useMemo(() => {
+    const map = new Map<string, Reaction[]>();
+    
+    allReactions.forEach(r => {
+      if (!map.has(r.message_id)) {
+        map.set(r.message_id, []);
+      }
+      const msgReactions = map.get(r.message_id)!;
+      const existing = msgReactions.find(x => x.emoji === r.emoji);
+      if (existing) {
+        existing.count++;
+        if (r.user_id === user?.id) existing.hasReacted = true;
+      } else {
+        msgReactions.push({
+          emoji: r.emoji,
+          count: 1,
+          hasReacted: r.user_id === user?.id,
+        });
+      }
+    });
+    
+    return map;
+  }, [allReactions, user?.id]);
 
   const isRenter = conversation.renter_id === user?.id;
   const otherUser = conversation.other_user;
@@ -125,7 +160,7 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
     }
   }, [conversation.id, user]);
 
-  // Subscribe to realtime messages
+  // Subscribe to realtime messages and reactions
   useEffect(() => {
     const channel = supabase
       .channel(`messages:${conversation.id}`)
@@ -144,22 +179,35 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
           }
         }
       )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'message_reactions',
+        },
+        () => {
+          refetchReactions();
+        }
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [conversation.id, refetch, user]);
+  }, [conversation.id, refetch, refetchReactions, user]);
 
   const handleSend = async () => {
     if ((!newMessage.trim() && attachments.length === 0) || !user) return;
 
     const content = newMessage.trim() || (attachments.length > 0 ? '📎 Attachment' : '');
     const attachmentFiles = attachments.map(a => ({ file: a.file, type: a.type }));
+    const replyToId = replyToMessage?.id;
     
     setNewMessage('');
     setAttachments([]);
     setTyping(false);
+    setReplyToMessage(null);
 
     try {
       await sendMessage.mutateAsync({
@@ -170,6 +218,7 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
         senderName: user.user_metadata?.full_name || user.email?.split('@')[0],
         listingTitle: conversation.listing?.title || 'Listing',
         attachmentFiles: attachmentFiles.length > 0 ? attachmentFiles : undefined,
+        replyToMessageId: replyToId,
       });
     } catch (error) {
       setNewMessage(content);
@@ -229,6 +278,30 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
     } catch (error) {
       console.error('Failed to delete conversation:', error);
     }
+  };
+
+  const handleReaction = async (messageId: string, emoji: string) => {
+    if (!user) return;
+    try {
+      await toggleReaction.mutateAsync({ messageId, userId: user.id, emoji });
+    } catch (error) {
+      console.error('Failed to toggle reaction:', error);
+    }
+  };
+
+  const handleReply = (message: Message) => {
+    setReplyToMessage(message);
+    textareaRef.current?.focus();
+  };
+
+  const getReplyToContent = (replyToId: string | null | undefined) => {
+    if (!replyToId) return null;
+    return messages.find(m => m.id === replyToId);
+  };
+
+  const getSenderName = (senderId: string) => {
+    if (senderId === user?.id) return 'You';
+    return otherUser?.full_name || 'User';
   };
 
   const messageGroups = groupMessagesByDate(messages);
@@ -315,6 +388,8 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
                   const isMine = message.sender_id === user?.id;
                   const isHighlighted = message.id === highlightMessageId;
                   const isEditing = editingMessageId === message.id;
+                  const messageReactions = reactionsMap.get(message.id) || [];
+                  const replyTo = getReplyToContent(message.reply_to_message_id);
 
                   return (
                     <div
@@ -326,86 +401,135 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
                         isHighlighted && "animate-pulse"
                       )}
                     >
-                      {/* Context menu for own messages */}
-                      {isMine && !isEditing && (
-                        <MessageContextMenu
-                          canEdit={canEditMessage(message)}
-                          canDelete={canDeleteMessage(message)}
-                          onEdit={() => setEditingMessageId(message.id)}
-                          onDelete={() => handleDelete(message.id)}
-                          className="self-center mr-1"
-                        />
+                      {/* Action buttons for other's messages (left side) */}
+                      {!isMine && !message.is_deleted && !isEditing && (
+                        <div className="self-center mr-1 flex gap-0.5">
+                          <EmojiReactionPicker
+                            onSelect={(emoji) => handleReaction(message.id, emoji)}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleReply(message)}
+                          >
+                            <Reply className="h-4 w-4" />
+                          </Button>
+                        </div>
                       )}
 
-                      <div
-                        className={cn(
-                          "max-w-[75%] rounded-2xl px-4 py-2",
-                          isMine
-                            ? "bg-accent text-accent-foreground rounded-br-md"
-                            : "bg-secondary text-foreground rounded-bl-md",
-                          message.is_deleted && "opacity-60 italic",
-                          isHighlighted && "ring-2 ring-primary"
-                        )}
-                      >
-                        {message.is_deleted ? (
-                          <p className="text-sm">This message was deleted</p>
-                        ) : isEditing ? (
-                          <MessageEditForm
-                            initialContent={message.content}
-                            onSave={(content) => handleEdit(message.id, content, message.content)}
-                            onCancel={() => setEditingMessageId(null)}
-                            isSaving={editMessage.isPending}
+                      {/* Context menu for own messages */}
+                      {isMine && !isEditing && (
+                        <div className="self-center mr-1 flex gap-0.5">
+                          <EmojiReactionPicker
+                            onSelect={(emoji) => handleReaction(message.id, emoji)}
                           />
-                        ) : (
-                          <>
-                            {/* Attachments */}
-                            {message.attachments && message.attachments.length > 0 && (
-                              <div className="space-y-2 mb-2">
-                                {message.attachments.map((att) => (
-                                  <MessageAttachment
-                                    key={att.id}
-                                    fileUrl={att.file_url}
-                                    fileName={att.file_name}
-                                    fileType={att.file_type as 'image' | 'document' | 'other'}
-                                    fileSize={att.file_size}
-                                    mimeType={att.mime_type || undefined}
-                                    onImageClick={handleImageClick}
-                                  />
-                                ))}
-                              </div>
-                            )}
-                            
-                            <p className="text-sm whitespace-pre-wrap break-words">
-                              {message.content}
-                            </p>
-                          </>
-                        )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleReply(message)}
+                          >
+                            <Reply className="h-4 w-4" />
+                          </Button>
+                          <MessageContextMenu
+                            canEdit={canEditMessage(message)}
+                            canDelete={canDeleteMessage(message)}
+                            onEdit={() => setEditingMessageId(message.id)}
+                            onDelete={() => handleDelete(message.id)}
+                          />
+                        </div>
+                      )}
 
-                        <div className={cn(
-                          "flex items-center gap-1 mt-1",
-                          isMine ? "justify-end" : "justify-start"
-                        )}>
-                          {message.is_edited && !message.is_deleted && (
+                      <div className="flex flex-col max-w-[75%]">
+                        <div
+                          className={cn(
+                            "rounded-2xl px-4 py-2",
+                            isMine
+                              ? "bg-accent text-accent-foreground rounded-br-md"
+                              : "bg-secondary text-foreground rounded-bl-md",
+                            message.is_deleted && "opacity-60 italic",
+                            isHighlighted && "ring-2 ring-primary"
+                          )}
+                        >
+                          {message.is_deleted ? (
+                            <p className="text-sm">This message was deleted</p>
+                          ) : isEditing ? (
+                            <MessageEditForm
+                              initialContent={message.content}
+                              onSave={(content) => handleEdit(message.id, content, message.content)}
+                              onCancel={() => setEditingMessageId(null)}
+                              isSaving={editMessage.isPending}
+                            />
+                          ) : (
+                            <>
+                              {/* Reply quote */}
+                              {replyTo && (
+                                <QuotedMessage
+                                  content={replyTo.is_deleted ? 'This message was deleted' : replyTo.content}
+                                  senderName={getSenderName(replyTo.sender_id)}
+                                  isMine={isMine}
+                                />
+                              )}
+
+                              {/* Attachments */}
+                              {message.attachments && message.attachments.length > 0 && (
+                                <div className="space-y-2 mb-2">
+                                  {message.attachments.map((att) => (
+                                    <MessageAttachment
+                                      key={att.id}
+                                      fileUrl={att.file_url}
+                                      fileName={att.file_name}
+                                      fileType={att.file_type as 'image' | 'document' | 'other'}
+                                      fileSize={att.file_size}
+                                      mimeType={att.mime_type || undefined}
+                                      onImageClick={handleImageClick}
+                                    />
+                                  ))}
+                                </div>
+                              )}
+                              
+                              <p className="text-sm whitespace-pre-wrap break-words">
+                                {message.content}
+                              </p>
+                            </>
+                          )}
+
+                          <div className={cn(
+                            "flex items-center gap-1 mt-1",
+                            isMine ? "justify-end" : "justify-start"
+                          )}>
+                            {message.is_edited && !message.is_deleted && (
+                              <span className={cn(
+                                "text-xs",
+                                isMine ? "text-accent-foreground/50" : "text-muted-foreground/70"
+                              )}>
+                                edited
+                              </span>
+                            )}
                             <span className={cn(
                               "text-xs",
-                              isMine ? "text-accent-foreground/50" : "text-muted-foreground/70"
+                              isMine ? "text-accent-foreground/70" : "text-muted-foreground"
                             )}>
-                              edited
+                              {formatMessageDate(message.created_at)}
                             </span>
-                          )}
-                          <span className={cn(
-                            "text-xs",
-                            isMine ? "text-accent-foreground/70" : "text-muted-foreground"
-                          )}>
-                            {formatMessageDate(message.created_at)}
-                          </span>
-                          {isMine && !message.is_deleted && (
-                            <ReadReceipt 
-                              isRead={message.is_read} 
-                              readAt={message.read_at}
-                            />
-                          )}
+                            {isMine && !message.is_deleted && (
+                              <ReadReceipt 
+                                isRead={message.is_read} 
+                                readAt={message.read_at}
+                              />
+                            )}
+                          </div>
                         </div>
+
+                        {/* Reactions */}
+                        {messageReactions.length > 0 && (
+                          <MessageReactions
+                            reactions={messageReactions}
+                            onToggle={(emoji) => handleReaction(message.id, emoji)}
+                            isMine={isMine}
+                          />
+                        )}
                       </div>
                     </div>
                   );
@@ -424,17 +548,27 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-border bg-card">
+      <div className="p-4 border-t border-border bg-card space-y-2">
+        {/* Reply preview */}
+        {replyToMessage && (
+          <ReplyPreview
+            replyToMessage={{
+              id: replyToMessage.id,
+              content: replyToMessage.is_deleted ? 'This message was deleted' : replyToMessage.content,
+              sender_name: getSenderName(replyToMessage.sender_id),
+            }}
+            onClear={() => setReplyToMessage(null)}
+          />
+        )}
+
         {/* Attachment previews */}
         {attachments.length > 0 && (
-          <div className="mb-2">
-            <AttachmentUploader
-              attachments={attachments}
-              onAttachmentsChange={setAttachments}
-              onImagePreviewClick={handleImageClick}
-              disabled={sendMessage.isPending}
-            />
-          </div>
+          <AttachmentUploader
+            attachments={attachments}
+            onAttachmentsChange={setAttachments}
+            onImagePreviewClick={handleImageClick}
+            disabled={sendMessage.isPending}
+          />
         )}
         
         <div className="flex gap-2">
