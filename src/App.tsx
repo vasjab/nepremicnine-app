@@ -12,6 +12,7 @@ import ListingDetail from "./pages/ListingDetail";
 import SavedListings from "./pages/SavedListings";
 import MyListings from "./pages/MyListings";
 import CreateListing from "./pages/CreateListing";
+import EditListing from "./pages/EditListing";
 import Profile from "./pages/Profile";
 import Messages from "./pages/Messages";
 import LandlordDashboard from "./pages/LandlordDashboard";
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/saved" element={<SavedListings />} />
               <Route path="/my-listings" element={<MyListings />} />
               <Route path="/create-listing" element={<CreateListing />} />
+              <Route path="/edit-listing/:id" element={<EditListing />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/messages" element={<Messages />} />
               <Route path="/dashboard" element={<LandlordDashboard />} />
