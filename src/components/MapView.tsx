@@ -341,23 +341,18 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
           </div>
         ` : '';
 
-        // Build price section for sold/rented listings
+        // Build price section for sold/rented listings - compact for popup
         const soldRentedPriceHtml = isCompleted && finalPriceDisplay ? `
-          <div style="margin-bottom: 10px;">
-            <div style="font-size: 18px; font-weight: 700; color: #16a34a;">
+          <div style="margin-bottom: 6px;">
+            <div style="font-size: 16px; font-weight: 700; color: #16a34a;">
               ${finalPriceDisplay}
             </div>
-            <div style="font-size: 12px; color: #888; text-decoration: line-through;">
+            <div style="font-size: 11px; color: #888; text-decoration: line-through;">
               ${t('markCompleted.askingPrice')}: ${priceDisplay}
             </div>
-            ${priceDiffLabel ? `
-              <div style="font-size: 11px; color: ${priceDifferencePercent && priceDifferencePercent > 0 ? '#dc2626' : '#16a34a'}; font-weight: 500; margin-top: 2px;">
-                ${priceDiffLabel}
-              </div>
-            ` : ''}
           </div>
         ` : `
-          <div style="font-size: 18px; font-weight: 700; color: #2d2319; margin-bottom: 10px;">
+          <div style="font-size: 18px; font-weight: 700; color: #2d2319; margin-bottom: 6px;">
             ${priceDisplay}
           </div>
         `;
@@ -365,8 +360,8 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
         const popupContent = `
           <style>
             .popup-btn-${listing.id} {
-              margin-top: 8px;
-              padding: 10px 8px;
+              margin-top: 4px;
+              padding: 8px 8px;
               background: ${isCompleted ? 'hsl(142, 76%, 36%)' : 'hsl(350, 70%, 72%)'};
               border-radius: 6px;
               text-align: center;
@@ -395,7 +390,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
                 </div>
               ` : ''}
             </div>
-            <div style="padding: 14px;">
+            <div style="padding: 12px;">
               <div style="font-size: 11px; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px;">
                 ${propertyTypeLabels[listing.property_type] || t('propertyTypes.other')}${!isCompleted ? ` • ${listing.listing_type === 'rent' ? t('map.forRent') : t('map.forSale')}` : ''}
               </div>
@@ -404,7 +399,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
               <div style="font-size: 15px; font-weight: 600; color: #2d2319; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                 ${listing.address}
               </div>
-              <div style="font-size: 13px; color: #666; margin-bottom: 10px;">
+              <div style="font-size: 13px; color: #666; margin-bottom: 6px;">
                 ${listing.bedrooms} ${listing.bedrooms !== 1 ? t('map.rooms') : t('map.room')} • ${formatArea(listing.area_sqm)}
               </div>
               ${soldRentedPriceHtml}
