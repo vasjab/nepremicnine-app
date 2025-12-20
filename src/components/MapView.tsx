@@ -341,19 +341,28 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
           </div>
         ` : '';
 
+        // Calculate price per sqm
+        const priceForCalc = isCompleted && listing.final_price ? listing.final_price : listing.price;
+        const pricePerSqm = listing.area_sqm && listing.area_sqm > 0 ? Math.round(priceForCalc / listing.area_sqm) : null;
+        const pricePerSqmDisplay = pricePerSqm ? formatPrice(pricePerSqm, listing.currency || 'EUR', { compact: false }) : null;
+
         // Build price section for sold/rented listings - compact for popup
         const soldRentedPriceHtml = isCompleted && finalPriceDisplay ? `
           <div style="margin-bottom: 6px;">
             <div style="font-size: 16px; font-weight: 700; color: #16a34a;">
               ${finalPriceDisplay}
             </div>
+            ${pricePerSqmDisplay ? `<div style="font-size: 12px; color: #666; margin-top: 2px;">${pricePerSqmDisplay}/m²</div>` : ''}
             <div style="font-size: 11px; color: #888; text-decoration: line-through;">
               ${t('markCompleted.askingPrice')}: ${priceDisplay}
             </div>
           </div>
         ` : `
-          <div style="font-size: 18px; font-weight: 700; color: #2d2319; margin-bottom: 6px;">
-            ${priceDisplay}
+          <div style="margin-bottom: 6px;">
+            <div style="font-size: 18px; font-weight: 700; color: #2d2319;">
+              ${priceDisplay}
+            </div>
+            ${pricePerSqmDisplay ? `<div style="font-size: 12px; color: #666; margin-top: 2px;">${pricePerSqmDisplay}/m²</div>` : ''}
           </div>
         `;
 
