@@ -97,6 +97,84 @@ export function useListings(filters?: ListingFilters, userId?: string) {
       if (filters?.has_garage === true) {
         query = query.eq('has_garage', true);
       }
+      if (filters?.has_ev_charging === true) {
+        query = query.eq('has_ev_charging', true);
+      }
+      if (filters?.has_bicycle_storage === true) {
+        query = query.eq('has_bicycle_storage', true);
+      }
+      if (filters?.has_basement === true) {
+        query = query.eq('has_basement', true);
+      }
+
+      // Outdoor filters (extended)
+      if (filters?.has_rooftop_terrace === true) {
+        query = query.eq('has_rooftop_terrace', true);
+      }
+      if (filters?.has_waterfront === true) {
+        query = query.eq('has_waterfront', true);
+      }
+      if (filters?.has_view === true) {
+        query = query.eq('has_view', true);
+      }
+      if (filters?.view_type) {
+        query = query.eq('view_type', filters.view_type);
+      }
+
+      // Building Amenities filters
+      if (filters?.has_gym === true) {
+        query = query.eq('has_gym', true);
+      }
+      if (filters?.has_pool === true) {
+        query = query.eq('has_pool', true);
+      }
+      if (filters?.has_sauna === true) {
+        query = query.eq('has_sauna', true);
+      }
+      if (filters?.has_concierge === true) {
+        query = query.eq('has_concierge', true);
+      }
+      if (filters?.has_security === true) {
+        query = query.eq('has_security', true);
+      }
+      if (filters?.has_shared_laundry === true) {
+        query = query.eq('has_shared_laundry', true);
+      }
+
+      // Equipment filters
+      if (filters?.has_dryer === true) {
+        query = query.eq('has_dryer', true);
+      }
+
+      // Energy & Comfort filters
+      if (filters?.has_fireplace === true) {
+        query = query.eq('has_fireplace', true);
+      }
+      if (filters?.has_floor_heating === true) {
+        query = query.eq('has_floor_heating', true);
+      }
+      if (filters?.has_solar_panels === true) {
+        query = query.eq('has_solar_panels', true);
+      }
+      if (filters?.has_smart_home === true) {
+        query = query.eq('has_smart_home', true);
+      }
+
+      // Accessibility filters
+      if (filters?.has_step_free_access === true) {
+        query = query.eq('has_step_free_access', true);
+      }
+      if (filters?.has_wheelchair_accessible === true) {
+        query = query.eq('has_wheelchair_accessible', true);
+      }
+
+      // Safety filters
+      if (filters?.has_secure_entrance === true) {
+        query = query.eq('has_secure_entrance', true);
+      }
+      if (filters?.has_gated_community === true) {
+        query = query.eq('has_gated_community', true);
+      }
 
       // Amenities filters
       if (filters?.has_storage === true) {
@@ -129,7 +207,10 @@ export function useListings(filters?: ListingFilters, userId?: string) {
         query = query.in('property_condition', filters.property_condition);
       }
 
-      // Rental filters
+      // Rental/Availability filters
+      if (filters?.move_in_immediately === true) {
+        query = query.eq('move_in_immediately', true);
+      }
       if (filters?.max_deposit) {
         query = query.lte('deposit_amount', filters.max_deposit);
       }

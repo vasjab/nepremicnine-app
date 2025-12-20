@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { List, MapIcon, X } from 'lucide-react';
+import { List, MapIcon, X, Key, Banknote } from 'lucide-react';
 import { Listing, ListingFilters, SortOption } from '@/types/listing';
 import { useListings } from '@/hooks/useListings';
 import { useMobileViewPreference } from '@/hooks/useMobileViewPreference';
@@ -162,6 +162,47 @@ const Index = () => {
         <div className={`w-full lg:w-[480px] xl:w-[540px] flex flex-col border-r border-border overflow-hidden ${
           mobileView === 'map' ? 'hidden lg:flex' : 'flex flex-1 min-h-0'
         }`}>
+          {/* For Rent / For Sale Tabs */}
+          <div className="px-4 pt-4 pb-0">
+            <div className="flex bg-secondary rounded-xl p-1 gap-1">
+              <button
+                onClick={() => setFilters({ ...filters, listing_type: null })}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                  !filters.listing_type
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setFilters({ ...filters, listing_type: 'rent' })}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                  filters.listing_type === 'rent'
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Key className="h-4 w-4" />
+                {t('listingTypes.rent')}
+              </button>
+              <button
+                onClick={() => setFilters({ ...filters, listing_type: 'sale' })}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                  filters.listing_type === 'sale'
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Banknote className="h-4 w-4" />
+                {t('listingTypes.sale')}
+              </button>
+            </div>
+          </div>
+
           {landlordId && (
             <div className="px-4 pt-3 pb-0">
               <div className="flex items-center gap-2 bg-accent/10 text-accent-foreground rounded-lg px-3 py-2 text-sm">
