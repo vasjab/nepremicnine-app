@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, MapPin, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateListing } from '@/hooks/useListings';
+import { useAddressGeocoding } from '@/hooks/useAddressGeocoding';
 import { Header } from '@/components/Header';
+import { FormField } from '@/components/FormField';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -23,6 +25,7 @@ import { useRateLimit, LISTING_RATE_LIMIT } from '@/hooks/useRateLimit';
 import { ImageUploader } from '@/components/ImageUploader';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 
 // Validation schema for listing data
 const listingSchema = z.object({
@@ -30,16 +33,16 @@ const listingSchema = z.object({
   description: z.string().max(5000, 'Description must be less than 5000 characters').optional().or(z.literal('')),
   listing_type: z.enum(['rent', 'sale']),
   property_type: z.enum(['apartment', 'house', 'room', 'studio', 'villa', 'other']),
+  property_type_other: z.string().max(100, 'Property type description must be less than 100 characters').optional(),
   price: z.number().positive('Price must be positive').min(1, 'Price must be at least 1').max(1000000000, 'Price is too large'),
   address: z.string().trim().min(1, 'Address is required').max(500, 'Address must be less than 500 characters'),
   city: z.string().trim().min(1, 'City is required').max(100, 'City must be less than 100 characters'),
   postal_code: z.string().max(20, 'Postal code must be less than 20 characters').optional().or(z.literal('')),
-  latitude: z.number().min(-90, 'Latitude must be between -90 and 90').max(90, 'Latitude must be between -90 and 90'),
-  longitude: z.number().min(-180, 'Longitude must be between -180 and 180').max(180, 'Longitude must be between -180 and 180'),
   bedrooms: z.number().int().min(0, 'Bedrooms cannot be negative').max(50, 'Bedrooms must be 50 or less'),
   bathrooms: z.number().int().min(0, 'Bathrooms cannot be negative').max(20, 'Bathrooms must be 20 or less'),
   area_sqm: z.number().positive('Area must be positive').max(100000, 'Area is too large').optional().nullable(),
   available_from: z.string().optional().nullable(),
+  available_until: z.string().optional().nullable(),
   is_furnished: z.boolean(),
   allows_pets: z.boolean(),
   images: z.array(
@@ -52,11 +55,78 @@ const listingSchema = z.object({
 
 type PropertyType = 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other';
 
+// Field validation rules
+const fieldValidators: Record<string, (value: string) => string | null> = {
+  title: (value) => {
+    if (!value.trim()) return 'Title is required';
+    if (value.trim().length < 5) return 'Title must be at least 5 characters';
+    if (value.length > 200) return 'Title must be less than 200 characters';
+    return null;
+  },
+  description: (value) => {
+    if (value.length > 5000) return 'Description must be less than 5000 characters';
+    return null;
+  },
+  price: (value) => {
+    if (!value) return 'Price is required';
+    const num = parseFloat(value);
+    if (isNaN(num) || num <= 0) return 'Price must be a positive number';
+    if (num > 1000000000) return 'Price is too large';
+    return null;
+  },
+  address: (value) => {
+    if (!value.trim()) return 'Address is required';
+    if (value.length > 500) return 'Address must be less than 500 characters';
+    return null;
+  },
+  city: (value) => {
+    if (!value.trim()) return 'City is required';
+    if (value.length > 100) return 'City must be less than 100 characters';
+    return null;
+  },
+  postal_code: (value) => {
+    if (value.length > 20) return 'Postal code must be less than 20 characters';
+    return null;
+  },
+  area_sqm: (value) => {
+    if (value) {
+      const num = parseFloat(value);
+      if (isNaN(num) || num <= 0) return 'Area must be a positive number';
+      if (num > 100000) return 'Area is too large';
+    }
+    return null;
+  },
+  year_built: (value) => {
+    if (value) {
+      const num = parseInt(value);
+      if (isNaN(num)) return 'Year must be a number';
+      if (num < 1800 || num > new Date().getFullYear() + 5) return 'Please enter a valid year';
+    }
+    return null;
+  },
+  deposit_amount: (value) => {
+    if (value) {
+      const num = parseFloat(value);
+      if (isNaN(num) || num < 0) return 'Deposit must be a positive number';
+    }
+    return null;
+  },
+  property_type_other: (value) => {
+    if (value && value.length > 100) return 'Property type description must be less than 100 characters';
+    return null;
+  },
+  heating_type_other: (value) => {
+    if (value && value.length > 100) return 'Heating type description must be less than 100 characters';
+    return null;
+  },
+};
+
 export default function CreateListing() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const createListing = useCreateListing();
+  const firstErrorRef = useRef<HTMLDivElement>(null);
 
   // Bot protection
   const [honeypot, setHoneypot] = useState('');
@@ -72,21 +142,22 @@ export default function CreateListing() {
     reorderImages,
   } = useImageUpload({ userId: user?.id || '' });
 
+  // Form state
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     listing_type: 'rent' as 'rent' | 'sale',
     property_type: 'apartment' as PropertyType,
+    property_type_other: '',
     price: '',
     address: '',
     city: '',
     postal_code: '',
-    latitude: '',
-    longitude: '',
     bedrooms: '1',
     bathrooms: '1',
     area_sqm: '',
     available_from: '',
+    available_until: '',
     is_furnished: false,
     allows_pets: false,
     // Building & Floor
@@ -111,6 +182,7 @@ export default function CreateListing() {
     has_washing_machine: false,
     // Building Info
     heating_type: '' as string,
+    heating_type_other: '',
     energy_rating: '' as string,
     year_built: '',
     property_condition: '' as string,
@@ -121,15 +193,72 @@ export default function CreateListing() {
     utilities_included: '' as string,
   });
 
+  // Field errors and touched states
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  // Computed flags
   const isApartmentType = ['apartment', 'room', 'studio'].includes(formData.property_type);
   const isHouseType = ['house', 'villa'].includes(formData.property_type);
   const isRental = formData.listing_type === 'rent';
+  const isSale = formData.listing_type === 'sale';
+
+  // Auto-geocoding from address
+  const { coordinates, isGeocoding, status: geocodingStatus } = useAddressGeocoding({
+    address: formData.address,
+    city: formData.city,
+    postalCode: formData.postal_code,
+    country: 'Sweden',
+  });
 
   useEffect(() => {
     if (!user) {
       navigate('/auth');
     }
   }, [user, navigate]);
+
+  // Validate a single field
+  const validateField = (field: string, value: string): string | null => {
+    const validator = fieldValidators[field];
+    return validator ? validator(value) : null;
+  };
+
+  // Handle field blur - validate and set touched
+  const handleBlur = (field: string) => {
+    setTouched((prev) => ({ ...prev, [field]: true }));
+    const error = validateField(field, formData[field as keyof typeof formData] as string);
+    setErrors((prev) => {
+      if (error) {
+        return { ...prev, [field]: error };
+      }
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  };
+
+  // Handle field change - clear error if field becomes valid
+  const handleChange = (field: string, value: string | boolean) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    
+    // Clear error if field is now valid (only for text fields)
+    if (typeof value === 'string' && touched[field]) {
+      const error = validateField(field, value);
+      setErrors((prev) => {
+        if (!error) {
+          const newErrors = { ...prev };
+          delete newErrors[field];
+          return newErrors;
+        }
+        return { ...prev, [field]: error };
+      });
+    }
+  };
+
+  // Get error message for a field
+  const getError = (field: string): string | undefined => {
+    return touched[field] ? errors[field] : undefined;
+  };
 
   const checkServerRateLimit = async (): Promise<boolean> => {
     try {
@@ -152,7 +281,6 @@ export default function CreateListing() {
 
     // Check honeypot
     if (isHoneypotTriggered(honeypot)) {
-      // Silently fail for bots
       await new Promise(resolve => setTimeout(resolve, 2000));
       toast({
         title: 'Listing created!',
@@ -181,9 +309,44 @@ export default function CreateListing() {
       });
       return;
     }
+
+    // Validate all required fields
+    const requiredFields = ['title', 'price', 'address', 'city'];
+    const allErrors: Record<string, string> = {};
+    const allTouched: Record<string, boolean> = {};
+
+    requiredFields.forEach((field) => {
+      allTouched[field] = true;
+      const error = validateField(field, formData[field as keyof typeof formData] as string);
+      if (error) {
+        allErrors[field] = error;
+      }
+    });
+
+    // Check geocoding
+    if (!coordinates) {
+      allErrors['address'] = 'Could not find location. Please check the address.';
+      allTouched['address'] = true;
+    }
+
+    if (Object.keys(allErrors).length > 0) {
+      setErrors(allErrors);
+      setTouched((prev) => ({ ...prev, ...allTouched }));
+      
+      // Scroll to first error
+      setTimeout(() => {
+        const firstErrorElement = document.querySelector('[data-error="true"]');
+        firstErrorElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+      
+      toast({
+        variant: 'destructive',
+        title: 'Validation Error',
+        description: 'Please fix the highlighted fields.',
+      });
+      return;
+    }
     
-    const latitude = formData.latitude ? parseFloat(formData.latitude) : 59.3293;
-    const longitude = formData.longitude ? parseFloat(formData.longitude) : 18.0686;
     const price = parseFloat(formData.price) || 0;
     const bedrooms = parseInt(formData.bedrooms) || 0;
     const bathrooms = parseInt(formData.bathrooms) || 0;
@@ -194,18 +357,18 @@ export default function CreateListing() {
       description: formData.description || undefined,
       listing_type: formData.listing_type,
       property_type: formData.property_type,
+      property_type_other: formData.property_type === 'other' ? formData.property_type_other : undefined,
       price,
       address: formData.address,
       city: formData.city,
       postal_code: formData.postal_code || undefined,
-      latitude,
-      longitude,
       bedrooms,
       bathrooms,
       area_sqm,
-      available_from: formData.available_from || null,
-      is_furnished: formData.is_furnished,
-      allows_pets: formData.allows_pets,
+      available_from: isRental ? (formData.available_from || null) : null,
+      available_until: isRental ? (formData.available_until || null) : null,
+      is_furnished: isRental ? formData.is_furnished : false,
+      allows_pets: isRental ? formData.allows_pets : false,
       images: uploadedImages.map(img => img.url),
     };
 
@@ -237,13 +400,13 @@ export default function CreateListing() {
         city: validatedData.city,
         postal_code: validatedData.postal_code || null,
         country: 'Sweden',
-        latitude: validatedData.latitude,
-        longitude: validatedData.longitude,
+        latitude: coordinates!.latitude,
+        longitude: coordinates!.longitude,
         bedrooms: validatedData.bedrooms,
         bathrooms: validatedData.bathrooms,
         area_sqm: validatedData.area_sqm,
         available_from: validatedData.available_from,
-        available_until: null,
+        available_until: validatedData.available_until,
         is_furnished: validatedData.is_furnished,
         allows_pets: validatedData.allows_pets,
         images: validatedData.images,
@@ -274,11 +437,11 @@ export default function CreateListing() {
         energy_rating: (formData.energy_rating || null) as 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | null,
         year_built: formData.year_built ? parseInt(formData.year_built) : null,
         property_condition: (formData.property_condition || null) as 'new' | 'renovated' | 'good' | 'needs_work' | null,
-        // Rental Terms
-        deposit_amount: formData.deposit_amount ? parseFloat(formData.deposit_amount) : null,
-        min_lease_months: formData.min_lease_months ? parseInt(formData.min_lease_months) : null,
-        internet_included: (formData.internet_included || null) as 'yes' | 'no' | 'available' | null,
-        utilities_included: (formData.utilities_included || null) as 'yes' | 'no' | 'partial' | null,
+        // Rental Terms (only for rentals)
+        deposit_amount: isRental && formData.deposit_amount ? parseFloat(formData.deposit_amount) : null,
+        min_lease_months: isRental && formData.min_lease_months ? parseInt(formData.min_lease_months) : null,
+        internet_included: isRental ? (formData.internet_included || null) as 'yes' | 'no' | 'available' | null : null,
+        utilities_included: isRental ? (formData.utilities_included || null) as 'yes' | 'no' | 'partial' | null : null,
       },
       {
         onSuccess: () => {
@@ -298,8 +461,6 @@ export default function CreateListing() {
       }
     );
   };
-
-  // Note: Image handling is now done by useImageUpload hook
 
   if (!user) return null;
 
@@ -334,12 +495,15 @@ export default function CreateListing() {
               <h2 className="text-xl font-semibold text-foreground">Basic Information</h2>
               
               <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="listing_type">Listing Type *</Label>
+                <FormField
+                  label="Listing Type"
+                  htmlFor="listing_type"
+                  required
+                >
                   <Select
                     value={formData.listing_type}
                     onValueChange={(value: 'rent' | 'sale') => 
-                      setFormData(prev => ({ ...prev, listing_type: value }))
+                      handleChange('listing_type', value)
                     }
                   >
                     <SelectTrigger>
@@ -350,14 +514,17 @@ export default function CreateListing() {
                       <SelectItem value="sale">For Sale</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="property_type">Property Type *</Label>
+                <FormField
+                  label="Property Type"
+                  htmlFor="property_type"
+                  required
+                >
                   <Select
                     value={formData.property_type}
                     onValueChange={(value: PropertyType) => 
-                      setFormData(prev => ({ ...prev, property_type: value }))
+                      handleChange('property_type', value)
                     }
                   >
                     <SelectTrigger>
@@ -372,102 +539,170 @@ export default function CreateListing() {
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="title">Title *</Label>
+              {/* Other property type text input */}
+              {formData.property_type === 'other' && (
+                <FormField
+                  label="Describe Property Type"
+                  htmlFor="property_type_other"
+                  required
+                  error={getError('property_type_other')}
+                >
+                  <Input
+                    id="property_type_other"
+                    placeholder="e.g., Warehouse, Loft, Townhouse"
+                    value={formData.property_type_other}
+                    onChange={(e) => handleChange('property_type_other', e.target.value)}
+                    onBlur={() => handleBlur('property_type_other')}
+                    className={cn(getError('property_type_other') && 'border-destructive')}
+                    data-error={!!getError('property_type_other')}
+                  />
+                </FormField>
+              )}
+
+              <FormField
+                label="Title"
+                htmlFor="title"
+                required
+                error={getError('title')}
+              >
                 <Input
                   id="title"
                   placeholder="Cozy 2-bedroom apartment in city center"
                   value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  onChange={(e) => handleChange('title', e.target.value)}
+                  onBlur={() => handleBlur('title')}
+                  className={cn(getError('title') && 'border-destructive')}
+                  data-error={!!getError('title')}
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+              <FormField
+                label="Description"
+                htmlFor="description"
+                error={getError('description')}
+              >
                 <Textarea
                   id="description"
                   placeholder="Describe your property..."
                   rows={4}
                   value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) => handleChange('description', e.target.value)}
+                  onBlur={() => handleBlur('description')}
+                  className={cn(getError('description') && 'border-destructive')}
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <Label htmlFor="price">
-                  Price (SEK) {formData.listing_type === 'rent' ? 'per month' : ''} *
-                </Label>
+              <FormField
+                label={`Price (SEK) ${isRental ? 'per month' : ''}`}
+                htmlFor="price"
+                required
+                error={getError('price')}
+              >
                 <Input
                   id="price"
                   type="number"
-                  placeholder="12000"
+                  placeholder={isRental ? '12000' : '2500000'}
                   value={formData.price}
-                  onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                  onChange={(e) => handleChange('price', e.target.value)}
+                  onBlur={() => handleBlur('price')}
+                  className={cn(getError('price') && 'border-destructive')}
+                  data-error={!!getError('price')}
                 />
-              </div>
+              </FormField>
             </div>
 
             {/* Location */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Location</h2>
+              <p className="text-sm text-muted-foreground">
+                Enter the address and we'll automatically find the location on the map.
+              </p>
               
-              <div className="space-y-2">
-                <Label htmlFor="address">Address *</Label>
+              <FormField
+                label="Address"
+                htmlFor="address"
+                required
+                error={getError('address')}
+              >
                 <Input
                   id="address"
                   placeholder="Storgatan 1"
                   value={formData.address}
-                  onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                  onChange={(e) => handleChange('address', e.target.value)}
+                  onBlur={() => handleBlur('address')}
+                  className={cn(getError('address') && 'border-destructive')}
+                  data-error={!!getError('address')}
                 />
-              </div>
+              </FormField>
 
               <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="city">City *</Label>
+                <FormField
+                  label="City"
+                  htmlFor="city"
+                  required
+                  error={getError('city')}
+                >
                   <Input
                     id="city"
                     placeholder="Stockholm"
                     value={formData.city}
-                    onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                    onChange={(e) => handleChange('city', e.target.value)}
+                    onBlur={() => handleBlur('city')}
+                    className={cn(getError('city') && 'border-destructive')}
+                    data-error={!!getError('city')}
                   />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="postal_code">Postal Code</Label>
+                </FormField>
+                <FormField
+                  label="Postal Code"
+                  htmlFor="postal_code"
+                  error={getError('postal_code')}
+                >
                   <Input
                     id="postal_code"
                     placeholder="111 22"
                     value={formData.postal_code}
-                    onChange={(e) => setFormData(prev => ({ ...prev, postal_code: e.target.value }))}
+                    onChange={(e) => handleChange('postal_code', e.target.value)}
+                    onBlur={() => handleBlur('postal_code')}
+                    className={cn(getError('postal_code') && 'border-destructive')}
                   />
-                </div>
+                </FormField>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="latitude">Latitude</Label>
-                  <Input
-                    id="latitude"
-                    type="number"
-                    step="any"
-                    placeholder="59.3293"
-                    value={formData.latitude}
-                    onChange={(e) => setFormData(prev => ({ ...prev, latitude: e.target.value }))}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="longitude">Longitude</Label>
-                  <Input
-                    id="longitude"
-                    type="number"
-                    step="any"
-                    placeholder="18.0686"
-                    value={formData.longitude}
-                    onChange={(e) => setFormData(prev => ({ ...prev, longitude: e.target.value }))}
-                  />
-                </div>
+              {/* Geocoding status indicator */}
+              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
+                {isGeocoding && (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Searching for location...</span>
+                  </>
+                )}
+                {!isGeocoding && geocodingStatus === 'found' && coordinates && (
+                  <>
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    <span className="text-sm text-green-600">
+                      Location found: {coordinates.formattedAddress}
+                    </span>
+                  </>
+                )}
+                {!isGeocoding && geocodingStatus === 'not_found' && formData.address && formData.city && (
+                  <>
+                    <AlertCircle className="h-4 w-4 text-amber-600" />
+                    <span className="text-sm text-amber-600">
+                      Could not find exact location. Please check the address.
+                    </span>
+                  </>
+                )}
+                {!isGeocoding && geocodingStatus === 'idle' && (
+                  <>
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      Enter address and city to find location
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 
@@ -476,13 +711,10 @@ export default function CreateListing() {
               <h2 className="text-xl font-semibold text-foreground">Property Details</h2>
               
               <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="bedrooms">Bedrooms</Label>
+                <FormField label="Bedrooms" htmlFor="bedrooms">
                   <Select
                     value={formData.bedrooms}
-                    onValueChange={(value) => 
-                      setFormData(prev => ({ ...prev, bedrooms: value }))
-                    }
+                    onValueChange={(value) => handleChange('bedrooms', value)}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -493,15 +725,12 @@ export default function CreateListing() {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="bathrooms">Bathrooms</Label>
+                <FormField label="Bathrooms" htmlFor="bathrooms">
                   <Select
                     value={formData.bathrooms}
-                    onValueChange={(value) => 
-                      setFormData(prev => ({ ...prev, bathrooms: value }))
-                    }
+                    onValueChange={(value) => handleChange('bathrooms', value)}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -512,59 +741,72 @@ export default function CreateListing() {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="area">Area (m²)</Label>
+                <FormField label="Area (m²)" htmlFor="area" error={getError('area_sqm')}>
                   <Input
                     id="area"
                     type="number"
                     placeholder="65"
                     value={formData.area_sqm}
-                    onChange={(e) => setFormData(prev => ({ ...prev, area_sqm: e.target.value }))}
+                    onChange={(e) => handleChange('area_sqm', e.target.value)}
+                    onBlur={() => handleBlur('area_sqm')}
+                    className={cn(getError('area_sqm') && 'border-destructive')}
                   />
+                </FormField>
+              </div>
+
+              {/* Rental-specific dates */}
+              {isRental && (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <FormField label="Move-in Date" htmlFor="available_from">
+                    <Input
+                      id="available_from"
+                      type="date"
+                      value={formData.available_from}
+                      onChange={(e) => handleChange('available_from', e.target.value)}
+                    />
+                  </FormField>
+                  <FormField label="Rental End Date (optional)" htmlFor="available_until">
+                    <Input
+                      id="available_until"
+                      type="date"
+                      value={formData.available_until}
+                      min={formData.available_from || undefined}
+                      onChange={(e) => handleChange('available_until', e.target.value)}
+                    />
+                  </FormField>
                 </div>
-              </div>
+              )}
 
-              <div className="space-y-2">
-                <Label htmlFor="available_from">Available From</Label>
-                <Input
-                  id="available_from"
-                  type="date"
-                  value={formData.available_from}
-                  onChange={(e) => setFormData(prev => ({ ...prev, available_from: e.target.value }))}
-                />
-              </div>
-
-              <div className="space-y-4 pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="is_furnished">Furnished</Label>
-                    <p className="text-sm text-muted-foreground">Property comes with furniture</p>
+              {/* Rental-specific toggles */}
+              {isRental && (
+                <div className="space-y-4 pt-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="is_furnished">Furnished</Label>
+                      <p className="text-sm text-muted-foreground">Property comes with furniture</p>
+                    </div>
+                    <Switch
+                      id="is_furnished"
+                      checked={formData.is_furnished}
+                      onCheckedChange={(checked) => handleChange('is_furnished', checked)}
+                    />
                   </div>
-                  <Switch
-                    id="is_furnished"
-                    checked={formData.is_furnished}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, is_furnished: checked }))
-                    }
-                  />
-                </div>
 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="allows_pets">Pets Allowed</Label>
-                    <p className="text-sm text-muted-foreground">Tenants can have pets</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="allows_pets">Pets Allowed</Label>
+                      <p className="text-sm text-muted-foreground">Tenants can have pets</p>
+                    </div>
+                    <Switch
+                      id="allows_pets"
+                      checked={formData.allows_pets}
+                      onCheckedChange={(checked) => handleChange('allows_pets', checked)}
+                    />
                   </div>
-                  <Switch
-                    id="allows_pets"
-                    checked={formData.allows_pets}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, allows_pets: checked }))
-                    }
-                  />
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Building & Floor - Conditional */}
@@ -575,26 +817,24 @@ export default function CreateListing() {
                 {isApartmentType && (
                   <>
                     <div className="grid sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="floor_number">Floor Number</Label>
+                      <FormField label="Floor Number" htmlFor="floor_number">
                         <Input
                           id="floor_number"
                           type="number"
                           placeholder="3"
                           value={formData.floor_number}
-                          onChange={(e) => setFormData(prev => ({ ...prev, floor_number: e.target.value }))}
+                          onChange={(e) => handleChange('floor_number', e.target.value)}
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="total_floors_building">Total Building Floors</Label>
+                      </FormField>
+                      <FormField label="Total Building Floors" htmlFor="total_floors_building">
                         <Input
                           id="total_floors_building"
                           type="number"
                           placeholder="5"
                           value={formData.total_floors_building}
-                          onChange={(e) => setFormData(prev => ({ ...prev, total_floors_building: e.target.value }))}
+                          onChange={(e) => handleChange('total_floors_building', e.target.value)}
                         />
-                      </div>
+                      </FormField>
                     </div>
 
                     <div className="flex items-center justify-between">
@@ -605,25 +845,22 @@ export default function CreateListing() {
                       <Switch
                         id="has_elevator"
                         checked={formData.has_elevator}
-                        onCheckedChange={(checked) => 
-                          setFormData(prev => ({ ...prev, has_elevator: checked }))
-                        }
+                        onCheckedChange={(checked) => handleChange('has_elevator', checked)}
                       />
                     </div>
                   </>
                 )}
 
                 {isHouseType && (
-                  <div className="space-y-2">
-                    <Label htmlFor="property_floors">Number of Floors</Label>
+                  <FormField label="Number of Floors" htmlFor="property_floors">
                     <Input
                       id="property_floors"
                       type="number"
                       placeholder="2"
                       value={formData.property_floors}
-                      onChange={(e) => setFormData(prev => ({ ...prev, property_floors: e.target.value }))}
+                      onChange={(e) => handleChange('property_floors', e.target.value)}
                     />
-                  </div>
+                  </FormField>
                 )}
               </div>
             )}
@@ -641,9 +878,7 @@ export default function CreateListing() {
                   <Switch
                     id="has_balcony"
                     checked={formData.has_balcony}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, has_balcony: checked }))
-                    }
+                    onCheckedChange={(checked) => handleChange('has_balcony', checked)}
                   />
                 </div>
 
@@ -655,9 +890,7 @@ export default function CreateListing() {
                   <Switch
                     id="has_terrace"
                     checked={formData.has_terrace}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, has_terrace: checked }))
-                    }
+                    onCheckedChange={(checked) => handleChange('has_terrace', checked)}
                   />
                 </div>
 
@@ -669,22 +902,21 @@ export default function CreateListing() {
                   <Switch
                     id="has_garden"
                     checked={formData.has_garden}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, has_garden: checked }))
-                    }
+                    onCheckedChange={(checked) => handleChange('has_garden', checked)}
                   />
                 </div>
 
                 {formData.has_garden && (
-                  <div className="space-y-2 ml-4">
-                    <Label htmlFor="garden_sqm">Garden Size (m²)</Label>
-                    <Input
-                      id="garden_sqm"
-                      type="number"
-                      placeholder="50"
-                      value={formData.garden_sqm}
-                      onChange={(e) => setFormData(prev => ({ ...prev, garden_sqm: e.target.value }))}
-                    />
+                  <div className="ml-4">
+                    <FormField label="Garden Size (m²)" htmlFor="garden_sqm">
+                      <Input
+                        id="garden_sqm"
+                        type="number"
+                        placeholder="50"
+                        value={formData.garden_sqm}
+                        onChange={(e) => handleChange('garden_sqm', e.target.value)}
+                      />
+                    </FormField>
                   </div>
                 )}
               </div>
@@ -703,21 +935,16 @@ export default function CreateListing() {
                   <Switch
                     id="has_parking"
                     checked={formData.has_parking}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, has_parking: checked }))
-                    }
+                    onCheckedChange={(checked) => handleChange('has_parking', checked)}
                   />
                 </div>
 
                 {formData.has_parking && (
                   <div className="grid sm:grid-cols-2 gap-4 ml-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="parking_type">Parking Type</Label>
+                    <FormField label="Parking Type" htmlFor="parking_type">
                       <Select
                         value={formData.parking_type}
-                        onValueChange={(value) => 
-                          setFormData(prev => ({ ...prev, parking_type: value }))
-                        }
+                        onValueChange={(value) => handleChange('parking_type', value)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select type" />
@@ -729,17 +956,16 @@ export default function CreateListing() {
                           <SelectItem value="private">Private</SelectItem>
                         </SelectContent>
                       </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="parking_spaces">Number of Spaces</Label>
+                    </FormField>
+                    <FormField label="Number of Spaces" htmlFor="parking_spaces">
                       <Input
                         id="parking_spaces"
                         type="number"
                         placeholder="1"
                         value={formData.parking_spaces}
-                        onChange={(e) => setFormData(prev => ({ ...prev, parking_spaces: e.target.value }))}
+                        onChange={(e) => handleChange('parking_spaces', e.target.value)}
                       />
-                    </div>
+                    </FormField>
                   </div>
                 )}
 
@@ -751,9 +977,7 @@ export default function CreateListing() {
                   <Switch
                     id="has_garage"
                     checked={formData.has_garage}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, has_garage: checked }))
-                    }
+                    onCheckedChange={(checked) => handleChange('has_garage', checked)}
                   />
                 </div>
               </div>
@@ -772,9 +996,7 @@ export default function CreateListing() {
                   <Switch
                     id="has_air_conditioning"
                     checked={formData.has_air_conditioning}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, has_air_conditioning: checked }))
-                    }
+                    onCheckedChange={(checked) => handleChange('has_air_conditioning', checked)}
                   />
                 </div>
 
@@ -786,9 +1008,7 @@ export default function CreateListing() {
                   <Switch
                     id="has_dishwasher"
                     checked={formData.has_dishwasher}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, has_dishwasher: checked }))
-                    }
+                    onCheckedChange={(checked) => handleChange('has_dishwasher', checked)}
                   />
                 </div>
 
@@ -800,9 +1020,7 @@ export default function CreateListing() {
                   <Switch
                     id="has_washing_machine"
                     checked={formData.has_washing_machine}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, has_washing_machine: checked }))
-                    }
+                    onCheckedChange={(checked) => handleChange('has_washing_machine', checked)}
                   />
                 </div>
 
@@ -814,9 +1032,7 @@ export default function CreateListing() {
                   <Switch
                     id="has_storage"
                     checked={formData.has_storage}
-                    onCheckedChange={(checked) => 
-                      setFormData(prev => ({ ...prev, has_storage: checked }))
-                    }
+                    onCheckedChange={(checked) => handleChange('has_storage', checked)}
                   />
                 </div>
               </div>
@@ -827,13 +1043,10 @@ export default function CreateListing() {
               <h2 className="text-xl font-semibold text-foreground">Building Information</h2>
               
               <div className="grid sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="heating_type">Heating Type</Label>
+                <FormField label="Heating Type" htmlFor="heating_type">
                   <Select
                     value={formData.heating_type}
-                    onValueChange={(value) => 
-                      setFormData(prev => ({ ...prev, heating_type: value }))
-                    }
+                    onValueChange={(value) => handleChange('heating_type', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select type" />
@@ -846,15 +1059,12 @@ export default function CreateListing() {
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="energy_rating">Energy Rating</Label>
+                <FormField label="Energy Rating" htmlFor="energy_rating">
                   <Select
                     value={formData.energy_rating}
-                    onValueChange={(value) => 
-                      setFormData(prev => ({ ...prev, energy_rating: value }))
-                    }
+                    onValueChange={(value) => handleChange('energy_rating', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select rating" />
@@ -865,26 +1075,24 @@ export default function CreateListing() {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="year_built">Year Built</Label>
+                <FormField label="Year Built" htmlFor="year_built" error={getError('year_built')}>
                   <Input
                     id="year_built"
                     type="number"
                     placeholder="2005"
                     value={formData.year_built}
-                    onChange={(e) => setFormData(prev => ({ ...prev, year_built: e.target.value }))}
+                    onChange={(e) => handleChange('year_built', e.target.value)}
+                    onBlur={() => handleBlur('year_built')}
+                    className={cn(getError('year_built') && 'border-destructive')}
                   />
-                </div>
+                </FormField>
 
-                <div className="space-y-2">
-                  <Label htmlFor="property_condition">Condition</Label>
+                <FormField label="Condition" htmlFor="property_condition">
                   <Select
                     value={formData.property_condition}
-                    onValueChange={(value) => 
-                      setFormData(prev => ({ ...prev, property_condition: value }))
-                    }
+                    onValueChange={(value) => handleChange('property_condition', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select condition" />
@@ -896,8 +1104,26 @@ export default function CreateListing() {
                       <SelectItem value="needs_work">Needs Work</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
+                </FormField>
               </div>
+
+              {/* Other heating type text input */}
+              {formData.heating_type === 'other' && (
+                <FormField
+                  label="Describe Heating Type"
+                  htmlFor="heating_type_other"
+                  error={getError('heating_type_other')}
+                >
+                  <Input
+                    id="heating_type_other"
+                    placeholder="e.g., Geothermal, Wood burning, etc."
+                    value={formData.heating_type_other}
+                    onChange={(e) => handleChange('heating_type_other', e.target.value)}
+                    onBlur={() => handleBlur('heating_type_other')}
+                    className={cn(getError('heating_type_other') && 'border-destructive')}
+                  />
+                </FormField>
+              )}
             </div>
 
             {/* Rental Terms - Only for rentals */}
@@ -906,24 +1132,22 @@ export default function CreateListing() {
                 <h2 className="text-xl font-semibold text-foreground">Rental Terms</h2>
                 
                 <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="deposit_amount">Deposit Amount (SEK)</Label>
+                  <FormField label="Deposit Amount (SEK)" htmlFor="deposit_amount" error={getError('deposit_amount')}>
                     <Input
                       id="deposit_amount"
                       type="number"
                       placeholder="24000"
                       value={formData.deposit_amount}
-                      onChange={(e) => setFormData(prev => ({ ...prev, deposit_amount: e.target.value }))}
+                      onChange={(e) => handleChange('deposit_amount', e.target.value)}
+                      onBlur={() => handleBlur('deposit_amount')}
+                      className={cn(getError('deposit_amount') && 'border-destructive')}
                     />
-                  </div>
+                  </FormField>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="min_lease_months">Minimum Lease (months)</Label>
+                  <FormField label="Minimum Lease (months)" htmlFor="min_lease_months">
                     <Select
                       value={formData.min_lease_months}
-                      onValueChange={(value) => 
-                        setFormData(prev => ({ ...prev, min_lease_months: value }))
-                      }
+                      onValueChange={(value) => handleChange('min_lease_months', value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select duration" />
@@ -934,15 +1158,12 @@ export default function CreateListing() {
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
+                  </FormField>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="internet_included">Internet Included</Label>
+                  <FormField label="Internet Included" htmlFor="internet_included">
                     <Select
                       value={formData.internet_included}
-                      onValueChange={(value) => 
-                        setFormData(prev => ({ ...prev, internet_included: value }))
-                      }
+                      onValueChange={(value) => handleChange('internet_included', value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select option" />
@@ -953,15 +1174,12 @@ export default function CreateListing() {
                         <SelectItem value="available">Available (extra cost)</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  </FormField>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="utilities_included">Utilities Included</Label>
+                  <FormField label="Utilities Included" htmlFor="utilities_included">
                     <Select
                       value={formData.utilities_included}
-                      onValueChange={(value) => 
-                        setFormData(prev => ({ ...prev, utilities_included: value }))
-                      }
+                      onValueChange={(value) => handleChange('utilities_included', value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select option" />
@@ -972,7 +1190,7 @@ export default function CreateListing() {
                         <SelectItem value="partial">Partial (some included)</SelectItem>
                       </SelectContent>
                     </Select>
-                  </div>
+                  </FormField>
                 </div>
               </div>
             )}
@@ -1009,9 +1227,9 @@ export default function CreateListing() {
               <Button
                 type="submit"
                 className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
-                disabled={createListing.isPending || isLimited}
+                disabled={createListing.isPending || isLimited || isGeocoding}
               >
-                {createListing.isPending ? 'Creating...' : 'Create Listing'}
+                {createListing.isPending ? 'Creating...' : isGeocoding ? 'Finding location...' : 'Create Listing'}
               </Button>
             </div>
             
