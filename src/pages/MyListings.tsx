@@ -165,7 +165,6 @@ export default function MyListings() {
                     <p className="text-lg font-bold text-foreground mt-2">
                       {formatPrice(listing.price, listing.currency, { isRental: listing.listing_type === 'rent', showPeriod: listing.listing_type === 'rent' })}
                     </p>
-                    </p>
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 mt-4">
@@ -242,7 +241,8 @@ export default function MyListings() {
                     </div>
                   </div>
                 </div>
-              );})}
+              );
+              })}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
