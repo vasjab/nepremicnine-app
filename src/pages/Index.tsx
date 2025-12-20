@@ -33,16 +33,31 @@ const MemoizedListingCard = memo(ListingCard);
 // Custom hook for scroll-based header collapse - improved to reappear on scroll up
 function useScrollCollapse(containerRef: React.RefObject<HTMLDivElement>) {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isReady, setIsReady] = useState(false);
   const lastScrollTop = useRef(0);
   const isCollapsedRef = useRef(false);
-  const scrollThreshold = 20;
+  const scrollThreshold = 15;
 
   // Keep ref in sync with state to avoid stale closure
   useEffect(() => {
     isCollapsedRef.current = isCollapsed;
   }, [isCollapsed]);
 
+  // Check when container becomes available
   useEffect(() => {
+    const checkReady = () => {
+      if (containerRef.current && !isReady) {
+        setIsReady(true);
+      }
+    };
+    checkReady();
+    const interval = setInterval(checkReady, 100);
+    if (isReady) clearInterval(interval);
+    return () => clearInterval(interval);
+  }, [containerRef, isReady]);
+
+  useEffect(() => {
+    if (!isReady) return;
     const container = containerRef.current;
     if (!container) return;
 
@@ -66,7 +81,7 @@ function useScrollCollapse(containerRef: React.RefObject<HTMLDivElement>) {
 
     container.addEventListener('scroll', handleScroll, { passive: true });
     return () => container.removeEventListener('scroll', handleScroll);
-  }, [containerRef]);
+  }, [isReady, containerRef]);
 
   return isCollapsed;
 }
@@ -236,10 +251,10 @@ const Index = () => {
   // Shared rent/sale tabs component
   const RentSaleTabs = ({ collapsed = false }: { collapsed?: boolean }) => (
     <div className={cn(
-      "px-4 pt-4 pb-0 transition-all duration-300 ease-out overflow-hidden origin-top",
+      "px-4 pt-4 pb-0 overflow-hidden transition-[transform,opacity] duration-200 ease-out will-change-transform",
       collapsed 
-        ? "max-h-0 pt-0 opacity-0 scale-y-0 -translate-y-1" 
-        : "max-h-20 opacity-100 scale-y-100 translate-y-0"
+        ? "h-0 opacity-0 -translate-y-full pointer-events-none" 
+        : "h-auto opacity-100 translate-y-0"
     )}>
       <div className="flex bg-secondary rounded-xl p-1 gap-1">
         <button

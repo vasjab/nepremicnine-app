@@ -967,11 +967,12 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
       <div className="p-4">
         {/* Collapsible Title & Search Section */}
         <div className={cn(
-          "transition-all duration-300 ease-out origin-top",
+          "grid transition-[grid-template-rows,opacity] duration-200 ease-out will-change-[grid-template-rows,opacity]",
           isCollapsed 
-            ? "max-h-0 opacity-0 overflow-hidden mb-0 scale-y-0 -translate-y-2" 
-            : "max-h-[500px] opacity-100 scale-y-100 translate-y-0"
+            ? "grid-rows-[0fr] opacity-0" 
+            : "grid-rows-[1fr] opacity-100"
         )}>
+          <div className="overflow-hidden">
           {/* Title */}
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">
             {t('common.findHome')}
@@ -1068,6 +1069,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
               ))}
             </div>
           )}
+          </div>
         </div>
 
         {/* Results count and sort - Always visible */}
