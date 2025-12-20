@@ -188,7 +188,9 @@ export default function EditListing() {
     has_elevator: false,
     // Outdoor
     has_balcony: false,
+    balcony_sqm: '',
     has_terrace: false,
+    terrace_sqm: '',
     has_garden: false,
     garden_sqm: '',
     // Parking
@@ -269,7 +271,9 @@ export default function EditListing() {
         has_elevator: listing.has_elevator || false,
         // Outdoor
         has_balcony: listing.has_balcony || false,
+        balcony_sqm: listing.balcony_sqm?.toString() || '',
         has_terrace: listing.has_terrace || false,
+        terrace_sqm: listing.terrace_sqm?.toString() || '',
         has_garden: listing.has_garden || false,
         garden_sqm: listing.garden_sqm?.toString() || '',
         // Parking
@@ -678,7 +682,9 @@ export default function EditListing() {
         has_elevator: formData.has_elevator,
         // Outdoor
         has_balcony: formData.has_balcony,
+        balcony_sqm: formData.balcony_sqm ? parseFloat(formData.balcony_sqm) : null,
         has_terrace: formData.has_terrace,
+        terrace_sqm: formData.terrace_sqm ? parseFloat(formData.terrace_sqm) : null,
         has_garden: formData.has_garden,
         garden_sqm: formData.garden_sqm ? parseFloat(formData.garden_sqm) : null,
         // Parking
@@ -1195,46 +1201,85 @@ export default function EditListing() {
             <div ref={outdoorRef} className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Outdoor Features</h2>
               
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="has_balcony">Balcony</Label>
+                    <p className="text-sm text-muted-foreground">Property has a balcony</p>
+                  </div>
                   <Switch
                     id="has_balcony"
                     checked={formData.has_balcony}
                     onCheckedChange={(checked) => handleChange('has_balcony', checked)}
                   />
-                  <Label htmlFor="has_balcony">Balcony</Label>
                 </div>
-                <div className="flex items-center gap-2">
+
+                {formData.has_balcony && (
+                  <div className="ml-4">
+                    <FormField label="Balcony Size (m²)" htmlFor="balcony_sqm">
+                      <Input
+                        id="balcony_sqm"
+                        type="number"
+                        placeholder="10"
+                        value={formData.balcony_sqm}
+                        onChange={(e) => handleChange('balcony_sqm', e.target.value)}
+                      />
+                    </FormField>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="has_terrace">Terrace</Label>
+                    <p className="text-sm text-muted-foreground">Property has a terrace</p>
+                  </div>
                   <Switch
                     id="has_terrace"
                     checked={formData.has_terrace}
                     onCheckedChange={(checked) => handleChange('has_terrace', checked)}
                   />
-                  <Label htmlFor="has_terrace">Terrace</Label>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2">
-                <Switch
-                  id="has_garden"
-                  checked={formData.has_garden}
-                  onCheckedChange={(checked) => handleChange('has_garden', checked)}
-                />
-                <Label htmlFor="has_garden">Garden</Label>
-              </div>
+                {formData.has_terrace && (
+                  <div className="ml-4">
+                    <FormField label="Terrace Size (m²)" htmlFor="terrace_sqm">
+                      <Input
+                        id="terrace_sqm"
+                        type="number"
+                        placeholder="20"
+                        value={formData.terrace_sqm}
+                        onChange={(e) => handleChange('terrace_sqm', e.target.value)}
+                      />
+                    </FormField>
+                  </div>
+                )}
 
-              {formData.has_garden && (
-                <FormField label="Garden Size (m²)" htmlFor="garden_sqm">
-                  <Input
-                    id="garden_sqm"
-                    type="number"
-                    min="0"
-                    placeholder="50"
-                    value={formData.garden_sqm}
-                    onChange={(e) => handleChange('garden_sqm', e.target.value)}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="has_garden">Garden</Label>
+                    <p className="text-sm text-muted-foreground">Property has a garden</p>
+                  </div>
+                  <Switch
+                    id="has_garden"
+                    checked={formData.has_garden}
+                    onCheckedChange={(checked) => handleChange('has_garden', checked)}
                   />
-                </FormField>
-              )}
+                </div>
+
+                {formData.has_garden && (
+                  <div className="ml-4">
+                    <FormField label="Garden Size (m²)" htmlFor="garden_sqm">
+                      <Input
+                        id="garden_sqm"
+                        type="number"
+                        placeholder="50"
+                        value={formData.garden_sqm}
+                        onChange={(e) => handleChange('garden_sqm', e.target.value)}
+                      />
+                    </FormField>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Parking */}
