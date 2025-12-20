@@ -98,9 +98,12 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
 
   return (
     <div className="space-y-6">
+      {/* Section Header */}
+      <h2 className="text-lg font-semibold text-foreground pb-3 border-b border-border/50">{t('listing.features')}</h2>
+      
       {/* Basic Features */}
-      <div>
-        <h2 className="text-xl font-semibold text-foreground mb-3">{t('listing.features')}</h2>
+      <div className="bg-secondary/30 rounded-xl p-4 border border-border/20">
+        <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">{t('listing.basicFeatures')}</h3>
         <div className="grid grid-cols-2 gap-3">
           <FeatureItem value={listing.is_furnished} label={t('listing.furnished')} />
           <FeatureItem value={listing.allows_pets} label={t('listing.petsAllowed')} />
@@ -109,8 +112,8 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
 
       {/* Building & Floor Info */}
       {hasBuildingInfo && (
-        <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3">{t('filters.buildingFloor')}</h2>
+        <div className="bg-secondary/30 rounded-xl p-4 border border-border/20">
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">{t('filters.buildingFloor')}</h3>
           <div className="grid grid-cols-2 gap-3">
             {isApartmentType && listing.floor_number != null && (
               <InfoItem 
@@ -138,8 +141,8 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
 
       {/* Outdoor Features */}
       {hasOutdoorFeatures && (
-        <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3">{t('filters.outdoor')}</h2>
+        <div className="bg-secondary/30 rounded-xl p-4 border border-border/20">
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">{t('filters.outdoor')}</h3>
           <div className="grid grid-cols-2 gap-3">
             <FeatureItem value={listing.has_balcony} label={t('listing.balcony')} />
             <FeatureItem value={listing.has_terrace} label={t('listing.terrace')} />
@@ -158,8 +161,8 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
 
       {/* Parking */}
       {hasParkingFeatures && (
-        <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3">{t('filters.parking')}</h2>
+        <div className="bg-secondary/30 rounded-xl p-4 border border-border/20">
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">{t('filters.parking')}</h3>
           <div className="grid grid-cols-2 gap-3">
             {listing.has_parking && (
               <div className="flex items-center gap-2">
@@ -178,8 +181,8 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
 
       {/* Amenities */}
       {hasAmenities && (
-        <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3">{t('listing.amenities')}</h2>
+        <div className="bg-secondary/30 rounded-xl p-4 border border-border/20">
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">{t('listing.amenities')}</h3>
           <div className="grid grid-cols-2 gap-3">
             <FeatureItem value={listing.has_air_conditioning} label={t('listing.airConditioning')} />
             <FeatureItem value={listing.has_dishwasher} label={t('listing.dishwasher')} />
@@ -191,8 +194,8 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
 
       {/* Building Info */}
       {hasBuildingDetails && (
-        <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3">{t('filters.buildingInfo')}</h2>
+        <div className="bg-secondary/30 rounded-xl p-4 border border-border/20">
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">{t('filters.buildingInfo')}</h3>
           <div className="grid grid-cols-2 gap-4">
             {listing.heating_type && (
               <InfoItem 
@@ -228,8 +231,8 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
 
       {/* Rental Terms */}
       {hasRentalTerms && (
-        <div>
-          <h2 className="text-xl font-semibold text-foreground mb-3">{t('filters.rentalTerms')}</h2>
+        <div className="bg-secondary/30 rounded-xl p-4 border border-border/20">
+          <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">{t('filters.rentalTerms')}</h3>
           <div className="grid grid-cols-2 gap-4">
             {listing.deposit_amount && (
               <InfoItem 
