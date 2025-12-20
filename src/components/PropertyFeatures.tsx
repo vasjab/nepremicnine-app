@@ -144,8 +144,24 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
         <div className="bg-secondary/30 rounded-xl p-4 border border-border/20">
           <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-3">{t('filters.outdoor')}</h3>
           <div className="grid grid-cols-2 gap-3">
-            <FeatureItem value={listing.has_balcony} label={t('listing.balcony')} />
-            <FeatureItem value={listing.has_terrace} label={t('listing.terrace')} />
+            {listing.has_balcony && (
+              <div className="flex items-center gap-2">
+                <Check className="h-5 w-5 text-success" />
+                <span className="text-foreground">
+                  {t('listing.balcony')}
+                  {listing.balcony_sqm && ` (${listing.balcony_sqm} m²)`}
+                </span>
+              </div>
+            )}
+            {listing.has_terrace && (
+              <div className="flex items-center gap-2">
+                <Check className="h-5 w-5 text-success" />
+                <span className="text-foreground">
+                  {t('listing.terrace')}
+                  {listing.terrace_sqm && ` (${listing.terrace_sqm} m²)`}
+                </span>
+              </div>
+            )}
             {listing.has_garden && (
               <div className="flex items-center gap-2">
                 <Check className="h-5 w-5 text-success" />
