@@ -115,7 +115,7 @@ const Index = () => {
   }, [activeListingId]);
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className="min-h-dvh h-dvh flex flex-col bg-background">
       <Header />
       
       {/* Spacer for fixed header */}
