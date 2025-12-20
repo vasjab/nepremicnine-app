@@ -109,10 +109,10 @@ function FilterSection({
   const [isOpen, setIsOpen] = useState(defaultOpen);
   
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="flex w-full items-center justify-between py-3 text-sm font-medium transition-colors hover:text-foreground group">
-        <span className="flex items-center gap-2">
-          {Icon && <Icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />}
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border-b border-border/50">
+      <CollapsibleTrigger className="flex w-full items-center justify-between py-5 text-sm font-medium transition-colors hover:text-foreground group">
+        <span className="flex items-center gap-3">
+          {Icon && <Icon className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />}
           {title}
           {activeCount > 0 && (
             <Badge variant="secondary" className="h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
@@ -125,7 +125,7 @@ function FilterSection({
           isOpen && "rotate-180"
         )} />
       </CollapsibleTrigger>
-      <CollapsibleContent className="space-y-2 pt-1 pb-4 animate-accordion-down">
+      <CollapsibleContent className="space-y-3 pt-2 pb-6 animate-accordion-down">
         {children}
       </CollapsibleContent>
     </Collapsible>
@@ -154,13 +154,13 @@ function ToggleFilter({
   return (
     <div 
       className={cn(
-        "flex items-center justify-between min-h-[44px] px-3 py-2 rounded-lg transition-all cursor-pointer",
+        "flex items-center justify-between min-h-[56px] px-4 py-3 rounded-xl transition-all cursor-pointer",
         checked ? "bg-accent/10 border border-accent/20" : "hover:bg-secondary/50"
       )}
       onClick={() => handleChange(!checked)}
     >
-      <div className="flex items-center gap-2.5">
-        {Icon && <Icon className={cn("h-4 w-4", checked ? "text-accent" : "text-muted-foreground")} />}
+      <div className="flex items-center gap-3">
+        {Icon && <Icon className={cn("h-5 w-5", checked ? "text-accent" : "text-muted-foreground")} />}
         <Label className={cn("text-sm font-normal cursor-pointer", checked && "text-foreground")}>
           {label}
         </Label>
@@ -215,11 +215,11 @@ function FilterContent({
   activeFeaturesCount,
 }: any) {
   return (
-    <div className="space-y-4 px-1">
+    <div className="space-y-6 px-1 pb-4">
       {/* Listing Type */}
-      <div className="space-y-3 pt-2">
-        <Label className="text-sm font-medium">{t('filters.listingType')}</Label>
-        <div className="flex flex-wrap gap-2">
+      <div className="space-y-4 pt-4 pb-2 border-b border-border/50">
+        <Label className="text-base font-medium">{t('filters.listingType')}</Label>
+        <div className="flex flex-wrap gap-3">
           {LISTING_TYPES.map((type: any) => {
             const isSelected = filters.listing_type === type.value;
             const Icon = type.icon;
@@ -229,13 +229,13 @@ function FilterContent({
                 type="button"
                 onClick={() => handleListingTypeChange(isSelected ? 'all' : type.value)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border-2 cursor-pointer min-h-[48px] press-effect",
+                  "flex items-center gap-2.5 px-5 py-4 rounded-xl text-sm font-medium transition-all duration-200 border cursor-pointer min-h-[56px] press-effect",
                   isSelected 
                     ? 'bg-foreground text-background border-foreground' 
                     : 'bg-background text-foreground border-border hover:border-foreground/50'
                 )}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-5 w-5" />
                 {type.label}
               </button>
             );
@@ -244,9 +244,9 @@ function FilterContent({
       </div>
 
       {/* Property Type */}
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">{t('filters.propertyType')}</Label>
-        <div className="flex flex-wrap gap-2">
+      <div className="space-y-4 pb-2 border-b border-border/50">
+        <Label className="text-base font-medium">{t('filters.propertyType')}</Label>
+        <div className="flex flex-wrap gap-3">
           {PROPERTY_TYPES.map((type: any) => {
             const isSelected = filters.property_types?.includes(type.value) || false;
             const Icon = type.icon;
@@ -256,13 +256,13 @@ function FilterContent({
                 type="button"
                 onClick={() => handlePropertyTypeToggle(type.value)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border-2 cursor-pointer min-h-[48px] press-effect",
+                  "flex items-center gap-2.5 px-5 py-4 rounded-xl text-sm font-medium transition-all duration-200 border cursor-pointer min-h-[56px] press-effect",
                   isSelected 
                     ? 'bg-foreground text-background border-foreground' 
                     : 'bg-background text-foreground border-border hover:border-foreground/50'
                 )}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-5 w-5" />
                 {type.label}
               </button>
             );
@@ -271,13 +271,13 @@ function FilterContent({
       </div>
 
       {/* Bedrooms */}
-      <div className="space-y-2">
-        <Label className="text-sm font-medium">{t('filters.minimumRooms')}</Label>
+      <div className="space-y-3 py-2 border-b border-border/50">
+        <Label className="text-base font-medium">{t('filters.minimumRooms')}</Label>
         <Select
           value={filters.min_bedrooms?.toString() || 'all'}
           onValueChange={handleBedroomChange}
         >
-          <SelectTrigger className="bg-background h-12 rounded-xl">
+          <SelectTrigger className="bg-background h-14 rounded-xl text-base">
             <SelectValue placeholder={t('filters.any')} />
           </SelectTrigger>
           <SelectContent className="bg-popover">
@@ -291,15 +291,15 @@ function FilterContent({
       </div>
 
       {/* Price Range Slider */}
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">
+      <div className="space-y-4 py-4 border-b border-border/50">
+        <Label className="text-base font-medium">
           {filters.listing_type === 'rent' ? t('filters.monthlyCost') : filters.listing_type === 'sale' ? t('filters.totalPrice') : t('filters.price')}
         </Label>
         <div className="flex justify-between text-sm text-muted-foreground px-1">
           <span>{formatPriceLabelLocal(priceRangeValues[0])}</span>
           <span>{priceRangeValues[1] >= priceConfig.max ? `${formatPriceLabelLocal(priceConfig.max)}+` : formatPriceLabelLocal(priceRangeValues[1])}</span>
         </div>
-        <div className="px-2">
+        <div className="px-3 py-2">
           <Slider
             value={priceRangeValues}
             min={priceConfig.min}
@@ -313,23 +313,23 @@ function FilterContent({
       </div>
 
       {/* Size Range Slider */}
-      <div className="space-y-3">
+      <div className="space-y-4 py-4 border-b border-border/50">
         <div className="flex items-center justify-between">
-          <Label className="text-sm font-medium">{t('filters.size')}</Label>
+          <Label className="text-base font-medium">{t('filters.size')}</Label>
           <div className="flex items-center gap-2">
-            <span className={cn("text-xs transition-colors", areaUnit === 'sqm' ? 'text-foreground font-medium' : 'text-muted-foreground')}>m²</span>
+            <span className={cn("text-sm transition-colors", areaUnit === 'sqm' ? 'text-foreground font-medium' : 'text-muted-foreground')}>m²</span>
             <Switch
               checked={areaUnit === 'sqft'}
               onCheckedChange={handleUnitToggle}
             />
-            <span className={cn("text-xs transition-colors", areaUnit === 'sqft' ? 'text-foreground font-medium' : 'text-muted-foreground')}>ft²</span>
+            <span className={cn("text-sm transition-colors", areaUnit === 'sqft' ? 'text-foreground font-medium' : 'text-muted-foreground')}>ft²</span>
           </div>
         </div>
         <div className="flex justify-between text-sm text-muted-foreground px-1">
           <span>{sizeRangeValues[0]} {sizeConfig.label}</span>
           <span>{sizeRangeValues[1] >= sizeConfig.max ? `${sizeConfig.max}+ ${sizeConfig.label}` : `${sizeRangeValues[1]} ${sizeConfig.label}`}</span>
         </div>
-        <div className="px-2">
+        <div className="px-3 py-2">
           <Slider
             value={sizeRangeValues}
             min={sizeConfig.min}
@@ -343,15 +343,15 @@ function FilterContent({
       </div>
 
       {/* Price per sqm/sqft Slider */}
-      <div className="space-y-3">
-        <Label className="text-sm font-medium">
+      <div className="space-y-4 py-4 border-b border-border/50">
+        <Label className="text-base font-medium">
           {t('filters.pricePerArea') || 'Price per'} {areaUnit === 'sqft' ? 'ft²' : 'm²'}
         </Label>
         <div className="flex justify-between text-sm text-muted-foreground px-1">
           <span>{formatPriceLabelLocal(pricePerSqmRangeValues[0])}</span>
           <span>{pricePerSqmRangeValues[1] >= pricePerSqmConfig.max ? `${formatPriceLabelLocal(pricePerSqmConfig.max)}+` : formatPriceLabelLocal(pricePerSqmRangeValues[1])}</span>
         </div>
-        <div className="px-2">
+        <div className="px-3 py-2">
           <Slider
             value={pricePerSqmRangeValues}
             min={pricePerSqmConfig.min}
@@ -365,7 +365,7 @@ function FilterContent({
       </div>
 
       {/* Collapsible Sections */}
-      <div className="border-t border-border pt-4 space-y-1">
+      <div className="space-y-0 pt-2">
         {/* Features Section */}
         <FilterSection title={t('filters.features')} icon={Home} activeCount={activeFeaturesCount}>
           <ToggleFilter 
@@ -1124,13 +1124,35 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   </span>
                 )}
               </div>
-              <DrawerContent className="max-h-[85vh]">
-                <DrawerHeader className="pb-2">
+              <DrawerContent className="max-h-[85vh] flex flex-col">
+                <DrawerHeader className="pb-4 border-b border-border">
                   <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
                 </DrawerHeader>
-                <ScrollArea className="flex-1 px-4 pb-8 overflow-y-auto">
+                <ScrollArea className="flex-1 px-4 overflow-y-auto">
                   <FilterContent {...filterContentProps} />
                 </ScrollArea>
+                {/* Airbnb-style footer */}
+                <div className="sticky bottom-0 left-0 right-0 px-6 py-4 bg-background border-t border-border flex items-center justify-between gap-4">
+                  {hasActiveFilters ? (
+                    <button
+                      onClick={clearFilters}
+                      className="text-sm font-medium text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
+                    >
+                      {t('filters.clearAll') || 'Clear all'}
+                    </button>
+                  ) : (
+                    <div />
+                  )}
+                  <Button
+                    onClick={() => setIsOpen(false)}
+                    className="bg-foreground text-background hover:bg-foreground/90 rounded-xl px-6 py-3 h-12 text-sm font-semibold min-w-[140px]"
+                  >
+                    {totalCount !== undefined 
+                      ? `${t('filters.show') || 'Show'} ${totalCount.toLocaleString()} ${totalCount === 1 ? t('filters.listing') || 'listing' : t('filters.listings') || 'listings'}`
+                      : t('filters.applyFilters')
+                    }
+                  </Button>
+                </div>
               </DrawerContent>
             </Drawer>
           ) : (
@@ -1148,13 +1170,35 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   </span>
                 )}
               </div>
-              <DialogContent className="sm:max-w-md max-h-[85vh] p-0 rounded-2xl">
-                <DialogHeader className="p-4 pb-2">
+              <DialogContent className="sm:max-w-lg max-h-[85vh] p-0 rounded-2xl flex flex-col">
+                <DialogHeader className="p-6 pb-4 border-b border-border">
                   <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
                 </DialogHeader>
-                <ScrollArea className="max-h-[calc(85vh-80px)] px-4 pb-6">
+                <ScrollArea className="flex-1 max-h-[calc(85vh-180px)] px-6">
                   <FilterContent {...filterContentProps} />
                 </ScrollArea>
+                {/* Airbnb-style footer */}
+                <div className="px-6 py-5 bg-background border-t border-border flex items-center justify-between gap-4">
+                  {hasActiveFilters ? (
+                    <button
+                      onClick={clearFilters}
+                      className="text-sm font-medium text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
+                    >
+                      {t('filters.clearAll') || 'Clear all'}
+                    </button>
+                  ) : (
+                    <div />
+                  )}
+                  <Button
+                    onClick={() => setIsOpen(false)}
+                    className="bg-foreground text-background hover:bg-foreground/90 rounded-xl px-6 py-3 h-12 text-sm font-semibold min-w-[160px]"
+                  >
+                    {totalCount !== undefined 
+                      ? `${t('filters.show') || 'Show'} ${totalCount.toLocaleString()} ${totalCount === 1 ? t('filters.listing') || 'listing' : t('filters.listings') || 'listings'}`
+                      : t('filters.applyFilters')
+                    }
+                  </Button>
+                </div>
               </DialogContent>
             </Dialog>
           )}
