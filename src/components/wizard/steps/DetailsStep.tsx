@@ -3,9 +3,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { Minus, Plus, Bed, Bath, Sofa, Square, Calendar, PawPrint, Armchair, ArrowRight } from 'lucide-react';
+import { Minus, Plus, Bed, Bath, Sofa, Square, Calendar, PawPrint, Armchair } from 'lucide-react';
 import { DatePicker } from '@/components/ui/date-picker';
-import { InfoTooltip } from '@/components/ui/info-tooltip';
 
 interface DetailsStepProps {
   description: string;
@@ -42,7 +41,8 @@ function CounterCard({
   min = 0, 
   max = 10,
   label,
-  icon: Icon
+  icon: Icon,
+  helperText
 }: { 
   value: number; 
   onChange: (v: number) => void; 
@@ -50,14 +50,18 @@ function CounterCard({
   max?: number;
   label: string;
   icon: React.ElementType;
+  helperText?: string;
 }) {
   return (
     <div className="flex-1 min-w-[140px] p-4 rounded-xl border border-border bg-card">
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-1">
         <Icon className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm font-medium text-muted-foreground">{label}</span>
       </div>
-      <div className="flex items-center justify-between">
+      {helperText && (
+        <p className="text-xs text-muted-foreground/70 mb-2">{helperText}</p>
+      )}
+      <div className={cn("flex items-center justify-between", !helperText && "mt-2")}>
         <button
           type="button"
           onClick={() => onChange(Math.max(min, value - 1))}
@@ -98,7 +102,7 @@ function ToggleCard({
   checked,
   onCheckedChange,
   children,
-  info
+  infoText
 }: {
   icon: React.ElementType;
   label: string;
@@ -106,7 +110,7 @@ function ToggleCard({
   checked: boolean;
   onCheckedChange: (checked: boolean) => void;
   children?: React.ReactNode;
-  info?: string;
+  infoText?: string;
 }) {
   return (
     <div className={cn(
@@ -121,11 +125,11 @@ function ToggleCard({
           <Icon className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <p className="font-medium text-foreground">{label}</p>
-            {info && <InfoTooltip content={info} />}
-          </div>
+          <p className="font-medium text-foreground">{label}</p>
           <p className="text-sm text-muted-foreground">{description}</p>
+          {infoText && (
+            <p className="text-xs text-muted-foreground/70 mt-1">{infoText}</p>
+          )}
         </div>
         <Switch checked={checked} onCheckedChange={onCheckedChange} />
       </div>
@@ -192,7 +196,15 @@ export function DetailsStep({
         {/* Section: Rooms */}
         <section className="space-y-4">
           <h3 className="text-lg font-semibold text-foreground">Rooms & Size</h3>
-          <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3">
+            <CounterCard
+              label="Living Rooms"
+              icon={Sofa}
+              value={livingRoomsNum}
+              onChange={(v) => onLivingRoomsChange(v.toString())}
+              min={0}
+              max={10}
+            />
             <CounterCard
               label="Bedrooms"
               icon={Bed}
@@ -209,23 +221,17 @@ export function DetailsStep({
               min={1}
               max={10}
             />
-            <CounterCard
-              label="Living Rooms"
-              icon={Sofa}
-              value={livingRoomsNum}
-              onChange={(v) => onLivingRoomsChange(v.toString())}
-              min={0}
-              max={10}
-            />
           </div>
 
           {/* Area */}
           <div className="p-4 rounded-xl border border-border bg-card">
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-2 mb-1">
               <Square className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">Living Area</span>
-              <InfoTooltip content="Internal living area only. Excludes balcony, basement, and storage spaces." />
             </div>
+            <p className="text-xs text-muted-foreground/70 mb-2">
+              Internal living area only. Excludes balcony, basement, and storage.
+            </p>
             <div className="flex items-baseline gap-2">
               <input
                 type="number"
@@ -248,7 +254,7 @@ export function DetailsStep({
             description="Property comes with furniture"
             checked={isFurnished}
             onCheckedChange={onFurnishedChange}
-            info="Includes essential furniture like beds, sofas, dining table. Specific appliances can be added in a later step."
+            infoText="Includes essential furniture like beds, sofas, dining table. Appliances can be added later."
           >
             <input
               type="text"
@@ -328,7 +334,7 @@ export function DetailsStep({
               description="Tenants can have pets"
               checked={allowsPets}
               onCheckedChange={onPetsChange}
-              info="Specify any restrictions on pet types, sizes, or number of pets allowed."
+              infoText="Specify any restrictions on pet types, sizes, or number of pets allowed."
             >
               <input
                 type="text"
