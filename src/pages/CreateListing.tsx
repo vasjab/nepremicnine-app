@@ -1214,12 +1214,21 @@ export default function CreateListing() {
   return (
     <div className="min-h-screen bg-background pb-24">
       <Header />
+      
+      {/* Sticky close button */}
+      <div className="fixed top-20 left-4 z-40">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={handleCloseClick}
+          className="bg-background/80 backdrop-blur-sm border-border shadow-sm"
+        >
+          <X className="h-4 w-4 mr-2" /> Close
+        </Button>
+      </div>
+
       <main className="pt-16">
         <div className="container mx-auto px-4 py-6">
-          <Button variant="ghost" className="mb-4" onClick={handleCloseClick}>
-            <X className="h-4 w-4 mr-2" /> Close
-          </Button>
-
           <WizardProgress steps={WIZARD_STEPS} currentStep={currentStep} onStepClick={handleStepClick} completedSteps={completedSteps} />
 
           <div className="mt-8 max-w-3xl mx-auto">
