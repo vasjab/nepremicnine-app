@@ -391,6 +391,8 @@ const translations = {
       closeButton: 'Close Preview',
       previewButton: 'Preview Listing',
       actionsDisabled: 'Actions are disabled in preview mode',
+      incompleteTitle: 'Incomplete Listing',
+      incompleteDescription: 'Missing fields: {fields}. You can still preview, but complete these before publishing.',
     },
   },
   sl: {
@@ -778,6 +780,8 @@ const translations = {
       closeButton: 'Zapri predogled',
       previewButton: 'Predogled oglasa',
       actionsDisabled: 'Dejanja so onemogočena v načinu predogleda',
+      incompleteTitle: 'Nepopoln oglas',
+      incompleteDescription: 'Manjkajoča polja: {fields}. Še vedno si lahko ogledate predogled, vendar jih izpolnite pred objavo.',
     },
   },
 } as const;

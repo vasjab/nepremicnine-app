@@ -348,6 +348,48 @@ export default function EditListing() {
     return touched[field] ? errors[field] : undefined;
   };
 
+  // Check required fields for preview validation
+  const getPreviewWarnings = (): string[] => {
+    const warnings: string[] = [];
+    const requiredFields = [
+      { field: 'title', label: 'Title' },
+      { field: 'price', label: 'Price' },
+      { field: 'address', label: 'Address' },
+      { field: 'city', label: 'City' },
+    ];
+
+    requiredFields.forEach(({ field, label }) => {
+      const value = formData[field as keyof typeof formData];
+      if (!value || (typeof value === 'string' && !value.trim())) {
+        warnings.push(label);
+      }
+    });
+
+    if (!coordinates && !manualCoordinates) {
+      warnings.push('Location (valid address)');
+    }
+
+    if (uploadedImages.length === 0) {
+      warnings.push('Images');
+    }
+
+    return warnings;
+  };
+
+  const handlePreviewClick = () => {
+    const warnings = getPreviewWarnings();
+    
+    if (warnings.length > 0) {
+      toast({
+        title: t('preview.incompleteTitle'),
+        description: t('preview.incompleteDescription', { fields: warnings.join(', ') }),
+        variant: 'default',
+      });
+    }
+    
+    setShowPreview(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -1271,7 +1313,7 @@ export default function EditListing() {
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => setShowPreview(true)}
+                onClick={handlePreviewClick}
               >
                 <Eye className="h-4 w-4 mr-2" />
                 {t('preview.previewButton')}
