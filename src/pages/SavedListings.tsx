@@ -28,7 +28,7 @@ export default function SavedListings() {
               {t('saved.signInToSave')}
             </p>
             <Link to="/auth">
-              <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button variant="accent">
                 {t('common.signIn')}
               </Button>
             </Link>
@@ -82,7 +82,7 @@ export default function SavedListings() {
                 {t('saved.noSavedYetDesc')}
               </p>
               <Link to="/">
-                <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+                <Button variant="accent">
                   {t('saved.browseListings')}
                 </Button>
               </Link>

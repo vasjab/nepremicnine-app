@@ -640,7 +640,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
             />
             <Button 
               onClick={handleSaveToken}
-              className="bg-accent text-accent-foreground hover:bg-accent/90"
+              variant="accent"
             >
               Save
             </Button>

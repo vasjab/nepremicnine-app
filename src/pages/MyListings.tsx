@@ -144,7 +144,7 @@ export default function MyListings() {
               {t('myListings.signInToManage')}
             </p>
             <Link to="/auth">
-              <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button variant="accent">
                 {t('common.signIn')}
               </Button>
             </Link>
@@ -392,7 +392,7 @@ export default function MyListings() {
               </p>
             </div>
             <Link to="/create-listing">
-              <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button variant="accent">
                 <Plus className="h-4 w-4 mr-2" />
                 {t('common.createListing')}
               </Button>
@@ -452,7 +452,7 @@ export default function MyListings() {
                 {t('myListings.noListingsYetDesc')}
               </p>
               <Link to="/create-listing">
-                <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+                <Button variant="accent">
                   <Plus className="h-4 w-4 mr-2" />
                   {t('myListings.createFirstListing')}
                 </Button>

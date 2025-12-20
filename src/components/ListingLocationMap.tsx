@@ -154,7 +154,7 @@ export function ListingLocationMap({ latitude, longitude, address }: ListingLoca
             <Button 
               onClick={handleSaveToken}
               size="sm"
-              className="bg-accent text-accent-foreground hover:bg-accent/90"
+              variant="accent"
             >
               Save
             </Button>

@@ -545,9 +545,10 @@ export function ListingDetailContent({
               )}
 
               <Button
+                variant="accent"
                 className={cn(
-                  "w-full bg-accent text-accent-foreground mb-3 h-12",
-                  "hover:bg-accent/90 hover:scale-[1.02] active:scale-[0.98]",
+                  "w-full mb-3 h-12",
+                  "hover:scale-[1.02] active:scale-[0.98]",
                   "transition-all duration-200 touch-target"
                 )}
                 disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}

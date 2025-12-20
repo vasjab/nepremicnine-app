@@ -1137,8 +1137,9 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                     <div />
                   )}
                   <Button
+                    variant="accent"
                     onClick={() => setIsOpen(false)}
-                    className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-xl px-6 py-3 h-12 text-sm font-semibold min-w-[140px]"
+                    className="rounded-xl px-6 py-3 h-12 text-sm font-semibold min-w-[140px]"
                   >
                     {totalCount !== undefined 
                       ? `${t('filters.show')} ${totalCount.toLocaleString()} ${totalCount === 1 ? t('filters.listing') : t('filters.listings')}`
@@ -1183,8 +1184,9 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                     <div />
                   )}
                   <Button
+                    variant="accent"
                     onClick={() => setIsOpen(false)}
-                    className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-xl px-6 py-3 h-12 text-sm font-semibold min-w-[160px]"
+                    className="rounded-xl px-6 py-3 h-12 text-sm font-semibold min-w-[160px]"
                   >
                     {totalCount !== undefined 
                       ? `${t('filters.show')} ${totalCount.toLocaleString()} ${totalCount === 1 ? t('filters.listing') : t('filters.listings')}`

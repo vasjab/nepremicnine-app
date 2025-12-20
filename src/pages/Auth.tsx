@@ -278,7 +278,8 @@ export default function Auth() {
 
             <Button 
               type="submit" 
-              className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+              variant="accent"
+              className="w-full"
               disabled={isLoading || isLimited}
             >
               {isLoading ? t('common.pleaseWait') : (isSignUp ? t('auth.createAccountBtn') : t('common.signIn'))}
