@@ -172,10 +172,12 @@ export type Database = {
           has_wheelchair_accessible: boolean | null
           has_wide_doorways: boolean | null
           has_window_shades: boolean | null
+          heating_distribution: string | null
           heating_type: string | null
           house_type: string | null
           id: string
           images: string[] | null
+          individual_heater_types: string[] | null
           internet_included: string | null
           is_active: boolean
           is_draft: boolean
@@ -298,10 +300,12 @@ export type Database = {
           has_wheelchair_accessible?: boolean | null
           has_wide_doorways?: boolean | null
           has_window_shades?: boolean | null
+          heating_distribution?: string | null
           heating_type?: string | null
           house_type?: string | null
           id?: string
           images?: string[] | null
+          individual_heater_types?: string[] | null
           internet_included?: string | null
           is_active?: boolean
           is_draft?: boolean
@@ -424,10 +428,12 @@ export type Database = {
           has_wheelchair_accessible?: boolean | null
           has_wide_doorways?: boolean | null
           has_window_shades?: boolean | null
+          heating_distribution?: string | null
           heating_type?: string | null
           house_type?: string | null
           id?: string
           images?: string[] | null
+          individual_heater_types?: string[] | null
           internet_included?: string | null
           is_active?: boolean
           is_draft?: boolean

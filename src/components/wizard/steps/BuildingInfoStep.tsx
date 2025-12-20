@@ -2,6 +2,7 @@ import { WizardStepWrapper } from '../WizardStepWrapper';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
 import { 
   Flame, 
@@ -12,6 +13,7 @@ import {
   Settings,
   RefreshCw,
   Heater,
+  Factory,
   type LucideIcon
 } from 'lucide-react';
 
@@ -23,11 +25,12 @@ interface BuildingInfoStepProps {
   heatingSource: string;
   heatPumpType: string;
   heatingTypeOther: string;
+  individualHeaterTypes: string[];
   energyRating: string;
   yearBuilt: string;
   propertyCondition: string;
   propertyType: string;
-  onChange: (field: string, value: string) => void;
+  onChange: (field: string, value: string | string[]) => void;
 }
 
 interface HeatingOption {
@@ -37,13 +40,16 @@ interface HeatingOption {
   info: string;
 }
 
+// Updated: Central or Individual (removed District from here - moved to heat source)
 const HEATING_DISTRIBUTION: HeatingOption[] = [
   { value: 'central', label: 'Central Heating', icon: Building2, info: 'One heating source distributes heat throughout the property via radiators, underfloor pipes, or vents' },
-  { value: 'individual', label: 'Individual Heaters', icon: Heater, info: 'Each room has its own heating unit (wall heaters, radiators, portable heaters)' },
-  { value: 'district', label: 'District Heating', icon: Flame, info: 'Heat supplied from a central municipal facility shared by multiple buildings' },
+  { value: 'individual', label: 'Individual Heaters', icon: Heater, info: 'Each room has its own heating unit (wall heaters, portable heaters, etc)' },
+  { value: 'both', label: 'Both', icon: Flame, info: 'Combination of central heating and individual heaters in some rooms' },
 ];
 
+// Updated: Added District Heating as a heat source option
 const HEATING_SOURCES: HeatingOption[] = [
+  { value: 'district', label: 'District Heating', icon: Factory, info: 'Heat supplied from a central municipal facility shared by multiple buildings' },
   { value: 'gas', label: 'Gas', icon: Fuel, info: 'Natural gas powered boiler or heaters' },
   { value: 'electric', label: 'Electric', icon: Zap, info: 'Electric boiler, radiators, or baseboard heaters' },
   { value: 'heat_pump', label: 'Heat Pump', icon: RefreshCw, info: 'Efficient system that extracts heat from air, water, or ground' },
@@ -57,6 +63,18 @@ const HEAT_PUMP_TYPES = [
   { value: 'air_to_water', label: 'Air-to-Water', info: 'Extracts heat from outdoor air, heats water for radiators or underfloor heating' },
   { value: 'ground_source', label: 'Ground Source (Geothermal)', info: 'Extracts heat from underground via buried pipes. Very efficient but higher install cost' },
   { value: 'water_source', label: 'Water Source', info: 'Extracts heat from a lake, well, or groundwater' },
+];
+
+// Individual heater types for multi-select when individual/both is selected
+const INDIVIDUAL_HEATER_TYPES = [
+  { value: 'electric_radiator', label: 'Electric Radiator' },
+  { value: 'wall_mounted_heater', label: 'Wall-mounted Heater' },
+  { value: 'air_to_air_heat_pump', label: 'Air-to-Air Heat Pump' },
+  { value: 'portable_heater', label: 'Portable Heater' },
+  { value: 'wood_stove', label: 'Wood Stove' },
+  { value: 'pellet_stove', label: 'Pellet Stove' },
+  { value: 'infrared_heater', label: 'Infrared Heater' },
+  { value: 'other', label: 'Other' },
 ];
 
 const ENERGY_RATINGS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
@@ -76,6 +94,7 @@ export function BuildingInfoStep({
   heatingSource,
   heatPumpType,
   heatingTypeOther,
+  individualHeaterTypes = [],
   energyRating,
   yearBuilt,
   propertyCondition,
@@ -87,11 +106,22 @@ export function BuildingInfoStep({
   
   const currentYear = new Date().getFullYear();
   
-  // Show heating source options for central and individual, but not district
-  const showHeatingSource = heatingDistribution === 'central' || heatingDistribution === 'individual';
+  // Show heating source options for central heating
+  const showHeatingSource = heatingDistribution === 'central' || heatingDistribution === 'both';
+  
+  // Show individual heater types when individual or both is selected
+  const showIndividualHeaterTypes = heatingDistribution === 'individual' || heatingDistribution === 'both';
   
   // Show heat pump type when heat pump is selected as source
   const showHeatPumpType = heatingSource === 'heat_pump';
+
+  const handleIndividualHeaterTypeToggle = (type: string) => {
+    const current = Array.isArray(individualHeaterTypes) ? individualHeaterTypes : [];
+    const newTypes = current.includes(type)
+      ? current.filter(t => t !== type)
+      : [...current, type];
+    onChange('individual_heater_types', newTypes);
+  };
 
   return (
     <WizardStepWrapper
@@ -165,7 +195,7 @@ export function BuildingInfoStep({
                   onClick={() => {
                     onChange('heating_distribution', type.value);
                     // Reset dependent fields when changing distribution
-                    if (type.value === 'district') {
+                    if (type.value === 'individual') {
                       onChange('heating_source', '');
                       onChange('heat_pump_type', '');
                     }
@@ -194,11 +224,11 @@ export function BuildingInfoStep({
           </div>
         </div>
 
-        {/* Heating System - Step 2: Heat Source */}
+        {/* Heating System - Step 2: Heat Source (for central or both) */}
         {showHeatingSource && (
           <div className="space-y-3">
             <Label>Heat source</Label>
-            <p className="text-xs text-muted-foreground -mt-1">What type of heating system powers the property?</p>
+            <p className="text-xs text-muted-foreground -mt-1">What type of heating system powers the central heating?</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {HEATING_SOURCES.map((type) => {
                 const Icon = type.icon;
@@ -275,6 +305,41 @@ export function BuildingInfoStep({
                     </span>
                     <span className="text-xs text-muted-foreground">{type.info}</span>
                   </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Individual Heater Types - Multi-select when individual or both is selected */}
+        {showIndividualHeaterTypes && (
+          <div className="space-y-3">
+            <Label>Individual heater types</Label>
+            <p className="text-xs text-muted-foreground -mt-1">Select all types of individual heaters present</p>
+            <div className="grid grid-cols-2 gap-3">
+              {INDIVIDUAL_HEATER_TYPES.map((type) => {
+                const isChecked = Array.isArray(individualHeaterTypes) && individualHeaterTypes.includes(type.value);
+                return (
+                  <label
+                    key={type.value}
+                    className={cn(
+                      "flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all duration-200",
+                      isChecked
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50 hover:bg-secondary/50"
+                    )}
+                  >
+                    <Checkbox
+                      checked={isChecked}
+                      onCheckedChange={() => handleIndividualHeaterTypeToggle(type.value)}
+                    />
+                    <span className={cn(
+                      "text-sm font-medium transition-colors",
+                      isChecked ? "text-primary" : "text-foreground"
+                    )}>
+                      {type.label}
+                    </span>
+                  </label>
                 );
               })}
             </div>
