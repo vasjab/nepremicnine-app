@@ -258,7 +258,7 @@ export function useSimilarListings(listing: Listing | null | undefined, limit: n
 // Type for creating a listing - new fields are optional with defaults in DB
 type CreateListingInput = Omit<Listing, 'id' | 'created_at' | 'updated_at' | 
   'floor_number' | 'total_floors_building' | 'property_floors' | 'has_elevator' |
-  'has_balcony' | 'has_terrace' | 'has_garden' | 'garden_sqm' |
+  'has_balcony' | 'balcony_sqm' | 'has_terrace' | 'terrace_sqm' | 'has_garden' | 'garden_sqm' |
   'has_parking' | 'parking_type' | 'parking_spaces' | 'has_garage' |
   'has_storage' | 'has_air_conditioning' | 'has_dishwasher' | 'has_washing_machine' |
   'heating_type' | 'energy_rating' | 'year_built' | 'property_condition' |
@@ -266,7 +266,7 @@ type CreateListingInput = Omit<Listing, 'id' | 'created_at' | 'updated_at' |
   'floor_plan_urls'
 > & Partial<Pick<Listing,
   'floor_number' | 'total_floors_building' | 'property_floors' | 'has_elevator' |
-  'has_balcony' | 'has_terrace' | 'has_garden' | 'garden_sqm' |
+  'has_balcony' | 'balcony_sqm' | 'has_terrace' | 'terrace_sqm' | 'has_garden' | 'garden_sqm' |
   'has_parking' | 'parking_type' | 'parking_spaces' | 'has_garage' |
   'has_storage' | 'has_air_conditioning' | 'has_dishwasher' | 'has_washing_machine' |
   'heating_type' | 'energy_rating' | 'year_built' | 'property_condition' |

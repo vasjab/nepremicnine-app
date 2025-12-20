@@ -34,7 +34,9 @@ interface FormData {
   property_floors: string;
   has_elevator: boolean;
   has_balcony: boolean;
+  balcony_sqm: string;
   has_terrace: boolean;
+  terrace_sqm: string;
   has_garden: boolean;
   garden_sqm: string;
   has_parking: boolean;
@@ -97,7 +99,9 @@ function formDataToListing(formData: FormData, uploadedImages: UploadedImage[], 
     property_floors: formData.property_floors ? parseInt(formData.property_floors) : null,
     has_elevator: formData.has_elevator || false,
     has_balcony: formData.has_balcony || false,
+    balcony_sqm: formData.balcony_sqm ? parseFloat(formData.balcony_sqm) : null,
     has_terrace: formData.has_terrace || false,
+    terrace_sqm: formData.terrace_sqm ? parseFloat(formData.terrace_sqm) : null,
     has_garden: formData.has_garden || false,
     garden_sqm: formData.garden_sqm ? parseFloat(formData.garden_sqm) : null,
     has_parking: formData.has_parking || false,

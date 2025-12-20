@@ -35,7 +35,9 @@ export interface Listing {
   
   // Outdoor features
   has_balcony: boolean;
+  balcony_sqm: number | null;
   has_terrace: boolean;
+  terrace_sqm: number | null;
   has_garden: boolean;
   garden_sqm: number | null;
   

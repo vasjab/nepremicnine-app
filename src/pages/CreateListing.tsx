@@ -193,7 +193,9 @@ export default function CreateListing() {
     has_elevator: false,
     // Outdoor
     has_balcony: false,
+    balcony_sqm: '',
     has_terrace: false,
+    terrace_sqm: '',
     has_garden: false,
     garden_sqm: '',
     // Parking
@@ -632,7 +634,9 @@ export default function CreateListing() {
         has_elevator: formData.has_elevator,
         // Outdoor
         has_balcony: formData.has_balcony,
+        balcony_sqm: formData.balcony_sqm ? parseFloat(formData.balcony_sqm) : null,
         has_terrace: formData.has_terrace,
+        terrace_sqm: formData.terrace_sqm ? parseFloat(formData.terrace_sqm) : null,
         has_garden: formData.has_garden,
         garden_sqm: formData.garden_sqm ? parseFloat(formData.garden_sqm) : null,
         // Parking
@@ -1130,6 +1134,20 @@ export default function CreateListing() {
                   />
                 </div>
 
+                {formData.has_balcony && (
+                  <div className="ml-4">
+                    <FormField label="Balcony Size (m²)" htmlFor="balcony_sqm">
+                      <Input
+                        id="balcony_sqm"
+                        type="number"
+                        placeholder="10"
+                        value={formData.balcony_sqm}
+                        onChange={(e) => handleChange('balcony_sqm', e.target.value)}
+                      />
+                    </FormField>
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between">
                   <div>
                     <Label htmlFor="has_terrace">Terrace</Label>
@@ -1141,6 +1159,20 @@ export default function CreateListing() {
                     onCheckedChange={(checked) => handleChange('has_terrace', checked)}
                   />
                 </div>
+
+                {formData.has_terrace && (
+                  <div className="ml-4">
+                    <FormField label="Terrace Size (m²)" htmlFor="terrace_sqm">
+                      <Input
+                        id="terrace_sqm"
+                        type="number"
+                        placeholder="20"
+                        value={formData.terrace_sqm}
+                        onChange={(e) => handleChange('terrace_sqm', e.target.value)}
+                      />
+                    </FormField>
+                  </div>
+                )}
 
                 <div className="flex items-center justify-between">
                   <div>
