@@ -581,7 +581,8 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
           <Button
             onClick={handleSend}
             disabled={(!newMessage.trim() && attachments.length === 0) || sendMessage.isPending}
-            className="h-[44px] w-[44px] flex-shrink-0 bg-accent text-accent-foreground hover:bg-accent/90"
+            variant="accent"
+            className="h-[44px] w-[44px] flex-shrink-0"
             size="icon"
           >
             {sendMessage.isPending ? (

@@ -112,7 +112,7 @@ export default function Messages() {
               Sign in to view your messages and contact landlords
             </p>
             <Link to="/auth">
-              <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button variant="accent">
                 Sign In
               </Button>
             </Link>

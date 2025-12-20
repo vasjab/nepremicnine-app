@@ -186,7 +186,7 @@ export default function ProfilePage() {
                 <div className="flex flex-col gap-3 pt-4">
                   <Button
                     onClick={handleSave}
-                    className="bg-accent text-accent-foreground hover:bg-accent/90"
+                    variant="accent"
                     disabled={saving}
                   >
                     <Save className="h-4 w-4 mr-2" />

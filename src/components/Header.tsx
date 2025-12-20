@@ -146,7 +146,7 @@ export function Header() {
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="rounded-full hover:bg-secondary touch-safe-button"
+                    className="rounded-full touch-safe-button"
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
                     <MessageCircle className="h-5 w-5" />
@@ -161,7 +161,7 @@ export function Header() {
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="gap-2 rounded-full border-border/50 hover:border-border hover:bg-secondary/50"
+                    className="gap-2 rounded-full"
                   >
                     <PlusCircle className="h-4 w-4" />
                     {t('common.createListing')}
@@ -174,7 +174,7 @@ export function Header() {
                       <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="rounded-full hover:bg-secondary"
+                        className="rounded-full"
                       >
                         <User className="h-5 w-5" />
                       </Button>
@@ -221,8 +221,9 @@ export function Header() {
                 </Link>
                 <Link to="/auth?mode=signup">
                   <Button 
+                    variant="accent"
                     size="sm" 
-                    className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-full px-4"
+                    className="rounded-full px-4"
                   >
                     {t('common.signUp')}
                   </Button>

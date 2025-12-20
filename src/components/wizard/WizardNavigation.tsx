@@ -60,7 +60,7 @@ export function WizardNavigation({
               variant="outline"
               onClick={onSaveDraft}
               disabled={isSubmitting}
-              className="gap-1 sm:gap-2 text-sm text-muted-foreground"
+              className="gap-1 sm:gap-2 text-sm"
             >
               <Save className="h-4 w-4" />
               <span className={cn(isMobile ? "inline" : "hidden sm:inline")}>
@@ -86,9 +86,10 @@ export function WizardNavigation({
         {/* Next/Submit button */}
         {isLastStep ? (
           <Button
+            variant="accent"
             onClick={onSubmit}
             disabled={!canProceed || isSubmitting}
-            className="min-w-[100px] sm:min-w-[140px] bg-accent text-accent-foreground hover:bg-accent/90 gap-1 sm:gap-2"
+            className="min-w-[100px] sm:min-w-[140px] gap-1 sm:gap-2"
           >
             {isSubmitting ? (
               <>
