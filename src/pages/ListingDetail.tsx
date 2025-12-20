@@ -308,10 +308,10 @@ export default function ListingDetail() {
         )}
 
         {/* Content */}
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-          <div className="grid lg:grid-cols-3 gap-8 lg:gap-12">
+        <div className="container mx-auto px-5 sm:px-8 lg:px-12 py-10 sm:py-12">
+          <div className="grid lg:grid-cols-3 gap-10 lg:gap-14">
             {/* Main content */}
-            <div className="lg:col-span-2 space-y-8 sm:space-y-10">
+            <div className="lg:col-span-2 space-y-10 sm:space-y-12">
               {/* Header */}
               <div>
                 <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-3">
@@ -349,20 +349,20 @@ export default function ListingDetail() {
 
               {/* Description */}
               {listing.description && (
-                <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
-                  <h2 className="text-lg font-semibold text-foreground mb-4 pb-3 border-b border-border/50">{t('listing.description')}</h2>
-                  <p className="text-muted-foreground whitespace-pre-line leading-relaxed">{listing.description}</p>
+                <div className="bg-card rounded-3xl p-6 sm:p-8 shadow-sm border border-border/50">
+                  <h2 className="text-xl font-semibold text-foreground mb-5 pb-4 border-b border-border/50">{t('listing.description')}</h2>
+                  <p className="text-muted-foreground whitespace-pre-line leading-relaxed text-base">{listing.description}</p>
                 </div>
               )}
 
               {/* Property Features */}
-              <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
+              <div className="bg-card rounded-3xl p-6 sm:p-8 shadow-sm border border-border/50">
                 <PropertyFeatures listing={listing} />
               </div>
 
               {/* Location Map */}
-              <div className="bg-card rounded-2xl p-6 shadow-sm border border-border/50">
-                <h2 className="text-lg font-semibold text-foreground mb-4 pb-3 border-b border-border/50">{t('listing.location')}</h2>
+              <div className="bg-card rounded-3xl p-6 sm:p-8 shadow-sm border border-border/50">
+                <h2 className="text-xl font-semibold text-foreground mb-5 pb-4 border-b border-border/50">{t('listing.location')}</h2>
                 <ListingLocationMap
                   latitude={listing.latitude}
                   longitude={listing.longitude}
@@ -376,7 +376,7 @@ export default function ListingDetail() {
 
             {/* Sidebar */}
             <div className="lg:col-span-1">
-              <div className="sticky top-24 bg-card rounded-2xl p-6 sm:p-8 shadow-lg border border-border/50">
+              <div className="sticky top-24 bg-card rounded-3xl p-6 sm:p-8 shadow-lg border border-border/50">
                 {/* Price section */}
                 <div className="mb-6 pb-6 border-b border-border/50">
                   <p className="text-sm text-muted-foreground mb-1">

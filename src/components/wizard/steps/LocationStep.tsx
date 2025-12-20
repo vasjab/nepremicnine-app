@@ -93,18 +93,7 @@ export function LocationStep({
             )}
           </div>
 
-          {/* Postal Code */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Postal Code</Label>
-            <Input
-              placeholder="111 22"
-              value={postalCode}
-              onChange={(e) => onPostalCodeChange(e.target.value)}
-              className="h-12"
-            />
-          </div>
-
-          {/* Address */}
+          {/* Street Address */}
           <div className="space-y-2">
             <Label className="text-sm font-medium">
               Street Address <span className="text-destructive">*</span>
@@ -127,6 +116,17 @@ export function LocationStep({
             {errors.address && (
               <p className="text-sm text-destructive">{errors.address}</p>
             )}
+          </div>
+
+          {/* Postal Code */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">Postal Code</Label>
+            <Input
+              placeholder="111 22"
+              value={postalCode}
+              onChange={(e) => onPostalCodeChange(e.target.value)}
+              className="h-12"
+            />
           </div>
 
           {/* Geocoding Status */}
