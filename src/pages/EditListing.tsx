@@ -58,7 +58,7 @@ const listingSchema = z.object({
   ).max(20, 'Maximum 20 images allowed'),
 });
 
-type PropertyType = 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other';
+type PropertyType = 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other' | 'summer_house';
 
 // Field validation rules
 const fieldValidators: Record<string, (value: string) => string | null> = {
@@ -169,6 +169,7 @@ export default function EditListing() {
     listing_type: 'rent' as 'rent' | 'sale',
     property_type: 'apartment' as PropertyType,
     property_type_other: '',
+    house_type: '',
     price: '',
     currency: 'SEK' as Currency,
     address: '',
@@ -180,7 +181,10 @@ export default function EditListing() {
     available_from: '',
     available_until: '',
     is_furnished: false,
+    furnished_details: '',
     allows_pets: false,
+    pets_details: '',
+    move_in_immediately: true,
     // Building & Floor
     floor_number: '',
     total_floors_building: '',
@@ -193,16 +197,60 @@ export default function EditListing() {
     terrace_sqm: '',
     has_garden: false,
     garden_sqm: '',
+    has_rooftop_terrace: false,
+    has_bbq_area: false,
+    has_playground: false,
+    has_waterfront: false,
+    has_view: false,
+    view_type: '',
     // Parking
     has_parking: false,
     parking_type: '' as string,
     parking_spaces: '',
     has_garage: false,
-    // Amenities
+    has_carport: false,
+    has_ev_charging: false,
+    has_bicycle_storage: false,
+    has_basement: false,
+    // Building Amenities
+    has_shared_laundry: false,
+    has_gym: false,
+    has_sauna: false,
+    has_pool: false,
+    has_common_room: false,
+    has_concierge: false,
+    has_security: false,
+    // Equipment
     has_storage: false,
     has_air_conditioning: false,
     has_dishwasher: false,
     has_washing_machine: false,
+    has_dryer: false,
+    // Energy & Comfort
+    has_fireplace: false,
+    has_floor_heating: false,
+    has_district_heating: false,
+    has_heat_pump: false,
+    has_ventilation: false,
+    has_solar_panels: false,
+    // Interior Highlights
+    has_high_ceilings: false,
+    has_large_windows: false,
+    has_smart_home: false,
+    has_built_in_wardrobes: false,
+    orientation: '',
+    // Accessibility
+    has_step_free_access: false,
+    has_wheelchair_accessible: false,
+    has_wide_doorways: false,
+    has_ground_floor_access: false,
+    has_elevator_from_garage: false,
+    // Safety
+    has_secure_entrance: false,
+    has_intercom: false,
+    has_gated_community: false,
+    has_fire_safety: false,
+    has_soundproofing: false,
     // Building Info
     heating_type: '' as string,
     heating_type_other: '',
@@ -214,6 +262,8 @@ export default function EditListing() {
     min_lease_months: '',
     internet_included: '' as string,
     utilities_included: '' as string,
+    utility_cost_estimate: '',
+    monthly_expenses: '',
   });
 
   // Manual coordinates (when user adjusts the marker)
@@ -250,8 +300,9 @@ export default function EditListing() {
         title: listing.title || '',
         description: listing.description || '',
         listing_type: listing.listing_type || 'rent',
-        property_type: listing.property_type || 'apartment',
+        property_type: (listing.property_type || 'apartment') as PropertyType,
         property_type_other: '',
+        house_type: (listing as any).house_type || '',
         price: listing.price?.toString() || '',
         currency: (listing.currency as Currency) || 'SEK',
         address: listing.address || '',
@@ -263,7 +314,10 @@ export default function EditListing() {
         available_from: listing.available_from || '',
         available_until: listing.available_until || '',
         is_furnished: listing.is_furnished || false,
+        furnished_details: (listing as any).furnished_details || '',
         allows_pets: listing.allows_pets || false,
+        pets_details: (listing as any).pets_details || '',
+        move_in_immediately: (listing as any).move_in_immediately ?? true,
         // Building & Floor
         floor_number: listing.floor_number?.toString() || '',
         total_floors_building: listing.total_floors_building?.toString() || '',
@@ -276,16 +330,60 @@ export default function EditListing() {
         terrace_sqm: listing.terrace_sqm?.toString() || '',
         has_garden: listing.has_garden || false,
         garden_sqm: listing.garden_sqm?.toString() || '',
+        has_rooftop_terrace: (listing as any).has_rooftop_terrace || false,
+        has_bbq_area: (listing as any).has_bbq_area || false,
+        has_playground: (listing as any).has_playground || false,
+        has_waterfront: (listing as any).has_waterfront || false,
+        has_view: (listing as any).has_view || false,
+        view_type: (listing as any).view_type || '',
         // Parking
         has_parking: listing.has_parking || false,
         parking_type: listing.parking_type || '',
         parking_spaces: listing.parking_spaces?.toString() || '',
         has_garage: listing.has_garage || false,
-        // Amenities
+        has_carport: (listing as any).has_carport || false,
+        has_ev_charging: (listing as any).has_ev_charging || false,
+        has_bicycle_storage: (listing as any).has_bicycle_storage || false,
+        has_basement: (listing as any).has_basement || false,
+        // Building Amenities
+        has_shared_laundry: (listing as any).has_shared_laundry || false,
+        has_gym: (listing as any).has_gym || false,
+        has_sauna: (listing as any).has_sauna || false,
+        has_pool: (listing as any).has_pool || false,
+        has_common_room: (listing as any).has_common_room || false,
+        has_concierge: (listing as any).has_concierge || false,
+        has_security: (listing as any).has_security || false,
+        // Equipment
         has_storage: listing.has_storage || false,
         has_air_conditioning: listing.has_air_conditioning || false,
         has_dishwasher: listing.has_dishwasher || false,
         has_washing_machine: listing.has_washing_machine || false,
+        has_dryer: (listing as any).has_dryer || false,
+        // Energy & Comfort
+        has_fireplace: (listing as any).has_fireplace || false,
+        has_floor_heating: (listing as any).has_floor_heating || false,
+        has_district_heating: (listing as any).has_district_heating || false,
+        has_heat_pump: (listing as any).has_heat_pump || false,
+        has_ventilation: (listing as any).has_ventilation || false,
+        has_solar_panels: (listing as any).has_solar_panels || false,
+        // Interior Highlights
+        has_high_ceilings: (listing as any).has_high_ceilings || false,
+        has_large_windows: (listing as any).has_large_windows || false,
+        has_smart_home: (listing as any).has_smart_home || false,
+        has_built_in_wardrobes: (listing as any).has_built_in_wardrobes || false,
+        orientation: (listing as any).orientation || '',
+        // Accessibility
+        has_step_free_access: (listing as any).has_step_free_access || false,
+        has_wheelchair_accessible: (listing as any).has_wheelchair_accessible || false,
+        has_wide_doorways: (listing as any).has_wide_doorways || false,
+        has_ground_floor_access: (listing as any).has_ground_floor_access || false,
+        has_elevator_from_garage: (listing as any).has_elevator_from_garage || false,
+        // Safety
+        has_secure_entrance: (listing as any).has_secure_entrance || false,
+        has_intercom: (listing as any).has_intercom || false,
+        has_gated_community: (listing as any).has_gated_community || false,
+        has_fire_safety: (listing as any).has_fire_safety || false,
+        has_soundproofing: (listing as any).has_soundproofing || false,
         // Building Info
         heating_type: listing.heating_type || '',
         heating_type_other: '',
@@ -297,6 +395,8 @@ export default function EditListing() {
         min_lease_months: listing.min_lease_months?.toString() || '',
         internet_included: listing.internet_included || '',
         utilities_included: listing.utilities_included || '',
+        utility_cost_estimate: (listing as any).utility_cost_estimate?.toString() || '',
+        monthly_expenses: (listing as any).monthly_expenses?.toString() || '',
       });
 
       // Set manual coordinates from existing listing

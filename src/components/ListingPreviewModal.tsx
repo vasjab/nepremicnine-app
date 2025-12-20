@@ -16,7 +16,8 @@ interface FormData {
   title: string;
   description: string;
   listing_type: 'rent' | 'sale';
-  property_type: 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other';
+  property_type: 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other' | 'summer_house';
+  house_type?: string;
   price: string;
   currency: Currency;
   address: string;
@@ -28,33 +29,87 @@ interface FormData {
   available_from: string;
   available_until: string;
   is_furnished: boolean;
+  furnished_details?: string;
   allows_pets: boolean;
+  pets_details?: string;
+  move_in_immediately?: boolean;
   floor_number: string;
   total_floors_building: string;
   property_floors: string;
   has_elevator: boolean;
+  // Outdoor
   has_balcony: boolean;
   balcony_sqm: string;
   has_terrace: boolean;
   terrace_sqm: string;
   has_garden: boolean;
   garden_sqm: string;
+  has_rooftop_terrace?: boolean;
+  has_bbq_area?: boolean;
+  has_playground?: boolean;
+  has_waterfront?: boolean;
+  has_view?: boolean;
+  view_type?: string;
+  // Parking
   has_parking: boolean;
   parking_type: string;
   parking_spaces: string;
   has_garage: boolean;
+  has_carport?: boolean;
+  has_ev_charging?: boolean;
+  has_bicycle_storage?: boolean;
+  has_basement?: boolean;
+  // Building Amenities
+  has_shared_laundry?: boolean;
+  has_gym?: boolean;
+  has_sauna?: boolean;
+  has_pool?: boolean;
+  has_common_room?: boolean;
+  has_concierge?: boolean;
+  has_security?: boolean;
+  // Equipment
   has_storage: boolean;
   has_air_conditioning: boolean;
   has_dishwasher: boolean;
   has_washing_machine: boolean;
+  has_dryer?: boolean;
+  // Energy & Comfort
+  has_fireplace?: boolean;
+  has_floor_heating?: boolean;
+  has_district_heating?: boolean;
+  has_heat_pump?: boolean;
+  has_ventilation?: boolean;
+  has_solar_panels?: boolean;
+  // Interior Highlights
+  has_high_ceilings?: boolean;
+  has_large_windows?: boolean;
+  has_smart_home?: boolean;
+  has_built_in_wardrobes?: boolean;
+  orientation?: string;
+  // Accessibility
+  has_step_free_access?: boolean;
+  has_wheelchair_accessible?: boolean;
+  has_wide_doorways?: boolean;
+  has_ground_floor_access?: boolean;
+  has_elevator_from_garage?: boolean;
+  // Safety
+  has_secure_entrance?: boolean;
+  has_intercom?: boolean;
+  has_gated_community?: boolean;
+  has_fire_safety?: boolean;
+  has_soundproofing?: boolean;
+  // Building Info
   heating_type: string;
   energy_rating: string;
   year_built: string;
   property_condition: string;
+  // Rental Terms
   deposit_amount: string;
   min_lease_months: string;
   internet_included: string;
   utilities_included: string;
+  utility_cost_estimate?: string;
+  monthly_expenses?: string;
 }
 
 interface ListingPreviewModalProps {
@@ -72,7 +127,8 @@ function formDataToListing(formData: FormData, uploadedImages: UploadedImage[], 
     title: formData.title || 'Untitled Listing',
     description: formData.description || null,
     listing_type: formData.listing_type,
-    property_type: formData.property_type,
+    property_type: formData.property_type === 'summer_house' ? 'house' : formData.property_type,
+    house_type: formData.house_type || null,
     price: parseFloat(formData.price) || 0,
     currency: formData.currency,
     address: formData.address || 'Address not set',
@@ -87,7 +143,10 @@ function formDataToListing(formData: FormData, uploadedImages: UploadedImage[], 
     available_from: formData.available_from || null,
     available_until: formData.available_until || null,
     is_furnished: formData.is_furnished || false,
+    furnished_details: formData.furnished_details || null,
     allows_pets: formData.allows_pets || false,
+    pets_details: formData.pets_details || null,
+    move_in_immediately: formData.move_in_immediately || false,
     images: uploadedImages.map(img => img.url),
     floor_plan_url: null,
     floor_plan_urls: [],
@@ -98,28 +157,79 @@ function formDataToListing(formData: FormData, uploadedImages: UploadedImage[], 
     total_floors_building: formData.total_floors_building ? parseInt(formData.total_floors_building) : null,
     property_floors: formData.property_floors ? parseInt(formData.property_floors) : null,
     has_elevator: formData.has_elevator || false,
+    // Outdoor
     has_balcony: formData.has_balcony || false,
     balcony_sqm: formData.balcony_sqm ? parseFloat(formData.balcony_sqm) : null,
     has_terrace: formData.has_terrace || false,
     terrace_sqm: formData.terrace_sqm ? parseFloat(formData.terrace_sqm) : null,
     has_garden: formData.has_garden || false,
     garden_sqm: formData.garden_sqm ? parseFloat(formData.garden_sqm) : null,
+    has_rooftop_terrace: formData.has_rooftop_terrace || false,
+    has_bbq_area: formData.has_bbq_area || false,
+    has_playground: formData.has_playground || false,
+    has_waterfront: formData.has_waterfront || false,
+    has_view: formData.has_view || false,
+    view_type: formData.view_type || null,
+    // Parking
     has_parking: formData.has_parking || false,
     parking_type: (formData.parking_type || null) as 'street' | 'designated' | 'underground' | 'private' | null,
     parking_spaces: formData.parking_spaces ? parseInt(formData.parking_spaces) : null,
     has_garage: formData.has_garage || false,
+    has_carport: formData.has_carport || false,
+    has_ev_charging: formData.has_ev_charging || false,
+    has_bicycle_storage: formData.has_bicycle_storage || false,
+    has_basement: formData.has_basement || false,
+    // Building Amenities
+    has_shared_laundry: formData.has_shared_laundry || false,
+    has_gym: formData.has_gym || false,
+    has_sauna: formData.has_sauna || false,
+    has_pool: formData.has_pool || false,
+    has_common_room: formData.has_common_room || false,
+    has_concierge: formData.has_concierge || false,
+    has_security: formData.has_security || false,
+    // Equipment
     has_storage: formData.has_storage || false,
     has_air_conditioning: formData.has_air_conditioning || false,
     has_dishwasher: formData.has_dishwasher || false,
     has_washing_machine: formData.has_washing_machine || false,
+    has_dryer: formData.has_dryer || false,
+    // Energy & Comfort
+    has_fireplace: formData.has_fireplace || false,
+    has_floor_heating: formData.has_floor_heating || false,
+    has_district_heating: formData.has_district_heating || false,
+    has_heat_pump: formData.has_heat_pump || false,
+    has_ventilation: formData.has_ventilation || false,
+    has_solar_panels: formData.has_solar_panels || false,
+    // Interior Highlights
+    has_high_ceilings: formData.has_high_ceilings || false,
+    has_large_windows: formData.has_large_windows || false,
+    has_smart_home: formData.has_smart_home || false,
+    has_built_in_wardrobes: formData.has_built_in_wardrobes || false,
+    orientation: formData.orientation || null,
+    // Accessibility
+    has_step_free_access: formData.has_step_free_access || false,
+    has_wheelchair_accessible: formData.has_wheelchair_accessible || false,
+    has_wide_doorways: formData.has_wide_doorways || false,
+    has_ground_floor_access: formData.has_ground_floor_access || false,
+    has_elevator_from_garage: formData.has_elevator_from_garage || false,
+    // Safety
+    has_secure_entrance: formData.has_secure_entrance || false,
+    has_intercom: formData.has_intercom || false,
+    has_gated_community: formData.has_gated_community || false,
+    has_fire_safety: formData.has_fire_safety || false,
+    has_soundproofing: formData.has_soundproofing || false,
+    // Building Info
     heating_type: (formData.heating_type || null) as 'central' | 'electric' | 'gas' | 'heat_pump' | 'other' | null,
     energy_rating: (formData.energy_rating || null) as 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | null,
     year_built: formData.year_built ? parseInt(formData.year_built) : null,
     property_condition: (formData.property_condition || null) as 'new' | 'renovated' | 'good' | 'needs_work' | null,
+    // Rental Terms
     deposit_amount: formData.deposit_amount ? parseFloat(formData.deposit_amount) : null,
     min_lease_months: formData.min_lease_months ? parseInt(formData.min_lease_months) : null,
     internet_included: (formData.internet_included || null) as 'yes' | 'no' | 'available' | null,
     utilities_included: (formData.utilities_included || null) as 'yes' | 'no' | 'partial' | null,
+    utility_cost_estimate: formData.utility_cost_estimate ? parseFloat(formData.utility_cost_estimate) : null,
+    monthly_expenses: formData.monthly_expenses ? parseFloat(formData.monthly_expenses) : null,
   };
 }
 
