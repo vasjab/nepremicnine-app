@@ -159,7 +159,7 @@ const Index = () => {
       
       <main className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
         {/* Left panel - Listings */}
-        <div className={`w-full lg:w-[480px] xl:w-[540px] flex flex-col border-r border-border overflow-hidden ${
+        <div className={`w-full lg:w-[480px] xl:w-[540px] 2xl:w-[780px] flex flex-col border-r border-border overflow-hidden ${
           mobileView === 'map' ? 'hidden lg:flex' : 'flex flex-1 min-h-0'
         }`}>
           {/* For Rent / For Sale Tabs */}
@@ -239,7 +239,7 @@ const Index = () => {
             {isLoading ? (
               <ListingSkeletonGrid count={4} />
             ) : visibleListings.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2 gap-3 sm:gap-4">
                 {visibleListings.map((listing, index) => (
                   <div
                     key={listing.id}
