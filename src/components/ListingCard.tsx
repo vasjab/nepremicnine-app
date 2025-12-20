@@ -15,12 +15,11 @@ import {
 
 interface ListingCardProps {
   listing: Listing;
-  isActive?: boolean;
   onClick?: () => void;
   showStatusOverlay?: boolean;
 }
 
-export function ListingCard({ listing, isActive, onClick, showStatusOverlay = false }: ListingCardProps) {
+export function ListingCard({ listing, onClick, showStatusOverlay = false }: ListingCardProps) {
   const { user } = useAuth();
   const { t } = useTranslation();
   const { formatPrice, formatArea, areaUnit } = useFormattedPrice();
