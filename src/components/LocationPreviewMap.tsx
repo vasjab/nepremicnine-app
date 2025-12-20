@@ -221,6 +221,20 @@ export function LocationPreviewMap({
         </div>
       )}
       
+      {/* Floating reset button on map */}
+      {showMap && mapReady && isManuallyAdjusted && onResetLocation && (
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={onResetLocation}
+          className="absolute top-2 left-2 bg-background/95 backdrop-blur-sm shadow-md z-10"
+        >
+          <RotateCcw className="h-4 w-4 mr-1" />
+          Reset to original
+        </Button>
+      )}
+
       {/* Help text overlay */}
       {showMap && mapReady && onLocationChange && (
         <div className="absolute bottom-2 left-2 right-2 bg-background/90 backdrop-blur-sm rounded px-2 py-1 text-xs text-muted-foreground text-center">
