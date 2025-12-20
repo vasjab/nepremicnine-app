@@ -4,6 +4,7 @@ import { List, MapIcon } from 'lucide-react';
 import { Listing, ListingFilters, SortOption } from '@/types/listing';
 import { useListings } from '@/hooks/useListings';
 import { useMobileViewPreference } from '@/hooks/useMobileViewPreference';
+import { useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/Header';
 import { FilterBar } from '@/components/FilterBar';
 import { ListingCard } from '@/components/ListingCard';
@@ -23,6 +24,7 @@ interface MapBounds {
 const Index = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuth();
   const [filters, setFilters] = useState<ListingFilters>({});
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
@@ -32,7 +34,7 @@ const Index = () => {
   const listingRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const listContainerRef = useRef<HTMLDivElement>(null);
   
-  const { data: allListings, isLoading } = useListings(filters);
+  const { data: allListings, isLoading } = useListings(filters, user?.id);
 
   // Filter listings based on map bounds
   const filteredListings = useMemo(() => {
@@ -133,6 +135,7 @@ const Index = () => {
             sortBy={sortBy}
             onSortChange={setSortBy}
             totalCount={visibleListings.length}
+            userId={user?.id}
           />
           
           <div ref={listContainerRef} className="flex-1 overflow-y-auto p-3 sm:p-4">
