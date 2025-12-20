@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { Heart, ChevronLeft, ChevronRight, Building2, Car, TreePine, Snowflake, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
+import { Heart, ChevronLeft, ChevronRight, Building2, Car, TreePine, Snowflake, TrendingUp, TrendingDown } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -107,6 +108,15 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
   const hasFinalPrice = listing.final_price && listing.final_price > 0;
   const priceDiff = hasFinalPrice ? listing.final_price! - listing.price : 0;
   const priceDiffPercent = listing.price > 0 ? ((priceDiff / listing.price) * 100).toFixed(1) : '0';
+
+  // Format listing date - show relative for recent, absolute for older
+  const listingDate = listing.created_at ? new Date(listing.created_at) : null;
+  const daysAgo = listingDate ? differenceInDays(new Date(), listingDate) : 0;
+  const formattedDate = listingDate 
+    ? daysAgo <= 30 
+      ? formatDistanceToNow(listingDate, { addSuffix: true })
+      : format(listingDate, 'MMM d, yyyy')
+    : null;
 
   return (
     <article
@@ -299,9 +309,16 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               </span>
             )}
           </div>
-          <span className="text-xs text-muted-foreground font-medium">
-            {listing.city}
-          </span>
+          <div className="flex flex-col items-end text-right">
+            {formattedDate && (
+              <span className="text-xs text-muted-foreground">
+                {formattedDate}
+              </span>
+            )}
+            <span className="text-xs text-muted-foreground font-medium">
+              {listing.city}
+            </span>
+          </div>
         </div>
       </div>
     </article>

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
 import { Listing } from '@/types/listing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -268,6 +269,15 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
           showPeriod: listing.listing_type === 'rent' 
         });
 
+        // Format listing date for popup
+        const popupListingDate = listing.created_at ? new Date(listing.created_at) : null;
+        const popupDaysAgo = popupListingDate ? differenceInDays(new Date(), popupListingDate) : 0;
+        const popupFormattedDate = popupListingDate 
+          ? popupDaysAgo <= 30 
+            ? formatDistanceToNow(popupListingDate, { addSuffix: true })
+            : format(popupListingDate, 'MMM d, yyyy')
+          : null;
+
         const dotsHtml = hasMultipleImages 
           ? `<div class="popup-dots-${listing.id}" style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; z-index: 10;">
               ${images.map((_, i) => `<span class="popup-dot-${listing.id}" data-index="${i}" style="width: 6px; height: 6px; border-radius: 50%; background: ${i === 0 ? 'white' : 'rgba(255,255,255,0.6)'}; cursor: pointer; transition: all 0.2s;"></span>`).join('')}
@@ -312,9 +322,10 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
               ${dotsHtml}
             </div>
             <div style="padding: 14px;">
-              <div style="font-size: 11px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px;">
+              <div style="font-size: 11px; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px;">
                 ${propertyTypeLabels[listing.property_type] || t('propertyTypes.other')} • ${listing.listing_type === 'rent' ? t('map.forRent') : t('map.forSale')}
               </div>
+              ${popupFormattedDate ? `<div style="font-size: 10px; color: #999; margin-bottom: 6px;">${popupFormattedDate}</div>` : ''}
               <div style="font-size: 15px; font-weight: 600; color: #2d2319; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                 ${listing.address}
               </div>
