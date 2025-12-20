@@ -1,12 +1,13 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink, Eye, Clock, MessageCircle, Flame } from 'lucide-react';
 import { useListing } from '@/hooks/useListings';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
 import { useTrackListingView, useTrackLocalListingView } from '@/hooks/useRecentlyViewed';
 import { useGetOrCreateConversation } from '@/hooks/useMessaging';
 import { useSwipe } from '@/hooks/useSwipe';
+import { useListingStats } from '@/hooks/useListingStats';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,6 +34,7 @@ export default function ListingDetail() {
   const { formatPrice, formatArea } = useFormattedPrice();
   const { t, language } = useTranslation();
   const { toast } = useToast();
+  const { data: listingStats } = useListingStats(id, listing?.created_at);
   const [showGallery, setShowGallery] = useState(false);
   const [scrollToFloorPlan, setScrollToFloorPlan] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -385,7 +387,40 @@ export default function ListingDetail() {
                   </p>
                 </div>
 
-                <Button 
+                {/* Listing Stats */}
+                <div className="grid grid-cols-3 gap-2 mb-6 py-4 border-t border-b border-border">
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <Eye className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-semibold">{listingStats?.viewCount ?? 0}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t('listing.views')}</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-semibold">{listingStats?.daysListed ?? 0}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t('listing.daysListed')}</p>
+                  </div>
+                  <div className="text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <MessageCircle className="h-4 w-4 text-muted-foreground" />
+                      <span className="font-semibold">{listingStats?.contactCount ?? 0}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{t('listing.inquiries')}</p>
+                  </div>
+                </div>
+
+                {/* Hot listing badge */}
+                {listingStats?.isHotListing && (
+                  <div className="flex items-center gap-2 bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-300 rounded-lg px-3 py-2 mb-4">
+                    <Flame className="h-4 w-4" />
+                    <span className="text-sm font-medium">{t('listing.hotListing')}</span>
+                  </div>
+                )}
+
+                <Button
                   className="w-full bg-accent text-accent-foreground hover:bg-accent/90 mb-3"
                   disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
                   onClick={async () => {

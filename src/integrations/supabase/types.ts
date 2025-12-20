@@ -52,6 +52,35 @@ export type Database = {
           },
         ]
       }
+      listing_stats: {
+        Row: {
+          created_at: string | null
+          id: string
+          listing_id: string
+          view_count: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          listing_id: string
+          view_count?: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          listing_id?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_stats_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: true
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           address: string
@@ -504,6 +533,10 @@ export type Database = {
         Returns: boolean
       }
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
+      increment_listing_view: {
+        Args: { p_listing_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       listing_type: "rent" | "sale"

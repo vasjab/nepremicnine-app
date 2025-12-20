@@ -236,6 +236,10 @@ const translations = {
       included: 'Included',
       notIncluded: 'Not included',
       partiallyIncluded: 'Partially included',
+      views: 'Views',
+      daysListed: 'Days listed',
+      inquiries: 'Inquiries',
+      hotListing: 'Hot listing!',
     },
     auth: {
       createAccount: 'Create an account',
@@ -655,6 +659,10 @@ const translations = {
       included: 'Vključeno',
       notIncluded: 'Ni vključeno',
       partiallyIncluded: 'Delno vključeno',
+      views: 'Ogledi',
+      daysListed: 'Dni objavljeno',
+      inquiries: 'Povpraševanj',
+      hotListing: 'Vroča ponudba!',
     },
     auth: {
       createAccount: 'Ustvari račun',
