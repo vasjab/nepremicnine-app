@@ -438,6 +438,19 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
     });
   }, [activeListing]);
 
+  // Add ResizeObserver to trigger map resize when container size changes
+  useEffect(() => {
+    if (!mapContainer.current || !map.current || !mapReady) return;
+    
+    const resizeObserver = new ResizeObserver(() => {
+      map.current?.resize();
+    });
+    
+    resizeObserver.observe(mapContainer.current);
+    
+    return () => resizeObserver.disconnect();
+  }, [mapReady]);
+
   // Show token input if no token is available
   if (!mapboxToken || mapError) {
     return (
