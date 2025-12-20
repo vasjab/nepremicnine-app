@@ -80,7 +80,7 @@ export function WizardNavigation({
               className="gap-1 sm:gap-2 text-sm"
             >
               <Eye className="h-4 w-4" />
-              <span className="hidden sm:inline">Preview</span>
+              <span>Preview</span>
             </Button>
           )}
 
@@ -90,10 +90,10 @@ export function WizardNavigation({
               variant="outline"
               onClick={onSkip}
               disabled={isSubmitting}
-              className="text-muted-foreground"
+              className="text-muted-foreground gap-1 sm:gap-2"
             >
-              <SkipForward className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Skip</span>
+              <SkipForward className="h-4 w-4" />
+              <span>Skip</span>
             </Button>
           )}
         </div>

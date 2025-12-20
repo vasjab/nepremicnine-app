@@ -58,6 +58,7 @@ const PARKING_TYPES = [
 ];
 
 const EV_CHARGER_POWER = [
+  { value: 'unknown', label: 'Unknown' },
   { value: '3.7', label: '3.7 kW (Slow - ~25 km/h)' },
   { value: '7.4', label: '7.4 kW (Standard - ~50 km/h)' },
   { value: '11', label: '11 kW (Fast - ~75 km/h)' },

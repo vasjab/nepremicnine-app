@@ -452,6 +452,7 @@ export default function CreateListing() {
     // Only allow clicking on completed or current step
     if (completedSteps.has(stepIndex) || stepIndex <= currentStep) {
       setCurrentStep(stepIndex);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -459,18 +460,21 @@ export default function CreateListing() {
     if (currentStep < WIZARD_STEPS.length - 1) {
       setCompletedSteps((prev) => new Set([...prev, currentStep]));
       setCurrentStep((prev) => prev + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handleBack = () => {
     if (currentStep > 0) {
       setCurrentStep((prev) => prev - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handleSkip = () => {
     if (currentStep < WIZARD_STEPS.length - 1) {
       setCurrentStep((prev) => prev + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -1134,11 +1138,11 @@ export default function CreateListing() {
             {resumeId ? 'Edit Listing' : 'New Listing'}
           </span>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             onClick={handleSaveDraft}
             disabled={createListing.isPending || updateListing.isPending || isSavingDraft}
-            className="text-muted-foreground touch-safe-button min-h-[44px]"
+            className="touch-safe-button min-h-[44px] border-border"
             style={{ WebkitTapHighlightColor: 'transparent' }}
           >
             Save Draft
