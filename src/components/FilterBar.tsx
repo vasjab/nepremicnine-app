@@ -66,6 +66,7 @@ interface FilterBarProps {
   onSortChange: (sort: SortOption) => void;
   totalCount?: number;
   userId?: string;
+  isCollapsed?: boolean;
 }
 
 // Price ranges by listing type
@@ -645,7 +646,7 @@ function FilterContent({
   );
 }
 
-export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount, userId }: FilterBarProps) {
+export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount, userId, isCollapsed = false }: FilterBarProps) {
   const { t } = useTranslation();
   const { formatPriceLabel, currencySymbol } = useFormattedPrice();
   const isMobile = useIsMobile();
@@ -964,106 +965,115 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   return (
     <div className="bg-background border-b border-border/50">
       <div className="p-4">
-        {/* Title */}
-        <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">
-          {t('common.findHome')}
-        </h1>
+        {/* Collapsible Title & Search Section */}
+        <div className={cn(
+          "transition-all duration-300 ease-out",
+          isCollapsed ? "h-0 opacity-0 overflow-hidden mb-0" : "h-auto opacity-100"
+        )}>
+          {/* Title */}
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">
+            {t('common.findHome')}
+          </h1>
 
-        {/* Search input + Filter button inline */}
-        <div className="flex items-center gap-3">
-          <form onSubmit={handleSearch} className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
-            <Input
-              placeholder={t('filters.searchPlaceholder') || 'Search by city, title, keywords...'}
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              className="w-full pl-11 pr-10 h-12 text-sm bg-secondary border-0 rounded-xl focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0"
-            />
-            {searchValue && (
-              <button
-                type="button"
-                onClick={clearSearch}
-                className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground hover:text-foreground transition-colors rounded-full"
-              >
-                <X className="h-4 w-4" />
-              </button>
+          {/* Search input + Filter button inline */}
+          <div className="flex items-center gap-3">
+            <form onSubmit={handleSearch} className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+              <Input
+                placeholder={t('filters.searchPlaceholder') || 'Search by city, title, keywords...'}
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                className="w-full pl-11 pr-10 h-12 text-sm bg-secondary border-0 rounded-xl focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0"
+              />
+              {searchValue && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground hover:text-foreground transition-colors rounded-full"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </form>
+
+            {/* Filter button - Drawer on mobile, Dialog on desktop */}
+            {isMobile ? (
+              <Drawer open={isOpen} onOpenChange={setIsOpen}>
+                <DrawerTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="relative shrink-0 rounded-xl h-12 w-12 border-border/50"
+                  >
+                    <SlidersHorizontal className="h-5 w-5" />
+                    {totalActiveFilters > 0 && (
+                      <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
+                        {totalActiveFilters}
+                      </Badge>
+                    )}
+                  </Button>
+                </DrawerTrigger>
+                <DrawerContent className="max-h-[85vh]">
+                  <DrawerHeader className="pb-2">
+                    <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
+                  </DrawerHeader>
+                  <ScrollArea className="flex-1 px-4 pb-8 overflow-y-auto">
+                    <FilterContent {...filterContentProps} />
+                  </ScrollArea>
+                </DrawerContent>
+              </Drawer>
+            ) : (
+              <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="relative shrink-0 rounded-xl h-12 w-12 border-border/50"
+                  >
+                    <SlidersHorizontal className="h-5 w-5" />
+                    {totalActiveFilters > 0 && (
+                      <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
+                        {totalActiveFilters}
+                      </Badge>
+                    )}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md max-h-[85vh] p-0 rounded-2xl">
+                  <DialogHeader className="p-4 pb-2">
+                    <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
+                  </DialogHeader>
+                  <ScrollArea className="max-h-[calc(85vh-80px)] px-4 pb-6">
+                    <FilterContent {...filterContentProps} />
+                  </ScrollArea>
+                </DialogContent>
+              </Dialog>
             )}
-          </form>
+          </div>
 
-          {/* Filter button - Drawer on mobile, Dialog on desktop */}
-          {isMobile ? (
-            <Drawer open={isOpen} onOpenChange={setIsOpen}>
-              <DrawerTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="relative shrink-0 rounded-xl h-12 w-12 border-border/50"
+          {/* Active filter chips */}
+          {activeChips.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap mt-4">
+              {activeChips.map((chip) => (
+                <Badge
+                  key={chip.label}
+                  variant="secondary"
+                  className="pl-3 pr-2 py-1.5 gap-1.5 cursor-pointer hover:bg-secondary/80 transition-all rounded-full text-xs font-medium press-effect"
+                  onClick={chip.onRemove}
                 >
-                  <SlidersHorizontal className="h-5 w-5" />
-                  {totalActiveFilters > 0 && (
-                    <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
-                      {totalActiveFilters}
-                    </Badge>
-                  )}
-                </Button>
-              </DrawerTrigger>
-              <DrawerContent className="max-h-[85vh]">
-                <DrawerHeader className="pb-2">
-                  <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
-                </DrawerHeader>
-                <ScrollArea className="flex-1 px-4 pb-8 overflow-y-auto">
-                  <FilterContent {...filterContentProps} />
-                </ScrollArea>
-              </DrawerContent>
-            </Drawer>
-          ) : (
-            <Dialog open={isOpen} onOpenChange={setIsOpen}>
-              <DialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="icon" 
-                  className="relative shrink-0 rounded-xl h-12 w-12 border-border/50"
-                >
-                  <SlidersHorizontal className="h-5 w-5" />
-                  {totalActiveFilters > 0 && (
-                    <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
-                      {totalActiveFilters}
-                    </Badge>
-                  )}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md max-h-[85vh] p-0 rounded-2xl">
-                <DialogHeader className="p-4 pb-2">
-                  <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
-                </DialogHeader>
-                <ScrollArea className="max-h-[calc(85vh-80px)] px-4 pb-6">
-                  <FilterContent {...filterContentProps} />
-                </ScrollArea>
-              </DialogContent>
-            </Dialog>
+                  {chip.label}
+                  <X className="h-3 w-3" />
+                </Badge>
+              ))}
+            </div>
           )}
         </div>
 
-        {/* Active filter chips */}
-        {activeChips.length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap mt-4">
-            {activeChips.map((chip) => (
-              <Badge
-                key={chip.label}
-                variant="secondary"
-                className="pl-3 pr-2 py-1.5 gap-1.5 cursor-pointer hover:bg-secondary/80 transition-all rounded-full text-xs font-medium press-effect"
-                onClick={chip.onRemove}
-              >
-                {chip.label}
-                <X className="h-3 w-3" />
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        {/* Results count and sort */}
+        {/* Results count and sort - Always visible */}
         {totalCount !== undefined && (
-          <div className="mt-4 flex items-center justify-between gap-2">
+          <div className={cn(
+            "flex items-center justify-between gap-2",
+            !isCollapsed && "mt-4"
+          )}>
             <p className="text-sm text-muted-foreground">
               {totalCount === 1 ? t('listing.listingCount', { count: totalCount }) : t('listing.listingsCount', { count: totalCount.toLocaleString() })}
             </p>
