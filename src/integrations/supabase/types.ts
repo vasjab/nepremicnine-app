@@ -94,6 +94,7 @@ export type Database = {
           bathrooms: number
           bedrooms: number
           city: string
+          completed_at: string | null
           country: string
           created_at: string
           currency: string
@@ -110,6 +111,7 @@ export type Database = {
           expense_other: number | null
           expense_property_tax: number | null
           expense_utilities: number | null
+          final_price: number | null
           floor_number: number | null
           floor_plan_url: string | null
           floor_plan_urls: string[] | null
@@ -194,6 +196,7 @@ export type Database = {
           property_condition: string | null
           property_floors: number | null
           property_type: Database["public"]["Enums"]["property_type"]
+          status: string | null
           terrace_sqm: number | null
           title: string
           total_floors_building: number | null
@@ -217,6 +220,7 @@ export type Database = {
           bathrooms?: number
           bedrooms?: number
           city: string
+          completed_at?: string | null
           country?: string
           created_at?: string
           currency?: string
@@ -233,6 +237,7 @@ export type Database = {
           expense_other?: number | null
           expense_property_tax?: number | null
           expense_utilities?: number | null
+          final_price?: number | null
           floor_number?: number | null
           floor_plan_url?: string | null
           floor_plan_urls?: string[] | null
@@ -317,6 +322,7 @@ export type Database = {
           property_condition?: string | null
           property_floors?: number | null
           property_type?: Database["public"]["Enums"]["property_type"]
+          status?: string | null
           terrace_sqm?: number | null
           title: string
           total_floors_building?: number | null
@@ -340,6 +346,7 @@ export type Database = {
           bathrooms?: number
           bedrooms?: number
           city?: string
+          completed_at?: string | null
           country?: string
           created_at?: string
           currency?: string
@@ -356,6 +363,7 @@ export type Database = {
           expense_other?: number | null
           expense_property_tax?: number | null
           expense_utilities?: number | null
+          final_price?: number | null
           floor_number?: number | null
           floor_plan_url?: string | null
           floor_plan_urls?: string[] | null
@@ -440,6 +448,7 @@ export type Database = {
           property_condition?: string | null
           property_floors?: number | null
           property_type?: Database["public"]["Enums"]["property_type"]
+          status?: string | null
           terrace_sqm?: number | null
           title?: string
           total_floors_building?: number | null

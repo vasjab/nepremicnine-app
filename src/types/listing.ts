@@ -121,7 +121,14 @@ export interface Listing {
   utilities_included: 'yes' | 'no' | 'partial' | null;
   utility_cost_estimate: number | null;
   monthly_expenses: number | null;
+  
+  // Status tracking (optional - defaults to 'active' in DB)
+  status?: 'active' | 'sold' | 'rented' | null;
+  final_price?: number | null;
+  completed_at?: string | null;
 }
+
+export type ListingStatus = 'active' | 'sold' | 'rented';
 
 export interface Profile {
   id: string;
