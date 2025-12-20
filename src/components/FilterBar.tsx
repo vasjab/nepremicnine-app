@@ -975,102 +975,98 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   return (
     <div className="bg-background border-b border-border/50">
       <div className="px-4 py-3 space-y-2">
-        {/* Row 1: Always-visible compact search + listing count */}
+        {/* Single row: Search + Sort + Filters + Count */}
         <div className="flex items-center gap-2">
-          <form onSubmit={handleSearch} className="relative flex-1 max-w-[200px]">
+          {/* Compact search */}
+          <form onSubmit={handleSearch} className="relative w-[140px] shrink-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
             <Input
               placeholder="Search..."
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className="w-full pl-10 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl transition-all duration-200 hover:bg-accent/15 hover:shadow-md hover:ring-1 hover:ring-accent/30 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0"
+              className="w-full pl-9 pr-8 h-10 text-sm bg-secondary border-0 rounded-xl"
             />
             {searchValue && (
               <button
                 type="button"
                 onClick={clearSearch}
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent/20 rounded-full transition-all duration-200"
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
             )}
           </form>
           
+          {/* Sort dropdown */}
+          <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
+            <SelectTrigger className="flex-1 h-10 px-3 text-sm bg-secondary border-0 rounded-xl">
+              <ArrowUpDown className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
+              <SelectValue placeholder={t('filters.sortBy')} />
+            </SelectTrigger>
+            <SelectContent className="bg-popover rounded-xl shadow-lg">
+              <SelectItem value="newest">{t('filters.newest')}</SelectItem>
+              <SelectItem value="oldest">{t('filters.oldest')}</SelectItem>
+              <SelectItem value="price_asc">{t('filters.priceAsc')}</SelectItem>
+              <SelectItem value="price_desc">{t('filters.priceDesc')}</SelectItem>
+              <SelectItem value="size_asc">{t('filters.sizeAsc')}</SelectItem>
+              <SelectItem value="size_desc">{t('filters.sizeDesc')}</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Filters button */}
+          {isMobile ? (
+            <Drawer open={isOpen} onOpenChange={setIsOpen}>
+              <DrawerTrigger asChild>
+                <Button className="flex-1 rounded-xl h-10 border-0 bg-accent text-accent-foreground font-medium">
+                  <SlidersHorizontal className="h-4 w-4 mr-2" />
+                  Filters
+                  {totalActiveFilters > 0 && (
+                    <Badge className="ml-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-foreground text-background">
+                      {totalActiveFilters}
+                    </Badge>
+                  )}
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent className="max-h-[85vh]">
+                <DrawerHeader className="pb-2">
+                  <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
+                </DrawerHeader>
+                <ScrollArea className="flex-1 px-4 pb-8 overflow-y-auto">
+                  <FilterContent {...filterContentProps} />
+                </ScrollArea>
+              </DrawerContent>
+            </Drawer>
+          ) : (
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+              <DialogTrigger asChild>
+                <Button className="flex-1 rounded-xl h-10 border-0 bg-accent text-accent-foreground font-medium">
+                  <SlidersHorizontal className="h-4 w-4 mr-2" />
+                  Filters
+                  {totalActiveFilters > 0 && (
+                    <Badge className="ml-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-foreground text-background">
+                      {totalActiveFilters}
+                    </Badge>
+                  )}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md max-h-[85vh] p-0 rounded-2xl">
+                <DialogHeader className="p-4 pb-2">
+                  <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="max-h-[calc(85vh-80px)] px-4 pb-6">
+                  <FilterContent {...filterContentProps} />
+                </ScrollArea>
+              </DialogContent>
+            </Dialog>
+          )}
+
           {/* Listings count */}
           {totalCount !== undefined && (
-            <div className="flex items-center px-3 py-1.5 bg-muted/50 rounded-full text-xs text-muted-foreground whitespace-nowrap">
-              <span className="font-medium">{totalCount.toLocaleString()}</span>
-              <span className="ml-1 opacity-70">{totalCount === 1 ? 'listing' : 'listings'}</span>
+            <div className="shrink-0 px-2 text-xs text-muted-foreground whitespace-nowrap">
+              {totalCount.toLocaleString()}
             </div>
           )}
         </div>
-
-        {/* Row 2: Full-width sort dropdown */}
-        <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
-          <SelectTrigger className="w-full h-10 px-3 text-sm bg-secondary border-0 rounded-xl transition-all duration-200 hover:bg-accent/15 hover:shadow-md">
-            <ArrowUpDown className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
-            <SelectValue placeholder={t('filters.sortBy')} />
-          </SelectTrigger>
-          <SelectContent className="bg-popover rounded-xl shadow-lg">
-            <SelectItem value="newest">{t('filters.newest')}</SelectItem>
-            <SelectItem value="oldest">{t('filters.oldest')}</SelectItem>
-            <SelectItem value="price_asc">{t('filters.priceAsc')}</SelectItem>
-            <SelectItem value="price_desc">{t('filters.priceDesc')}</SelectItem>
-            <SelectItem value="size_asc">{t('filters.sizeAsc')}</SelectItem>
-            <SelectItem value="size_desc">{t('filters.sizeDesc')}</SelectItem>
-          </SelectContent>
-        </Select>
-
-        {/* Row 3: Full-width filter button */}
-        {isMobile ? (
-          <Drawer open={isOpen} onOpenChange={setIsOpen}>
-            <DrawerTrigger asChild>
-              <Button 
-                className="relative w-full rounded-xl h-11 border-0 bg-accent text-accent-foreground font-medium hover:bg-accent/90 hover:shadow-lg transition-all duration-200"
-              >
-                <SlidersHorizontal className="h-4 w-4 mr-2" />
-                Filters
-                {totalActiveFilters > 0 && (
-                  <Badge className="ml-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-foreground text-background">
-                    {totalActiveFilters}
-                  </Badge>
-                )}
-              </Button>
-            </DrawerTrigger>
-            <DrawerContent className="max-h-[85vh]">
-              <DrawerHeader className="pb-2">
-                <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
-              </DrawerHeader>
-              <ScrollArea className="flex-1 px-4 pb-8 overflow-y-auto">
-                <FilterContent {...filterContentProps} />
-              </ScrollArea>
-            </DrawerContent>
-          </Drawer>
-        ) : (
-          <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-              <Button 
-                className="relative w-full rounded-xl h-11 border-0 bg-accent text-accent-foreground font-medium hover:bg-accent/90 hover:shadow-lg transition-all duration-200"
-              >
-                <SlidersHorizontal className="h-4 w-4 mr-2" />
-                Filters
-                {totalActiveFilters > 0 && (
-                  <Badge className="ml-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-foreground text-background">
-                    {totalActiveFilters}
-                  </Badge>
-                )}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md max-h-[85vh] p-0 rounded-2xl">
-              <DialogHeader className="p-4 pb-2">
-                <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
-              </DialogHeader>
-              <ScrollArea className="max-h-[calc(85vh-80px)] px-4 pb-6">
-                <FilterContent {...filterContentProps} />
-              </ScrollArea>
-            </DialogContent>
-          </Dialog>
-        )}
 
         {/* Active filter chips */}
         {activeChips.length > 0 && (
