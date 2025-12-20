@@ -21,7 +21,11 @@ interface UseAddressGeocodingReturn {
   status: 'idle' | 'searching' | 'found' | 'not_found' | 'error';
 }
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN;
+const MAPBOX_TOKEN_KEY = 'hemma_mapbox_token';
+
+const getMapboxToken = (): string => {
+  return localStorage.getItem(MAPBOX_TOKEN_KEY) || import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || '';
+};
 
 export function useAddressGeocoding({
   address,
@@ -60,9 +64,17 @@ export function useAddressGeocoding({
     setError(null);
 
     try {
+      const token = getMapboxToken();
+      if (!token) {
+        setError('Mapbox token not configured');
+        setStatus('error');
+        setIsGeocoding(false);
+        return;
+      }
+      
       const encodedAddress = encodeURIComponent(searchAddress);
       const response = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${MAPBOX_TOKEN}&limit=1&types=address,place`
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedAddress}.json?access_token=${token}&limit=1&types=address,place`
       );
 
       if (!response.ok) {

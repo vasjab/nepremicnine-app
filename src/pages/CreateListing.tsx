@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, MapPin, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateListing } from '@/hooks/useListings';
 import { useAddressGeocoding } from '@/hooks/useAddressGeocoding';
 import { Header } from '@/components/Header';
 import { FormField } from '@/components/FormField';
+import { LocationPreviewMap } from '@/components/LocationPreviewMap';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -671,39 +672,14 @@ export default function CreateListing() {
                 </FormField>
               </div>
 
-              {/* Geocoding status indicator */}
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-                {isGeocoding && (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Searching for location...</span>
-                  </>
-                )}
-                {!isGeocoding && geocodingStatus === 'found' && coordinates && (
-                  <>
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                    <span className="text-sm text-green-600">
-                      Location found: {coordinates.formattedAddress}
-                    </span>
-                  </>
-                )}
-                {!isGeocoding && geocodingStatus === 'not_found' && formData.address && formData.city && (
-                  <>
-                    <AlertCircle className="h-4 w-4 text-amber-600" />
-                    <span className="text-sm text-amber-600">
-                      Could not find exact location. Please check the address.
-                    </span>
-                  </>
-                )}
-                {!isGeocoding && geocodingStatus === 'idle' && (
-                  <>
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      Enter address and city to find location
-                    </span>
-                  </>
-                )}
-              </div>
+              {/* Map preview with geocoding status */}
+              <LocationPreviewMap
+                latitude={coordinates?.latitude ?? null}
+                longitude={coordinates?.longitude ?? null}
+                status={geocodingStatus}
+                formattedAddress={coordinates?.formattedAddress}
+                isGeocoding={isGeocoding}
+              />
             </div>
 
             {/* Property Details */}
