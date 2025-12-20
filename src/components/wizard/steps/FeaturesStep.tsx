@@ -1,5 +1,8 @@
 import { WizardStepWrapper } from '../WizardStepWrapper';
 import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   ArrowUp, 
   Trees, 
@@ -16,9 +19,14 @@ import {
 interface FeaturesStepProps {
   hasElevator: boolean;
   hasBalcony: boolean;
+  balconySqm: string;
   hasTerrace: boolean;
+  terraceSqm: string;
   hasGarden: boolean;
+  gardenSqm: string;
   hasParking: boolean;
+  parkingType: string;
+  parkingSpaces: string;
   hasGarage: boolean;
   hasAirConditioning: boolean;
   hasDishwasher: boolean;
@@ -26,6 +34,7 @@ interface FeaturesStepProps {
   hasStorage: boolean;
   propertyType: string;
   onFeatureToggle: (feature: string, value: boolean) => void;
+  onChange: (field: string, value: string) => void;
 }
 
 interface FeatureCard {
@@ -33,13 +42,14 @@ interface FeatureCard {
   label: string;
   icon: typeof ArrowUp;
   description: string;
+  hasSize?: boolean;
 }
 
 const ALL_FEATURES: FeatureCard[] = [
   { id: 'has_elevator', label: 'Elevator', icon: ArrowUp, description: 'Building has an elevator' },
-  { id: 'has_balcony', label: 'Balcony', icon: Sun, description: 'Private outdoor balcony' },
-  { id: 'has_terrace', label: 'Terrace', icon: Trees, description: 'Outdoor terrace area' },
-  { id: 'has_garden', label: 'Garden', icon: Flower2, description: 'Private garden space' },
+  { id: 'has_balcony', label: 'Balcony', icon: Sun, description: 'Private outdoor balcony', hasSize: true },
+  { id: 'has_terrace', label: 'Terrace', icon: Trees, description: 'Outdoor terrace area', hasSize: true },
+  { id: 'has_garden', label: 'Garden', icon: Flower2, description: 'Private garden space', hasSize: true },
   { id: 'has_parking', label: 'Parking', icon: Car, description: 'Parking available' },
   { id: 'has_garage', label: 'Garage', icon: Warehouse, description: 'Private garage' },
   { id: 'has_air_conditioning', label: 'A/C', icon: Wind, description: 'Air conditioning' },
@@ -48,12 +58,24 @@ const ALL_FEATURES: FeatureCard[] = [
   { id: 'has_storage', label: 'Storage', icon: Package, description: 'Storage/cellar space' },
 ];
 
+const PARKING_TYPES = [
+  { value: 'street', label: 'Street parking' },
+  { value: 'designated', label: 'Designated spot' },
+  { value: 'underground', label: 'Underground parking' },
+  { value: 'private', label: 'Private driveway' },
+];
+
 export function FeaturesStep({
   hasElevator,
   hasBalcony,
+  balconySqm,
   hasTerrace,
+  terraceSqm,
   hasGarden,
+  gardenSqm,
   hasParking,
+  parkingType,
+  parkingSpaces,
   hasGarage,
   hasAirConditioning,
   hasDishwasher,
@@ -61,6 +83,7 @@ export function FeaturesStep({
   hasStorage,
   propertyType,
   onFeatureToggle,
+  onChange,
 }: FeaturesStepProps) {
   const featureValues: Record<string, boolean> = {
     has_elevator: hasElevator,
@@ -94,7 +117,7 @@ export function FeaturesStep({
       <div className="max-w-2xl mx-auto w-full space-y-6">
         {/* Feature Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          {relevantFeatures.map(({ id, label, icon: Icon, description }) => {
+          {relevantFeatures.map(({ id, label, icon: Icon }) => {
             const isSelected = featureValues[id];
             return (
               <button
@@ -127,6 +150,90 @@ export function FeaturesStep({
               </button>
             );
           })}
+        </div>
+
+        {/* Conditional inputs for selected features */}
+        <div className="space-y-4">
+          {/* Balcony size */}
+          {hasBalcony && (
+            <div className="bg-secondary/50 rounded-xl p-4">
+              <Label htmlFor="balcony_sqm">Balcony size (m²)</Label>
+              <Input
+                id="balcony_sqm"
+                type="number"
+                min="1"
+                placeholder="e.g., 8"
+                value={balconySqm}
+                onChange={(e) => onChange('balcony_sqm', e.target.value)}
+                className="mt-1 max-w-[200px]"
+              />
+            </div>
+          )}
+
+          {/* Terrace size */}
+          {hasTerrace && (
+            <div className="bg-secondary/50 rounded-xl p-4">
+              <Label htmlFor="terrace_sqm">Terrace size (m²)</Label>
+              <Input
+                id="terrace_sqm"
+                type="number"
+                min="1"
+                placeholder="e.g., 15"
+                value={terraceSqm}
+                onChange={(e) => onChange('terrace_sqm', e.target.value)}
+                className="mt-1 max-w-[200px]"
+              />
+            </div>
+          )}
+
+          {/* Garden size */}
+          {hasGarden && (
+            <div className="bg-secondary/50 rounded-xl p-4">
+              <Label htmlFor="garden_sqm">Garden size (m²)</Label>
+              <Input
+                id="garden_sqm"
+                type="number"
+                min="1"
+                placeholder="e.g., 50"
+                value={gardenSqm}
+                onChange={(e) => onChange('garden_sqm', e.target.value)}
+                className="mt-1 max-w-[200px]"
+              />
+            </div>
+          )}
+
+          {/* Parking details */}
+          {hasParking && (
+            <div className="bg-secondary/50 rounded-xl p-4 space-y-3">
+              <div>
+                <Label>Parking type</Label>
+                <Select value={parkingType} onValueChange={(v) => onChange('parking_type', v)}>
+                  <SelectTrigger className="mt-1 max-w-[250px]">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PARKING_TYPES.map((type) => (
+                      <SelectItem key={type.value} value={type.value}>
+                        {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="parking_spaces">Number of spaces</Label>
+                <Input
+                  id="parking_spaces"
+                  type="number"
+                  min="1"
+                  placeholder="e.g., 1"
+                  value={parkingSpaces}
+                  onChange={(e) => onChange('parking_spaces', e.target.value)}
+                  className="mt-1 max-w-[120px]"
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Counter */}

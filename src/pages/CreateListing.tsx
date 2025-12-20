@@ -12,6 +12,7 @@ import { useRateLimit, LISTING_RATE_LIMIT } from '@/hooks/useRateLimit';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { supabase } from '@/integrations/supabase/client';
 import { type Currency } from '@/lib/exchangeRates';
+import { ListingPreviewModal } from '@/components/ListingPreviewModal';
 
 import { WizardProgress, type WizardStep } from '@/components/wizard/WizardProgress';
 import { WizardNavigation } from '@/components/wizard/WizardNavigation';
@@ -22,20 +23,11 @@ import { PriceStep } from '@/components/wizard/steps/PriceStep';
 import { PhotosStep } from '@/components/wizard/steps/PhotosStep';
 import { DetailsStep } from '@/components/wizard/steps/DetailsStep';
 import { FeaturesStep } from '@/components/wizard/steps/FeaturesStep';
+import { BuildingInfoStep } from '@/components/wizard/steps/BuildingInfoStep';
+import { RentalTermsStep } from '@/components/wizard/steps/RentalTermsStep';
 import { ReviewStep } from '@/components/wizard/steps/ReviewStep';
 
 type PropertyType = 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other';
-
-const WIZARD_STEPS: WizardStep[] = [
-  { id: 'type', title: 'Type', emoji: '🏠' },
-  { id: 'title', title: 'Title', emoji: '✨' },
-  { id: 'location', title: 'Location', emoji: '📍' },
-  { id: 'price', title: 'Price', emoji: '💰' },
-  { id: 'photos', title: 'Photos', emoji: '📸' },
-  { id: 'details', title: 'Details', emoji: '📝', isOptional: true },
-  { id: 'features', title: 'Features', emoji: '⭐', isOptional: true },
-  { id: 'review', title: 'Review', emoji: '🎉' },
-];
 
 export default function CreateListing() {
   const navigate = useNavigate();
@@ -46,6 +38,7 @@ export default function CreateListing() {
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
   const [honeypot, setHoneypot] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
   const { checkRateLimit, isLimited, remainingTime } = useRateLimit(LISTING_RATE_LIMIT);
 
   const { images, isUploading, uploadProgress, uploadImages, removeImage, reorderImages } = useImageUpload({ userId: user?.id || '' });
@@ -55,6 +48,7 @@ export default function CreateListing() {
     description: '',
     listing_type: 'rent' as 'rent' | 'sale',
     property_type: 'apartment' as PropertyType,
+    property_type_other: '',
     price: '',
     currency: 'SEK' as Currency,
     country: 'Sweden',
@@ -68,16 +62,36 @@ export default function CreateListing() {
     available_until: '',
     is_furnished: false,
     allows_pets: false,
+    // Features
     has_elevator: false,
     has_balcony: false,
+    balcony_sqm: '',
     has_terrace: false,
+    terrace_sqm: '',
     has_garden: false,
+    garden_sqm: '',
     has_parking: false,
+    parking_type: '',
+    parking_spaces: '',
     has_garage: false,
     has_air_conditioning: false,
     has_dishwasher: false,
     has_washing_machine: false,
     has_storage: false,
+    // Building info
+    floor_number: '',
+    total_floors_building: '',
+    property_floors: '',
+    heating_type: '',
+    heating_type_other: '',
+    energy_rating: '',
+    year_built: '',
+    property_condition: '',
+    // Rental terms
+    deposit_amount: '',
+    min_lease_months: '',
+    internet_included: '',
+    utilities_included: '',
   });
 
   const [manualCoordinates, setManualCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -90,6 +104,31 @@ export default function CreateListing() {
     country: formData.country,
   });
 
+  // Dynamic steps based on listing type
+  const getWizardSteps = (): WizardStep[] => {
+    const baseSteps: WizardStep[] = [
+      { id: 'type', title: 'Type', emoji: '🏠' },
+      { id: 'title', title: 'Title', emoji: '✨' },
+      { id: 'location', title: 'Location', emoji: '📍' },
+      { id: 'price', title: 'Price', emoji: '💰' },
+      { id: 'photos', title: 'Photos', emoji: '📸' },
+      { id: 'details', title: 'Details', emoji: '📝', isOptional: true },
+      { id: 'features', title: 'Features', emoji: '⭐', isOptional: true },
+      { id: 'building', title: 'Building', emoji: '🏗️', isOptional: true },
+    ];
+    
+    // Add rental terms step only for rentals
+    if (formData.listing_type === 'rent') {
+      baseSteps.push({ id: 'rental', title: 'Terms', emoji: '📋', isOptional: true });
+    }
+    
+    baseSteps.push({ id: 'review', title: 'Review', emoji: '🎉' });
+    
+    return baseSteps;
+  };
+
+  const WIZARD_STEPS = getWizardSteps();
+
   useEffect(() => {
     if (!user) navigate('/auth');
   }, [user, navigate]);
@@ -101,16 +140,29 @@ export default function CreateListing() {
     }
   };
 
+  // Check if mandatory fields for preview are complete
+  const canPreview = (): boolean => {
+    const hasPropertyType = !!formData.property_type;
+    const hasTitle = formData.title.length >= 5;
+    const hasLocation = !!formData.address && !!formData.city && !!(coordinates || manualCoordinates);
+    const hasPrice = !!formData.price && parseFloat(formData.price) > 0;
+    const hasPhotos = images.length > 0;
+    return hasPropertyType && hasTitle && hasLocation && hasPrice && hasPhotos;
+  };
+
   const canProceed = (): boolean => {
-    switch (currentStep) {
-      case 0: return !!formData.property_type;
-      case 1: return formData.title.length >= 5;
-      case 2: return !!formData.address && !!formData.city && !!(coordinates || manualCoordinates);
-      case 3: return !!formData.price && parseFloat(formData.price) > 0;
-      case 4: return images.length > 0;
-      case 5: return true;
-      case 6: return true;
-      case 7: return formData.title.length >= 5 && !!formData.price && !!(coordinates || manualCoordinates) && images.length > 0;
+    const stepId = WIZARD_STEPS[currentStep]?.id;
+    switch (stepId) {
+      case 'type': return !!formData.property_type;
+      case 'title': return formData.title.length >= 5;
+      case 'location': return !!formData.address && !!formData.city && !!(coordinates || manualCoordinates);
+      case 'price': return !!formData.price && parseFloat(formData.price) > 0;
+      case 'photos': return images.length > 0;
+      case 'details': return true;
+      case 'features': return true;
+      case 'building': return true;
+      case 'rental': return true;
+      case 'review': return formData.title.length >= 5 && !!formData.price && !!(coordinates || manualCoordinates) && images.length > 0;
       default: return true;
     }
   };
@@ -199,16 +251,35 @@ export default function CreateListing() {
       allows_pets: formData.allows_pets,
       images: images.map(img => img.url),
       is_active: true,
+      // Features
       has_elevator: formData.has_elevator,
       has_balcony: formData.has_balcony,
+      balcony_sqm: formData.balcony_sqm ? parseFloat(formData.balcony_sqm) : null,
       has_terrace: formData.has_terrace,
+      terrace_sqm: formData.terrace_sqm ? parseFloat(formData.terrace_sqm) : null,
       has_garden: formData.has_garden,
+      garden_sqm: formData.garden_sqm ? parseFloat(formData.garden_sqm) : null,
       has_parking: formData.has_parking,
+      parking_type: (formData.parking_type || null) as 'street' | 'designated' | 'underground' | 'private' | null,
+      parking_spaces: formData.parking_spaces ? parseInt(formData.parking_spaces) : null,
       has_garage: formData.has_garage,
       has_air_conditioning: formData.has_air_conditioning,
       has_dishwasher: formData.has_dishwasher,
       has_washing_machine: formData.has_washing_machine,
       has_storage: formData.has_storage,
+      // Building info
+      floor_number: formData.floor_number ? parseInt(formData.floor_number) : null,
+      total_floors_building: formData.total_floors_building ? parseInt(formData.total_floors_building) : null,
+      property_floors: formData.property_floors ? parseInt(formData.property_floors) : null,
+      heating_type: (formData.heating_type || null) as 'central' | 'electric' | 'gas' | 'heat_pump' | 'other' | null,
+      energy_rating: (formData.energy_rating || null) as 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | null,
+      year_built: formData.year_built ? parseInt(formData.year_built) : null,
+      property_condition: (formData.property_condition || null) as 'new' | 'renovated' | 'good' | 'needs_work' | null,
+      // Rental terms
+      deposit_amount: formData.deposit_amount ? parseFloat(formData.deposit_amount) : null,
+      min_lease_months: formData.min_lease_months ? parseInt(formData.min_lease_months) : null,
+      internet_included: (formData.internet_included || null) as 'yes' | 'no' | 'available' | null,
+      utilities_included: (formData.utilities_included || null) as 'yes' | 'no' | 'partial' | null,
     }, {
       onSuccess: () => {
         toast({ title: '🎉 Listing created!', description: 'Your property is now live.' });
@@ -223,19 +294,22 @@ export default function CreateListing() {
   if (!user) return null;
 
   const renderStep = () => {
-    switch (currentStep) {
-      case 0:
+    const stepId = WIZARD_STEPS[currentStep]?.id;
+    switch (stepId) {
+      case 'type':
         return (
           <PropertyTypeStep
             propertyType={formData.property_type}
             listingType={formData.listing_type}
+            propertyTypeOther={formData.property_type_other}
             onPropertyTypeChange={v => handleChange('property_type', v)}
             onListingTypeChange={v => handleChange('listing_type', v)}
+            onPropertyTypeOtherChange={v => handleChange('property_type_other', v)}
           />
         );
-      case 1:
+      case 'title':
         return <TitleStep title={formData.title} onTitleChange={v => handleChange('title', v)} error={errors.title} />;
-      case 2:
+      case 'location':
         return (
           <LocationStep
             country={formData.country}
@@ -256,7 +330,7 @@ export default function CreateListing() {
             errors={{ city: errors.city, address: errors.address }}
           />
         );
-      case 3:
+      case 'price':
         return (
           <PriceStep
             price={formData.price}
@@ -267,9 +341,9 @@ export default function CreateListing() {
             error={errors.price}
           />
         );
-      case 4:
+      case 'photos':
         return <PhotosStep images={images} isUploading={isUploading} uploadProgress={uploadProgress} onUpload={uploadImages} onRemove={removeImage} onReorder={reorderImages} disabled={!user} />;
-      case 5:
+      case 'details':
         return (
           <DetailsStep
             description={formData.description}
@@ -291,14 +365,19 @@ export default function CreateListing() {
             onPetsChange={v => handleChange('allows_pets', v)}
           />
         );
-      case 6:
+      case 'features':
         return (
           <FeaturesStep
             hasElevator={formData.has_elevator}
             hasBalcony={formData.has_balcony}
+            balconySqm={formData.balcony_sqm}
             hasTerrace={formData.has_terrace}
+            terraceSqm={formData.terrace_sqm}
             hasGarden={formData.has_garden}
+            gardenSqm={formData.garden_sqm}
             hasParking={formData.has_parking}
+            parkingType={formData.parking_type}
+            parkingSpaces={formData.parking_spaces}
             hasGarage={formData.has_garage}
             hasAirConditioning={formData.has_air_conditioning}
             hasDishwasher={formData.has_dishwasher}
@@ -306,13 +385,61 @@ export default function CreateListing() {
             hasStorage={formData.has_storage}
             propertyType={formData.property_type}
             onFeatureToggle={(f, v) => handleChange(f, v)}
+            onChange={handleChange}
           />
         );
-      case 7:
+      case 'building':
+        return (
+          <BuildingInfoStep
+            floorNumber={formData.floor_number}
+            totalFloorsBuilding={formData.total_floors_building}
+            propertyFloors={formData.property_floors}
+            heatingType={formData.heating_type}
+            heatingTypeOther={formData.heating_type_other}
+            energyRating={formData.energy_rating}
+            yearBuilt={formData.year_built}
+            propertyCondition={formData.property_condition}
+            propertyType={formData.property_type}
+            onChange={handleChange}
+          />
+        );
+      case 'rental':
+        return (
+          <RentalTermsStep
+            depositAmount={formData.deposit_amount}
+            minLeaseMonths={formData.min_lease_months}
+            internetIncluded={formData.internet_included}
+            utilitiesIncluded={formData.utilities_included}
+            currency={formData.currency}
+            onChange={handleChange}
+          />
+        );
+      case 'review':
         return <ReviewStep formData={formData} images={images} hasValidLocation={!!(coordinates || manualCoordinates)} onEditStep={setCurrentStep} />;
       default:
         return null;
     }
+  };
+
+  // Convert formData to preview format
+  const previewFormData = {
+    ...formData,
+    floor_number: formData.floor_number,
+    total_floors_building: formData.total_floors_building,
+    property_floors: formData.property_floors,
+    balcony_sqm: formData.balcony_sqm,
+    terrace_sqm: formData.terrace_sqm,
+    garden_sqm: formData.garden_sqm,
+    parking_type: formData.parking_type,
+    parking_spaces: formData.parking_spaces,
+    heating_type: formData.heating_type,
+    energy_rating: formData.energy_rating,
+    year_built: formData.year_built,
+    property_condition: formData.property_condition,
+    deposit_amount: formData.deposit_amount,
+    min_lease_months: formData.min_lease_months,
+    internet_included: formData.internet_included,
+    utilities_included: formData.utilities_included,
   };
 
   return (
@@ -339,10 +466,20 @@ export default function CreateListing() {
         canProceed={canProceed()}
         isOptionalStep={WIZARD_STEPS[currentStep]?.isOptional || false}
         isSubmitting={createListing.isPending}
+        canPreview={canPreview()}
         onBack={handleBack}
         onNext={handleNext}
         onSkip={handleSkip}
         onSubmit={handleSubmit}
+        onPreview={() => setShowPreview(true)}
+      />
+
+      <ListingPreviewModal
+        formData={previewFormData}
+        uploadedImages={images}
+        coordinates={manualCoordinates || coordinates}
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
       />
     </div>
   );

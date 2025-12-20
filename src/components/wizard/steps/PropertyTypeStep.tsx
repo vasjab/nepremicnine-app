@@ -1,6 +1,8 @@
 import { WizardStepWrapper } from '../WizardStepWrapper';
 import { cn } from '@/lib/utils';
 import { Building2, Home, Bed, LayoutGrid, Castle, Package } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 type PropertyType = 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other';
 type ListingType = 'rent' | 'sale';
@@ -8,8 +10,10 @@ type ListingType = 'rent' | 'sale';
 interface PropertyTypeStepProps {
   propertyType: PropertyType;
   listingType: ListingType;
+  propertyTypeOther: string;
   onPropertyTypeChange: (type: PropertyType) => void;
   onListingTypeChange: (type: ListingType) => void;
+  onPropertyTypeOtherChange: (value: string) => void;
 }
 
 const PROPERTY_TYPES: { value: PropertyType; label: string; icon: typeof Building2; description: string }[] = [
@@ -24,8 +28,10 @@ const PROPERTY_TYPES: { value: PropertyType; label: string; icon: typeof Buildin
 export function PropertyTypeStep({
   propertyType,
   listingType,
+  propertyTypeOther,
   onPropertyTypeChange,
   onListingTypeChange,
+  onPropertyTypeOtherChange,
 }: PropertyTypeStepProps) {
   return (
     <WizardStepWrapper
@@ -34,7 +40,7 @@ export function PropertyTypeStep({
       emoji="🏠"
     >
       {/* Property Type Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
         {PROPERTY_TYPES.map(({ value, label, icon: Icon, description }) => (
           <button
             key={value}
@@ -67,6 +73,20 @@ export function PropertyTypeStep({
           </button>
         ))}
       </div>
+
+      {/* Other property type input */}
+      {propertyType === 'other' && (
+        <div className="mb-8 max-w-md mx-auto">
+          <Label htmlFor="property_type_other">Describe your property type</Label>
+          <Input
+            id="property_type_other"
+            placeholder="e.g., Houseboat, Loft, Commercial space..."
+            value={propertyTypeOther}
+            onChange={(e) => onPropertyTypeOtherChange(e.target.value)}
+            className="mt-1"
+          />
+        </div>
+      )}
 
       {/* Listing Type Toggle */}
       <div className="flex justify-center">
