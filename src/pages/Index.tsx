@@ -13,6 +13,7 @@ import { ListingDetailModal } from '@/components/ListingDetailModal';
 import { ListingSkeletonGrid } from '@/components/ListingSkeleton';
 import { MobileMapFilterButton } from '@/components/MobileMapFilterButton';
 import { Button } from '@/components/ui/button';
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import { useTranslation } from '@/hooks/useTranslation';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -158,9 +159,9 @@ const Index = () => {
       <div className="h-14 shrink-0" />
       
       <main className="flex-1 flex flex-col lg:flex-row overflow-hidden min-h-0">
-        {/* Left panel - Listings */}
-        <div className={`w-full lg:w-[480px] xl:w-[540px] 2xl:w-[780px] flex flex-col border-r border-border overflow-hidden ${
-          mobileView === 'map' ? 'hidden lg:flex' : 'flex flex-1 min-h-0'
+        {/* Mobile view - non-resizable */}
+        <div className={`lg:hidden w-full flex flex-col overflow-hidden ${
+          mobileView === 'map' ? 'hidden' : 'flex flex-1 min-h-0'
         }`}>
           {/* For Rent / For Sale Tabs */}
           <div className="px-4 pt-4 pb-0">
@@ -239,7 +240,7 @@ const Index = () => {
             {isLoading ? (
               <ListingSkeletonGrid count={4} />
             ) : visibleListings.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 2xl:grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {visibleListings.map((listing, index) => (
                   <div
                     key={listing.id}
@@ -277,9 +278,9 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Right panel - Map */}
-        <div className={`flex-1 h-full min-h-0 relative ${
-          mobileView === 'list' ? 'hidden lg:block' : 'block'
+        {/* Mobile map view */}
+        <div className={`lg:hidden flex-1 h-full min-h-0 relative ${
+          mobileView === 'list' ? 'hidden' : 'block'
         }`}>
           <MapView
             listings={allListings || []}
@@ -289,9 +290,8 @@ const Index = () => {
             onMapMove={handleMapMove}
           />
           
-          {/* Mobile Map Filter Button - only visible on mobile map view */}
           {mobileView === 'map' && (
-            <div className="lg:hidden absolute bottom-20 right-4 z-30">
+            <div className="absolute bottom-20 right-4 z-30">
               <MobileMapFilterButton 
                 filters={filters} 
                 onFiltersChange={setFilters} 
@@ -299,6 +299,146 @@ const Index = () => {
             </div>
           )}
         </div>
+
+        {/* Desktop view - resizable panels */}
+        <ResizablePanelGroup 
+          direction="horizontal" 
+          className="hidden lg:flex flex-1"
+        >
+          {/* Left panel - Listings */}
+          <ResizablePanel defaultSize={35} minSize={20} maxSize={60}>
+            <div className="flex flex-col h-full border-r border-border overflow-hidden">
+              {/* For Rent / For Sale Tabs */}
+              <div className="px-4 pt-4 pb-0">
+                <div className="flex bg-secondary rounded-xl p-1 gap-1">
+                  <button
+                    onClick={() => setFilters({ ...filters, listing_type: null })}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                      !filters.listing_type
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    All
+                  </button>
+                  <button
+                    onClick={() => setFilters({ ...filters, listing_type: 'rent' })}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                      filters.listing_type === 'rent'
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Key className="h-4 w-4" />
+                    {t('listingTypes.rent')}
+                  </button>
+                  <button
+                    onClick={() => setFilters({ ...filters, listing_type: 'sale' })}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                      filters.listing_type === 'sale'
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <Banknote className="h-4 w-4" />
+                    {t('listingTypes.sale')}
+                  </button>
+                </div>
+              </div>
+
+              {landlordId && (
+                <div className="px-4 pt-3 pb-0">
+                  <div className="flex items-center gap-2 bg-accent/10 text-accent-foreground rounded-lg px-3 py-2 text-sm">
+                    <span>
+                      Showing listings from{' '}
+                      <Link 
+                        to={`/landlord/${landlordId}`}
+                        className="font-medium hover:underline"
+                      >
+                        {landlordName || 'loading...'}
+                      </Link>
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 ml-auto"
+                      onClick={clearLandlordFilter}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+              <FilterBar 
+                filters={filters} 
+                onFiltersChange={setFilters}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+                totalCount={visibleListings.length}
+                userId={user?.id}
+              />
+              
+              <div ref={listContainerRef} className="flex-1 overflow-y-auto p-3 sm:p-4">
+                {isLoading ? (
+                  <ListingSkeletonGrid count={4} />
+                ) : visibleListings.length > 0 ? (
+                  <div className="grid grid-cols-1 2xl:grid-cols-2 gap-3 sm:gap-4">
+                    {visibleListings.map((listing, index) => (
+                      <div
+                        key={listing.id}
+                        ref={(el) => { listingRefs.current[listing.id] = el; }}
+                        onMouseEnter={() => handleCardHover(listing.id)}
+                        onMouseLeave={() => handleCardHover(null)}
+                        className={cn(
+                          "opacity-0 animate-slide-up-spring",
+                          "transition-opacity duration-300"
+                        )}
+                        style={{ 
+                          animationDelay: `${index * 0.05}s`,
+                          animationFillMode: 'forwards'
+                        }}
+                      >
+                        <ListingCard
+                          listing={listing}
+                          isActive={listing.id === activeListingId}
+                          onClick={() => handleListingClick(listing)}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                    <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
+                      <span className="text-2xl">🏠</span>
+                    </div>
+                    <h3 className="font-semibold text-foreground mb-2">{t('listing.noListingsInArea')}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {t('listing.noListingsInAreaDesc')}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          {/* Right panel - Map */}
+          <ResizablePanel defaultSize={65} minSize={40}>
+            <div className="h-full relative">
+              <MapView
+                listings={allListings || []}
+                activeListing={activeListingId}
+                onListingClick={handleMarkerClick}
+                onPopupClick={handlePopupClick}
+                onMapMove={handleMapMove}
+              />
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
 
         {/* Mobile view toggle */}
         <div className="lg:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
