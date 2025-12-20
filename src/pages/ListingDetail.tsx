@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink, Eye, Clock, MessageCircle, Flame } from 'lucide-react';
+import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink, Eye, Clock, MessageCircle, Flame, User } from 'lucide-react';
 import { useListing } from '@/hooks/useListings';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -453,7 +453,7 @@ export default function ListingDetail() {
                 {user ? (
                   <Button
                     variant="outline"
-                    className="w-full"
+                    className="w-full mb-3"
                     onClick={handleSaveClick}
                   >
                     <Heart className={cn('h-4 w-4 mr-2', isSaved && 'fill-current text-accent')} />
@@ -462,10 +462,21 @@ export default function ListingDetail() {
                 ) : (
                   <Button
                     variant="outline"
-                    className="w-full"
+                    className="w-full mb-3"
                     onClick={() => navigate('/auth')}
                   >
                     {t('listing.signInToSave')}
+                  </Button>
+                )}
+
+                {listing.user_id && (
+                  <Button
+                    variant="ghost"
+                    className="w-full text-muted-foreground hover:text-foreground"
+                    onClick={() => navigate(`/landlord/${listing.user_id}`)}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    View landlord profile
                   </Button>
                 )}
               </div>
