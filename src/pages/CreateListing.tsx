@@ -25,8 +25,12 @@ import { PriceStep } from '@/components/wizard/steps/PriceStep';
 import { PhotosStep } from '@/components/wizard/steps/PhotosStep';
 import { FloorPlansStep } from '@/components/wizard/steps/FloorPlansStep';
 import { DetailsStep } from '@/components/wizard/steps/DetailsStep';
-import { BuildingFeaturesStep } from '@/components/wizard/steps/BuildingFeaturesStep';
+import { OutdoorFeaturesStep } from '@/components/wizard/steps/OutdoorFeaturesStep';
+import { ParkingStorageStep } from '@/components/wizard/steps/ParkingStorageStep';
+import { BuildingAmenitiesStep } from '@/components/wizard/steps/BuildingAmenitiesStep';
+import { EnergyComfortStep } from '@/components/wizard/steps/EnergyComfortStep';
 import { EquipmentStep } from '@/components/wizard/steps/EquipmentStep';
+import { InteriorHighlightsStep } from '@/components/wizard/steps/InteriorHighlightsStep';
 import { BuildingInfoStep } from '@/components/wizard/steps/BuildingInfoStep';
 import { RentalTermsStep } from '@/components/wizard/steps/RentalTermsStep';
 import { SaleCostsStep } from '@/components/wizard/steps/SaleCostsStep';
@@ -73,25 +77,68 @@ export default function CreateListing() {
     allows_pets: false,
     pets_details: '',
     move_in_immediately: true,
-    // Building features
-    has_elevator: false,
+    // Outdoor features
     has_balcony: false,
     balcony_sqm: '',
     has_terrace: false,
     terrace_sqm: '',
+    has_rooftop_terrace: false,
     has_garden: false,
     garden_sqm: '',
+    has_bbq_area: false,
+    has_playground: false,
+    has_waterfront: false,
+    has_view: false,
+    view_type: '',
+    // Parking & Storage
     has_parking: false,
     parking_type: '',
     parking_spaces: '',
     has_garage: false,
+    has_carport: false,
+    has_ev_charging: false,
+    has_bicycle_storage: false,
     has_storage: false,
+    has_basement: false,
+    // Building amenities
+    has_elevator: false,
+    has_shared_laundry: false,
+    has_gym: false,
+    has_sauna: false,
+    has_pool: false,
+    has_common_room: false,
+    has_concierge: false,
+    has_security: false,
+    // Energy & Comfort
     has_fireplace: false,
-    // Equipment
+    has_floor_heating: false,
+    has_district_heating: false,
+    has_heat_pump: false,
     has_air_conditioning: false,
+    has_ventilation: false,
+    has_solar_panels: false,
+    // Equipment
     has_dishwasher: false,
     has_washing_machine: false,
     has_dryer: false,
+    // Interior Highlights
+    has_high_ceilings: false,
+    has_large_windows: false,
+    has_smart_home: false,
+    has_built_in_wardrobes: false,
+    orientation: '',
+    // Accessibility
+    has_step_free_access: false,
+    has_wheelchair_accessible: false,
+    has_wide_doorways: false,
+    has_ground_floor_access: false,
+    has_elevator_from_garage: false,
+    // Safety & Privacy
+    has_secure_entrance: false,
+    has_intercom: false,
+    has_gated_community: false,
+    has_fire_safety: false,
+    has_soundproofing: false,
     // Building info
     floor_number: '',
     total_floors_building: '',
@@ -139,8 +186,19 @@ export default function CreateListing() {
       { id: 'photos', title: 'Photos', emoji: '📸', isOptional: true },
       { id: 'floorplans', title: 'Floor Plans', emoji: '📐', isOptional: true },
       { id: 'details', title: 'Details', emoji: '📝', isOptional: true },
-      { id: 'building_features', title: 'Building', emoji: '🏗️', isOptional: true },
+      { id: 'outdoor', title: 'Outdoor', emoji: '🌳', isOptional: true },
+      { id: 'parking', title: 'Parking', emoji: '🚗', isOptional: true },
+    );
+    
+    // Add building amenities only for apartments/studios/rooms
+    if (['apartment', 'studio', 'room'].includes(formData.property_type)) {
+      steps.push({ id: 'amenities', title: 'Amenities', emoji: '🏢', isOptional: true });
+    }
+    
+    steps.push(
+      { id: 'energy', title: 'Energy', emoji: '⚡', isOptional: true },
       { id: 'equipment', title: 'Equipment', emoji: '🔌', isOptional: true },
+      { id: 'interior', title: 'Interior', emoji: '✨', isOptional: true },
       { id: 'building_info', title: 'Info', emoji: '📊', isOptional: true },
     );
     
@@ -189,8 +247,12 @@ export default function CreateListing() {
       case 'photos': return true; // Now optional
       case 'floorplans': return true;
       case 'details': return true;
-      case 'building_features': return true;
+      case 'outdoor': return true;
+      case 'parking': return true;
+      case 'amenities': return true;
+      case 'energy': return true;
       case 'equipment': return true;
+      case 'interior': return true;
       case 'building_info': return true;
       case 'rental': return true;
       case 'sale_costs': return true;
@@ -425,25 +487,66 @@ export default function CreateListing() {
             onMoveInImmediatelyChange={v => handleChange('move_in_immediately', v)}
           />
         );
-      case 'building_features':
+      case 'outdoor':
         return (
-          <BuildingFeaturesStep
-            hasElevator={formData.has_elevator}
+          <OutdoorFeaturesStep
             hasBalcony={formData.has_balcony}
             balconySqm={formData.balcony_sqm}
             hasTerrace={formData.has_terrace}
             terraceSqm={formData.terrace_sqm}
+            hasRooftopTerrace={formData.has_rooftop_terrace}
             hasGarden={formData.has_garden}
             gardenSqm={formData.garden_sqm}
+            hasBbqArea={formData.has_bbq_area}
+            hasPlayground={formData.has_playground}
+            hasWaterfront={formData.has_waterfront}
+            hasView={formData.has_view}
+            viewType={formData.view_type}
+            onFeatureToggle={(f, v) => handleChange(f, v)}
+            onChange={handleChange}
+          />
+        );
+      case 'parking':
+        return (
+          <ParkingStorageStep
             hasParking={formData.has_parking}
             parkingType={formData.parking_type}
             parkingSpaces={formData.parking_spaces}
             hasGarage={formData.has_garage}
+            hasCarport={formData.has_carport}
+            hasEvCharging={formData.has_ev_charging}
+            hasBicycleStorage={formData.has_bicycle_storage}
             hasStorage={formData.has_storage}
-            hasFireplace={formData.has_fireplace}
-            propertyType={formData.property_type}
+            hasBasement={formData.has_basement}
             onFeatureToggle={(f, v) => handleChange(f, v)}
             onChange={handleChange}
+          />
+        );
+      case 'amenities':
+        return (
+          <BuildingAmenitiesStep
+            hasElevator={formData.has_elevator}
+            hasSharedLaundry={formData.has_shared_laundry}
+            hasGym={formData.has_gym}
+            hasSauna={formData.has_sauna}
+            hasPool={formData.has_pool}
+            hasCommonRoom={formData.has_common_room}
+            hasConcierge={formData.has_concierge}
+            hasSecurity={formData.has_security}
+            onFeatureToggle={(f, v) => handleChange(f, v)}
+          />
+        );
+      case 'energy':
+        return (
+          <EnergyComfortStep
+            hasFireplace={formData.has_fireplace}
+            hasFloorHeating={formData.has_floor_heating}
+            hasDistrictHeating={formData.has_district_heating}
+            hasHeatPump={formData.has_heat_pump}
+            hasAirConditioning={formData.has_air_conditioning}
+            hasVentilation={formData.has_ventilation}
+            hasSolarPanels={formData.has_solar_panels}
+            onFeatureToggle={(f, v) => handleChange(f, v)}
           />
         );
       case 'equipment':
@@ -454,6 +557,25 @@ export default function CreateListing() {
             hasWashingMachine={formData.has_washing_machine}
             hasDryer={formData.has_dryer}
             onFeatureToggle={(f, v) => handleChange(f, v)}
+          />
+        );
+      case 'interior':
+        return (
+          <InteriorHighlightsStep
+            hasHighCeilings={formData.has_high_ceilings}
+            hasLargeWindows={formData.has_large_windows}
+            hasSmartHome={formData.has_smart_home}
+            hasBuiltInWardrobes={formData.has_built_in_wardrobes}
+            orientation={formData.orientation}
+            hasStepFreeAccess={formData.has_step_free_access}
+            hasWheelchairAccessible={formData.has_wheelchair_accessible}
+            hasSecureEntrance={formData.has_secure_entrance}
+            hasIntercom={formData.has_intercom}
+            hasSoundproofing={formData.has_soundproofing}
+            hasGatedCommunity={formData.has_gated_community}
+            hasFireSafety={formData.has_fire_safety}
+            onFeatureToggle={(f, v) => handleChange(f, v)}
+            onChange={handleChange}
           />
         );
       case 'building_info':
