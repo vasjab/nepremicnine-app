@@ -1,16 +1,30 @@
-import { useState } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Home, TrendingUp, TrendingDown, Minus, Calendar } from 'lucide-react';
+import { Home, List, MapIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { ListingCard } from '@/components/ListingCard';
+import { MapView } from '@/components/MapView';
+import { ListingDetailModal } from '@/components/ListingDetailModal';
+import { MobileMapFilterButton } from '@/components/MobileMapFilterButton';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useFormattedPrice } from '@/hooks/useFormattedPrice';
-import { Listing } from '@/types/listing';
-import { format } from 'date-fns';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useMobileViewPreference } from '@/hooks/useMobileViewPreference';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
+import { Listing, ListingFilters } from '@/types/listing';
+import { cn } from '@/lib/utils';
+
+interface MapBounds {
+  north: number;
+  south: number;
+  east: number;
+  west: number;
+}
+
+const MemoizedListingCard = memo(ListingCard);
 
 function useCompletedListings(status: 'sold' | 'rented') {
   return useQuery({
@@ -30,139 +44,110 @@ function useCompletedListings(status: 'sold' | 'rented') {
   });
 }
 
-function CompletedListingCard({ listing, onClick }: { listing: Listing; onClick: () => void }) {
-  const { t } = useTranslation();
-  const { formatPrice } = useFormattedPrice();
-  const isRental = listing.listing_type === 'rent';
-  const isSold = listing.status === 'sold';
-
-  const hasFinalPrice = listing.final_price && listing.final_price > 0;
-  const priceDiff = hasFinalPrice ? listing.final_price! - listing.price : 0;
-  const priceDiffPercent = listing.price > 0 ? ((priceDiff / listing.price) * 100).toFixed(1) : '0';
-
-  const completedDate = listing.completed_at 
-    ? format(new Date(listing.completed_at), 'MMM d, yyyy')
-    : null;
-
-  return (
-    <div className="relative">
-      <ListingCard listing={listing} onClick={onClick} />
-      
-      {/* Status overlay */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-3 left-3 z-20">
-          <span className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wide ${
-            isSold 
-              ? 'bg-amber-500/90 text-white' 
-              : 'bg-emerald-500/90 text-white'
-          }`}>
-            {isSold ? t('listing.sold') : t('listing.rented')}
-          </span>
-        </div>
-
-        {/* Price comparison badge */}
-        {hasFinalPrice && (
-          <div className="absolute bottom-20 left-3 right-3 z-20">
-            <div className="bg-background/95 backdrop-blur-sm rounded-xl p-3 shadow-lg border border-border/50">
-              <div className="flex items-center justify-between gap-2 text-sm">
-                <div>
-                  <p className="text-muted-foreground text-xs mb-0.5">
-                    {isSold ? t('listing.soldFor') : t('listing.rentedFor')}
-                  </p>
-                  <p className="font-bold text-foreground">
-                    {formatPrice(listing.final_price!, listing.currency, { isRental, showPeriod: isRental })}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-1 justify-end">
-                    {priceDiff > 0 ? (
-                      <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />
-                    ) : priceDiff < 0 ? (
-                      <TrendingDown className="h-3.5 w-3.5 text-red-500" />
-                    ) : (
-                      <Minus className="h-3.5 w-3.5 text-muted-foreground" />
-                    )}
-                    <span className={`text-xs font-medium ${
-                      priceDiff > 0 ? 'text-emerald-500' : priceDiff < 0 ? 'text-red-500' : 'text-muted-foreground'
-                    }`}>
-                      {priceDiff > 0 ? '+' : ''}{priceDiffPercent}%
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    vs {formatPrice(listing.price, listing.currency, { isRental, showPeriod: false })}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Completed date */}
-      {completedDate && (
-        <div className="absolute top-3 right-14 z-20">
-          <span className="flex items-center gap-1 px-2 py-1 rounded-lg glass text-xs font-medium">
-            <Calendar className="h-3 w-3" />
-            {completedDate}
-          </span>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function SoldRentedListings() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const isMobileLayout = useIsMobile();
+  const { trigger: haptic } = useHapticFeedback();
+  
   const [activeTab, setActiveTab] = useState<'sold' | 'rented'>('sold');
+  const [activeListingId, setActiveListingId] = useState<string | null>(null);
+  const [highlightedFromMap, setHighlightedFromMap] = useState<string | null>(null);
+  const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
+  const [modalListing, setModalListing] = useState<Listing | null>(null);
+  const [mobileView, setMobileView] = useMobileViewPreference();
+  const [filters, setFilters] = useState<ListingFilters>({});
+  
+  const listingRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const listContainerRef = useRef<HTMLDivElement>(null);
   
   const { data: soldListings, isLoading: isSoldLoading } = useCompletedListings('sold');
   const { data: rentedListings, isLoading: isRentedLoading } = useCompletedListings('rented');
 
   const isLoading = activeTab === 'sold' ? isSoldLoading : isRentedLoading;
-  const listings = activeTab === 'sold' ? soldListings : rentedListings;
+  const allListings = activeTab === 'sold' ? soldListings : rentedListings;
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      <main className="pt-16">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="font-display text-3xl font-bold text-foreground mb-2">
-            {t('soldRented.title')}
-          </h1>
-          <p className="text-muted-foreground mb-6">
-            {t('soldRented.subtitle')}
-          </p>
+  // Filter listings based on map bounds
+  const filteredListings = useMemo(() => {
+    if (!allListings) return [];
+    if (!mapBounds) return allListings;
+    
+    return allListings.filter(listing => 
+      listing.latitude >= mapBounds.south &&
+      listing.latitude <= mapBounds.north &&
+      listing.longitude >= mapBounds.west &&
+      listing.longitude <= mapBounds.east
+    );
+  }, [allListings, mapBounds]);
 
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'sold' | 'rented')}>
-            <TabsList className="mb-6">
-              <TabsTrigger value="sold" className="gap-2">
-                {t('soldRented.recentlySold')}
-                {soldListings && <span className="text-xs opacity-70">({soldListings.length})</span>}
-              </TabsTrigger>
-              <TabsTrigger value="rented" className="gap-2">
-                {t('soldRented.recentlyRented')}
-                {rentedListings && <span className="text-xs opacity-70">({rentedListings.length})</span>}
-              </TabsTrigger>
-            </TabsList>
+  const handleListingClick = (listing: Listing) => {
+    navigate(`/listing/${listing.id}`);
+  };
 
-            <TabsContent value="sold" className="mt-0">
-              {renderListings()}
-            </TabsContent>
-            <TabsContent value="rented" className="mt-0">
-              {renderListings()}
-            </TabsContent>
-          </Tabs>
-        </div>
-      </main>
+  const handleCardHover = (listingId: string | null) => {
+    setActiveListingId(listingId);
+  };
+
+  const handleMapMove = useCallback((bounds: MapBounds) => {
+    setMapBounds(bounds);
+  }, []);
+
+  const handleMarkerClick = useCallback((listing: Listing) => {
+    setActiveListingId(listing.id);
+    setHighlightedFromMap(listing.id);
+    
+    const cardElement = listingRefs.current[listing.id];
+    if (cardElement && listContainerRef.current) {
+      cardElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+    
+    setTimeout(() => {
+      setHighlightedFromMap(null);
+    }, 3000);
+  }, []);
+
+  const handlePopupClick = useCallback((listing: Listing) => {
+    setModalListing(listing);
+  }, []);
+
+  // Clear highlight after delay
+  useEffect(() => {
+    if (activeListingId) {
+      const timer = setTimeout(() => {
+        const cardElement = listingRefs.current[activeListingId];
+        if (cardElement && !cardElement.matches(':hover')) {
+          // Keep highlighted for visibility
+        }
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [activeListingId]);
+
+  const TabsHeader = () => (
+    <div className="shrink-0 px-4 pt-4 pb-2">
+      <h1 className="font-display text-xl font-bold text-foreground mb-1">
+        {t('soldRented.title')}
+      </h1>
+      <TabsList className="w-full justify-start">
+        <TabsTrigger value="sold" className="gap-2">
+          {t('soldRented.recentlySold')}
+          {soldListings && <span className="text-xs opacity-70">({soldListings.length})</span>}
+        </TabsTrigger>
+        <TabsTrigger value="rented" className="gap-2">
+          {t('soldRented.recentlyRented')}
+          {rentedListings && <span className="text-xs opacity-70">({rentedListings.length})</span>}
+        </TabsTrigger>
+      </TabsList>
     </div>
   );
 
-  function renderListings() {
+  const ListingsGrid = ({ showAnimations = true }: { showAnimations?: boolean }) => {
     if (isLoading) {
       return (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 @[600px]:grid-cols-2 gap-3 sm:gap-4">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="space-y-3">
               <Skeleton className="aspect-[4/3] rounded-xl" />
@@ -174,7 +159,7 @@ export default function SoldRentedListings() {
       );
     }
 
-    if (!listings || listings.length === 0) {
+    if (!filteredListings || filteredListings.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
@@ -191,15 +176,168 @@ export default function SoldRentedListings() {
     }
 
     return (
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {listings.map((listing) => (
-          <CompletedListingCard
+      <div className="grid grid-cols-1 @[600px]:grid-cols-2 gap-3 sm:gap-4">
+        {filteredListings.map((listing, index) => (
+          <div
             key={listing.id}
-            listing={listing}
-            onClick={() => navigate(`/listing/${listing.id}`)}
-          />
+            ref={(el) => {
+              listingRefs.current[listing.id] = el;
+            }}
+            onMouseEnter={() => handleCardHover(listing.id)}
+            onMouseLeave={() => handleCardHover(null)}
+            className={cn(
+              "transition-all duration-200",
+              showAnimations && isMobileLayout && index < 4 && "animate-fade-in",
+              highlightedFromMap === listing.id && "ring-2 ring-accent ring-offset-2 ring-offset-background rounded-xl animate-pulse-highlight"
+            )}
+          >
+            <MemoizedListingCard
+              listing={listing}
+              onClick={() => handleListingClick(listing)}
+              showStatusOverlay={true}
+            />
+          </div>
         ))}
       </div>
     );
-  }
+  };
+
+  return (
+    <div className="min-h-dvh h-dvh flex flex-col bg-background">
+      <Header />
+      
+      {/* Spacer for fixed header */}
+      <div className="h-14 shrink-0" />
+      
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'sold' | 'rented')} className="flex-1 flex flex-col overflow-hidden min-h-0">
+        <main className="flex-1 flex flex-col overflow-hidden min-h-0">
+          {isMobileLayout ? (
+            <>
+              {/* Mobile: Keep both views mounted, toggle visibility */}
+              <div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden relative">
+                {/* List View */}
+                <div 
+                  className={cn(
+                    "flex flex-col flex-1 min-h-0 overflow-hidden absolute inset-0 transition-opacity duration-150",
+                    mobileView === 'list' ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+                  )}
+                >
+                  <TabsHeader />
+                  
+                  <TabsContent value="sold" className="flex-1 overflow-hidden m-0">
+                    <div ref={listContainerRef} className="h-full overflow-y-auto p-3 sm:p-4 @container">
+                      <ListingsGrid showAnimations={true} />
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="rented" className="flex-1 overflow-hidden m-0">
+                    <div ref={listContainerRef} className="h-full overflow-y-auto p-3 sm:p-4 @container">
+                      <ListingsGrid showAnimations={true} />
+                    </div>
+                  </TabsContent>
+                </div>
+                
+                {/* Map View */}
+                <div 
+                  className={cn(
+                    "flex-1 h-full min-h-0 absolute inset-0 transition-opacity duration-150",
+                    mobileView === 'map' ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
+                  )}
+                >
+                  <MapView
+                    listings={allListings || []}
+                    activeListing={activeListingId}
+                    onListingClick={handleMarkerClick}
+                    onPopupClick={handlePopupClick}
+                    onMapMove={handleMapMove}
+                  />
+                  <div className="absolute bottom-20 right-4 z-30">
+                    <MobileMapFilterButton filters={filters} onFiltersChange={setFilters} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile view toggle */}
+              <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
+                <div className="flex bg-card rounded-full shadow-lg border border-border p-1">
+                  <button
+                    type="button"
+                    className={cn(
+                      'flex items-center justify-center rounded-full px-4 py-2.5 min-h-[44px] min-w-[80px] text-sm font-medium transition-colors touch-safe-button',
+                      mobileView === 'list' 
+                        ? 'bg-accent text-accent-foreground' 
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                    onClick={() => {
+                      haptic('medium');
+                      setMobileView('list');
+                    }}
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <List className="h-4 w-4 mr-2" />
+                    {t('map.list')}
+                  </button>
+                  <button
+                    type="button"
+                    className={cn(
+                      'flex items-center justify-center rounded-full px-4 py-2.5 min-h-[44px] min-w-[80px] text-sm font-medium transition-colors touch-safe-button',
+                      mobileView === 'map' 
+                        ? 'bg-accent text-accent-foreground' 
+                        : 'text-muted-foreground hover:text-foreground',
+                    )}
+                    onClick={() => {
+                      haptic('medium');
+                      setMobileView('map');
+                    }}
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <MapIcon className="h-4 w-4 mr-2" />
+                    {t('map.map')}
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            /* Desktop: Fixed 50-50 split view */
+            <div className="flex-1 flex min-h-0 h-full">
+              {/* Left panel - Tabs + Listings (50%) */}
+              <div className="w-1/2 flex flex-col h-full min-h-0 border-r border-border overflow-hidden">
+                <TabsHeader />
+                
+                <TabsContent value="sold" className="flex-1 overflow-hidden m-0">
+                  <div ref={listContainerRef} className="h-full overflow-y-auto p-3 sm:p-4 @container">
+                    <ListingsGrid showAnimations={false} />
+                  </div>
+                </TabsContent>
+                <TabsContent value="rented" className="flex-1 overflow-hidden m-0">
+                  <div ref={listContainerRef} className="h-full overflow-y-auto p-3 sm:p-4 @container">
+                    <ListingsGrid showAnimations={false} />
+                  </div>
+                </TabsContent>
+              </div>
+
+              {/* Right panel - Map (50%) */}
+              <div className="w-1/2 h-full relative">
+                <MapView
+                  listings={allListings || []}
+                  activeListing={activeListingId}
+                  onListingClick={handleMarkerClick}
+                  onPopupClick={handlePopupClick}
+                  onMapMove={handleMapMove}
+                />
+              </div>
+            </div>
+          )}
+        </main>
+      </Tabs>
+
+      {/* Listing Detail Modal */}
+      {modalListing && (
+        <ListingDetailModal
+          listing={modalListing}
+          isOpen={!!modalListing}
+          onClose={() => setModalListing(null)}
+        />
+      )}
+    </div>
+  );
 }
