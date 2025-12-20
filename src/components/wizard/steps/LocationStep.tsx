@@ -26,6 +26,7 @@ interface LocationStepProps {
   onPostalCodeChange: (value: string) => void;
   onAddressSelect: (suggestion: { address: string; city?: string; postalCode?: string }) => void;
   onCoordinatesChange: (lat: number, lng: number) => void;
+  onReverseGeocode?: (address: { address: string; city: string; postalCode: string; country: string }) => void;
   onResetLocation?: () => void;
   errors: {
     city?: string;
@@ -62,6 +63,7 @@ export function LocationStep({
   onPostalCodeChange,
   onAddressSelect,
   onCoordinatesChange,
+  onReverseGeocode,
   onResetLocation,
   errors,
 }: LocationStepProps) {
@@ -132,6 +134,7 @@ export function LocationStep({
               status={geocodingStatus}
               isGeocoding={isGeocoding}
               onLocationChange={onCoordinatesChange}
+              onReverseGeocode={onReverseGeocode}
               manualCoordinates={manualCoordinates}
               onResetLocation={onResetLocation}
               defaultCenter={getDefaultCenter()}

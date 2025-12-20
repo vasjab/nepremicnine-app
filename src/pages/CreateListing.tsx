@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateListing, useUpdateListing, useListing } from '@/hooks/useListings';
 import { useAddressGeocoding } from '@/hooks/useAddressGeocoding';
@@ -14,6 +14,16 @@ import { useFloorPlanUpload } from '@/hooks/useFloorPlanUpload';
 import { supabase } from '@/integrations/supabase/client';
 import { type Currency } from '@/lib/exchangeRates';
 import { ListingPreviewModal } from '@/components/ListingPreviewModal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 import { WizardProgress, type WizardStep } from '@/components/wizard/WizardProgress';
 import { WizardNavigation } from '@/components/wizard/WizardNavigation';
@@ -57,6 +67,7 @@ export default function CreateListing() {
   const [honeypot, setHoneypot] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const { checkRateLimit, isLimited, remainingTime } = useRateLimit(LISTING_RATE_LIMIT);
 
   const { images, isUploading, uploadProgress, uploadImages, removeImage, reorderImages, setImages } = useImageUpload({ userId: user?.id || '' });
@@ -771,6 +782,12 @@ export default function CreateListing() {
             onPostalCodeChange={v => handleChange('postal_code', v)}
             onAddressSelect={s => { handleChange('address', s.address); if (s.city) handleChange('city', s.city); if (s.postalCode) handleChange('postal_code', s.postalCode); setManualCoordinates(null); }}
             onCoordinatesChange={(lat, lng) => setManualCoordinates({ latitude: lat, longitude: lng })}
+            onReverseGeocode={({ address, city, postalCode, country }) => {
+              if (address) handleChange('address', address);
+              if (city) handleChange('city', city);
+              if (postalCode) handleChange('postal_code', postalCode);
+              if (country) handleChange('country', country);
+            }}
             onResetLocation={() => setManualCoordinates(null)}
             errors={{ city: errors.city, address: errors.address }}
           />
@@ -1009,13 +1026,44 @@ export default function CreateListing() {
     utilities_included: formData.utilities_included,
   } as any;
 
+  // Check if user has entered meaningful data (beyond just listing_type and property_type)
+  const hasSubstantialData = () => {
+    return (
+      formData.title.length > 0 ||
+      formData.address.length > 0 ||
+      formData.city.length > 0 ||
+      formData.price.length > 0 ||
+      formData.description.length > 0 ||
+      images.length > 0
+    );
+  };
+
+  const handleCloseClick = () => {
+    if (hasSubstantialData()) {
+      setShowCloseConfirm(true);
+    } else {
+      navigate(-1);
+    }
+  };
+
+  const handleDiscardAndClose = () => {
+    setShowCloseConfirm(false);
+    navigate(-1);
+  };
+
+  const handleSaveAndClose = async () => {
+    setShowCloseConfirm(false);
+    await handleSaveDraft();
+    navigate(-1);
+  };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <Header />
       <main className="pt-16">
         <div className="container mx-auto px-4 py-6">
-          <Button variant="ghost" className="mb-4" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4 mr-2" /> Back
+          <Button variant="ghost" className="mb-4" onClick={handleCloseClick}>
+            <X className="h-4 w-4 mr-2" /> Close
           </Button>
 
           <WizardProgress steps={WIZARD_STEPS} currentStep={currentStep} onStepClick={handleStepClick} completedSteps={completedSteps} />
@@ -1051,6 +1099,22 @@ export default function CreateListing() {
         isOpen={showPreview}
         onClose={() => setShowPreview(false)}
       />
+
+      {/* Close Confirmation Dialog */}
+      <AlertDialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Save your progress?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved changes. Would you like to save your listing as a draft before closing?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleDiscardAndClose}>Discard</AlertDialogCancel>
+            <AlertDialogAction onClick={handleSaveAndClose}>Save Draft</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
