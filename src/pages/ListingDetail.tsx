@@ -175,13 +175,18 @@ export default function ListingDetail() {
       <main className="pt-16">
         {/* Image gallery preview */}
         <div 
-          className="relative h-[40vh] sm:h-[50vh] bg-muted cursor-pointer group select-none"
+          className={cn(
+            "relative h-[40vh] sm:h-[50vh] bg-muted group select-none",
+            listing.images && listing.images.length > 0 && "cursor-pointer"
+          )}
           onClick={(e) => {
             const target = e.target as HTMLElement;
             if (target.closest('button')) return;
-            setShowGallery(true);
+            if (listing.images && listing.images.length > 0) {
+              setShowGallery(true);
+            }
           }}
-          {...swipeHandlers}
+          {...(listing.images && listing.images.length > 1 ? swipeHandlers : {})}
         >
           {listing.images && listing.images.length > 0 ? (
             <>
@@ -191,17 +196,13 @@ export default function ListingDetail() {
                 className="w-full h-full object-cover transition-all duration-300"
               />
               
-              {/* Navigation arrows */}
-              {listing.images.length >= 1 && (
+              {/* Navigation arrows - only show when more than 1 image */}
+              {listing.images.length > 1 && (
                 <>
                   <Button
                     variant="ghost"
                     size="icon"
-                    disabled={listing.images.length <= 1}
-                    className={cn(
-                      "absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10",
-                      listing.images.length <= 1 && "opacity-50 cursor-not-allowed"
-                    )}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10"
                     onClick={handlePrevImage}
                   >
                     <ChevronLeft className="h-6 w-6" />
@@ -209,34 +210,28 @@ export default function ListingDetail() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    disabled={listing.images.length <= 1}
-                    className={cn(
-                      "absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10",
-                      listing.images.length <= 1 && "opacity-50 cursor-not-allowed"
-                    )}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm hover:bg-card shadow-md z-10"
                     onClick={handleNextImage}
                   >
                     <ChevronRight className="h-6 w-6" />
                   </Button>
 
                   {/* Image indicator dots */}
-                  {listing.images.length > 1 && (
-                    <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-                      {listing.images.map((_, index) => (
-                        <button
-                          key={index}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCurrentImageIndex(index);
-                          }}
-                          className={cn(
-                            "w-2.5 h-2.5 rounded-full transition-all",
-                            index === currentImageIndex ? "bg-white w-5" : "bg-white/60 hover:bg-white/80"
-                          )}
-                        />
-                      ))}
-                    </div>
-                  )}
+                  <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                    {listing.images.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentImageIndex(index);
+                        }}
+                        className={cn(
+                          "w-2.5 h-2.5 rounded-full transition-all",
+                          index === currentImageIndex ? "bg-white w-5" : "bg-white/60 hover:bg-white/80"
+                        )}
+                      />
+                    ))}
+                  </div>
                 </>
               )}
               
@@ -282,7 +277,7 @@ export default function ListingDetail() {
         {listing.images && listing.images.length > 0 && (
           <div className="container mx-auto px-4 -mt-6 relative z-10">
             <div className="flex gap-3">
-              {listing.floor_plan_url && (
+              {((listing as any).floor_plan_urls?.length > 0 || listing.floor_plan_url) && (
                 <button
                   onClick={() => {
                     setScrollToFloorPlan(true);
@@ -294,16 +289,18 @@ export default function ListingDetail() {
                   {t('listing.floorPlan')}
                 </button>
               )}
-              <button
-                onClick={() => {
-                  setScrollToFloorPlan(false);
-                  setShowGallery(true);
-                }}
-                className="flex items-center gap-2 px-4 py-2.5 bg-secondary border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors shadow-sm"
-              >
-                {listing.images.length} {t('listing.images')}
-                <ExternalLink className="h-4 w-4" />
-              </button>
+              {listing.images.length > 1 && (
+                <button
+                  onClick={() => {
+                    setScrollToFloorPlan(false);
+                    setShowGallery(true);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-secondary border border-border rounded-xl text-sm font-medium text-foreground hover:bg-muted transition-colors shadow-sm"
+                >
+                  {listing.images.length} {t('listing.images')}
+                  <ExternalLink className="h-4 w-4" />
+                </button>
+              )}
             </div>
           </div>
         )}
