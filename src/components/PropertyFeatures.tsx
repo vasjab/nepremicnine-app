@@ -214,7 +214,7 @@ function FeatureCard({
       )}>
         <Icon className={cn("h-6 w-6", theme.iconColor)} />
       </div>
-      <span className="text-sm font-medium text-foreground leading-tight line-clamp-2 pr-6">
+      <span className="text-sm font-medium text-foreground leading-tight break-words pr-6">
         {label}
       </span>
     </div>
@@ -255,9 +255,9 @@ function DetailFeatureCard({
       )}>
         <Icon className={cn("h-6 w-6", theme.iconColor)} />
       </div>
-      <div className="min-w-0 flex-1 overflow-hidden pr-6">
-        <p className="text-sm font-medium text-foreground truncate">{label}</p>
-        <p className="text-xs text-muted-foreground truncate">{detail}</p>
+      <div className="min-w-0 flex-1 pr-6">
+        <p className="text-sm font-medium text-foreground break-words leading-tight">{label}</p>
+        <p className="text-xs text-muted-foreground break-words">{detail}</p>
       </div>
     </div>
   );
@@ -310,7 +310,7 @@ function CategorySection({
       <h3 className={cn("text-xs font-semibold uppercase tracking-wide", theme.headerColor)}>
         {theme.label}
       </h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
         {features.map((feature) => (
           feature.detail ? (
             <DetailFeatureCard

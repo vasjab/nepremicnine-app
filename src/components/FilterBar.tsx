@@ -1016,17 +1016,43 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
               </div>
             )}
 
-            {/* Title */}
-            <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-3">
-              {t('common.findHome')}
-            </h1>
+            {/* Title + Results count + Sort - all in one line */}
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground whitespace-nowrap">
+                  {t('common.findHome')}
+                </h1>
+                {totalCount !== undefined && (
+                  <span className="text-sm text-muted-foreground whitespace-nowrap">
+                    {totalCount.toLocaleString()} {totalCount === 1 ? 'listing' : 'listings'}
+                  </span>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-1.5 shrink-0">
+                <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+                <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
+                  <SelectTrigger className="w-[130px] h-8 text-xs bg-secondary border-0 rounded-lg">
+                    <SelectValue placeholder={t('filters.sortBy')} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover rounded-xl">
+                    <SelectItem value="newest">{t('filters.newest')}</SelectItem>
+                    <SelectItem value="oldest">{t('filters.oldest')}</SelectItem>
+                    <SelectItem value="price_asc">{t('filters.priceAsc')}</SelectItem>
+                    <SelectItem value="price_desc">{t('filters.priceDesc')}</SelectItem>
+                    <SelectItem value="size_asc">{t('filters.sizeAsc')}</SelectItem>
+                    <SelectItem value="size_desc">{t('filters.sizeDesc')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
             {/* Search input + Filter button inline */}
             <div className="flex items-center gap-2">
-              <form onSubmit={handleSearch} className="relative flex-1">
+              <form onSubmit={handleSearch} className="relative flex-1 min-w-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
                 <Input
-                  placeholder={t('filters.searchPlaceholder') || 'Search by city, title, keywords...'}
+                  placeholder={t('nav.searchPlaceholder')}
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
                   className="w-full pl-10 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0"
@@ -1115,34 +1141,6 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           </div>
         </div>
 
-        {/* Results count and sort - Always visible */}
-        {totalCount !== undefined && (
-          <div className={cn(
-            "flex items-center justify-between gap-2",
-            !isCollapsed && "mt-3"
-          )}>
-            <p className="text-sm text-muted-foreground">
-              {totalCount === 1 ? t('listing.listingCount', { count: totalCount }) : t('listing.listingsCount', { count: totalCount.toLocaleString() })}
-            </p>
-            
-            <div className="flex items-center gap-1.5">
-              <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
-              <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
-                <SelectTrigger className="w-[130px] h-8 text-xs bg-secondary border-0 rounded-lg">
-                  <SelectValue placeholder={t('filters.sortBy')} />
-                </SelectTrigger>
-                <SelectContent className="bg-popover rounded-xl">
-                  <SelectItem value="newest">{t('filters.newest')}</SelectItem>
-                  <SelectItem value="oldest">{t('filters.oldest')}</SelectItem>
-                  <SelectItem value="price_asc">{t('filters.priceAsc')}</SelectItem>
-                  <SelectItem value="price_desc">{t('filters.priceDesc')}</SelectItem>
-                  <SelectItem value="size_asc">{t('filters.sizeAsc')}</SelectItem>
-                  <SelectItem value="size_desc">{t('filters.sizeDesc')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

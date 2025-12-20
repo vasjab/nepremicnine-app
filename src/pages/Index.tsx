@@ -391,7 +391,7 @@ const Index = () => {
           /* Desktop: Fixed 50-50 split view */
           <div className="flex-1 flex">
             {/* Left panel - Listings (50%) */}
-            <div className="w-1/2 flex flex-col h-full border-r border-border overflow-hidden">
+            <div className="w-1/2 flex flex-col h-full min-h-0 border-r border-border overflow-hidden">
 
               {landlordId && (
                 <div className="px-4 pt-3 pb-0">
@@ -425,7 +425,7 @@ const Index = () => {
                 showListingTypeTabs={true}
               />
 
-              <div ref={!isMobileLayout ? listContainerRef : undefined} className="flex-1 overflow-y-auto p-3 sm:p-4 @container">
+              <div ref={!isMobileLayout ? listContainerRef : undefined} className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 @container">
                 <ListingsGrid showAnimations={false} />
               </div>
             </div>
