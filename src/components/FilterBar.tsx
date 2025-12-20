@@ -81,6 +81,13 @@ const SIZE_CONFIG = {
   sqft: { min: 50, max: 2150, step: 50, label: 'ft²' },
 } as const;
 
+// Price per sqm range config (based on listing type)
+const PRICE_PER_SQM_CONFIG = {
+  rent: { min: 0, max: 100, step: 5 }, // 0-100€/m² for rentals
+  sale: { min: 0, max: 15000, step: 250 }, // 0-15k€/m² for sales
+  default: { min: 0, max: 5000, step: 100 },
+} as const;
+
 const SQM_TO_SQFT = 10.764;
 
 // Collapsible filter section component
@@ -183,12 +190,15 @@ function FilterContent({
   handleBedroomChange,
   handlePriceRangeChange,
   handleSizeRangeChange,
+  handlePricePerSqmRangeChange,
   handleUnitToggle,
   handleBooleanFilter,
   priceConfig,
   sizeConfig,
+  pricePerSqmConfig,
   priceRangeValues,
   sizeRangeValues,
+  pricePerSqmRangeValues,
   formatPriceLabelLocal,
   areaUnit,
   isApartmentTypeSelected,
@@ -327,6 +337,28 @@ function FilterContent({
             step={sizeConfig.step}
             thumbCount={2}
             onValueChange={handleSizeRangeChange}
+            className="touch-none"
+          />
+        </div>
+      </div>
+
+      {/* Price per sqm/sqft Slider */}
+      <div className="space-y-3">
+        <Label className="text-sm font-medium">
+          {t('filters.pricePerArea') || 'Price per'} {areaUnit === 'sqft' ? 'ft²' : 'm²'}
+        </Label>
+        <div className="flex justify-between text-sm text-muted-foreground px-1">
+          <span>{formatPriceLabelLocal(pricePerSqmRangeValues[0])}</span>
+          <span>{pricePerSqmRangeValues[1] >= pricePerSqmConfig.max ? `${formatPriceLabelLocal(pricePerSqmConfig.max)}+` : formatPriceLabelLocal(pricePerSqmRangeValues[1])}</span>
+        </div>
+        <div className="px-2">
+          <Slider
+            value={pricePerSqmRangeValues}
+            min={pricePerSqmConfig.min}
+            max={pricePerSqmConfig.max}
+            step={pricePerSqmConfig.step}
+            thumbCount={2}
+            onValueChange={handlePricePerSqmRangeChange}
             className="touch-none"
           />
         </div>
@@ -820,6 +852,30 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     });
   };
 
+  const handlePricePerSqmRangeChange = (values: number[]) => {
+    const [min, max] = values;
+    const config = getPricePerSqmConfig();
+    onFiltersChange({
+      ...filters,
+      min_price_per_sqm: min === config.min ? null : min,
+      max_price_per_sqm: max === config.max ? null : max,
+    });
+  };
+
+  const getPricePerSqmConfig = () => {
+    if (filters.listing_type === 'rent') return PRICE_PER_SQM_CONFIG.rent;
+    if (filters.listing_type === 'sale') return PRICE_PER_SQM_CONFIG.sale;
+    return PRICE_PER_SQM_CONFIG.default;
+  };
+
+  const getPricePerSqmRangeValues = (): [number, number] => {
+    const config = getPricePerSqmConfig();
+    return [
+      filters.min_price_per_sqm ?? config.min,
+      filters.max_price_per_sqm ?? config.max,
+    ];
+  };
+
   const clearFilters = () => {
     setSearchValue('');
     onFiltersChange({});
@@ -948,6 +1004,8 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   const activeChips = getActiveFilterChips();
   const priceRangeValues = getPriceRangeValues();
   const sizeRangeValues = getDisplayedSizeRange();
+  const pricePerSqmConfig = getPricePerSqmConfig();
+  const pricePerSqmRangeValues = getPricePerSqmRangeValues();
 
   const filterContentProps = {
     filters,
@@ -963,12 +1021,15 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     handleBedroomChange,
     handlePriceRangeChange,
     handleSizeRangeChange,
+    handlePricePerSqmRangeChange,
     handleUnitToggle,
     handleBooleanFilter,
     priceConfig,
     sizeConfig,
+    pricePerSqmConfig,
     priceRangeValues,
     sizeRangeValues,
+    pricePerSqmRangeValues,
     formatPriceLabelLocal,
     areaUnit,
     isApartmentTypeSelected,

@@ -321,7 +321,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
             {/* Price per sqm - always show */}
             {listing.area_sqm && listing.area_sqm > 0 && (
               <span className="text-xs text-muted-foreground">
-                {formatPrice((hasFinalPrice && isSoldOrRented && showStatusOverlay ? listing.final_price! : listing.price) / listing.area_sqm, listing.currency, { compact: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
+                {formatPrice((hasFinalPrice && isSoldOrRented && showStatusOverlay ? listing.final_price! : listing.price) / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
               </span>
             )}
           </div>
