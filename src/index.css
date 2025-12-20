@@ -435,3 +435,19 @@
 .drawer-handle {
   @apply mx-auto mt-4 h-1.5 w-12 rounded-full bg-muted-foreground/30;
 }
+
+/* Map pin highlight animation */
+@keyframes pulse-highlight {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 hsl(var(--accent) / 0.4);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 0 8px hsl(var(--accent) / 0);
+  }
+}
+
+.animate-pulse-highlight {
+  animation: pulse-highlight 1.5s ease-in-out infinite;
+}
