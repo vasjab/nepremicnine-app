@@ -8,6 +8,7 @@ import { useAddressGeocoding } from '@/hooks/useAddressGeocoding';
 import { Header } from '@/components/Header';
 import { FormField } from '@/components/FormField';
 import { LocationPreviewMap } from '@/components/LocationPreviewMap';
+import { AddressAutocomplete } from '@/components/AddressAutocomplete';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,6 +28,7 @@ import { ImageUploader } from '@/components/ImageUploader';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { CURRENCIES, CURRENCY_SYMBOLS, type Currency } from '@/lib/exchangeRates';
 
 // Validation schema for listing data
 const listingSchema = z.object({
@@ -151,6 +153,7 @@ export default function CreateListing() {
     property_type: 'apartment' as PropertyType,
     property_type_other: '',
     price: '',
+    currency: 'SEK' as Currency,
     address: '',
     city: '',
     postal_code: '',
@@ -193,6 +196,9 @@ export default function CreateListing() {
     internet_included: '' as string,
     utilities_included: '' as string,
   });
+
+  // Manual coordinates (when user adjusts the marker)
+  const [manualCoordinates, setManualCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
 
   // Field errors and touched states
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -324,8 +330,8 @@ export default function CreateListing() {
       }
     });
 
-    // Check geocoding
-    if (!coordinates) {
+    // Check geocoding (allow manual coordinates override)
+    if (!coordinates && !manualCoordinates) {
       allErrors['address'] = 'Could not find location. Please check the address.';
       allTouched['address'] = true;
     }
@@ -396,13 +402,13 @@ export default function CreateListing() {
         listing_type: validatedData.listing_type,
         property_type: validatedData.property_type,
         price: validatedData.price,
-        currency: 'SEK',
+        currency: formData.currency,
         address: validatedData.address,
         city: validatedData.city,
         postal_code: validatedData.postal_code || null,
         country: 'Sweden',
-        latitude: coordinates!.latitude,
-        longitude: coordinates!.longitude,
+        latitude: (manualCoordinates?.latitude ?? coordinates?.latitude)!,
+        longitude: (manualCoordinates?.longitude ?? coordinates?.longitude)!,
         bedrooms: validatedData.bedrooms,
         bathrooms: validatedData.bathrooms,
         area_sqm: validatedData.area_sqm,
@@ -597,21 +603,38 @@ export default function CreateListing() {
               </FormField>
 
               <FormField
-                label={`Price (SEK) ${isRental ? 'per month' : ''}`}
+                label={`Price ${isRental ? 'per month' : ''}`}
                 htmlFor="price"
                 required
                 error={getError('price')}
               >
-                <Input
-                  id="price"
-                  type="number"
-                  placeholder={isRental ? '12000' : '2500000'}
-                  value={formData.price}
-                  onChange={(e) => handleChange('price', e.target.value)}
-                  onBlur={() => handleBlur('price')}
-                  className={cn(getError('price') && 'border-destructive')}
-                  data-error={!!getError('price')}
-                />
+                <div className="flex gap-2">
+                  <Select
+                    value={formData.currency}
+                    onValueChange={(value) => handleChange('currency', value as Currency)}
+                  >
+                    <SelectTrigger className="w-24 shrink-0">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CURRENCIES.map((curr) => (
+                        <SelectItem key={curr} value={curr}>
+                          {CURRENCY_SYMBOLS[curr]} {curr}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    id="price"
+                    type="number"
+                    placeholder={isRental ? '12000' : '2500000'}
+                    value={formData.price}
+                    onChange={(e) => handleChange('price', e.target.value)}
+                    onBlur={() => handleBlur('price')}
+                    className={cn(getError('price') && 'border-destructive', 'flex-1')}
+                    data-error={!!getError('price')}
+                  />
+                </div>
               </FormField>
             </div>
 
@@ -628,14 +651,23 @@ export default function CreateListing() {
                 required
                 error={getError('address')}
               >
-                <Input
-                  id="address"
-                  placeholder="Storgatan 1"
+                <AddressAutocomplete
                   value={formData.address}
-                  onChange={(e) => handleChange('address', e.target.value)}
+                  onChange={(value) => handleChange('address', value)}
+                  onSelect={(suggestion) => {
+                    handleChange('address', suggestion.address);
+                    if (suggestion.city) {
+                      handleChange('city', suggestion.city);
+                    }
+                    if (suggestion.postalCode) {
+                      handleChange('postal_code', suggestion.postalCode);
+                    }
+                    // Reset manual coordinates when a new address is selected
+                    setManualCoordinates(null);
+                  }}
                   onBlur={() => handleBlur('address')}
-                  className={cn(getError('address') && 'border-destructive')}
-                  data-error={!!getError('address')}
+                  placeholder="Start typing an address..."
+                  hasError={!!getError('address')}
                 />
               </FormField>
 
@@ -679,6 +711,9 @@ export default function CreateListing() {
                 status={geocodingStatus}
                 formattedAddress={coordinates?.formattedAddress}
                 isGeocoding={isGeocoding}
+                onLocationChange={(lat, lng) => setManualCoordinates({ latitude: lat, longitude: lng })}
+                manualCoordinates={manualCoordinates}
+                onResetLocation={() => setManualCoordinates(null)}
               />
             </div>
 

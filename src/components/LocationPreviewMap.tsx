@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { MapPin, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { MapPin, Loader2, CheckCircle2, AlertCircle, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 interface LocationPreviewMapProps {
   latitude: number | null;
@@ -10,6 +11,9 @@ interface LocationPreviewMapProps {
   status: 'idle' | 'searching' | 'found' | 'not_found' | 'error';
   formattedAddress?: string;
   isGeocoding: boolean;
+  onLocationChange?: (lat: number, lng: number) => void;
+  manualCoordinates?: { latitude: number; longitude: number } | null;
+  onResetLocation?: () => void;
 }
 
 const MAPBOX_TOKEN_KEY = 'hemma_mapbox_token';
@@ -24,6 +28,9 @@ export function LocationPreviewMap({
   status,
   formattedAddress,
   isGeocoding,
+  onLocationChange,
+  manualCoordinates,
+  onResetLocation,
 }: LocationPreviewMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -31,16 +38,29 @@ export function LocationPreviewMap({
   const [mapReady, setMapReady] = useState(false);
   const [hasToken, setHasToken] = useState(false);
 
+  // Use manual coordinates if available, otherwise use geocoded coordinates
+  const displayLat = manualCoordinates?.latitude ?? latitude;
+  const displayLng = manualCoordinates?.longitude ?? longitude;
+  const isManuallyAdjusted = manualCoordinates !== null && manualCoordinates !== undefined;
+
   // Check for token on mount
   useEffect(() => {
     const token = getMapboxToken();
     setHasToken(!!token);
   }, []);
 
+  // Handle marker position update
+  const updateMarkerPosition = useCallback((lng: number, lat: number) => {
+    if (marker.current) {
+      marker.current.setLngLat([lng, lat]);
+    }
+    onLocationChange?.(lat, lng);
+  }, [onLocationChange]);
+
   // Initialize map when we have valid coordinates
   useEffect(() => {
     if (!mapContainer.current || !hasToken) return;
-    if (latitude === null || longitude === null) return;
+    if (displayLat === null || displayLng === null) return;
 
     const token = getMapboxToken();
     if (!token) return;
@@ -51,17 +71,25 @@ export function LocationPreviewMap({
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [longitude, latitude],
+        center: [displayLng, displayLat],
         zoom: 15,
-        interactive: false,
+        interactive: true, // Enable interactivity
       });
 
       map.current.on('load', () => {
         setMapReady(true);
       });
+
+      // Add click handler to reposition marker
+      map.current.on('click', (e) => {
+        updateMarkerPosition(e.lngLat.lng, e.lngLat.lat);
+      });
+
+      // Add navigation controls
+      map.current.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
     } else {
       map.current.flyTo({
-        center: [longitude, latitude],
+        center: [displayLng, displayLat],
         zoom: 15,
         duration: 1000,
       });
@@ -69,17 +97,28 @@ export function LocationPreviewMap({
 
     // Update or create marker
     if (marker.current) {
-      marker.current.setLngLat([longitude, latitude]);
+      marker.current.setLngLat([displayLng, displayLat]);
     } else {
-      marker.current = new mapboxgl.Marker({ color: '#ef4444' })
-        .setLngLat([longitude, latitude])
+      marker.current = new mapboxgl.Marker({ 
+        color: '#ef4444',
+        draggable: true, // Enable dragging
+      })
+        .setLngLat([displayLng, displayLat])
         .addTo(map.current);
+
+      // Handle marker drag end
+      marker.current.on('dragend', () => {
+        const lngLat = marker.current?.getLngLat();
+        if (lngLat) {
+          onLocationChange?.(lngLat.lat, lngLat.lng);
+        }
+      });
     }
 
     return () => {
       // Don't remove map on cleanup, just update coordinates
     };
-  }, [latitude, longitude, hasToken]);
+  }, [displayLat, displayLng, hasToken, updateMarkerPosition, onLocationChange]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -109,11 +148,25 @@ export function LocationPreviewMap({
     switch (status) {
       case 'found':
         return (
-          <div className="flex items-center gap-2 text-green-600">
-            <CheckCircle2 className="h-4 w-4" />
-            <span className="text-sm truncate">
-              {formattedAddress || 'Location found'}
-            </span>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-green-600 min-w-0">
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              <span className="text-sm truncate">
+                {isManuallyAdjusted ? 'Location manually adjusted' : formattedAddress || 'Location found'}
+              </span>
+            </div>
+            {isManuallyAdjusted && onResetLocation && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={onResetLocation}
+                className="shrink-0 h-7 text-xs"
+              >
+                <RotateCcw className="h-3 w-3 mr-1" />
+                Reset
+              </Button>
+            )}
           </div>
         );
       case 'not_found':
@@ -140,7 +193,7 @@ export function LocationPreviewMap({
     }
   };
 
-  const showMap = hasToken && latitude !== null && longitude !== null && status === 'found';
+  const showMap = hasToken && displayLat !== null && displayLng !== null && (status === 'found' || isManuallyAdjusted);
 
   return (
     <div className="space-y-3">
@@ -160,6 +213,12 @@ export function LocationPreviewMap({
         {!mapReady && showMap && (
           <div className="absolute inset-0 flex items-center justify-center bg-muted">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
+        {/* Help text overlay */}
+        {showMap && mapReady && onLocationChange && (
+          <div className="absolute bottom-2 left-2 right-2 bg-background/90 backdrop-blur-sm rounded px-2 py-1 text-xs text-muted-foreground text-center">
+            Click or drag the marker to adjust location
           </div>
         )}
       </div>
