@@ -391,27 +391,27 @@ export default function ListingDetail() {
                 </div>
 
                 {/* Listing Stats */}
-                <div className="grid grid-cols-3 gap-3 mb-6">
-                  <div className="text-center bg-secondary/50 rounded-xl p-3">
-                    <div className="flex items-center justify-center gap-1.5 mb-1">
-                      <Eye className="h-4 w-4 text-primary" />
-                      <span className="font-bold text-lg">{listingStats?.viewCount ?? 0}</span>
+                <div className="grid grid-cols-3 gap-2 mb-6">
+                  <div className="text-center bg-secondary/50 rounded-lg p-2 sm:p-3">
+                    <div className="flex items-center justify-center gap-1 mb-0.5 sm:mb-1">
+                      <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                      <span className="font-bold text-base sm:text-lg">{listingStats?.viewCount ?? 0}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">{t('listing.views')}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('listing.views')}</p>
                   </div>
-                  <div className="text-center bg-secondary/50 rounded-xl p-3">
-                    <div className="flex items-center justify-center gap-1.5 mb-1">
-                      <Clock className="h-4 w-4 text-primary" />
-                      <span className="font-bold text-lg">{listingStats?.daysListed ?? 0}</span>
+                  <div className="text-center bg-secondary/50 rounded-lg p-2 sm:p-3">
+                    <div className="flex items-center justify-center gap-1 mb-0.5 sm:mb-1">
+                      <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                      <span className="font-bold text-base sm:text-lg">{listingStats?.daysListed ?? 0}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">{t('listing.daysListed')}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('listing.daysListed')}</p>
                   </div>
-                  <div className="text-center bg-secondary/50 rounded-xl p-3">
-                    <div className="flex items-center justify-center gap-1.5 mb-1">
-                      <MessageCircle className="h-4 w-4 text-primary" />
-                      <span className="font-bold text-lg">{listingStats?.contactCount ?? 0}</span>
+                  <div className="text-center bg-secondary/50 rounded-lg p-2 sm:p-3">
+                    <div className="flex items-center justify-center gap-1 mb-0.5 sm:mb-1">
+                      <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+                      <span className="font-bold text-base sm:text-lg">{listingStats?.contactCount ?? 0}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">{t('listing.inquiries')}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('listing.inquiries')}</p>
                   </div>
                 </div>
 
