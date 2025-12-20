@@ -245,7 +245,7 @@ export default function ListingDetail() {
                 <Images className="h-4 w-4" />
                 <span>
                   {currentImageIndex + 1} / {listing.images.length}
-                  {(listing as any).floor_plan_url && ' • Floor plan'}
+                  {((listing as any).floor_plan_urls?.length > 0 || (listing as any).floor_plan_url) && ` • ${t('listing.floorPlan')}`}
                 </span>
               </div>
             </>
@@ -453,6 +453,7 @@ export default function ListingDetail() {
       <ImageGalleryModal
         images={listing.images || []}
         floorPlanUrl={listing.floor_plan_url}
+        floorPlanUrls={(listing as any).floor_plan_urls || []}
         isOpen={showGallery}
         onClose={() => {
           setShowGallery(false);

@@ -262,14 +262,16 @@ type CreateListingInput = Omit<Listing, 'id' | 'created_at' | 'updated_at' |
   'has_parking' | 'parking_type' | 'parking_spaces' | 'has_garage' |
   'has_storage' | 'has_air_conditioning' | 'has_dishwasher' | 'has_washing_machine' |
   'heating_type' | 'energy_rating' | 'year_built' | 'property_condition' |
-  'deposit_amount' | 'min_lease_months' | 'internet_included' | 'utilities_included'
+  'deposit_amount' | 'min_lease_months' | 'internet_included' | 'utilities_included' |
+  'floor_plan_urls'
 > & Partial<Pick<Listing,
   'floor_number' | 'total_floors_building' | 'property_floors' | 'has_elevator' |
   'has_balcony' | 'has_terrace' | 'has_garden' | 'garden_sqm' |
   'has_parking' | 'parking_type' | 'parking_spaces' | 'has_garage' |
   'has_storage' | 'has_air_conditioning' | 'has_dishwasher' | 'has_washing_machine' |
   'heating_type' | 'energy_rating' | 'year_built' | 'property_condition' |
-  'deposit_amount' | 'min_lease_months' | 'internet_included' | 'utilities_included'
+  'deposit_amount' | 'min_lease_months' | 'internet_included' | 'utilities_included' |
+  'floor_plan_urls'
 >>;
 
 export function useCreateListing() {
