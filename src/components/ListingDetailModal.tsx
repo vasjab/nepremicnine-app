@@ -110,6 +110,11 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
       : format(completedDate, 'MMM d, yyyy')
     : null;
 
+  // Calculate price difference for sold/rented listings
+  const priceDifferencePercent = listing.final_price && listing.price 
+    ? ((listing.final_price - listing.price) / listing.price) * 100 
+    : null;
+
   if (!isOpen) return null;
 
   return (
@@ -406,16 +411,76 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
                 "transition-all duration-300",
                 "hover:shadow-xl"
               )}>
-                <div className="mb-6">
-                  <p className="text-sm text-muted-foreground mb-1">
-                    {t(`propertyTypes.${listing.property_type}`)}
-                  </p>
-                  <p className="text-3xl lg:text-4xl font-bold text-foreground">
-                    {formatPrice(listing.price, listing.currency, { isRental: listing.listing_type === 'rent', showPeriod: listing.listing_type === 'rent' })}
-                  </p>
-                </div>
+                {/* Transaction Complete Section for Sold/Rented */}
+                {isCompleted && (
+                  <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl p-4 mb-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <span className="font-semibold text-green-700 dark:text-green-300 uppercase text-sm tracking-wide">
+                        {statusLabel}
+                      </span>
+                    </div>
+                    {formattedCompletedDate && (
+                      <p className="text-sm text-green-600 dark:text-green-400 mb-3">
+                        {formattedCompletedDate}
+                      </p>
+                    )}
+                    
+                    {listing.final_price ? (
+                      <>
+                        <p className="text-2xl font-bold text-green-700 dark:text-green-300">
+                          {formatPrice(listing.final_price, listing.currency, { 
+                            isRental: listing.listing_type === 'rent', 
+                            showPeriod: listing.listing_type === 'rent' 
+                          })}
+                        </p>
+                        <p className="text-sm text-muted-foreground line-through mt-1">
+                          {t('markCompleted.askingPrice')}: {formatPrice(listing.price, listing.currency, { 
+                            isRental: listing.listing_type === 'rent', 
+                            showPeriod: listing.listing_type === 'rent' 
+                          })}
+                        </p>
+                        {priceDifferencePercent !== null && (
+                          <span className={cn(
+                            "inline-block mt-2 px-2 py-1 rounded-md text-xs font-medium",
+                            priceDifferencePercent > 0.5 
+                              ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                              : priceDifferencePercent < -0.5 
+                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                : "bg-muted text-muted-foreground"
+                          )}>
+                            {priceDifferencePercent > 0.5 
+                              ? `+${priceDifferencePercent.toFixed(1)}% ${t('markCompleted.aboveAsking')}`
+                              : priceDifferencePercent < -0.5 
+                                ? `${priceDifferencePercent.toFixed(1)}% ${t('markCompleted.belowAsking')}`
+                                : t('markCompleted.atAsking')}
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-lg font-semibold text-green-700 dark:text-green-300">
+                        {formatPrice(listing.price, listing.currency, { 
+                          isRental: listing.listing_type === 'rent', 
+                          showPeriod: listing.listing_type === 'rent' 
+                        })}
+                      </p>
+                    )}
+                  </div>
+                )}
 
-                <Button 
+                {/* Regular Price Section (only for active listings) */}
+                {!isCompleted && (
+                  <div className="mb-6">
+                    <p className="text-sm text-muted-foreground mb-1">
+                      {t(`propertyTypes.${listing.property_type}`)}
+                    </p>
+                    <p className="text-3xl lg:text-4xl font-bold text-foreground">
+                      {formatPrice(listing.price, listing.currency, { isRental: listing.listing_type === 'rent', showPeriod: listing.listing_type === 'rent' })}
+                    </p>
+                  </div>
+                )}
+
+                <Button
                   className={cn(
                     "w-full bg-accent text-accent-foreground mb-3 h-12",
                     "hover:bg-accent/90 hover:scale-[1.02] active:scale-[0.98]",
