@@ -9,6 +9,7 @@ interface RentalTermsStepProps {
   minLeaseMonths: string;
   internetIncluded: string;
   utilitiesIncluded: string;
+  utilityCostEstimate: string;
   currency: Currency;
   onChange: (field: string, value: string) => void;
 }
@@ -38,9 +39,12 @@ export function RentalTermsStep({
   minLeaseMonths,
   internetIncluded,
   utilitiesIncluded,
+  utilityCostEstimate,
   currency,
   onChange,
 }: RentalTermsStepProps) {
+  const showUtilityCost = utilitiesIncluded === 'no' || utilitiesIncluded === 'partial';
+
   return (
     <WizardStepWrapper
       title="Rental terms"
@@ -123,6 +127,30 @@ export function RentalTermsStep({
             Water, electricity, heating, etc.
           </p>
         </div>
+
+        {/* Utility cost estimate - show when utilities not included */}
+        {showUtilityCost && (
+          <div>
+            <Label htmlFor="utility_cost_estimate">Estimated monthly utilities</Label>
+            <div className="relative mt-1">
+              <Input
+                id="utility_cost_estimate"
+                type="number"
+                min="0"
+                placeholder="e.g., 800"
+                value={utilityCostEstimate}
+                onChange={(e) => onChange('utility_cost_estimate', e.target.value)}
+                className="pr-16"
+              />
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                {currency}/mo
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Approximate cost for water, electricity, heating, etc.
+            </p>
+          </div>
+        )}
 
         {/* Skip hint */}
         <p className="text-center text-xs text-muted-foreground pt-4">

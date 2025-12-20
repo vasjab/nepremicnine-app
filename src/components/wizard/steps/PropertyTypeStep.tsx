@@ -1,38 +1,55 @@
 import { WizardStepWrapper } from '../WizardStepWrapper';
 import { cn } from '@/lib/utils';
-import { Building2, Home, Bed, LayoutGrid, Castle, Package } from 'lucide-react';
+import { Building2, Home, Bed, LayoutGrid, Castle, Package, TreePine } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-type PropertyType = 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other';
+type PropertyType = 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'summer_house' | 'other';
 type ListingType = 'rent' | 'sale';
+type HouseType = 'detached' | 'semi_detached' | 'terraced' | 'end_terrace' | 'bungalow' | '';
 
 interface PropertyTypeStepProps {
   propertyType: PropertyType;
   listingType: ListingType;
   propertyTypeOther: string;
+  houseType: HouseType;
   onPropertyTypeChange: (type: PropertyType) => void;
   onListingTypeChange: (type: ListingType) => void;
   onPropertyTypeOtherChange: (value: string) => void;
+  onHouseTypeChange: (type: HouseType) => void;
 }
 
 const PROPERTY_TYPES: { value: PropertyType; label: string; icon: typeof Building2; description: string }[] = [
   { value: 'apartment', label: 'Apartment', icon: Building2, description: 'Flat in a building' },
   { value: 'house', label: 'House', icon: Home, description: 'Standalone home' },
+  { value: 'summer_house', label: 'Summer House', icon: TreePine, description: 'Vacation property' },
   { value: 'room', label: 'Room', icon: Bed, description: 'Single room rental' },
   { value: 'studio', label: 'Studio', icon: LayoutGrid, description: 'Open-plan space' },
   { value: 'villa', label: 'Villa', icon: Castle, description: 'Luxury property' },
   { value: 'other', label: 'Other', icon: Package, description: 'Something else' },
 ];
 
+const HOUSE_TYPES: { value: HouseType; label: string; description: string }[] = [
+  { value: 'detached', label: 'Detached', description: 'Standalone, no shared walls' },
+  { value: 'semi_detached', label: 'Semi-detached', description: 'Shares one wall' },
+  { value: 'terraced', label: 'Terraced / Townhouse', description: 'Shares two walls' },
+  { value: 'end_terrace', label: 'End-of-terrace', description: 'End unit, shares one wall' },
+  { value: 'bungalow', label: 'Bungalow', description: 'Single-story house' },
+];
+
 export function PropertyTypeStep({
   propertyType,
   listingType,
   propertyTypeOther,
+  houseType,
   onPropertyTypeChange,
   onListingTypeChange,
   onPropertyTypeOtherChange,
+  onHouseTypeChange,
 }: PropertyTypeStepProps) {
+  const showHouseType = propertyType === 'house' || propertyType === 'summer_house';
+
   return (
     <WizardStepWrapper
       title="What are you listing?"
@@ -40,7 +57,7 @@ export function PropertyTypeStep({
       emoji="🏠"
     >
       {/* Property Type Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
         {PROPERTY_TYPES.map(({ value, label, icon: Icon, description }) => (
           <button
             key={value}
@@ -73,6 +90,28 @@ export function PropertyTypeStep({
           </button>
         ))}
       </div>
+
+      {/* House Type Selector */}
+      {showHouseType && (
+        <div className="mb-6 max-w-md mx-auto">
+          <Label className="text-sm font-medium mb-2 block">What type of {propertyType === 'summer_house' ? 'summer house' : 'house'}?</Label>
+          <Select value={houseType} onValueChange={(v) => onHouseTypeChange(v as HouseType)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select house type" />
+            </SelectTrigger>
+            <SelectContent>
+              {HOUSE_TYPES.map((type) => (
+                <SelectItem key={type.value} value={type.value}>
+                  <div className="flex flex-col">
+                    <span>{type.label}</span>
+                    <span className="text-xs text-muted-foreground">{type.description}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       {/* Other property type input */}
       {propertyType === 'other' && (

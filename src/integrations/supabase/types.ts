@@ -105,7 +105,9 @@ export type Database = {
           has_air_conditioning: boolean | null
           has_balcony: boolean | null
           has_dishwasher: boolean | null
+          has_dryer: boolean | null
           has_elevator: boolean | null
+          has_fireplace: boolean | null
           has_garage: boolean | null
           has_garden: boolean | null
           has_parking: boolean | null
@@ -113,6 +115,7 @@ export type Database = {
           has_terrace: boolean | null
           has_washing_machine: boolean | null
           heating_type: string | null
+          house_type: string | null
           id: string
           images: string[] | null
           internet_included: string | null
@@ -122,6 +125,8 @@ export type Database = {
           listing_type: Database["public"]["Enums"]["listing_type"]
           longitude: number
           min_lease_months: number | null
+          monthly_expenses: number | null
+          move_in_immediately: boolean | null
           parking_spaces: number | null
           parking_type: string | null
           postal_code: string | null
@@ -135,6 +140,7 @@ export type Database = {
           updated_at: string
           user_id: string | null
           utilities_included: string | null
+          utility_cost_estimate: number | null
           year_built: number | null
         }
         Insert: {
@@ -160,7 +166,9 @@ export type Database = {
           has_air_conditioning?: boolean | null
           has_balcony?: boolean | null
           has_dishwasher?: boolean | null
+          has_dryer?: boolean | null
           has_elevator?: boolean | null
+          has_fireplace?: boolean | null
           has_garage?: boolean | null
           has_garden?: boolean | null
           has_parking?: boolean | null
@@ -168,6 +176,7 @@ export type Database = {
           has_terrace?: boolean | null
           has_washing_machine?: boolean | null
           heating_type?: string | null
+          house_type?: string | null
           id?: string
           images?: string[] | null
           internet_included?: string | null
@@ -177,6 +186,8 @@ export type Database = {
           listing_type?: Database["public"]["Enums"]["listing_type"]
           longitude: number
           min_lease_months?: number | null
+          monthly_expenses?: number | null
+          move_in_immediately?: boolean | null
           parking_spaces?: number | null
           parking_type?: string | null
           postal_code?: string | null
@@ -190,6 +201,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
           utilities_included?: string | null
+          utility_cost_estimate?: number | null
           year_built?: number | null
         }
         Update: {
@@ -215,7 +227,9 @@ export type Database = {
           has_air_conditioning?: boolean | null
           has_balcony?: boolean | null
           has_dishwasher?: boolean | null
+          has_dryer?: boolean | null
           has_elevator?: boolean | null
+          has_fireplace?: boolean | null
           has_garage?: boolean | null
           has_garden?: boolean | null
           has_parking?: boolean | null
@@ -223,6 +237,7 @@ export type Database = {
           has_terrace?: boolean | null
           has_washing_machine?: boolean | null
           heating_type?: string | null
+          house_type?: string | null
           id?: string
           images?: string[] | null
           internet_included?: string | null
@@ -232,6 +247,8 @@ export type Database = {
           listing_type?: Database["public"]["Enums"]["listing_type"]
           longitude?: number
           min_lease_months?: number | null
+          monthly_expenses?: number | null
+          move_in_immediately?: boolean | null
           parking_spaces?: number | null
           parking_type?: string | null
           postal_code?: string | null
@@ -245,6 +262,7 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
           utilities_included?: string | null
+          utility_cost_estimate?: number | null
           year_built?: number | null
         }
         Relationships: []
@@ -570,6 +588,7 @@ export type Database = {
         | "studio"
         | "villa"
         | "other"
+        | "summer_house"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -698,7 +717,15 @@ export const Constants = {
   public: {
     Enums: {
       listing_type: ["rent", "sale"],
-      property_type: ["apartment", "house", "room", "studio", "villa", "other"],
+      property_type: [
+        "apartment",
+        "house",
+        "room",
+        "studio",
+        "villa",
+        "other",
+        "summer_house",
+      ],
     },
   },
 } as const

@@ -14,6 +14,7 @@ interface DetailsStepProps {
   availableUntil: string;
   isFurnished: boolean;
   allowsPets: boolean;
+  moveInImmediately: boolean;
   listingType: 'rent' | 'sale';
   onDescriptionChange: (value: string) => void;
   onBedroomsChange: (value: string) => void;
@@ -23,6 +24,7 @@ interface DetailsStepProps {
   onAvailableUntilChange: (value: string) => void;
   onFurnishedChange: (value: boolean) => void;
   onPetsChange: (value: boolean) => void;
+  onMoveInImmediatelyChange: (value: boolean) => void;
 }
 
 // Number picker with plus/minus buttons
@@ -84,6 +86,7 @@ export function DetailsStep({
   availableUntil,
   isFurnished,
   allowsPets,
+  moveInImmediately,
   listingType,
   onDescriptionChange,
   onBedroomsChange,
@@ -93,6 +96,7 @@ export function DetailsStep({
   onAvailableUntilChange,
   onFurnishedChange,
   onPetsChange,
+  onMoveInImmediatelyChange,
 }: DetailsStepProps) {
   const isRental = listingType === 'rent';
   const bedroomsNum = parseInt(bedrooms) || 0;
@@ -156,28 +160,61 @@ export function DetailsStep({
         {/* Rental-specific fields */}
         {isRental && (
           <div className="space-y-6 pt-4 border-t border-border">
-            {/* Dates */}
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Move-in Date</Label>
-                <input
-                  type="date"
-                  value={availableFrom}
-                  onChange={(e) => onAvailableFromChange(e.target.value)}
-                  className="w-full h-12 px-4 rounded-lg border border-border bg-background"
-                />
+            {/* Move-in Immediately Toggle */}
+            <div className="flex items-center justify-between p-4 bg-card rounded-xl border border-border">
+              <div>
+                <p className="font-medium">📅 Available Immediately</p>
+                <p className="text-sm text-muted-foreground">Ready for move-in now</p>
               </div>
+              <Switch 
+                checked={moveInImmediately} 
+                onCheckedChange={(checked) => {
+                  onMoveInImmediatelyChange(checked);
+                  if (checked) {
+                    onAvailableFromChange('');
+                  }
+                }} 
+              />
+            </div>
+
+            {/* Dates - Only show specific date if not immediately */}
+            {!moveInImmediately && (
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Move-in Date</Label>
+                  <input
+                    type="date"
+                    value={availableFrom}
+                    onChange={(e) => onAvailableFromChange(e.target.value)}
+                    className="w-full h-12 px-4 rounded-lg border border-border bg-background"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">End Date (optional)</Label>
+                  <input
+                    type="date"
+                    value={availableUntil}
+                    min={availableFrom || undefined}
+                    onChange={(e) => onAvailableUntilChange(e.target.value)}
+                    className="w-full h-12 px-4 rounded-lg border border-border bg-background"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* End date for immediate availability */}
+            {moveInImmediately && (
               <div className="space-y-2">
                 <Label className="text-sm font-medium">End Date (optional)</Label>
                 <input
                   type="date"
                   value={availableUntil}
-                  min={availableFrom || undefined}
                   onChange={(e) => onAvailableUntilChange(e.target.value)}
-                  className="w-full h-12 px-4 rounded-lg border border-border bg-background"
+                  className="w-full h-12 px-4 rounded-lg border border-border bg-background max-w-xs"
                 />
+                <p className="text-xs text-muted-foreground">Leave empty for ongoing rental</p>
               </div>
-            </div>
+            )}
 
             {/* Toggles */}
             <div className="space-y-4">

@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { HoneypotField, isHoneypotTriggered } from '@/components/HoneypotField';
 import { useRateLimit, LISTING_RATE_LIMIT } from '@/hooks/useRateLimit';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useFloorPlanUpload } from '@/hooks/useFloorPlanUpload';
 import { supabase } from '@/integrations/supabase/client';
 import { type Currency } from '@/lib/exchangeRates';
 import { ListingPreviewModal } from '@/components/ListingPreviewModal';
@@ -21,13 +22,16 @@ import { TitleStep } from '@/components/wizard/steps/TitleStep';
 import { LocationStep } from '@/components/wizard/steps/LocationStep';
 import { PriceStep } from '@/components/wizard/steps/PriceStep';
 import { PhotosStep } from '@/components/wizard/steps/PhotosStep';
+import { FloorPlansStep } from '@/components/wizard/steps/FloorPlansStep';
 import { DetailsStep } from '@/components/wizard/steps/DetailsStep';
-import { FeaturesStep } from '@/components/wizard/steps/FeaturesStep';
+import { BuildingFeaturesStep } from '@/components/wizard/steps/BuildingFeaturesStep';
+import { EquipmentStep } from '@/components/wizard/steps/EquipmentStep';
 import { BuildingInfoStep } from '@/components/wizard/steps/BuildingInfoStep';
 import { RentalTermsStep } from '@/components/wizard/steps/RentalTermsStep';
 import { ReviewStep } from '@/components/wizard/steps/ReviewStep';
 
-type PropertyType = 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other';
+type PropertyType = 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'summer_house' | 'other';
+type HouseType = 'detached' | 'semi_detached' | 'terraced' | 'end_terrace' | 'bungalow' | '';
 
 export default function CreateListing() {
   const navigate = useNavigate();
@@ -42,6 +46,7 @@ export default function CreateListing() {
   const { checkRateLimit, isLimited, remainingTime } = useRateLimit(LISTING_RATE_LIMIT);
 
   const { images, isUploading, uploadProgress, uploadImages, removeImage, reorderImages } = useImageUpload({ userId: user?.id || '' });
+  const { floorPlans, isUploading: isUploadingFloorPlans, uploadProgress: floorPlanProgress, uploadFloorPlans, removeFloorPlan, reorderFloorPlans } = useFloorPlanUpload({ userId: user?.id || '' });
 
   const [formData, setFormData] = useState({
     title: '',
@@ -49,6 +54,7 @@ export default function CreateListing() {
     listing_type: 'rent' as 'rent' | 'sale',
     property_type: 'apartment' as PropertyType,
     property_type_other: '',
+    house_type: '' as HouseType,
     price: '',
     currency: 'SEK' as Currency,
     country: 'Sweden',
@@ -62,7 +68,8 @@ export default function CreateListing() {
     available_until: '',
     is_furnished: false,
     allows_pets: false,
-    // Features
+    move_in_immediately: true,
+    // Building features
     has_elevator: false,
     has_balcony: false,
     balcony_sqm: '',
@@ -74,10 +81,13 @@ export default function CreateListing() {
     parking_type: '',
     parking_spaces: '',
     has_garage: false,
+    has_storage: false,
+    has_fireplace: false,
+    // Equipment
     has_air_conditioning: false,
     has_dishwasher: false,
     has_washing_machine: false,
-    has_storage: false,
+    has_dryer: false,
     // Building info
     floor_number: '',
     total_floors_building: '',
@@ -92,6 +102,9 @@ export default function CreateListing() {
     min_lease_months: '',
     internet_included: '',
     utilities_included: '',
+    utility_cost_estimate: '',
+    // Sale expenses
+    monthly_expenses: '',
   });
 
   const [manualCoordinates, setManualCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -111,15 +124,19 @@ export default function CreateListing() {
       { id: 'title', title: 'Title', emoji: '✨' },
       { id: 'location', title: 'Location', emoji: '📍' },
       { id: 'price', title: 'Price', emoji: '💰' },
-      { id: 'photos', title: 'Photos', emoji: '📸' },
+      { id: 'photos', title: 'Photos', emoji: '📸', isOptional: true },
+      { id: 'floorplans', title: 'Floor Plans', emoji: '📐', isOptional: true },
       { id: 'details', title: 'Details', emoji: '📝', isOptional: true },
-      { id: 'features', title: 'Features', emoji: '⭐', isOptional: true },
-      { id: 'building', title: 'Building', emoji: '🏗️', isOptional: true },
+      { id: 'building_features', title: 'Building', emoji: '🏗️', isOptional: true },
+      { id: 'equipment', title: 'Equipment', emoji: '🔌', isOptional: true },
+      { id: 'building_info', title: 'Info', emoji: '📊', isOptional: true },
     ];
     
     // Add rental terms step only for rentals
     if (formData.listing_type === 'rent') {
       baseSteps.push({ id: 'rental', title: 'Terms', emoji: '📋', isOptional: true });
+    } else {
+      baseSteps.push({ id: 'sale_costs', title: 'Costs', emoji: '💵', isOptional: true });
     }
     
     baseSteps.push({ id: 'review', title: 'Review', emoji: '🎉' });
@@ -146,8 +163,7 @@ export default function CreateListing() {
     const hasTitle = formData.title.length >= 5;
     const hasLocation = !!formData.address && !!formData.city && !!(coordinates || manualCoordinates);
     const hasPrice = !!formData.price && parseFloat(formData.price) > 0;
-    const hasPhotos = images.length > 0;
-    return hasPropertyType && hasTitle && hasLocation && hasPrice && hasPhotos;
+    return hasPropertyType && hasTitle && hasLocation && hasPrice; // Photos no longer required
   };
 
   const canProceed = (): boolean => {
@@ -157,12 +173,15 @@ export default function CreateListing() {
       case 'title': return formData.title.length >= 5;
       case 'location': return !!formData.address && !!formData.city && !!(coordinates || manualCoordinates);
       case 'price': return !!formData.price && parseFloat(formData.price) > 0;
-      case 'photos': return images.length > 0;
+      case 'photos': return true; // Now optional
+      case 'floorplans': return true;
       case 'details': return true;
-      case 'features': return true;
-      case 'building': return true;
+      case 'building_features': return true;
+      case 'equipment': return true;
+      case 'building_info': return true;
       case 'rental': return true;
-      case 'review': return formData.title.length >= 5 && !!formData.price && !!(coordinates || manualCoordinates) && images.length > 0;
+      case 'sale_costs': return true;
+      case 'review': return formData.title.length >= 5 && !!formData.price && !!(coordinates || manualCoordinates);
       default: return true;
     }
   };
@@ -233,7 +252,7 @@ export default function CreateListing() {
       title: formData.title,
       description: formData.description || null,
       listing_type: formData.listing_type,
-      property_type: formData.property_type,
+      property_type: formData.property_type as 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'other',
       price: parseFloat(formData.price),
       currency: formData.currency,
       address: formData.address,
@@ -250,6 +269,7 @@ export default function CreateListing() {
       is_furnished: formData.is_furnished,
       allows_pets: formData.allows_pets,
       images: images.map(img => img.url),
+      floor_plan_urls: floorPlans.map(fp => fp.url),
       is_active: true,
       // Features
       has_elevator: formData.has_elevator,
