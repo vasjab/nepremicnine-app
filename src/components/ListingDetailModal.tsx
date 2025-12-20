@@ -272,14 +272,24 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
             </div>
           )}
 
-          {/* Type badge */}
+          {/* Type badge - show SOLD/RENTED for completed listings, otherwise For Sale/For Rent */}
           <div className="absolute bottom-4 left-4">
-            <span className={cn(
-              "px-4 py-2 rounded-xl bg-card/90 backdrop-blur-sm text-sm font-medium shadow-lg",
-              "transition-transform duration-200 hover:scale-105"
-            )}>
-              {listing.listing_type === 'rent' ? t('listingTypes.rent') : t('listingTypes.sale')}
-            </span>
+            {listing.status === 'sold' || listing.status === 'rented' ? (
+              <span className={cn(
+                "px-4 py-2 rounded-xl text-sm font-bold shadow-lg uppercase tracking-wide",
+                "bg-green-500 text-white",
+                "transition-transform duration-200 hover:scale-105"
+              )}>
+                {listing.status === 'sold' ? t('listing.sold') : t('listing.rented')}
+              </span>
+            ) : (
+              <span className={cn(
+                "px-4 py-2 rounded-xl bg-card/90 backdrop-blur-sm text-sm font-medium shadow-lg",
+                "transition-transform duration-200 hover:scale-105"
+              )}>
+                {listing.listing_type === 'rent' ? t('listingTypes.rent') : t('listingTypes.sale')}
+              </span>
+            )}
           </div>
         </div>
 
