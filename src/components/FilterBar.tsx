@@ -663,16 +663,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   const [searchValue, setSearchValue] = useState(filters.search || '');
   const [isOpen, setIsOpen] = useState(false);
   const [areaUnit, setAreaUnit] = useState<AreaUnit>('sqm');
-  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Focus input when search expands
-  useEffect(() => {
-    if (isSearchExpanded && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [isSearchExpanded]);
 
   const OWNER_FILTERS: { value: OwnerFilter; label: string; icon: React.ElementType }[] = [
     { value: 'all', label: t('filters.allListings'), icon: Users },
@@ -983,157 +974,107 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
   return (
     <div className="bg-background border-b border-border/50">
-      <div className="px-4 py-3">
-        {/* Single-line toolbar: Search + Count + Sort + Filters */}
-        <div className="flex items-center gap-2 w-full">
-          {/* Collapsible Search - both elements always rendered for smooth transitions */}
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            {/* Search icon button - fades out when expanded */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsSearchExpanded(true)}
-              className={cn(
-                "shrink-0 rounded-xl h-10 bg-secondary transition-all duration-300 ease-out-expo",
-                isSearchExpanded || searchValue
-                  ? "w-0 opacity-0 overflow-hidden p-0" 
-                  : "w-10 opacity-100 hover:bg-accent/20 hover:text-accent-foreground hover:shadow-md"
-              )}
-            >
-              <Search className="h-4 w-4" />
-            </Button>
-            
-            {/* Search input - expands/collapses smoothly */}
-            <form 
-              onSubmit={handleSearch} 
-              className={cn(
-                "relative transition-all duration-300 ease-out-expo overflow-hidden",
-                isSearchExpanded || searchValue 
-                  ? "flex-1 opacity-100" 
-                  : "w-0 opacity-0"
-              )}
-            >
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
-              <Input
-                ref={searchInputRef}
-                placeholder={t('nav.searchPlaceholder')}
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                onFocus={() => setIsSearchExpanded(true)}
-                onBlur={() => !searchValue && setIsSearchExpanded(false)}
-                className="w-full pl-10 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl transition-all duration-200 hover:bg-accent/15 hover:shadow-md hover:ring-1 hover:ring-accent/30 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0"
-              />
-              {searchValue && (
-                <button
-                  type="button"
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent/20 rounded-full transition-all duration-200"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </form>
-          </div>
-
-          {/* Listings count as subtle pill */}
+      <div className="px-4 py-3 space-y-2">
+        {/* Row 1: Always-visible compact search + listing count */}
+        <div className="flex items-center gap-2">
+          <form onSubmit={handleSearch} className="relative flex-1 max-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+            <Input
+              placeholder="Search..."
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              className="w-full pl-10 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl transition-all duration-200 hover:bg-accent/15 hover:shadow-md hover:ring-1 hover:ring-accent/30 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0"
+            />
+            {searchValue && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent/20 rounded-full transition-all duration-200"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </form>
+          
+          {/* Listings count */}
           {totalCount !== undefined && (
-            <div className={cn(
-              "hidden md:flex items-center px-3 py-1.5 bg-muted/50 rounded-full text-xs text-muted-foreground whitespace-nowrap transition-all duration-200 hover:bg-accent/15 hover:text-accent-foreground cursor-default",
-              isSearchExpanded && "md:hidden lg:flex"
-            )}>
+            <div className="flex items-center px-3 py-1.5 bg-muted/50 rounded-full text-xs text-muted-foreground whitespace-nowrap">
               <span className="font-medium">{totalCount.toLocaleString()}</span>
-              {!isSearchExpanded && <span className="ml-1 opacity-70">{totalCount === 1 ? 'listing' : 'listings'}</span>}
+              <span className="ml-1 opacity-70">{totalCount === 1 ? 'listing' : 'listings'}</span>
             </div>
-          )}
-
-          {/* Sort dropdown */}
-          <div className="shrink-0">
-            <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
-              <SelectTrigger className={cn(
-                "h-9 px-2.5 text-xs bg-secondary/80 border-0 rounded-xl transition-all duration-200 hover:bg-accent/20 hover:text-accent-foreground hover:shadow-md",
-                isSearchExpanded ? "w-[80px]" : "w-[115px]"
-              )}>
-                <ArrowUpDown className="h-3 w-3 mr-1 text-muted-foreground shrink-0" />
-                <SelectValue placeholder={t('filters.sortBy')} />
-              </SelectTrigger>
-              <SelectContent className="bg-popover rounded-xl shadow-lg">
-                <SelectItem value="newest">{t('filters.newest')}</SelectItem>
-                <SelectItem value="oldest">{t('filters.oldest')}</SelectItem>
-                <SelectItem value="price_asc">{t('filters.priceAsc')}</SelectItem>
-                <SelectItem value="price_desc">{t('filters.priceDesc')}</SelectItem>
-                <SelectItem value="size_asc">{t('filters.sizeAsc')}</SelectItem>
-                <SelectItem value="size_desc">{t('filters.sizeDesc')}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Prominent Filter button - Drawer on mobile, Dialog on desktop */}
-          {isMobile ? (
-            <Drawer open={isOpen} onOpenChange={setIsOpen}>
-              <DrawerTrigger asChild>
-                <Button 
-                  className={cn(
-                    "relative shrink-0 rounded-xl h-10 border-0",
-                    "bg-accent text-accent-foreground font-medium",
-                    "hover:bg-accent/90 hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-accent/40",
-                    "transition-all duration-200",
-                    isSearchExpanded ? "w-10 px-0" : "w-auto px-4"
-                  )}
-                >
-                  <SlidersHorizontal className="h-4 w-4" />
-                  {!isSearchExpanded && <span className="ml-2">Filters</span>}
-                  {totalActiveFilters > 0 && (
-                    <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-foreground text-background animate-scale-in">
-                      {totalActiveFilters}
-                    </Badge>
-                  )}
-                </Button>
-              </DrawerTrigger>
-              <DrawerContent className="max-h-[85vh]">
-                <DrawerHeader className="pb-2">
-                  <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
-                </DrawerHeader>
-                <ScrollArea className="flex-1 px-4 pb-8 overflow-y-auto">
-                  <FilterContent {...filterContentProps} />
-                </ScrollArea>
-              </DrawerContent>
-            </Drawer>
-          ) : (
-            <Dialog open={isOpen} onOpenChange={setIsOpen}>
-              <DialogTrigger asChild>
-                <Button 
-                  className={cn(
-                    "relative shrink-0 rounded-xl h-10 border-0",
-                    "bg-accent text-accent-foreground font-medium",
-                    "hover:bg-accent/90 hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-accent/40",
-                    "transition-all duration-200",
-                    isSearchExpanded ? "w-10 px-0" : "w-auto px-4"
-                  )}
-                >
-                  <SlidersHorizontal className="h-4 w-4" />
-                  {!isSearchExpanded && <span className="ml-2 hidden sm:inline">Filters</span>}
-                  {totalActiveFilters > 0 && (
-                    <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-foreground text-background animate-scale-in">
-                      {totalActiveFilters}
-                    </Badge>
-                  )}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md max-h-[85vh] p-0 rounded-2xl">
-                <DialogHeader className="p-4 pb-2">
-                  <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
-                </DialogHeader>
-                <ScrollArea className="max-h-[calc(85vh-80px)] px-4 pb-6">
-                  <FilterContent {...filterContentProps} />
-                </ScrollArea>
-              </DialogContent>
-            </Dialog>
           )}
         </div>
 
+        {/* Row 2: Full-width sort dropdown */}
+        <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
+          <SelectTrigger className="w-full h-10 px-3 text-sm bg-secondary border-0 rounded-xl transition-all duration-200 hover:bg-accent/15 hover:shadow-md">
+            <ArrowUpDown className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
+            <SelectValue placeholder={t('filters.sortBy')} />
+          </SelectTrigger>
+          <SelectContent className="bg-popover rounded-xl shadow-lg">
+            <SelectItem value="newest">{t('filters.newest')}</SelectItem>
+            <SelectItem value="oldest">{t('filters.oldest')}</SelectItem>
+            <SelectItem value="price_asc">{t('filters.priceAsc')}</SelectItem>
+            <SelectItem value="price_desc">{t('filters.priceDesc')}</SelectItem>
+            <SelectItem value="size_asc">{t('filters.sizeAsc')}</SelectItem>
+            <SelectItem value="size_desc">{t('filters.sizeDesc')}</SelectItem>
+          </SelectContent>
+        </Select>
+
+        {/* Row 3: Full-width filter button */}
+        {isMobile ? (
+          <Drawer open={isOpen} onOpenChange={setIsOpen}>
+            <DrawerTrigger asChild>
+              <Button 
+                className="relative w-full rounded-xl h-11 border-0 bg-accent text-accent-foreground font-medium hover:bg-accent/90 hover:shadow-lg transition-all duration-200"
+              >
+                <SlidersHorizontal className="h-4 w-4 mr-2" />
+                Filters
+                {totalActiveFilters > 0 && (
+                  <Badge className="ml-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-foreground text-background">
+                    {totalActiveFilters}
+                  </Badge>
+                )}
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent className="max-h-[85vh]">
+              <DrawerHeader className="pb-2">
+                <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
+              </DrawerHeader>
+              <ScrollArea className="flex-1 px-4 pb-8 overflow-y-auto">
+                <FilterContent {...filterContentProps} />
+              </ScrollArea>
+            </DrawerContent>
+          </Drawer>
+        ) : (
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                className="relative w-full rounded-xl h-11 border-0 bg-accent text-accent-foreground font-medium hover:bg-accent/90 hover:shadow-lg transition-all duration-200"
+              >
+                <SlidersHorizontal className="h-4 w-4 mr-2" />
+                Filters
+                {totalActiveFilters > 0 && (
+                  <Badge className="ml-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-foreground text-background">
+                    {totalActiveFilters}
+                  </Badge>
+                )}
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md max-h-[85vh] p-0 rounded-2xl">
+              <DialogHeader className="p-4 pb-2">
+                <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
+              </DialogHeader>
+              <ScrollArea className="max-h-[calc(85vh-80px)] px-4 pb-6">
+                <FilterContent {...filterContentProps} />
+              </ScrollArea>
+            </DialogContent>
+          </Dialog>
+        )}
+
         {/* Active filter chips */}
         {activeChips.length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap mt-3">
+          <div className="flex items-center gap-2 flex-wrap pt-1">
             {activeChips.map((chip) => (
               <Badge
                 key={chip.label}
