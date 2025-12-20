@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Heart, ChevronLeft, ChevronRight, Building2, Car, TreePine, Snowflake } from 'lucide-react';
+import { Heart, ChevronLeft, ChevronRight, Building2, Car, TreePine, Snowflake, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -7,14 +7,20 @@ import { useSwipe } from '@/hooks/useSwipe';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface ListingCardProps {
   listing: Listing;
   isActive?: boolean;
   onClick?: () => void;
+  showStatusOverlay?: boolean;
 }
 
-export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
+export function ListingCard({ listing, isActive, onClick, showStatusOverlay = false }: ListingCardProps) {
   const { user } = useAuth();
   const { t } = useTranslation();
   const { formatPrice, formatArea } = useFormattedPrice();
@@ -23,6 +29,10 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
   const unsaveListing = useUnsaveListing();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHeartAnimating, setIsHeartAnimating] = useState(false);
+
+  const isSoldOrRented = listing.status === 'sold' || listing.status === 'rented';
+  const isSold = listing.status === 'sold';
+  const isRental = listing.listing_type === 'rent';
 
   const goToPrevImage = useCallback(() => {
     if (listing.images && listing.images.length > 1) {
@@ -74,7 +84,6 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
   const propertyTypeLabel = t(`propertyTypes.${propertyTypeKey}`);
 
   const hasMultipleImages = listing.images && listing.images.length > 1;
-  const isRental = listing.listing_type === 'rent';
 
   // Build feature badges
   const featureBadges: { icon: React.ComponentType<{ className?: string }>; label: string }[] = [];
@@ -95,6 +104,11 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
   // Limit to 3 badges max
   const displayBadges = featureBadges.slice(0, 3);
 
+  // Price comparison for sold/rented
+  const hasFinalPrice = listing.final_price && listing.final_price > 0;
+  const priceDiff = hasFinalPrice ? listing.final_price! - listing.price : 0;
+  const priceDiffPercent = listing.price > 0 ? ((priceDiff / listing.price) * 100).toFixed(1) : '0';
+
   return (
     <article
       className={cn(
@@ -105,18 +119,73 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
     >
       {/* Image container */}
       <div 
-        className="relative aspect-[4/3] overflow-hidden bg-muted" 
+        className={cn(
+          "relative aspect-[4/3] overflow-hidden bg-muted",
+          isSoldOrRented && showStatusOverlay && "after:absolute after:inset-0 after:bg-foreground/20 after:pointer-events-none"
+        )}
         {...swipeHandlers}
       >
         {listing.images && listing.images.length > 0 ? (
           <img
             src={listing.images[currentImageIndex]}
             alt={`${listing.title} - Photo ${currentImageIndex + 1}`}
-            className="w-full h-full object-cover transition-transform duration-500 ease-out-expo group-hover:scale-[1.03]"
+            className={cn(
+              "w-full h-full object-cover transition-transform duration-500 ease-out-expo group-hover:scale-[1.03]",
+              isSoldOrRented && showStatusOverlay && "saturate-[0.7]"
+            )}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-secondary">
             <span className="text-muted-foreground text-sm">{t('listing.noImage')}</span>
+          </div>
+        )}
+
+        {/* Sold/Rented status badge */}
+        {isSoldOrRented && showStatusOverlay && (
+          <div className="absolute top-3 left-3 z-20">
+            <span className={cn(
+              "px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wide",
+              isSold 
+                ? "bg-amber-500/90 text-white" 
+                : "bg-emerald-500/90 text-white"
+            )}>
+              {isSold ? t('listing.sold') : t('listing.rented')}
+            </span>
+          </div>
+        )}
+
+        {/* Final price overlay for sold/rented */}
+        {isSoldOrRented && showStatusOverlay && hasFinalPrice && (
+          <div className="absolute bottom-12 left-3 right-3 z-20">
+            <div className="bg-background/95 backdrop-blur-sm rounded-xl p-2.5 shadow-lg border border-border/50">
+              <div className="flex items-center justify-between gap-2 text-sm">
+                <div>
+                  <p className="text-muted-foreground text-xs mb-0.5">
+                    {isSold ? t('listing.soldFor') : t('listing.rentedFor')}
+                  </p>
+                  <p className="font-bold text-foreground text-sm">
+                    {formatPrice(listing.final_price!, listing.currency, { isRental, showPeriod: isRental })}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-1 justify-end">
+                    {priceDiff > 0 ? (
+                      <TrendingUp className="h-3 w-3 text-emerald-500" />
+                    ) : priceDiff < 0 ? (
+                      <TrendingDown className="h-3 w-3 text-red-500" />
+                    ) : (
+                      <Minus className="h-3 w-3 text-muted-foreground" />
+                    )}
+                    <span className={cn(
+                      "text-xs font-medium",
+                      priceDiff > 0 ? "text-emerald-500" : priceDiff < 0 ? "text-red-500" : "text-muted-foreground"
+                    )}>
+                      {priceDiff > 0 ? '+' : ''}{priceDiffPercent}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -164,30 +233,42 @@ export function ListingCard({ listing, isActive, onClick }: ListingCardProps) {
 
         {/* Save button - larger touch target */}
         {user && (
-          <button
-            type="button"
-            className={cn(
-              'absolute top-3 right-3 h-10 w-10 rounded-full glass flex items-center justify-center shadow-md z-10 transition-all duration-200 active:scale-90',
-              isSaved && 'text-accent'
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  'absolute top-3 right-3 h-10 w-10 rounded-full glass flex items-center justify-center shadow-md z-10 transition-all duration-200 active:scale-90',
+                  isSaved && 'text-accent',
+                  isSoldOrRented && showStatusOverlay && 'opacity-60'
+                )}
+                onClick={handleSaveClick}
+              >
+                <Heart 
+                  className={cn(
+                    'h-5 w-5 transition-all duration-200',
+                    isSaved && 'fill-current',
+                    isHeartAnimating && 'animate-heart-beat'
+                  )} 
+                />
+              </button>
+            </TooltipTrigger>
+            {isSoldOrRented && showStatusOverlay && (
+              <TooltipContent>
+                <p>{t('listing.noLongerAvailable')}</p>
+              </TooltipContent>
             )}
-            onClick={handleSaveClick}
-          >
-            <Heart 
-              className={cn(
-                'h-5 w-5 transition-all duration-200',
-                isSaved && 'fill-current',
-                isHeartAnimating && 'animate-heart-beat'
-              )} 
-            />
-          </button>
+          </Tooltip>
         )}
 
-        {/* Type badge */}
-        <div className="absolute bottom-3 left-3 z-10">
-          <span className="px-3 py-1.5 rounded-xl glass text-xs font-semibold">
-            {t(`listingTypes.${listing.listing_type}`)}
-          </span>
-        </div>
+        {/* Type badge - hide if showing status overlay */}
+        {(!isSoldOrRented || !showStatusOverlay) && (
+          <div className="absolute bottom-3 left-3 z-10">
+            <span className="px-3 py-1.5 rounded-xl glass text-xs font-semibold">
+              {t(`listingTypes.${listing.listing_type}`)}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Content */}

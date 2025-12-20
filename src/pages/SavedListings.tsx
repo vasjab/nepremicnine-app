@@ -68,6 +68,7 @@ export default function SavedListings() {
                   key={saved.id} 
                   listing={saved.listing} 
                   onClick={() => navigate(`/listing/${saved.listing.id}`)}
+                  showStatusOverlay={saved.listing.status === 'sold' || saved.listing.status === 'rented'}
                 />
               ))}
             </div>
