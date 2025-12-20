@@ -2,6 +2,19 @@ import { WizardStepWrapper } from '../WizardStepWrapper';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
+import { cn } from '@/lib/utils';
+import { 
+  Flame, 
+  Building2, 
+  RefreshCw, 
+  Zap, 
+  Fuel, 
+  TreePine, 
+  Thermometer, 
+  Settings,
+  type LucideIcon
+} from 'lucide-react';
 
 interface BuildingInfoStepProps {
   floorNumber: string;
@@ -16,15 +29,22 @@ interface BuildingInfoStepProps {
   onChange: (field: string, value: string) => void;
 }
 
-const HEATING_TYPES = [
-  { value: 'central', label: 'Central heating' },
-  { value: 'district', label: 'District heating' },
-  { value: 'heat_pump', label: 'Heat pump' },
-  { value: 'electric', label: 'Electric' },
-  { value: 'gas', label: 'Gas' },
-  { value: 'wood', label: 'Wood/Pellet' },
-  { value: 'geothermal', label: 'Geothermal' },
-  { value: 'other', label: 'Other' },
+interface HeatingType {
+  value: string;
+  label: string;
+  icon: LucideIcon;
+  info: string;
+}
+
+const HEATING_TYPES: HeatingType[] = [
+  { value: 'central', label: 'Central', icon: Flame, info: 'Central boiler distributes hot water through radiators or underfloor pipes throughout the building' },
+  { value: 'district', label: 'District', icon: Building2, info: 'Heat supplied from a central municipal facility through an insulated pipe network to multiple buildings' },
+  { value: 'heat_pump', label: 'Heat Pump', icon: RefreshCw, info: 'Efficient system that extracts heat from air, water, or ground — can also provide cooling' },
+  { value: 'electric', label: 'Electric', icon: Zap, info: 'Electric baseboard heaters, radiators, or infrared panels — simple but can be costly to run' },
+  { value: 'gas', label: 'Gas', icon: Fuel, info: 'Natural gas powered boiler or furnace system — common and efficient for heating' },
+  { value: 'wood', label: 'Wood/Pellet', icon: TreePine, info: 'Wood burning stove or automated pellet boiler — eco-friendly with proper sourcing' },
+  { value: 'geothermal', label: 'Geothermal', icon: Thermometer, info: 'Uses stable underground temperature for highly efficient heating and cooling' },
+  { value: 'other', label: 'Other', icon: Settings, info: 'Other heating system not listed above' },
 ];
 
 const ENERGY_RATINGS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
@@ -110,21 +130,47 @@ export function BuildingInfoStep({
           </div>
         )}
 
-        {/* Heating type */}
-        <div className="space-y-2">
+        {/* Heating type - Button cards */}
+        <div className="space-y-3">
           <Label>Heating type</Label>
-          <Select value={heatingType} onValueChange={(v) => onChange('heating_type', v)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select heating type" />
-            </SelectTrigger>
-            <SelectContent>
-              {HEATING_TYPES.map((type) => (
-                <SelectItem key={type.value} value={type.value}>
-                  {type.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {HEATING_TYPES.map((type) => {
+              const Icon = type.icon;
+              const isSelected = heatingType === type.value;
+              return (
+                <button
+                  key={type.value}
+                  type="button"
+                  onClick={() => onChange('heating_type', type.value)}
+                  className={cn(
+                    "relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 text-center min-h-[90px]",
+                    isSelected
+                      ? "border-primary bg-primary/5 shadow-md"
+                      : "border-border hover:border-primary/50 hover:bg-secondary/50"
+                  )}
+                >
+                  <div className="absolute top-2 right-2">
+                    <InfoTooltip content={type.info} />
+                  </div>
+                  <Icon className={cn(
+                    "h-6 w-6 transition-colors",
+                    isSelected ? "text-primary" : "text-muted-foreground"
+                  )} />
+                  <span className={cn(
+                    "text-xs font-medium transition-colors",
+                    isSelected ? "text-primary" : "text-foreground"
+                  )}>
+                    {type.label}
+                  </span>
+                  {isSelected && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
+                      <span className="text-primary-foreground text-[10px]">✓</span>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
           
           {heatingType === 'other' && (
             <Input
