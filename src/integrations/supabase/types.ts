@@ -529,6 +529,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      are_in_conversation: {
+        Args: { user_a: string; user_b: string }
+        Returns: boolean
+      }
       check_rate_limit: {
         Args: {
           p_action: string
@@ -539,6 +543,19 @@ export type Database = {
         Returns: boolean
       }
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
+      get_profile_for_viewer: {
+        Args: { p_profile_user_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          created_at: string
+          full_name: string
+          id: string
+          phone: string
+          updated_at: string
+          user_id: string
+        }[]
+      }
       increment_listing_view: {
         Args: { p_listing_id: string }
         Returns: undefined
