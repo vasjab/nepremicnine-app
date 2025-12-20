@@ -676,29 +676,6 @@ function FilterContent({
         )}
     </div>
 
-      {/* Action buttons at bottom */}
-      <div className="space-y-2 mt-4 sticky bottom-0 bg-background pt-2 pb-1">
-        <Button
-          className="w-full h-12 rounded-xl bg-accent text-accent-foreground font-medium hover:bg-accent/90 hover:shadow-lg transition-all duration-200"
-          onClick={() => setIsOpen(false)}
-        >
-          {t('filters.applyFilters')}
-        </Button>
-        
-        {hasActiveFilters && (
-          <Button
-            variant="outline"
-            className="w-full h-12 rounded-xl"
-            onClick={() => {
-              clearFilters();
-              setIsOpen(false);
-            }}
-          >
-            <X className="h-4 w-4 mr-2" />
-            {t('filters.clearAllFilters')}
-          </Button>
-        )}
-      </div>
     </div>
   );
 }
