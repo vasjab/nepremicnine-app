@@ -984,7 +984,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
               placeholder="Search..."
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className="w-full pl-9 pr-8 h-10 text-sm bg-secondary border-0 rounded-xl"
+              className="w-full pl-9 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl"
             />
             {searchValue && (
               <button
@@ -1017,7 +1017,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           {isMobile ? (
             <Drawer open={isOpen} onOpenChange={setIsOpen}>
               <DrawerTrigger asChild>
-                <Button className="shrink-0 rounded-xl h-10 px-3 border-0 bg-accent text-accent-foreground font-medium">
+                <Button className={`shrink-0 rounded-xl h-10 px-3 border-0 font-medium ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground'}`}>
                   <SlidersHorizontal className="h-4 w-4 mr-2" />
                   Filters
                   {totalActiveFilters > 0 && (
@@ -1039,7 +1039,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           ) : (
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <DialogTrigger asChild>
-                <Button className="shrink-0 rounded-xl h-10 px-3 border-0 bg-accent text-accent-foreground font-medium">
+                <Button className={`shrink-0 rounded-xl h-10 px-3 border-0 font-medium ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground'}`}>
                   <SlidersHorizontal className="h-4 w-4 mr-2" />
                   Filters
                   {totalActiveFilters > 0 && (
