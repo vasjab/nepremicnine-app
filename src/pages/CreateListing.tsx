@@ -1258,16 +1258,16 @@ export default function CreateListing() {
 
       {/* Close Confirmation Dialog */}
       <AlertDialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
-        <AlertDialogContent className="relative">
+        <AlertDialogContent>
           {/* Close button to go back to editing */}
           <button 
             onClick={() => setShowCloseConfirm(false)}
-            className="absolute right-4 top-4 h-8 w-8 rounded-full flex items-center justify-center hover:bg-secondary transition-colors"
+            className="absolute right-3 top-3 h-8 w-8 rounded-full flex items-center justify-center hover:bg-secondary transition-colors opacity-70 hover:opacity-100"
             aria-label="Go back to editing"
           >
             <X className="h-4 w-4" />
           </button>
-          <AlertDialogHeader>
+          <AlertDialogHeader className="pr-8">
             <AlertDialogTitle>Save your progress?</AlertDialogTitle>
             <AlertDialogDescription>
               You have unsaved changes. Would you like to save your listing as a draft before closing?
