@@ -83,6 +83,8 @@ export type Database = {
       }
       listings: {
         Row: {
+          ac_type: string | null
+          ac_unit_count: number | null
           address: string
           allows_pets: boolean | null
           area_sqm: number | null
@@ -128,6 +130,7 @@ export type Database = {
           has_ground_floor_access: boolean | null
           has_gym: boolean | null
           has_heat_pump: boolean | null
+          has_heat_recovery_ventilation: boolean | null
           has_high_ceilings: boolean | null
           has_intercom: boolean | null
           has_large_windows: boolean | null
@@ -161,6 +164,7 @@ export type Database = {
           is_furnished: boolean | null
           latitude: number
           listing_type: Database["public"]["Enums"]["listing_type"]
+          living_rooms: number | null
           longitude: number
           min_lease_months: number | null
           monthly_expenses: number | null
@@ -182,9 +186,12 @@ export type Database = {
           utilities_included: string | null
           utility_cost_estimate: number | null
           view_type: string | null
+          waterfront_distance_m: number | null
           year_built: number | null
         }
         Insert: {
+          ac_type?: string | null
+          ac_unit_count?: number | null
           address: string
           allows_pets?: boolean | null
           area_sqm?: number | null
@@ -230,6 +237,7 @@ export type Database = {
           has_ground_floor_access?: boolean | null
           has_gym?: boolean | null
           has_heat_pump?: boolean | null
+          has_heat_recovery_ventilation?: boolean | null
           has_high_ceilings?: boolean | null
           has_intercom?: boolean | null
           has_large_windows?: boolean | null
@@ -263,6 +271,7 @@ export type Database = {
           is_furnished?: boolean | null
           latitude: number
           listing_type?: Database["public"]["Enums"]["listing_type"]
+          living_rooms?: number | null
           longitude: number
           min_lease_months?: number | null
           monthly_expenses?: number | null
@@ -284,9 +293,12 @@ export type Database = {
           utilities_included?: string | null
           utility_cost_estimate?: number | null
           view_type?: string | null
+          waterfront_distance_m?: number | null
           year_built?: number | null
         }
         Update: {
+          ac_type?: string | null
+          ac_unit_count?: number | null
           address?: string
           allows_pets?: boolean | null
           area_sqm?: number | null
@@ -332,6 +344,7 @@ export type Database = {
           has_ground_floor_access?: boolean | null
           has_gym?: boolean | null
           has_heat_pump?: boolean | null
+          has_heat_recovery_ventilation?: boolean | null
           has_high_ceilings?: boolean | null
           has_intercom?: boolean | null
           has_large_windows?: boolean | null
@@ -365,6 +378,7 @@ export type Database = {
           is_furnished?: boolean | null
           latitude?: number
           listing_type?: Database["public"]["Enums"]["listing_type"]
+          living_rooms?: number | null
           longitude?: number
           min_lease_months?: number | null
           monthly_expenses?: number | null
@@ -386,6 +400,7 @@ export type Database = {
           utilities_included?: string | null
           utility_cost_estimate?: number | null
           view_type?: string | null
+          waterfront_distance_m?: number | null
           year_built?: number | null
         }
         Relationships: []
