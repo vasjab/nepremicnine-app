@@ -9,6 +9,7 @@ interface DetailsStepProps {
   description: string;
   bedrooms: string;
   bathrooms: string;
+  livingRooms: string;
   areaSqm: string;
   availableFrom: string;
   availableUntil: string;
@@ -21,6 +22,7 @@ interface DetailsStepProps {
   onDescriptionChange: (value: string) => void;
   onBedroomsChange: (value: string) => void;
   onBathroomsChange: (value: string) => void;
+  onLivingRoomsChange: (value: string) => void;
   onAreaChange: (value: string) => void;
   onAvailableFromChange: (value: string) => void;
   onAvailableUntilChange: (value: string) => void;
@@ -85,6 +87,7 @@ export function DetailsStep({
   description,
   bedrooms,
   bathrooms,
+  livingRooms,
   areaSqm,
   availableFrom,
   availableUntil,
@@ -97,6 +100,7 @@ export function DetailsStep({
   onDescriptionChange,
   onBedroomsChange,
   onBathroomsChange,
+  onLivingRoomsChange,
   onAreaChange,
   onAvailableFromChange,
   onAvailableUntilChange,
@@ -109,6 +113,7 @@ export function DetailsStep({
   const isRental = listingType === 'rent';
   const bedroomsNum = parseInt(bedrooms) || 0;
   const bathroomsNum = parseInt(bathrooms) || 1;
+  const livingRoomsNum = parseInt(livingRooms) || 1;
 
   return (
     <WizardStepWrapper
@@ -117,8 +122,29 @@ export function DetailsStep({
       emoji="📝"
     >
       <div className="max-w-2xl mx-auto w-full space-y-8">
-        {/* Bedrooms & Bathrooms */}
-        <div className="flex justify-center gap-12">
+        {/* Furnished Toggle - Show for all listing types, early in the form */}
+        <div className="p-4 bg-card rounded-xl border border-border space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-medium">🛋️ Furnished</p>
+              <p className="text-sm text-muted-foreground">Property comes with furniture</p>
+            </div>
+            <Switch checked={isFurnished} onCheckedChange={onFurnishedChange} />
+          </div>
+          {isFurnished && (
+            <input
+              type="text"
+              value={furnishedDetails}
+              onChange={(e) => onFurnishedDetailsChange(e.target.value)}
+              placeholder="e.g., Fully furnished with bed, sofa, and kitchen appliances..."
+              maxLength={200}
+              className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground"
+            />
+          )}
+        </div>
+
+        {/* Room counters - Bedrooms, Bathrooms, Living Rooms */}
+        <div className="flex justify-center gap-8 flex-wrap">
           <NumberPicker
             label="Bedrooms"
             value={bedroomsNum}
@@ -131,6 +157,13 @@ export function DetailsStep({
             value={bathroomsNum}
             onChange={(v) => onBathroomsChange(v.toString())}
             min={1}
+            max={10}
+          />
+          <NumberPicker
+            label="Living Rooms"
+            value={livingRoomsNum}
+            onChange={(v) => onLivingRoomsChange(v.toString())}
+            min={0}
             max={10}
           />
         </div>
@@ -148,6 +181,9 @@ export function DetailsStep({
             />
             <span className="text-xl text-muted-foreground">m²</span>
           </div>
+          <p className="text-xs text-muted-foreground text-center">
+            Internal living area only (excludes balcony, basement, storage)
+          </p>
         </div>
 
         {/* Description */}
@@ -224,47 +260,25 @@ export function DetailsStep({
               </div>
             )}
 
-            {/* Toggles */}
-            <div className="space-y-4">
-              <div className="p-4 bg-card rounded-xl border border-border space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">🛋️ Furnished</p>
-                    <p className="text-sm text-muted-foreground">Property comes with furniture</p>
-                  </div>
-                  <Switch checked={isFurnished} onCheckedChange={onFurnishedChange} />
+            {/* Pets Toggle - Only for rentals */}
+            <div className="p-4 bg-card rounded-xl border border-border space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">🐕 Pets Allowed</p>
+                  <p className="text-sm text-muted-foreground">Tenants can have pets</p>
                 </div>
-                {isFurnished && (
-                  <input
-                    type="text"
-                    value={furnishedDetails}
-                    onChange={(e) => onFurnishedDetailsChange(e.target.value)}
-                    placeholder="e.g., Fully furnished with bed, sofa, and kitchen appliances..."
-                    maxLength={200}
-                    className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground"
-                  />
-                )}
+                <Switch checked={allowsPets} onCheckedChange={onPetsChange} />
               </div>
-
-              <div className="p-4 bg-card rounded-xl border border-border space-y-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">🐕 Pets Allowed</p>
-                    <p className="text-sm text-muted-foreground">Tenants can have pets</p>
-                  </div>
-                  <Switch checked={allowsPets} onCheckedChange={onPetsChange} />
-                </div>
-                {allowsPets && (
-                  <input
-                    type="text"
-                    value={petsDetails}
-                    onChange={(e) => onPetsDetailsChange(e.target.value)}
-                    placeholder="e.g., Cats and small dogs welcome, no exotic pets..."
-                    maxLength={200}
-                    className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground"
-                  />
-                )}
-              </div>
+              {allowsPets && (
+                <input
+                  type="text"
+                  value={petsDetails}
+                  onChange={(e) => onPetsDetailsChange(e.target.value)}
+                  placeholder="e.g., Cats and small dogs welcome, no exotic pets..."
+                  maxLength={200}
+                  className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground"
+                />
+              )}
             </div>
           </div>
         )}

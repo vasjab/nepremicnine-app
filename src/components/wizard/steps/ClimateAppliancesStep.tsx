@@ -1,34 +1,40 @@
 import { WizardStepWrapper } from '../WizardStepWrapper';
 import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Flame, 
   ThermometerSun, 
-  Factory, 
-  RefreshCw, 
   Wind, 
   Fan, 
   Sun,
   UtensilsCrossed,
-  Shirt
+  Shirt,
+  RefreshCcw,
+  Snowflake
 } from 'lucide-react';
 
 interface ClimateAppliancesStepProps {
-  // Climate Control
+  // Comfort Features
   hasFireplace: boolean;
   hasFloorHeating: boolean;
-  hasDistrictHeating: boolean;
-  hasHeatPump: boolean;
+  // Cooling & Ventilation
   hasAirConditioning: boolean;
+  acType: string;
+  acUnitCount: string;
   hasVentilation: boolean;
+  hasHeatRecoveryVentilation: boolean;
   // Energy Systems
   hasSolarPanels: boolean;
-  // Appliances
+  // Appliances (only shown when furnished)
   hasDishwasher: boolean;
   hasWashingMachine: boolean;
   hasDryer: boolean;
   // Furnished status - controls visibility of appliances section
   isFurnished: boolean;
   onFeatureToggle: (feature: string, value: boolean) => void;
+  onChange: (field: string, value: string) => void;
 }
 
 interface FeatureCard {
@@ -37,12 +43,14 @@ interface FeatureCard {
   icon: typeof Flame;
 }
 
-const CLIMATE_FEATURES: FeatureCard[] = [
-  { id: 'has_air_conditioning', label: 'Air Conditioning', icon: Wind },
-  { id: 'has_floor_heating', label: 'Floor Heating', icon: ThermometerSun },
-  { id: 'has_district_heating', label: 'District Heating', icon: Factory },
-  { id: 'has_heat_pump', label: 'Heat Pump', icon: RefreshCw },
+const COOLING_FEATURES: FeatureCard[] = [
+  { id: 'has_air_conditioning', label: 'Air Conditioning', icon: Snowflake },
   { id: 'has_ventilation', label: 'Ventilation', icon: Fan },
+  { id: 'has_heat_recovery_ventilation', label: 'Heat Recovery (HRV)', icon: RefreshCcw },
+];
+
+const COMFORT_FEATURES: FeatureCard[] = [
+  { id: 'has_floor_heating', label: 'Floor Heating', icon: ThermometerSun },
   { id: 'has_fireplace', label: 'Fireplace', icon: Flame },
 ];
 
@@ -53,22 +61,29 @@ const ENERGY_FEATURES: FeatureCard[] = [
 const APPLIANCE_FEATURES: FeatureCard[] = [
   { id: 'has_dishwasher', label: 'Dishwasher', icon: UtensilsCrossed },
   { id: 'has_washing_machine', label: 'Washing Machine', icon: Shirt },
-  { id: 'has_dryer', label: 'Dryer', icon: Fan },
+  { id: 'has_dryer', label: 'Dryer', icon: Wind },
+];
+
+const AC_TYPES = [
+  { value: 'central', label: 'Central AC' },
+  { value: 'unit', label: 'Unit/Split AC' },
 ];
 
 export function ClimateAppliancesStep({
   hasFireplace,
   hasFloorHeating,
-  hasDistrictHeating,
-  hasHeatPump,
   hasAirConditioning,
+  acType,
+  acUnitCount,
   hasVentilation,
+  hasHeatRecoveryVentilation,
   hasSolarPanels,
   hasDishwasher,
   hasWashingMachine,
   hasDryer,
   isFurnished,
   onFeatureToggle,
+  onChange,
 }: ClimateAppliancesStepProps) {
   // Only include appliance values in count when furnished
   const applianceValues = isFurnished ? {
@@ -80,18 +95,20 @@ export function ClimateAppliancesStep({
   const featureValues: Record<string, boolean> = {
     has_fireplace: hasFireplace,
     has_floor_heating: hasFloorHeating,
-    has_district_heating: hasDistrictHeating,
-    has_heat_pump: hasHeatPump,
     has_air_conditioning: hasAirConditioning,
     has_ventilation: hasVentilation,
+    has_heat_recovery_ventilation: hasHeatRecoveryVentilation,
     has_solar_panels: hasSolarPanels,
     ...applianceValues,
   };
 
   const selectedCount = Object.values(featureValues).filter(Boolean).length;
 
-  const renderFeatureGrid = (features: FeatureCard[]) => (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+  const renderFeatureGrid = (features: FeatureCard[], columns: number = 3) => (
+    <div className={cn(
+      "grid gap-3",
+      columns === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3"
+    )}>
       {features.map(({ id, label, icon: Icon }) => {
         const isSelected = featureValues[id];
         return (
@@ -132,17 +149,63 @@ export function ClimateAppliancesStep({
     <WizardStepWrapper
       title="Climate & Appliances"
       subtitle={isFurnished 
-        ? "Heating, cooling, energy systems, and included appliances" 
-        : "Heating, cooling, and energy systems"}
+        ? "Cooling, ventilation, comfort features, and included appliances" 
+        : "Cooling, ventilation, and comfort features"}
       emoji="🌡️"
     >
       <div className="max-w-2xl mx-auto w-full space-y-8">
-        {/* Climate Control Section */}
+        {/* Cooling & Ventilation Section */}
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Climate Control
+            Cooling & Ventilation
           </h3>
-          {renderFeatureGrid(CLIMATE_FEATURES)}
+          {renderFeatureGrid(COOLING_FEATURES)}
+          
+          {/* AC Type selector - show when AC is selected */}
+          {hasAirConditioning && (
+            <div className="p-4 rounded-lg bg-secondary/50 space-y-4">
+              <div className="space-y-2">
+                <Label>AC Type</Label>
+                <Select value={acType} onValueChange={(v) => onChange('ac_type', v)}>
+                  <SelectTrigger className="max-w-48">
+                    <SelectValue placeholder="Select AC type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AC_TYPES.map(({ value, label }) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Unit count - only for unit/split AC */}
+              {acType === 'unit' && (
+                <div className="space-y-2">
+                  <Label htmlFor="ac_unit_count">Number of AC units</Label>
+                  <Input
+                    id="ac_unit_count"
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={acUnitCount}
+                    onChange={(e) => onChange('ac_unit_count', e.target.value)}
+                    placeholder="e.g. 2"
+                    className="max-w-24"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Comfort Features Section */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            Comfort Features
+          </h3>
+          {renderFeatureGrid(COMFORT_FEATURES, 2)}
         </div>
 
         {/* Energy Systems Section */}
@@ -150,7 +213,7 @@ export function ClimateAppliancesStep({
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
             Energy Systems
           </h3>
-          {renderFeatureGrid(ENERGY_FEATURES)}
+          {renderFeatureGrid(ENERGY_FEATURES, 2)}
         </div>
 
         {/* Appliances Section - only show if furnished */}

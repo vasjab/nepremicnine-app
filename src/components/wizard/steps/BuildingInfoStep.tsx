@@ -18,9 +18,12 @@ interface BuildingInfoStepProps {
 
 const HEATING_TYPES = [
   { value: 'central', label: 'Central heating' },
+  { value: 'district', label: 'District heating' },
+  { value: 'heat_pump', label: 'Heat pump' },
   { value: 'electric', label: 'Electric' },
   { value: 'gas', label: 'Gas' },
-  { value: 'heat_pump', label: 'Heat pump' },
+  { value: 'wood', label: 'Wood/Pellet' },
+  { value: 'geothermal', label: 'Geothermal' },
   { value: 'other', label: 'Other' },
 ];
 

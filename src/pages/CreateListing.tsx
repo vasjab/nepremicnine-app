@@ -77,6 +77,7 @@ export default function CreateListing() {
     postal_code: '',
     bedrooms: '1',
     bathrooms: '1',
+    living_rooms: '1',
     area_sqm: '',
     available_from: '',
     available_until: '',
@@ -96,6 +97,7 @@ export default function CreateListing() {
     has_bbq_area: false,
     has_playground: false,
     has_waterfront: false,
+    waterfront_distance_m: '',
     has_view: false,
     view_type: '',
     // Parking & Storage
@@ -117,13 +119,14 @@ export default function CreateListing() {
     has_common_room: false,
     has_concierge: false,
     has_security: false,
-    // Energy & Comfort
+    // Climate & Comfort
     has_fireplace: false,
     has_floor_heating: false,
-    has_district_heating: false,
-    has_heat_pump: false,
     has_air_conditioning: false,
+    ac_type: '',
+    ac_unit_count: '',
     has_ventilation: false,
+    has_heat_recovery_ventilation: false,
     has_solar_panels: false,
     // Equipment
     has_dishwasher: false,
@@ -246,6 +249,7 @@ export default function CreateListing() {
         postal_code: draftListing.postal_code || '',
         bedrooms: draftListing.bedrooms?.toString() || '1',
         bathrooms: draftListing.bathrooms?.toString() || '1',
+        living_rooms: (draftListing as any).living_rooms?.toString() || '1',
         area_sqm: draftListing.area_sqm?.toString() || '',
         available_from: draftListing.available_from || '',
         available_until: draftListing.available_until || '',
@@ -265,6 +269,7 @@ export default function CreateListing() {
         has_bbq_area: (draftListing as any).has_bbq_area || false,
         has_playground: (draftListing as any).has_playground || false,
         has_waterfront: (draftListing as any).has_waterfront || false,
+        waterfront_distance_m: (draftListing as any).waterfront_distance_m?.toString() || '',
         has_view: (draftListing as any).has_view || false,
         view_type: (draftListing as any).view_type || '',
         // Parking & Storage
@@ -286,13 +291,14 @@ export default function CreateListing() {
         has_common_room: (draftListing as any).has_common_room || false,
         has_concierge: (draftListing as any).has_concierge || false,
         has_security: (draftListing as any).has_security || false,
-        // Energy & Comfort
+        // Climate & Comfort
         has_fireplace: (draftListing as any).has_fireplace || false,
         has_floor_heating: (draftListing as any).has_floor_heating || false,
-        has_district_heating: (draftListing as any).has_district_heating || false,
-        has_heat_pump: (draftListing as any).has_heat_pump || false,
         has_air_conditioning: draftListing.has_air_conditioning || false,
+        ac_type: (draftListing as any).ac_type || '',
+        ac_unit_count: (draftListing as any).ac_unit_count?.toString() || '',
         has_ventilation: (draftListing as any).has_ventilation || false,
+        has_heat_recovery_ventilation: (draftListing as any).has_heat_recovery_ventilation || false,
         has_solar_panels: (draftListing as any).has_solar_panels || false,
         // Equipment
         has_dishwasher: draftListing.has_dishwasher || false,
@@ -513,13 +519,14 @@ export default function CreateListing() {
       has_common_room: formData.has_common_room,
       has_concierge: formData.has_concierge,
       has_security: formData.has_security,
-      // Energy & Comfort
+      // Climate & Comfort
       has_fireplace: formData.has_fireplace,
       has_floor_heating: formData.has_floor_heating,
-      has_district_heating: formData.has_district_heating,
-      has_heat_pump: formData.has_heat_pump,
       has_air_conditioning: formData.has_air_conditioning,
+      ac_type: formData.ac_type || null,
+      ac_unit_count: formData.ac_unit_count ? parseInt(formData.ac_unit_count) : null,
       has_ventilation: formData.has_ventilation,
+      has_heat_recovery_ventilation: formData.has_heat_recovery_ventilation,
       has_solar_panels: formData.has_solar_panels,
       // Equipment
       has_dishwasher: formData.has_dishwasher,
@@ -734,6 +741,7 @@ export default function CreateListing() {
             description={formData.description}
             bedrooms={formData.bedrooms}
             bathrooms={formData.bathrooms}
+            livingRooms={formData.living_rooms}
             areaSqm={formData.area_sqm}
             availableFrom={formData.available_from}
             availableUntil={formData.available_until}
@@ -746,6 +754,7 @@ export default function CreateListing() {
             onDescriptionChange={v => handleChange('description', v)}
             onBedroomsChange={v => handleChange('bedrooms', v)}
             onBathroomsChange={v => handleChange('bathrooms', v)}
+            onLivingRoomsChange={v => handleChange('living_rooms', v)}
             onAreaChange={v => handleChange('area_sqm', v)}
             onAvailableFromChange={v => handleChange('available_from', v)}
             onAvailableUntilChange={v => handleChange('available_until', v)}
@@ -769,6 +778,7 @@ export default function CreateListing() {
             hasBbqArea={formData.has_bbq_area}
             hasPlayground={formData.has_playground}
             hasWaterfront={formData.has_waterfront}
+            waterfrontDistanceM={formData.waterfront_distance_m}
             hasView={formData.has_view}
             viewType={formData.view_type}
             onFeatureToggle={(f, v) => handleChange(f, v)}
@@ -810,16 +820,18 @@ export default function CreateListing() {
           <ClimateAppliancesStep
             hasFireplace={formData.has_fireplace}
             hasFloorHeating={formData.has_floor_heating}
-            hasDistrictHeating={formData.has_district_heating}
-            hasHeatPump={formData.has_heat_pump}
             hasAirConditioning={formData.has_air_conditioning}
+            acType={formData.ac_type}
+            acUnitCount={formData.ac_unit_count}
             hasVentilation={formData.has_ventilation}
+            hasHeatRecoveryVentilation={formData.has_heat_recovery_ventilation}
             hasSolarPanels={formData.has_solar_panels}
             hasDishwasher={formData.has_dishwasher}
             hasWashingMachine={formData.has_washing_machine}
             hasDryer={formData.has_dryer}
             isFurnished={formData.is_furnished}
             onFeatureToggle={(f, v) => handleChange(f, v)}
+            onChange={handleChange}
           />
         );
       case 'interior':

@@ -27,6 +27,7 @@ interface OutdoorFeaturesStepProps {
   hasBbqArea: boolean;
   hasPlayground: boolean;
   hasWaterfront: boolean;
+  waterfrontDistanceM: string;
   hasView: boolean;
   viewType: string;
   onFeatureToggle: (feature: string, value: boolean) => void;
@@ -47,7 +48,7 @@ const OUTDOOR_FEATURES: FeatureCard[] = [
   { id: 'has_garden', label: 'Garden', icon: Flower2, description: 'Private or shared garden' },
   { id: 'has_bbq_area', label: 'BBQ Area', icon: Flame, description: 'Outdoor barbecue area' },
   { id: 'has_playground', label: 'Playground', icon: PlayCircle, description: "Children's playground" },
-  { id: 'has_waterfront', label: 'Waterfront', icon: Waves, description: 'Lake or sea access' },
+  { id: 'has_waterfront', label: 'Close to Water', icon: Waves, description: 'Near lake, sea, or river' },
   { id: 'has_view', label: 'Special View', icon: Eye, description: 'Mountain, city, or sea view' },
 ];
 
@@ -57,6 +58,16 @@ const VIEW_TYPES = [
   { value: 'sea', label: 'Sea View', icon: Waves },
   { value: 'park', label: 'Park View', icon: Trees },
   { value: 'garden', label: 'Garden View', icon: Flower2 },
+];
+
+const WATERFRONT_DISTANCES = [
+  { value: '0', label: 'Direct access' },
+  { value: '50', label: '< 50 meters' },
+  { value: '100', label: '< 100 meters' },
+  { value: '200', label: '< 200 meters' },
+  { value: '500', label: '< 500 meters' },
+  { value: '1000', label: '< 1 km' },
+  { value: '2000', label: '< 2 km' },
 ];
 
 export function OutdoorFeaturesStep({
@@ -70,6 +81,7 @@ export function OutdoorFeaturesStep({
   hasBbqArea,
   hasPlayground,
   hasWaterfront,
+  waterfrontDistanceM,
   hasView,
   viewType,
   onFeatureToggle,
@@ -173,6 +185,24 @@ export function OutdoorFeaturesStep({
                 placeholder="e.g. 50"
                 className="max-w-32"
               />
+            </div>
+          )}
+
+          {hasWaterfront && (
+            <div className="p-4 rounded-lg bg-secondary/50 space-y-2">
+              <Label>Distance to water</Label>
+              <Select value={waterfrontDistanceM} onValueChange={(v) => onChange('waterfront_distance_m', v)}>
+                <SelectTrigger className="max-w-48">
+                  <SelectValue placeholder="Select distance" />
+                </SelectTrigger>
+                <SelectContent>
+                  {WATERFRONT_DISTANCES.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
