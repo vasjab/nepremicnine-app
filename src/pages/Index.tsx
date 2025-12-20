@@ -453,7 +453,7 @@ const Index = () => {
             >
               <div className="flex flex-col h-full border-r border-border overflow-hidden">
                 {/* For Rent / For Sale Tabs */}
-                <RentSaleTabs />
+                <RentSaleTabs collapsed={isHeaderCollapsed} />
 
                 {landlordId && (
                   <div className="px-4 pt-3 pb-0">
@@ -483,6 +483,7 @@ const Index = () => {
                   onSortChange={setSortBy}
                   totalCount={visibleListings.length}
                   userId={user?.id}
+                  isCollapsed={isHeaderCollapsed}
                 />
 
                 <div ref={!isMobileLayout ? listContainerRef : undefined} className="flex-1 overflow-y-auto p-3 sm:p-4 @container">
