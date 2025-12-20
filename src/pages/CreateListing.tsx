@@ -111,7 +111,6 @@ export default function CreateListing() {
     has_bicycle_storage: false,
     has_stroller_storage: false,
     has_storage: false,
-    has_basement: false,
     // Building amenities
     has_elevator: false,
     elevator_condition: '',
@@ -163,7 +162,9 @@ export default function CreateListing() {
     floor_number: '',
     total_floors_building: '',
     property_floors: '',
-    heating_type: '',
+    heating_distribution: '',
+    heating_source: '',
+    heat_pump_type: '',
     heating_type_other: '',
     energy_rating: '',
     year_built: '',
@@ -172,7 +173,10 @@ export default function CreateListing() {
     deposit_amount: '',
     min_lease_months: '',
     internet_included: '',
+    internet_type: '',
     utilities_included: '',
+    utilities_included_description: '',
+    utilities_not_included_description: '',
     utility_cost_estimate: '',
     // Sale expenses
     monthly_expenses: '',
@@ -299,7 +303,6 @@ export default function CreateListing() {
         has_bicycle_storage: (draftListing as any).has_bicycle_storage || false,
         has_stroller_storage: (draftListing as any).has_stroller_storage || false,
         has_storage: draftListing.has_storage || false,
-        has_basement: (draftListing as any).has_basement || false,
         // Building amenities
         has_elevator: draftListing.has_elevator || false,
         elevator_condition: (draftListing as any).elevator_condition || '',
@@ -351,7 +354,9 @@ export default function CreateListing() {
         floor_number: draftListing.floor_number?.toString() || '',
         total_floors_building: draftListing.total_floors_building?.toString() || '',
         property_floors: draftListing.property_floors?.toString() || '',
-        heating_type: draftListing.heating_type || '',
+        heating_distribution: (draftListing as any).heating_distribution || '',
+        heating_source: (draftListing as any).heating_source || '',
+        heat_pump_type: (draftListing as any).heat_pump_type || '',
         heating_type_other: '',
         energy_rating: draftListing.energy_rating || '',
         year_built: draftListing.year_built?.toString() || '',
@@ -360,7 +365,10 @@ export default function CreateListing() {
         deposit_amount: draftListing.deposit_amount?.toString() || '',
         min_lease_months: draftListing.min_lease_months?.toString() || '',
         internet_included: draftListing.internet_included || '',
+        internet_type: (draftListing as any).internet_type || '',
         utilities_included: draftListing.utilities_included || '',
+        utilities_included_description: (draftListing as any).utilities_included_description || '',
+        utilities_not_included_description: (draftListing as any).utilities_not_included_description || '',
         utility_cost_estimate: (draftListing as any).utility_cost_estimate?.toString() || '',
         // Sale expenses
         monthly_expenses: (draftListing as any).monthly_expenses?.toString() || '',
@@ -543,7 +551,6 @@ export default function CreateListing() {
       has_bicycle_storage: formData.has_bicycle_storage,
       has_stroller_storage: formData.has_stroller_storage,
       has_storage: formData.has_storage,
-      has_basement: formData.has_basement,
       // Building amenities
       has_elevator: formData.has_elevator,
       elevator_condition: formData.elevator_condition || null,
@@ -595,7 +602,7 @@ export default function CreateListing() {
       floor_number: formData.floor_number ? parseInt(formData.floor_number) : null,
       total_floors_building: formData.total_floors_building ? parseInt(formData.total_floors_building) : null,
       property_floors: formData.property_floors ? parseInt(formData.property_floors) : null,
-      heating_type: (formData.heating_type || null) as 'central' | 'electric' | 'gas' | 'heat_pump' | 'other' | null,
+      heating_type: (formData.heating_source || formData.heating_distribution || null) as 'central' | 'electric' | 'gas' | 'heat_pump' | 'other' | null,
       energy_rating: (formData.energy_rating || null) as 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | null,
       year_built: formData.year_built ? parseInt(formData.year_built) : null,
       property_condition: (formData.property_condition || null) as 'new' | 'renovated' | 'good' | 'needs_work' | null,
@@ -846,7 +853,6 @@ export default function CreateListing() {
             hasBicycleStorage={formData.has_bicycle_storage}
             hasStrollerStorage={formData.has_stroller_storage}
             hasStorage={formData.has_storage}
-            hasBasement={formData.has_basement}
             onFeatureToggle={(f, v) => handleChange(f, v)}
             onChange={handleChange}
           />
@@ -917,7 +923,9 @@ export default function CreateListing() {
             floorNumber={formData.floor_number}
             totalFloorsBuilding={formData.total_floors_building}
             propertyFloors={formData.property_floors}
-            heatingType={formData.heating_type}
+            heatingDistribution={formData.heating_distribution}
+            heatingSource={formData.heating_source}
+            heatPumpType={formData.heat_pump_type}
             heatingTypeOther={formData.heating_type_other}
             energyRating={formData.energy_rating}
             yearBuilt={formData.year_built}
@@ -932,7 +940,10 @@ export default function CreateListing() {
             depositAmount={formData.deposit_amount}
             minLeaseMonths={formData.min_lease_months}
             internetIncluded={formData.internet_included}
+            internetType={formData.internet_type}
             utilitiesIncluded={formData.utilities_included}
+            utilitiesIncludedDescription={formData.utilities_included_description}
+            utilitiesNotIncludedDescription={formData.utilities_not_included_description}
             utilityCostEstimate={formData.utility_cost_estimate}
             currency={formData.currency}
             onChange={handleChange}
@@ -973,7 +984,7 @@ export default function CreateListing() {
     garden_sqm: formData.garden_sqm,
     parking_type: formData.parking_type,
     parking_spaces: formData.parking_spaces,
-    heating_type: formData.heating_type,
+    heating_type: formData.heating_source || formData.heating_distribution,
     energy_rating: formData.energy_rating,
     year_built: formData.year_built,
     property_condition: formData.property_condition,
