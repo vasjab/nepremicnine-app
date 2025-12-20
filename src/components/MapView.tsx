@@ -330,13 +330,14 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
           : '';
 
         // Build sold/rented status section HTML
+        // Compact inline badge for sold/rented status
         const soldRentedSectionHtml = isCompleted ? `
-          <div style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px;">
-            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
-              <span style="font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">${statusLabel}</span>
-            </div>
-            ${popupCompletedDate ? `<div style="font-size: 11px; opacity: 0.9;">${popupCompletedDate}</div>` : ''}
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+            <span style="display: inline-flex; align-items: center; gap: 4px; background: #22c55e; color: white; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg>
+              ${statusLabel}
+            </span>
+            ${popupCompletedDate ? `<span style="font-size: 11px; color: #666;">${popupCompletedDate}</span>` : ''}
           </div>
         ` : '';
 
@@ -383,7 +384,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
               opacity: 1 !important;
             }
           </style>
-          <div class="popup-content-${listing.id}" style="width: 280px; font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer;">
+          <div class="popup-content-${listing.id}" style="width: 280px; font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer; overflow: hidden;">
             <div class="popup-img-container-${listing.id}" style="position: relative; width: 100%; height: 160px; overflow: hidden; border-radius: 8px 8px 0 0;">
               <img class="popup-img-${listing.id}" src="${images[0]}" alt="${listing.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s ease;" />
               ${arrowsHtml}
