@@ -111,10 +111,7 @@ export function ListingCard({ listing, isActive, onClick, showStatusOverlay = fa
 
   return (
     <article
-      className={cn(
-        'listing-card cursor-pointer group',
-        isActive && 'ring-2 ring-primary/50 bg-primary/5'
-      )}
+      className="listing-card cursor-pointer group"
       onClick={onClick}
     >
       {/* Image container */}
