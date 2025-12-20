@@ -9,6 +9,7 @@ import { Header } from '@/components/Header';
 import { FormField } from '@/components/FormField';
 import { LocationPreviewMap } from '@/components/LocationPreviewMap';
 import { AddressAutocomplete } from '@/components/AddressAutocomplete';
+import { CityAutocomplete } from '@/components/CityAutocomplete';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -879,14 +880,13 @@ export default function CreateListing() {
                   required
                   error={getError('city')}
                 >
-                  <Input
-                    id="city"
-                    placeholder="Stockholm"
+                  <CityAutocomplete
                     value={formData.city}
-                    onChange={(e) => handleChange('city', e.target.value)}
+                    onChange={(value) => handleChange('city', value)}
                     onBlur={() => handleBlur('city')}
-                    className={cn(getError('city') && 'border-destructive')}
-                    data-error={!!getError('city')}
+                    placeholder="Start typing a city..."
+                    hasError={!!getError('city')}
+                    country={getCountryCode(formData.country)}
                   />
                 </FormField>
                 <FormField
