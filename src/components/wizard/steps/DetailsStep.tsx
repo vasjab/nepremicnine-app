@@ -3,7 +3,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
-import { Minus, Plus } from 'lucide-react';
+import { Minus, Plus, Bed, Bath, Sofa, Square, Calendar, PawPrint, Armchair, ArrowRight } from 'lucide-react';
+import { DatePicker } from '@/components/ui/date-picker';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 
 interface DetailsStepProps {
   description: string;
@@ -33,52 +35,105 @@ interface DetailsStepProps {
   onMoveInImmediatelyChange: (value: boolean) => void;
 }
 
-// Number picker with plus/minus buttons
-function NumberPicker({ 
+// Counter card component for rooms
+function CounterCard({ 
   value, 
   onChange, 
   min = 0, 
   max = 10,
-  label 
+  label,
+  icon: Icon
 }: { 
   value: number; 
   onChange: (v: number) => void; 
   min?: number; 
   max?: number;
   label: string;
+  icon: React.ElementType;
 }) {
   return (
-    <div className="flex flex-col items-center gap-2">
-      <span className="text-sm font-medium text-muted-foreground">{label}</span>
-      <div className="flex items-center gap-3">
+    <div className="flex-1 min-w-[140px] p-4 rounded-xl border border-border bg-card">
+      <div className="flex items-center gap-2 mb-3">
+        <Icon className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm font-medium text-muted-foreground">{label}</span>
+      </div>
+      <div className="flex items-center justify-between">
         <button
           type="button"
           onClick={() => onChange(Math.max(min, value - 1))}
           disabled={value <= min}
           className={cn(
-            "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all",
+            "w-8 h-8 rounded-full flex items-center justify-center border transition-all",
             value <= min 
-              ? "border-border text-muted-foreground cursor-not-allowed" 
-              : "border-foreground text-foreground hover:bg-foreground hover:text-background"
+              ? "border-border text-muted-foreground/40 cursor-not-allowed" 
+              : "border-foreground/20 text-foreground hover:border-foreground hover:bg-foreground hover:text-background"
           )}
         >
-          <Minus className="h-4 w-4" />
+          <Minus className="h-3.5 w-3.5" />
         </button>
-        <span className="w-12 text-center text-2xl font-bold">{value}</span>
+        <span className="text-2xl font-semibold tabular-nums">{value}</span>
         <button
           type="button"
           onClick={() => onChange(Math.min(max, value + 1))}
           disabled={value >= max}
           className={cn(
-            "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all",
+            "w-8 h-8 rounded-full flex items-center justify-center border transition-all",
             value >= max 
-              ? "border-border text-muted-foreground cursor-not-allowed" 
-              : "border-foreground text-foreground hover:bg-foreground hover:text-background"
+              ? "border-border text-muted-foreground/40 cursor-not-allowed" 
+              : "border-foreground/20 text-foreground hover:border-foreground hover:bg-foreground hover:text-background"
           )}
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-3.5 w-3.5" />
         </button>
       </div>
+    </div>
+  );
+}
+
+// Toggle card component
+function ToggleCard({
+  icon: Icon,
+  label,
+  description,
+  checked,
+  onCheckedChange,
+  children,
+  info
+}: {
+  icon: React.ElementType;
+  label: string;
+  description: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  children?: React.ReactNode;
+  info?: string;
+}) {
+  return (
+    <div className={cn(
+      "rounded-xl border transition-colors",
+      checked ? "border-accent bg-accent/5" : "border-border bg-card"
+    )}>
+      <div className="flex items-center gap-4 p-4">
+        <div className={cn(
+          "w-10 h-10 rounded-lg flex items-center justify-center",
+          checked ? "bg-accent/10 text-accent" : "bg-muted text-muted-foreground"
+        )}>
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <p className="font-medium text-foreground">{label}</p>
+            {info && <InfoTooltip content={info} />}
+          </div>
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
+        <Switch checked={checked} onCheckedChange={onCheckedChange} />
+      </div>
+      {checked && children && (
+        <div className="px-4 pb-4 pt-0">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
@@ -115,85 +170,105 @@ export function DetailsStep({
   const bathroomsNum = parseInt(bathrooms) || 1;
   const livingRoomsNum = parseInt(livingRooms) || 1;
 
+  // Convert string dates to Date objects for DatePicker
+  const availableFromDate = availableFrom ? new Date(availableFrom) : undefined;
+  const availableUntilDate = availableUntil ? new Date(availableUntil) : undefined;
+
+  const handleAvailableFromChange = (date: Date | undefined) => {
+    onAvailableFromChange(date ? date.toISOString().split('T')[0] : '');
+  };
+
+  const handleAvailableUntilChange = (date: Date | undefined) => {
+    onAvailableUntilChange(date ? date.toISOString().split('T')[0] : '');
+  };
+
   return (
     <WizardStepWrapper
       title="Add the details"
       subtitle="Help people understand what you're offering"
       emoji="📝"
     >
-      <div className="max-w-2xl mx-auto w-full space-y-8">
-        {/* Furnished Toggle - Show for all listing types, early in the form */}
-        <div className="p-4 bg-card rounded-xl border border-border space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-medium">🛋️ Furnished</p>
-              <p className="text-sm text-muted-foreground">Property comes with furniture</p>
-            </div>
-            <Switch checked={isFurnished} onCheckedChange={onFurnishedChange} />
-          </div>
-          {isFurnished && (
-            <div className="space-y-2">
-              <input
-                type="text"
-                value={furnishedDetails}
-                onChange={(e) => onFurnishedDetailsChange(e.target.value)}
-                placeholder="e.g., Fully furnished with bed, sofa, and kitchen appliances..."
-                maxLength={200}
-                className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground"
-              />
-              <p className="text-xs text-muted-foreground">
-                ℹ️ You'll be asked about specific appliances in a later step
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Room counters - Bedrooms, Bathrooms, Living Rooms */}
-        <div className="flex justify-center gap-8 flex-wrap">
-          <NumberPicker
-            label="Bedrooms"
-            value={bedroomsNum}
-            onChange={(v) => onBedroomsChange(v.toString())}
-            min={0}
-            max={20}
-          />
-          <NumberPicker
-            label="Bathrooms"
-            value={bathroomsNum}
-            onChange={(v) => onBathroomsChange(v.toString())}
-            min={1}
-            max={10}
-          />
-          <NumberPicker
-            label="Living Rooms"
-            value={livingRoomsNum}
-            onChange={(v) => onLivingRoomsChange(v.toString())}
-            min={0}
-            max={10}
-          />
-        </div>
-
-        {/* Area */}
-        <div className="flex flex-col items-center gap-2">
-          <Label className="text-sm font-medium text-muted-foreground">Living Area</Label>
-          <div className="flex items-center gap-2">
-            <input
-              type="number"
-              value={areaSqm}
-              onChange={(e) => onAreaChange(e.target.value)}
-              placeholder="65"
-              className="w-24 text-center text-2xl font-bold bg-transparent border-b-2 border-border focus:border-accent outline-none py-2"
+      <div className="max-w-2xl mx-auto w-full space-y-10">
+        {/* Section: Rooms */}
+        <section className="space-y-4">
+          <h3 className="text-lg font-semibold text-foreground">Rooms & Size</h3>
+          <div className="flex flex-wrap gap-3">
+            <CounterCard
+              label="Bedrooms"
+              icon={Bed}
+              value={bedroomsNum}
+              onChange={(v) => onBedroomsChange(v.toString())}
+              min={0}
+              max={20}
             />
-            <span className="text-xl text-muted-foreground">m²</span>
+            <CounterCard
+              label="Bathrooms"
+              icon={Bath}
+              value={bathroomsNum}
+              onChange={(v) => onBathroomsChange(v.toString())}
+              min={1}
+              max={10}
+            />
+            <CounterCard
+              label="Living Rooms"
+              icon={Sofa}
+              value={livingRoomsNum}
+              onChange={(v) => onLivingRoomsChange(v.toString())}
+              min={0}
+              max={10}
+            />
           </div>
-          <p className="text-xs text-muted-foreground text-center">
-            Internal living area only (excludes balcony, basement, storage)
-          </p>
-        </div>
 
-        {/* Description */}
-        <div className="space-y-2">
-          <Label className="text-sm font-medium">Description</Label>
+          {/* Area */}
+          <div className="p-4 rounded-xl border border-border bg-card">
+            <div className="flex items-center gap-2 mb-3">
+              <Square className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">Living Area</span>
+              <InfoTooltip content="Internal living area only. Excludes balcony, basement, and storage spaces." />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <input
+                type="number"
+                value={areaSqm}
+                onChange={(e) => onAreaChange(e.target.value)}
+                placeholder="65"
+                className="w-24 text-2xl font-semibold bg-transparent border-b-2 border-border focus:border-accent outline-none pb-1 tabular-nums"
+              />
+              <span className="text-lg text-muted-foreground">m²</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Section: Furnishing */}
+        <section className="space-y-4">
+          <h3 className="text-lg font-semibold text-foreground">Furnishing</h3>
+          <ToggleCard
+            icon={Armchair}
+            label="Furnished"
+            description="Property comes with furniture"
+            checked={isFurnished}
+            onCheckedChange={onFurnishedChange}
+            info="Includes essential furniture like beds, sofas, dining table. Specific appliances can be added in a later step."
+          >
+            <input
+              type="text"
+              value={furnishedDetails}
+              onChange={(e) => onFurnishedDetailsChange(e.target.value)}
+              placeholder="e.g., Fully furnished with bed, sofa, and kitchen appliances..."
+              maxLength={200}
+              className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground focus:border-accent focus:outline-none"
+            />
+          </ToggleCard>
+        </section>
+
+        {/* Section: Description */}
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-foreground">Description</h3>
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {description.length} / 5000
+            </span>
+          </div>
           <Textarea
             value={description}
             onChange={(e) => onDescriptionChange(e.target.value)}
@@ -201,91 +276,70 @@ export function DetailsStep({
             rows={4}
             className="resize-none text-base"
           />
-          <p className="text-xs text-muted-foreground text-right">
-            {description.length} / 5000 characters
-          </p>
-        </div>
+        </section>
 
-        {/* Rental-specific fields */}
+        {/* Section: Rental Terms (only for rentals) */}
         {isRental && (
-          <div className="space-y-6 pt-4 border-t border-border">
-            {/* Move-in Immediately Toggle */}
-            <div className="flex items-center justify-between p-4 bg-card rounded-xl border border-border">
-              <div>
-                <p className="font-medium">📅 Available Immediately</p>
-                <p className="text-sm text-muted-foreground">Ready for move-in now</p>
-              </div>
-              <Switch 
-                checked={moveInImmediately} 
-                onCheckedChange={(checked) => {
-                  onMoveInImmediatelyChange(checked);
-                  if (checked) {
-                    onAvailableFromChange('');
-                  }
-                }} 
-              />
-            </div>
+          <section className="space-y-4">
+            <h3 className="text-lg font-semibold text-foreground">Availability</h3>
+            
+            <ToggleCard
+              icon={Calendar}
+              label="Available Immediately"
+              description="Ready for move-in now"
+              checked={moveInImmediately}
+              onCheckedChange={(checked) => {
+                onMoveInImmediatelyChange(checked);
+                if (checked) {
+                  onAvailableFromChange('');
+                }
+              }}
+            />
 
-            {/* Dates - Only show specific date if not immediately */}
-            {!moveInImmediately && (
-              <div className="grid sm:grid-cols-2 gap-4">
+            {/* Date pickers */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              {!moveInImmediately && (
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Move-in Date</Label>
-                  <input
-                    type="date"
-                    value={availableFrom}
-                    onChange={(e) => onAvailableFromChange(e.target.value)}
-                    className="w-full h-12 px-4 rounded-lg border border-border bg-background"
+                  <Label className="text-sm font-medium text-muted-foreground">Move-in Date</Label>
+                  <DatePicker
+                    value={availableFromDate}
+                    onChange={handleAvailableFromChange}
+                    placeholder="Select move-in date"
+                    minDate={new Date()}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">End Date (optional)</Label>
-                  <input
-                    type="date"
-                    value={availableUntil}
-                    min={availableFrom || undefined}
-                    onChange={(e) => onAvailableUntilChange(e.target.value)}
-                    className="w-full h-12 px-4 rounded-lg border border-border bg-background"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* End date for immediate availability */}
-            {moveInImmediately && (
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">End Date (optional)</Label>
-                <input
-                  type="date"
-                  value={availableUntil}
-                  onChange={(e) => onAvailableUntilChange(e.target.value)}
-                  className="w-full h-12 px-4 rounded-lg border border-border bg-background max-w-xs"
+              )}
+              <div className={cn("space-y-2", moveInImmediately && "sm:col-span-2 max-w-xs")}>
+                <Label className="text-sm font-medium text-muted-foreground">End Date (optional)</Label>
+                <DatePicker
+                  value={availableUntilDate}
+                  onChange={handleAvailableUntilChange}
+                  placeholder="Open ended"
+                  minDate={availableFromDate || new Date()}
                 />
                 <p className="text-xs text-muted-foreground">Leave empty for ongoing rental</p>
               </div>
-            )}
-
-            {/* Pets Toggle - Only for rentals */}
-            <div className="p-4 bg-card rounded-xl border border-border space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium">🐕 Pets Allowed</p>
-                  <p className="text-sm text-muted-foreground">Tenants can have pets</p>
-                </div>
-                <Switch checked={allowsPets} onCheckedChange={onPetsChange} />
-              </div>
-              {allowsPets && (
-                <input
-                  type="text"
-                  value={petsDetails}
-                  onChange={(e) => onPetsDetailsChange(e.target.value)}
-                  placeholder="e.g., Cats and small dogs welcome, no exotic pets..."
-                  maxLength={200}
-                  className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground"
-                />
-              )}
             </div>
-          </div>
+
+            {/* Pets */}
+            <ToggleCard
+              icon={PawPrint}
+              label="Pets Allowed"
+              description="Tenants can have pets"
+              checked={allowsPets}
+              onCheckedChange={onPetsChange}
+              info="Specify any restrictions on pet types, sizes, or number of pets allowed."
+            >
+              <input
+                type="text"
+                value={petsDetails}
+                onChange={(e) => onPetsDetailsChange(e.target.value)}
+                placeholder="e.g., Cats and small dogs welcome, no exotic pets..."
+                maxLength={200}
+                className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground focus:border-accent focus:outline-none"
+              />
+            </ToggleCard>
+          </section>
         )}
       </div>
     </WizardStepWrapper>
