@@ -192,8 +192,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
         const el = document.createElement('div');
         el.textContent = formatPrice(listing.price, listing.currency || 'EUR', { 
           isRental: listing.listing_type === 'rent', 
-          showPeriod: listing.listing_type === 'rent',
-          compact: true 
+          showPeriod: listing.listing_type === 'rent'
         });
         el.style.cssText = `
           background: hsl(0, 0%, 100%);
