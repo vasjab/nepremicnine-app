@@ -739,32 +739,6 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           {t('common.findHome')}
         </h1>
 
-        {/* Owner filter toggle - only show for logged in users */}
-        {userId && (
-          <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1">
-            {OWNER_FILTERS.map((filter) => {
-              const isSelected = (filters.owner_filter || 'all') === filter.value;
-              const Icon = filter.icon;
-              return (
-                <button
-                  key={filter.value}
-                  type="button"
-                  onClick={() => handleOwnerFilterChange(filter.value)}
-                  className={cn(
-                    "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap",
-                    isSelected 
-                      ? 'bg-foreground text-background' 
-                      : 'bg-secondary text-foreground hover:bg-secondary/80'
-                  )}
-                >
-                  <Icon className="h-4 w-4" />
-                  {filter.label}
-                </button>
-              );
-            })}
-          </div>
-        )}
-
         {/* Search input + Filter button inline */}
         <div className="flex items-center gap-3">
           <form onSubmit={handleSearch} className="relative flex-1">
