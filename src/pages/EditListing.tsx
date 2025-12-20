@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Eye } from 'lucide-react';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { useListing, useUpdateListing } from '@/hooks/useListings';
@@ -27,6 +27,8 @@ import { ImageUploader } from '@/components/ImageUploader';
 import { useImageUpload, type UploadedImage } from '@/hooks/useImageUpload';
 import { cn } from '@/lib/utils';
 import { CURRENCIES, CURRENCY_SYMBOLS, type Currency } from '@/lib/exchangeRates';
+import { ListingPreviewModal } from '@/components/ListingPreviewModal';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Validation schema for listing data
 const listingSchema = z.object({
@@ -127,10 +129,14 @@ export default function EditListing() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const updateListing = useUpdateListing();
   const { data: listing, isLoading, error } = useListing(id);
   const firstErrorRef = useRef<HTMLDivElement>(null);
   const [isFormInitialized, setIsFormInitialized] = useState(false);
+
+  // Preview modal state
+  const [showPreview, setShowPreview] = useState(false);
 
   // Image upload hook
   const {
@@ -1254,13 +1260,21 @@ export default function EditListing() {
             </div>
 
             {/* Submit */}
-            <div className="flex justify-end gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-4 pt-4">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => navigate('/my-listings')}
               >
                 Cancel
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setShowPreview(true)}
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                {t('preview.previewButton')}
               </Button>
               <Button
                 type="submit"
@@ -1279,6 +1293,15 @@ export default function EditListing() {
           </form>
         </div>
       </main>
+
+      {/* Preview Modal */}
+      <ListingPreviewModal
+        formData={formData}
+        uploadedImages={uploadedImages}
+        coordinates={manualCoordinates || coordinates}
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+      />
     </div>
   );
 }

@@ -384,6 +384,14 @@ const translations = {
       rooms: 'rooms',
       room: 'room',
     },
+    preview: {
+      title: 'Preview Mode',
+      description: 'This is how your listing will appear to others',
+      safeMessage: 'Your changes are preserved when you close this preview',
+      closeButton: 'Close Preview',
+      previewButton: 'Preview Listing',
+      actionsDisabled: 'Actions are disabled in preview mode',
+    },
   },
   sl: {
     common: {
@@ -762,6 +770,14 @@ const translations = {
       forSale: 'Naprodaj',
       rooms: 'sob',
       room: 'soba',
+    },
+    preview: {
+      title: 'Način predogleda',
+      description: 'Tako bo vaš oglas videti drugim',
+      safeMessage: 'Vaše spremembe so ohranjene, ko zaprete ta predogled',
+      closeButton: 'Zapri predogled',
+      previewButton: 'Predogled oglasa',
+      actionsDisabled: 'Dejanja so onemogočena v načinu predogleda',
     },
   },
 } as const;
