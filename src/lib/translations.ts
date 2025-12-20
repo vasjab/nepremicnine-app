@@ -722,6 +722,11 @@ const translations = {
       daysListed: 'Dni objavljeno',
       inquiries: 'Povpraševanj',
       hotListing: 'Vroča ponudba!',
+      sold: 'Prodano',
+      rented: 'Oddano',
+      soldFor: 'Prodano za',
+      rentedFor: 'Oddano za',
+      noLongerAvailable: 'Ta oglas ni več na voljo',
     },
     auth: {
       createAccount: 'Ustvari račun',
@@ -837,14 +842,6 @@ const translations = {
       noSoldYet: 'Še ni prodanih nepremičnin',
       noRentedYet: 'Še ni oddanih nepremičnin',
       noListingsDesc: 'Preverite pozneje za zaključene transakcije.',
-    },
-    listing: {
-      sold: 'Prodano',
-      rented: 'Oddano',
-      soldFor: 'Prodano za',
-      rentedFor: 'Oddano za',
-      noLongerAvailable: 'Ta oglas ni več na voljo',
-      noImage: 'Ni slike',
     },
     createListing: {
       title: 'Ustvari nov oglas',
