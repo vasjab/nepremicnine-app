@@ -182,14 +182,14 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           <>
             <button
               type="button"
-              className="absolute left-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full glass flex items-center justify-center shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 hover:scale-105 active:scale-95 z-10"
+              className="absolute left-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full glass flex items-center justify-center shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 active:scale-95 z-10"
               onClick={handlePrevImage}
             >
               <ChevronLeft className="h-5 w-5 text-foreground" />
             </button>
             <button
               type="button"
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full glass flex items-center justify-center shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 hover:scale-105 active:scale-95 z-10"
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full glass flex items-center justify-center shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 active:scale-95 z-10"
               onClick={handleNextImage}
             >
               <ChevronRight className="h-5 w-5 text-foreground" />
@@ -226,7 +226,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               <button
                 type="button"
                 className={cn(
-                  'absolute top-3 right-3 h-10 w-10 rounded-full glass flex items-center justify-center shadow-md z-10 transition-all duration-200 active:scale-90',
+                  'absolute top-3 right-3 h-10 w-10 rounded-full glass flex items-center justify-center shadow-md z-10 transition-all duration-200 active:scale-90 hover:bg-card/95',
                   isSaved && 'text-accent',
                   isSoldOrRented && showStatusOverlay && 'opacity-60'
                 )}
