@@ -112,11 +112,27 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
   // Format listing date - show relative for recent, absolute for older
   const listingDate = listing.created_at ? new Date(listing.created_at) : null;
   const daysAgo = listingDate ? differenceInDays(new Date(), listingDate) : 0;
-  const formattedDate = listingDate 
+  const formattedCreatedDate = listingDate 
     ? daysAgo <= 30 
       ? formatDistanceToNow(listingDate, { addSuffix: true })
       : format(listingDate, 'MMM d, yyyy')
     : null;
+
+  // Format completed date for sold/rented listings
+  const isCompleted = listing.status === 'sold' || listing.status === 'rented';
+  const completedDate = listing.completed_at ? new Date(listing.completed_at) : null;
+  const completedDaysAgo = completedDate ? differenceInDays(new Date(), completedDate) : 0;
+  const statusLabel = listing.status === 'sold' ? t('listing.sold') : t('listing.rented');
+  const formattedCompletedDate = completedDate 
+    ? completedDaysAgo <= 30 
+      ? `${statusLabel} ${formatDistanceToNow(completedDate, { addSuffix: true }).replace('about ', '')}`
+      : `${statusLabel} ${format(completedDate, 'MMM d, yyyy')}`
+    : null;
+
+  // Use completed date for sold/rented, otherwise use created date
+  const formattedDate = isCompleted && showStatusOverlay && formattedCompletedDate 
+    ? formattedCompletedDate 
+    : formattedCreatedDate;
 
   return (
     <article

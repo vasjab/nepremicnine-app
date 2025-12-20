@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import { X, Heart, MapPin, Bed, Bath, Square, Calendar, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink } from 'lucide-react';
+import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
+import { X, Heart, MapPin, Bed, Bath, Square, Calendar, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink, CheckCircle } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -97,6 +98,17 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
       day: 'numeric',
     });
   };
+
+  // Format completed date for sold/rented listings
+  const isCompleted = listing.status === 'sold' || listing.status === 'rented';
+  const completedDate = listing.completed_at ? new Date(listing.completed_at) : null;
+  const completedDaysAgo = completedDate ? differenceInDays(new Date(), completedDate) : 0;
+  const statusLabel = listing.status === 'sold' ? t('listing.sold') : t('listing.rented');
+  const formattedCompletedDate = completedDate 
+    ? completedDaysAgo <= 30 
+      ? formatDistanceToNow(completedDate, { addSuffix: true }).replace('about ', '')
+      : format(completedDate, 'MMM d, yyyy')
+    : null;
 
   if (!isOpen) return null;
 
@@ -347,11 +359,19 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
                   <p className="text-sm text-muted-foreground">{t('listing.area')}</p>
                   <p className="text-lg font-semibold text-foreground">{formatArea(listing.area_sqm)}</p>
                 </div>
-                <div className="bg-secondary rounded-xl p-4 hover:bg-secondary/80 transition-colors">
-                  <Calendar className="h-5 w-5 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">{t('listing.available')}</p>
-                  <p className="text-lg font-semibold text-foreground">{formatDate(listing.available_from)}</p>
-                </div>
+                {isCompleted && formattedCompletedDate ? (
+                  <div className="bg-secondary rounded-xl p-4 hover:bg-secondary/80 transition-colors">
+                    <CheckCircle className="h-5 w-5 text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">{statusLabel}</p>
+                    <p className="text-lg font-semibold text-foreground">{formattedCompletedDate}</p>
+                  </div>
+                ) : (
+                  <div className="bg-secondary rounded-xl p-4 hover:bg-secondary/80 transition-colors">
+                    <Calendar className="h-5 w-5 text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground">{t('listing.available')}</p>
+                    <p className="text-lg font-semibold text-foreground">{formatDate(listing.available_from)}</p>
+                  </div>
+                )}
               </div>
 
               {/* Description */}

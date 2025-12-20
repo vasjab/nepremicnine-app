@@ -272,13 +272,29 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
         // Format listing date for popup
         const popupListingDate = listing.created_at ? new Date(listing.created_at) : null;
         const popupDaysAgo = popupListingDate ? differenceInDays(new Date(), popupListingDate) : 0;
-        const popupFormattedDate = popupListingDate 
+        const popupCreatedDate = popupListingDate 
           ? popupDaysAgo <= 30 
             ? formatDistanceToNow(popupListingDate, { addSuffix: true })
             : format(popupListingDate, 'MMM d, yyyy')
           : null;
 
-        const dotsHtml = hasMultipleImages 
+        // Format completed date for sold/rented listings
+        const isCompleted = listing.status === 'sold' || listing.status === 'rented';
+        const completedDate = listing.completed_at ? new Date(listing.completed_at) : null;
+        const completedDaysAgo = completedDate ? differenceInDays(new Date(), completedDate) : 0;
+        const statusLabel = listing.status === 'sold' ? t('listing.sold') : t('listing.rented');
+        const popupCompletedDate = completedDate 
+          ? completedDaysAgo <= 30 
+            ? `${statusLabel} ${formatDistanceToNow(completedDate, { addSuffix: true }).replace('about ', '')}`
+            : `${statusLabel} ${format(completedDate, 'MMM d, yyyy')}`
+          : null;
+
+        // Use completed date for sold/rented, otherwise use created date
+        const popupFormattedDate = isCompleted && popupCompletedDate 
+          ? popupCompletedDate 
+          : popupCreatedDate;
+
+        const dotsHtml = hasMultipleImages
           ? `<div class="popup-dots-${listing.id}" style="position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; z-index: 10;">
               ${images.map((_, i) => `<span class="popup-dot-${listing.id}" data-index="${i}" style="width: 6px; height: 6px; border-radius: 50%; background: ${i === 0 ? 'white' : 'rgba(255,255,255,0.6)'}; cursor: pointer; transition: all 0.2s;"></span>`).join('')}
             </div>`
