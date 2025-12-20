@@ -70,11 +70,9 @@ export function useMessageNotifications() {
 
           if (!isParticipant) return;
 
-          // Get sender profile
+          // Get sender profile using secure RPC
           const { data: senderProfile } = await supabase
-            .from('profiles')
-            .select('full_name')
-            .eq('user_id', newMessage.sender_id)
+            .rpc('get_profile_for_viewer', { p_profile_user_id: newMessage.sender_id })
             .single();
 
           const senderName = senderProfile?.full_name || 'Someone';
