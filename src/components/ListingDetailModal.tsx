@@ -157,27 +157,21 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
             isSaved && 'fill-current animate-heart-beat'
           )} />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className={cn(
-            'fixed top-4 right-4 z-50 h-10 w-10 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card',
-            isSaved && 'text-accent'
-          )}
-          onClick={handleSaveClick}
-        >
-          <Heart className={cn('h-5 w-5', isSaved && 'fill-current')} />
-        </Button>
 
         {/* Image gallery preview */}
         <div 
           className={cn(
-            "relative h-[40vh] sm:h-[50vh] bg-muted cursor-pointer group select-none overflow-hidden",
+            "relative h-[40vh] sm:h-[50vh] bg-muted group select-none overflow-hidden",
             "transition-transform duration-500",
-            isAnimating && !isClosing ? "translate-y-0" : "translate-y-4"
+            isAnimating && !isClosing ? "translate-y-0" : "translate-y-4",
+            listing.images && listing.images.length > 0 && "cursor-pointer"
           )}
-          onClick={() => setShowGallery(true)}
-          {...swipeHandlers}
+          onClick={() => {
+            if (listing.images && listing.images.length > 0) {
+              setShowGallery(true);
+            }
+          }}
+          {...(listing.images && listing.images.length > 1 ? swipeHandlers : {})}
         >
           {listing.images && listing.images.length > 0 ? (
             <>
@@ -279,7 +273,7 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
             isAnimating && !isClosing ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           )}>
             <div className="flex flex-row gap-3">
-              {listing.floor_plan_url && (
+              {((listing as any).floor_plan_urls?.length > 0 || listing.floor_plan_url) && (
                 <button
                   onClick={() => {
                     setScrollToFloorPlan(true);
@@ -296,21 +290,23 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
                   {t('listing.floorPlan')}
                 </button>
               )}
-              <button
-                onClick={() => {
-                  setScrollToFloorPlan(false);
-                  setShowGallery(true);
-                }}
-                className={cn(
-                  "flex items-center gap-2 px-5 py-3 bg-secondary border border-border rounded-xl",
-                  "text-sm font-medium text-foreground shadow-sm",
-                  "hover:bg-muted hover:scale-105 active:scale-95",
-                  "transition-all duration-200 touch-target"
-                )}
-              >
-                {listing.images.length} {t('listing.images')}
-                <ExternalLink className="h-4 w-4" />
-              </button>
+              {listing.images.length > 1 && (
+                <button
+                  onClick={() => {
+                    setScrollToFloorPlan(false);
+                    setShowGallery(true);
+                  }}
+                  className={cn(
+                    "flex items-center gap-2 px-5 py-3 bg-secondary border border-border rounded-xl",
+                    "text-sm font-medium text-foreground shadow-sm",
+                    "hover:bg-muted hover:scale-105 active:scale-95",
+                    "transition-all duration-200 touch-target"
+                  )}
+                >
+                  {listing.images.length} {t('listing.images')}
+                  <ExternalLink className="h-4 w-4" />
+                </button>
+              )}
             </div>
           </div>
         )}
