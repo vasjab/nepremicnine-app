@@ -162,7 +162,7 @@ const Index = () => {
         {/* Mobile view - only on small screens */}
         <div className="lg:hidden w-full flex flex-col flex-1 min-h-0 overflow-hidden">
           {mobileView === 'list' ? (
-            <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div key="list-view" className="flex flex-col flex-1 min-h-0 overflow-hidden animate-fade-in">
               {/* For Rent / For Sale Tabs */}
               <div className="px-4 pt-4 pb-0">
                 <div className="flex bg-secondary rounded-xl p-1 gap-1">
@@ -278,7 +278,7 @@ const Index = () => {
               </div>
             </div>
           ) : (
-            <div className="flex-1 h-full min-h-0 relative">
+            <div key="map-view" className="flex-1 h-full min-h-0 relative animate-fade-in">
               <MapView
                 listings={allListings || []}
                 activeListing={activeListingId}
