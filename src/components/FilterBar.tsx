@@ -1048,14 +1048,14 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
             </div>
 
             {/* Search input + Filter button inline */}
-            <div className="flex items-center gap-2">
-              <form onSubmit={handleSearch} className="relative flex-1 min-w-0">
+            <div className="flex items-center gap-2 w-full overflow-hidden">
+              <form onSubmit={handleSearch} className="relative flex-1 min-w-0 overflow-hidden">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
                 <Input
                   placeholder={t('nav.searchPlaceholder')}
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
-                  className="w-full pl-10 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0"
+                  className="w-full pl-10 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0 overflow-hidden"
                 />
                 {searchValue && (
                   <button
