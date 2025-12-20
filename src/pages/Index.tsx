@@ -236,8 +236,10 @@ const Index = () => {
   // Shared rent/sale tabs component
   const RentSaleTabs = ({ collapsed = false }: { collapsed?: boolean }) => (
     <div className={cn(
-      "px-4 pt-4 pb-0 transition-all duration-300 ease-out overflow-hidden",
-      collapsed ? "h-0 pt-0 opacity-0" : "h-auto opacity-100"
+      "px-4 pt-4 pb-0 transition-all duration-300 ease-out overflow-hidden origin-top",
+      collapsed 
+        ? "max-h-0 pt-0 opacity-0 scale-y-0 -translate-y-1" 
+        : "max-h-20 opacity-100 scale-y-100 translate-y-0"
     )}>
       <div className="flex bg-secondary rounded-xl p-1 gap-1">
         <button

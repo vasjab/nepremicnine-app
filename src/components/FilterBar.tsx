@@ -967,8 +967,10 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
       <div className="p-4">
         {/* Collapsible Title & Search Section */}
         <div className={cn(
-          "transition-all duration-300 ease-out",
-          isCollapsed ? "h-0 opacity-0 overflow-hidden mb-0" : "h-auto opacity-100"
+          "transition-all duration-300 ease-out origin-top",
+          isCollapsed 
+            ? "max-h-0 opacity-0 overflow-hidden mb-0 scale-y-0 -translate-y-2" 
+            : "max-h-[500px] opacity-100 scale-y-100 translate-y-0"
         )}>
           {/* Title */}
           <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">
