@@ -156,20 +156,22 @@ export function ListingDetailContent({
 
   return (
     <>
-      {/* Back button - fixed to top left corner */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className={cn(
-          "fixed top-4 left-4 z-50 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm",
-          "hover:bg-card hover:scale-105 active:scale-95",
-          "shadow-lg transition-all duration-200",
-          "touch-target"
-        )}
-        onClick={onClose}
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Button>
+      {/* Back button - only render here for non-modal view (modal has its own fixed button) */}
+      {!isModal && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "fixed top-4 left-4 z-50 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm",
+            "hover:bg-card hover:scale-105 active:scale-95",
+            "shadow-lg transition-all duration-200",
+            "touch-target"
+          )}
+          onClick={onClose}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+      )}
 
       {/* Image gallery preview */}
       <div 
