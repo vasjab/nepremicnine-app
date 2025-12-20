@@ -968,9 +968,24 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     activeFeaturesCount,
   };
 
-  const totalActiveFilters = activeOutdoorCount + activeParkingCount + activeBuildingAmenitiesCount + 
-    activeEnergyCount + activeEquipmentCount + activeAccessibilityCount + activeSafetyCount + 
-    activeAvailabilityCount + activeFeaturesCount;
+  const coreActiveFiltersCount =
+    (filters.listing_type ? 1 : 0) +
+    (filters.property_types?.length ?? 0) +
+    (filters.min_bedrooms ? 1 : 0) +
+    (filters.min_price != null || filters.max_price != null ? 1 : 0) +
+    (filters.min_area != null || filters.max_area != null ? 1 : 0);
+
+  const totalActiveFilters =
+    coreActiveFiltersCount +
+    activeOutdoorCount +
+    activeParkingCount +
+    activeBuildingAmenitiesCount +
+    activeEnergyCount +
+    activeEquipmentCount +
+    activeAccessibilityCount +
+    activeSafetyCount +
+    activeAvailabilityCount +
+    activeFeaturesCount;
 
   return (
     <div className="bg-background border-b border-border/50">
