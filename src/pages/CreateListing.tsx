@@ -107,11 +107,14 @@ export default function CreateListing() {
     has_garage: false,
     has_carport: false,
     has_ev_charging: false,
+    ev_charger_power: '',
     has_bicycle_storage: false,
+    has_stroller_storage: false,
     has_storage: false,
     has_basement: false,
     // Building amenities
     has_elevator: false,
+    elevator_condition: '',
     has_shared_laundry: false,
     has_gym: false,
     has_sauna: false,
@@ -119,15 +122,19 @@ export default function CreateListing() {
     has_common_room: false,
     has_concierge: false,
     has_security: false,
+    has_alarm_system: false,
+    has_cctv: false,
     // Climate & Comfort
     has_fireplace: false,
     has_floor_heating: false,
+    has_floor_cooling: false,
     has_air_conditioning: false,
     ac_type: '',
     ac_unit_count: '',
     has_ventilation: false,
     has_heat_recovery_ventilation: false,
     has_solar_panels: false,
+    has_home_battery: false,
     // Equipment
     has_dishwasher: false,
     has_washing_machine: false,
@@ -137,6 +144,8 @@ export default function CreateListing() {
     has_large_windows: false,
     has_smart_home: false,
     has_built_in_wardrobes: false,
+    has_window_shades: false,
+    has_electric_shades: false,
     orientation: '',
     // Accessibility
     has_step_free_access: false,
@@ -279,11 +288,14 @@ export default function CreateListing() {
         has_garage: draftListing.has_garage || false,
         has_carport: (draftListing as any).has_carport || false,
         has_ev_charging: (draftListing as any).has_ev_charging || false,
+        ev_charger_power: (draftListing as any).ev_charger_power || '',
         has_bicycle_storage: (draftListing as any).has_bicycle_storage || false,
+        has_stroller_storage: (draftListing as any).has_stroller_storage || false,
         has_storage: draftListing.has_storage || false,
         has_basement: (draftListing as any).has_basement || false,
         // Building amenities
         has_elevator: draftListing.has_elevator || false,
+        elevator_condition: (draftListing as any).elevator_condition || '',
         has_shared_laundry: (draftListing as any).has_shared_laundry || false,
         has_gym: (draftListing as any).has_gym || false,
         has_sauna: (draftListing as any).has_sauna || false,
@@ -291,15 +303,19 @@ export default function CreateListing() {
         has_common_room: (draftListing as any).has_common_room || false,
         has_concierge: (draftListing as any).has_concierge || false,
         has_security: (draftListing as any).has_security || false,
+        has_alarm_system: (draftListing as any).has_alarm_system || false,
+        has_cctv: (draftListing as any).has_cctv || false,
         // Climate & Comfort
         has_fireplace: (draftListing as any).has_fireplace || false,
         has_floor_heating: (draftListing as any).has_floor_heating || false,
+        has_floor_cooling: (draftListing as any).has_floor_cooling || false,
         has_air_conditioning: draftListing.has_air_conditioning || false,
         ac_type: (draftListing as any).ac_type || '',
         ac_unit_count: (draftListing as any).ac_unit_count?.toString() || '',
         has_ventilation: (draftListing as any).has_ventilation || false,
         has_heat_recovery_ventilation: (draftListing as any).has_heat_recovery_ventilation || false,
         has_solar_panels: (draftListing as any).has_solar_panels || false,
+        has_home_battery: (draftListing as any).has_home_battery || false,
         // Equipment
         has_dishwasher: draftListing.has_dishwasher || false,
         has_washing_machine: draftListing.has_washing_machine || false,
@@ -309,6 +325,8 @@ export default function CreateListing() {
         has_large_windows: (draftListing as any).has_large_windows || false,
         has_smart_home: (draftListing as any).has_smart_home || false,
         has_built_in_wardrobes: (draftListing as any).has_built_in_wardrobes || false,
+        has_window_shades: (draftListing as any).has_window_shades || false,
+        has_electric_shades: (draftListing as any).has_electric_shades || false,
         orientation: (draftListing as any).orientation || '',
         // Accessibility
         has_step_free_access: (draftListing as any).has_step_free_access || false,
@@ -794,7 +812,9 @@ export default function CreateListing() {
             hasGarage={formData.has_garage}
             hasCarport={formData.has_carport}
             hasEvCharging={formData.has_ev_charging}
+            evChargerPower={formData.ev_charger_power}
             hasBicycleStorage={formData.has_bicycle_storage}
+            hasStrollerStorage={formData.has_stroller_storage}
             hasStorage={formData.has_storage}
             hasBasement={formData.has_basement}
             onFeatureToggle={(f, v) => handleChange(f, v)}
@@ -805,6 +825,7 @@ export default function CreateListing() {
         return (
           <BuildingAmenitiesStep
             hasElevator={formData.has_elevator}
+            elevatorCondition={formData.elevator_condition}
             hasSharedLaundry={formData.has_shared_laundry}
             hasGym={formData.has_gym}
             hasSauna={formData.has_sauna}
@@ -812,7 +833,10 @@ export default function CreateListing() {
             hasCommonRoom={formData.has_common_room}
             hasConcierge={formData.has_concierge}
             hasSecurity={formData.has_security}
+            hasAlarmSystem={formData.has_alarm_system}
+            hasCctv={formData.has_cctv}
             onFeatureToggle={(f, v) => handleChange(f, v)}
+            onChange={handleChange}
           />
         );
       case 'climate_appliances':
@@ -820,12 +844,14 @@ export default function CreateListing() {
           <ClimateAppliancesStep
             hasFireplace={formData.has_fireplace}
             hasFloorHeating={formData.has_floor_heating}
+            hasFloorCooling={formData.has_floor_cooling}
             hasAirConditioning={formData.has_air_conditioning}
             acType={formData.ac_type}
             acUnitCount={formData.ac_unit_count}
             hasVentilation={formData.has_ventilation}
             hasHeatRecoveryVentilation={formData.has_heat_recovery_ventilation}
             hasSolarPanels={formData.has_solar_panels}
+            hasHomeBattery={formData.has_home_battery}
             hasDishwasher={formData.has_dishwasher}
             hasWashingMachine={formData.has_washing_machine}
             hasDryer={formData.has_dryer}
@@ -841,6 +867,8 @@ export default function CreateListing() {
             hasLargeWindows={formData.has_large_windows}
             hasSmartHome={formData.has_smart_home}
             hasBuiltInWardrobes={formData.has_built_in_wardrobes}
+            hasWindowShades={formData.has_window_shades}
+            hasElectricShades={formData.has_electric_shades}
             orientation={formData.orientation}
             hasStepFreeAccess={formData.has_step_free_access}
             hasWheelchairAccessible={formData.has_wheelchair_accessible}

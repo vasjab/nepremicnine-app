@@ -100,29 +100,35 @@ export type Database = {
           current_step: number | null
           deposit_amount: number | null
           description: string | null
+          elevator_condition: string | null
           energy_rating: string | null
+          ev_charger_power: string | null
           floor_number: number | null
           floor_plan_url: string | null
           floor_plan_urls: string[] | null
           furnished_details: string | null
           garden_sqm: number | null
           has_air_conditioning: boolean | null
+          has_alarm_system: boolean | null
           has_balcony: boolean | null
           has_basement: boolean | null
           has_bbq_area: boolean | null
           has_bicycle_storage: boolean | null
           has_built_in_wardrobes: boolean | null
           has_carport: boolean | null
+          has_cctv: boolean | null
           has_common_room: boolean | null
           has_concierge: boolean | null
           has_dishwasher: boolean | null
           has_district_heating: boolean | null
           has_dryer: boolean | null
+          has_electric_shades: boolean | null
           has_elevator: boolean | null
           has_elevator_from_garage: boolean | null
           has_ev_charging: boolean | null
           has_fire_safety: boolean | null
           has_fireplace: boolean | null
+          has_floor_cooling: boolean | null
           has_floor_heating: boolean | null
           has_garage: boolean | null
           has_garden: boolean | null
@@ -132,6 +138,7 @@ export type Database = {
           has_heat_pump: boolean | null
           has_heat_recovery_ventilation: boolean | null
           has_high_ceilings: boolean | null
+          has_home_battery: boolean | null
           has_intercom: boolean | null
           has_large_windows: boolean | null
           has_parking: boolean | null
@@ -147,6 +154,7 @@ export type Database = {
           has_soundproofing: boolean | null
           has_step_free_access: boolean | null
           has_storage: boolean | null
+          has_stroller_storage: boolean | null
           has_terrace: boolean | null
           has_ventilation: boolean | null
           has_view: boolean | null
@@ -154,6 +162,7 @@ export type Database = {
           has_waterfront: boolean | null
           has_wheelchair_accessible: boolean | null
           has_wide_doorways: boolean | null
+          has_window_shades: boolean | null
           heating_type: string | null
           house_type: string | null
           id: string
@@ -207,29 +216,35 @@ export type Database = {
           current_step?: number | null
           deposit_amount?: number | null
           description?: string | null
+          elevator_condition?: string | null
           energy_rating?: string | null
+          ev_charger_power?: string | null
           floor_number?: number | null
           floor_plan_url?: string | null
           floor_plan_urls?: string[] | null
           furnished_details?: string | null
           garden_sqm?: number | null
           has_air_conditioning?: boolean | null
+          has_alarm_system?: boolean | null
           has_balcony?: boolean | null
           has_basement?: boolean | null
           has_bbq_area?: boolean | null
           has_bicycle_storage?: boolean | null
           has_built_in_wardrobes?: boolean | null
           has_carport?: boolean | null
+          has_cctv?: boolean | null
           has_common_room?: boolean | null
           has_concierge?: boolean | null
           has_dishwasher?: boolean | null
           has_district_heating?: boolean | null
           has_dryer?: boolean | null
+          has_electric_shades?: boolean | null
           has_elevator?: boolean | null
           has_elevator_from_garage?: boolean | null
           has_ev_charging?: boolean | null
           has_fire_safety?: boolean | null
           has_fireplace?: boolean | null
+          has_floor_cooling?: boolean | null
           has_floor_heating?: boolean | null
           has_garage?: boolean | null
           has_garden?: boolean | null
@@ -239,6 +254,7 @@ export type Database = {
           has_heat_pump?: boolean | null
           has_heat_recovery_ventilation?: boolean | null
           has_high_ceilings?: boolean | null
+          has_home_battery?: boolean | null
           has_intercom?: boolean | null
           has_large_windows?: boolean | null
           has_parking?: boolean | null
@@ -254,6 +270,7 @@ export type Database = {
           has_soundproofing?: boolean | null
           has_step_free_access?: boolean | null
           has_storage?: boolean | null
+          has_stroller_storage?: boolean | null
           has_terrace?: boolean | null
           has_ventilation?: boolean | null
           has_view?: boolean | null
@@ -261,6 +278,7 @@ export type Database = {
           has_waterfront?: boolean | null
           has_wheelchair_accessible?: boolean | null
           has_wide_doorways?: boolean | null
+          has_window_shades?: boolean | null
           heating_type?: string | null
           house_type?: string | null
           id?: string
@@ -314,29 +332,35 @@ export type Database = {
           current_step?: number | null
           deposit_amount?: number | null
           description?: string | null
+          elevator_condition?: string | null
           energy_rating?: string | null
+          ev_charger_power?: string | null
           floor_number?: number | null
           floor_plan_url?: string | null
           floor_plan_urls?: string[] | null
           furnished_details?: string | null
           garden_sqm?: number | null
           has_air_conditioning?: boolean | null
+          has_alarm_system?: boolean | null
           has_balcony?: boolean | null
           has_basement?: boolean | null
           has_bbq_area?: boolean | null
           has_bicycle_storage?: boolean | null
           has_built_in_wardrobes?: boolean | null
           has_carport?: boolean | null
+          has_cctv?: boolean | null
           has_common_room?: boolean | null
           has_concierge?: boolean | null
           has_dishwasher?: boolean | null
           has_district_heating?: boolean | null
           has_dryer?: boolean | null
+          has_electric_shades?: boolean | null
           has_elevator?: boolean | null
           has_elevator_from_garage?: boolean | null
           has_ev_charging?: boolean | null
           has_fire_safety?: boolean | null
           has_fireplace?: boolean | null
+          has_floor_cooling?: boolean | null
           has_floor_heating?: boolean | null
           has_garage?: boolean | null
           has_garden?: boolean | null
@@ -346,6 +370,7 @@ export type Database = {
           has_heat_pump?: boolean | null
           has_heat_recovery_ventilation?: boolean | null
           has_high_ceilings?: boolean | null
+          has_home_battery?: boolean | null
           has_intercom?: boolean | null
           has_large_windows?: boolean | null
           has_parking?: boolean | null
@@ -361,6 +386,7 @@ export type Database = {
           has_soundproofing?: boolean | null
           has_step_free_access?: boolean | null
           has_storage?: boolean | null
+          has_stroller_storage?: boolean | null
           has_terrace?: boolean | null
           has_ventilation?: boolean | null
           has_view?: boolean | null
@@ -368,6 +394,7 @@ export type Database = {
           has_waterfront?: boolean | null
           has_wheelchair_accessible?: boolean | null
           has_wide_doorways?: boolean | null
+          has_window_shades?: boolean | null
           heating_type?: string | null
           house_type?: string | null
           id?: string

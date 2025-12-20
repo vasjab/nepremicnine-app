@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { 
   Flame, 
   ThermometerSun, 
@@ -12,13 +13,16 @@ import {
   UtensilsCrossed,
   Shirt,
   RefreshCcw,
-  Snowflake
+  Snowflake,
+  Battery,
+  ThermometerSnowflake
 } from 'lucide-react';
 
 interface ClimateAppliancesStepProps {
   // Comfort Features
   hasFireplace: boolean;
   hasFloorHeating: boolean;
+  hasFloorCooling: boolean;
   // Cooling & Ventilation
   hasAirConditioning: boolean;
   acType: string;
@@ -27,6 +31,7 @@ interface ClimateAppliancesStepProps {
   hasHeatRecoveryVentilation: boolean;
   // Energy Systems
   hasSolarPanels: boolean;
+  hasHomeBattery: boolean;
   // Appliances (only shown when furnished)
   hasDishwasher: boolean;
   hasWashingMachine: boolean;
@@ -41,27 +46,30 @@ interface FeatureCard {
   id: string;
   label: string;
   icon: typeof Flame;
+  info: string;
 }
 
 const COOLING_FEATURES: FeatureCard[] = [
-  { id: 'has_air_conditioning', label: 'Air Conditioning', icon: Snowflake },
-  { id: 'has_ventilation', label: 'Ventilation', icon: Fan },
-  { id: 'has_heat_recovery_ventilation', label: 'Heat Recovery (HRV)', icon: RefreshCcw },
+  { id: 'has_air_conditioning', label: 'Air Conditioning', icon: Snowflake, info: 'Active cooling system for hot weather' },
+  { id: 'has_ventilation', label: 'Ventilation', icon: Fan, info: 'Mechanical exhaust ventilation system for continuous fresh air circulation' },
+  { id: 'has_heat_recovery_ventilation', label: 'Heat Recovery (HRV)', icon: RefreshCcw, info: 'Energy-efficient system that recovers heat from exhaust air to warm incoming fresh air, reducing heating costs by up to 90%' },
 ];
 
 const COMFORT_FEATURES: FeatureCard[] = [
-  { id: 'has_floor_heating', label: 'Floor Heating', icon: ThermometerSun },
-  { id: 'has_fireplace', label: 'Fireplace', icon: Flame },
+  { id: 'has_floor_heating', label: 'Floor Heating', icon: ThermometerSun, info: 'Radiant heating system under the floor for even warmth' },
+  { id: 'has_floor_cooling', label: 'Floor Cooling', icon: ThermometerSnowflake, info: 'Radiant cooling system under the floor for comfortable summer temperatures' },
+  { id: 'has_fireplace', label: 'Fireplace', icon: Flame, info: 'Wood-burning or gas fireplace for ambiance and additional heat' },
 ];
 
 const ENERGY_FEATURES: FeatureCard[] = [
-  { id: 'has_solar_panels', label: 'Solar Panels', icon: Sun },
+  { id: 'has_solar_panels', label: 'Solar Panels', icon: Sun, info: 'Photovoltaic panels that generate electricity from sunlight' },
+  { id: 'has_home_battery', label: 'Home Battery', icon: Battery, info: 'Battery storage system to store excess solar energy or off-peak electricity' },
 ];
 
 const APPLIANCE_FEATURES: FeatureCard[] = [
-  { id: 'has_dishwasher', label: 'Dishwasher', icon: UtensilsCrossed },
-  { id: 'has_washing_machine', label: 'Washing Machine', icon: Shirt },
-  { id: 'has_dryer', label: 'Dryer', icon: Wind },
+  { id: 'has_dishwasher', label: 'Dishwasher', icon: UtensilsCrossed, info: 'Built-in dishwasher included' },
+  { id: 'has_washing_machine', label: 'Washing Machine', icon: Shirt, info: 'In-unit washing machine included' },
+  { id: 'has_dryer', label: 'Dryer', icon: Wind, info: 'Tumble dryer or heat pump dryer included' },
 ];
 
 const AC_TYPES = [
@@ -72,12 +80,14 @@ const AC_TYPES = [
 export function ClimateAppliancesStep({
   hasFireplace,
   hasFloorHeating,
+  hasFloorCooling,
   hasAirConditioning,
   acType,
   acUnitCount,
   hasVentilation,
   hasHeatRecoveryVentilation,
   hasSolarPanels,
+  hasHomeBattery,
   hasDishwasher,
   hasWashingMachine,
   hasDryer,
@@ -95,10 +105,12 @@ export function ClimateAppliancesStep({
   const featureValues: Record<string, boolean> = {
     has_fireplace: hasFireplace,
     has_floor_heating: hasFloorHeating,
+    has_floor_cooling: hasFloorCooling,
     has_air_conditioning: hasAirConditioning,
     has_ventilation: hasVentilation,
     has_heat_recovery_ventilation: hasHeatRecoveryVentilation,
     has_solar_panels: hasSolarPanels,
+    has_home_battery: hasHomeBattery,
     ...applianceValues,
   };
 
@@ -109,7 +121,7 @@ export function ClimateAppliancesStep({
       "grid gap-3",
       columns === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3"
     )}>
-      {features.map(({ id, label, icon: Icon }) => {
+      {features.map(({ id, label, icon: Icon, info }) => {
         const isSelected = featureValues[id];
         return (
           <button
@@ -124,6 +136,11 @@ export function ClimateAppliancesStep({
                 : "border-border bg-card text-muted-foreground hover:border-accent/50"
             )}
           >
+            {/* Info tooltip in top-right */}
+            <div className="absolute top-1 right-1">
+              <InfoTooltip content={info} />
+            </div>
+            
             <div className={cn(
               "w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors",
               isSelected ? "bg-accent text-accent-foreground" : "bg-secondary"
@@ -133,7 +150,7 @@ export function ClimateAppliancesStep({
             <span className="text-sm font-medium text-center">{label}</span>
             
             {isSelected && (
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-accent rounded-full flex items-center justify-center">
+              <div className="absolute -top-1 -left-1 w-5 h-5 bg-accent rounded-full flex items-center justify-center">
                 <svg className="w-3 h-3 text-accent-foreground" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
                 </svg>
@@ -205,7 +222,7 @@ export function ClimateAppliancesStep({
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
             Comfort Features
           </h3>
-          {renderFeatureGrid(COMFORT_FEATURES, 2)}
+          {renderFeatureGrid(COMFORT_FEATURES)}
         </div>
 
         {/* Energy Systems Section */}
