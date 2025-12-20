@@ -999,9 +999,11 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           
           {/* Sort dropdown */}
           <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
-            <SelectTrigger className="shrink-0 w-auto h-10 px-3 text-sm bg-secondary border-0 rounded-xl">
+            <SelectTrigger className="shrink-0 w-auto max-w-[120px] h-10 px-3 text-sm bg-secondary border-0 rounded-xl">
               <ArrowUpDown className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
-              <SelectValue placeholder={t('filters.sortBy')} />
+              <span className="truncate">
+                <SelectValue placeholder={t('filters.sortBy')} />
+              </span>
             </SelectTrigger>
             <SelectContent className="bg-popover rounded-xl shadow-lg">
               <SelectItem value="newest">{t('filters.newest')}</SelectItem>
@@ -1017,7 +1019,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           {isMobile ? (
             <Drawer open={isOpen} onOpenChange={setIsOpen}>
               <DrawerTrigger asChild>
-                <Button className={`shrink-0 rounded-xl h-10 px-3 border-0 font-medium ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground'}`}>
+                <Button className={`shrink-0 rounded-xl h-10 px-3 border-0 font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
                   <SlidersHorizontal className="h-4 w-4 mr-2" />
                   Filters
                   {totalActiveFilters > 0 && (
@@ -1039,7 +1041,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           ) : (
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <DialogTrigger asChild>
-                <Button className={`shrink-0 rounded-xl h-10 px-3 border-0 font-medium ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground'}`}>
+                <Button className={`shrink-0 rounded-xl h-10 px-3 border-0 font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
                   <SlidersHorizontal className="h-4 w-4 mr-2" />
                   Filters
                   {totalActiveFilters > 0 && (
