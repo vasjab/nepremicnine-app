@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { List, MapIcon, X, Key, Banknote } from 'lucide-react';
+import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { Listing, ListingFilters, SortOption } from '@/types/listing';
 import { useListings } from '@/hooks/useListings';
 import { useMobileViewPreference } from '@/hooks/useMobileViewPreference';
@@ -30,6 +31,7 @@ const Index = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
   const { user } = useAuth();
+  const { trigger: haptic } = useHapticFeedback();
   const [filters, setFilters] = useState<ListingFilters>({});
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
@@ -302,7 +304,10 @@ const Index = () => {
                     'rounded-full px-4',
                     mobileView === 'list' && 'bg-accent text-accent-foreground',
                   )}
-                  onClick={() => setMobileView('list')}
+                  onClick={() => {
+                    haptic('medium');
+                    setMobileView('list');
+                  }}
                 >
                   <List className="h-4 w-4 mr-2" />
                   {t('map.list')}
@@ -314,7 +319,10 @@ const Index = () => {
                     'rounded-full px-4',
                     mobileView === 'map' && 'bg-accent text-accent-foreground',
                   )}
-                  onClick={() => setMobileView('map')}
+                  onClick={() => {
+                    haptic('medium');
+                    setMobileView('map');
+                  }}
                 >
                   <MapIcon className="h-4 w-4 mr-2" />
                   {t('map.map')}
