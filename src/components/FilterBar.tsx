@@ -1018,17 +1018,19 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           {/* Filters button */}
           {isMobile ? (
             <Drawer open={isOpen} onOpenChange={setIsOpen}>
-              <DrawerTrigger asChild>
-                <Button className={`shrink-0 rounded-xl h-10 px-3 border-0 font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
-                  <SlidersHorizontal className="h-4 w-4 mr-2" />
-                  Filters
-                  {totalActiveFilters > 0 && (
-                    <Badge className="ml-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-foreground text-background">
-                      {totalActiveFilters}
-                    </Badge>
-                  )}
-                </Button>
-              </DrawerTrigger>
+              <div className="relative shrink-0">
+                <DrawerTrigger asChild>
+                  <Button className={`rounded-xl h-10 px-3 border-0 font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                    <SlidersHorizontal className="h-4 w-4 mr-2" />
+                    Filters
+                  </Button>
+                </DrawerTrigger>
+                {totalActiveFilters > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 h-5 min-w-5 px-1.5 flex items-center justify-center text-xs font-semibold rounded-full bg-accent text-accent-foreground border-2 border-background pointer-events-none">
+                    {totalActiveFilters}
+                  </span>
+                )}
+              </div>
               <DrawerContent className="max-h-[85vh]">
                 <DrawerHeader className="pb-2">
                   <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
@@ -1040,17 +1042,19 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
             </Drawer>
           ) : (
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
-              <DialogTrigger asChild>
-                <Button className={`shrink-0 rounded-xl h-10 px-3 border-0 font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
-                  <SlidersHorizontal className="h-4 w-4 mr-2" />
-                  Filters
-                  {totalActiveFilters > 0 && (
-                    <Badge className="ml-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-foreground text-background">
-                      {totalActiveFilters}
-                    </Badge>
-                  )}
-                </Button>
-              </DialogTrigger>
+              <div className="relative shrink-0">
+                <DialogTrigger asChild>
+                  <Button className={`rounded-xl h-10 px-3 border-0 font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-muted-foreground hover:bg-muted hover:text-foreground'}`}>
+                    <SlidersHorizontal className="h-4 w-4 mr-2" />
+                    Filters
+                  </Button>
+                </DialogTrigger>
+                {totalActiveFilters > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 h-5 min-w-5 px-1.5 flex items-center justify-center text-xs font-semibold rounded-full bg-accent text-accent-foreground border-2 border-background pointer-events-none">
+                    {totalActiveFilters}
+                  </span>
+                )}
+              </div>
               <DialogContent className="sm:max-w-md max-h-[85vh] p-0 rounded-2xl">
                 <DialogHeader className="p-4 pb-2">
                   <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
