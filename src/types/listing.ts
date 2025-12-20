@@ -155,6 +155,7 @@ export interface ListingFilters {
   min_area?: number | null;
   max_area?: number | null;
   city?: string | null;
+  search?: string | null;
   
   // Feature filters
   is_furnished?: boolean | null;

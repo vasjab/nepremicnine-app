@@ -17,6 +17,7 @@ import { ListingPreviewModal } from '@/components/ListingPreviewModal';
 
 import { WizardProgress, type WizardStep } from '@/components/wizard/WizardProgress';
 import { WizardNavigation } from '@/components/wizard/WizardNavigation';
+import { ListingTypeStep } from '@/components/wizard/steps/ListingTypeStep';
 import { PropertyTypeStep } from '@/components/wizard/steps/PropertyTypeStep';
 import { HouseTypeStep } from '@/components/wizard/steps/HouseTypeStep';
 import { TitleStep } from '@/components/wizard/steps/TitleStep';
@@ -179,6 +180,7 @@ export default function CreateListing() {
   // Dynamic steps based on listing type and property type
   const getWizardSteps = (): WizardStep[] => {
     const steps: WizardStep[] = [
+      { id: 'listing_type', title: 'Purpose', emoji: '🏷️' },
       { id: 'type', title: 'Type', emoji: '🏠' },
     ];
     
@@ -388,6 +390,7 @@ export default function CreateListing() {
   const canProceed = (): boolean => {
     const stepId = WIZARD_STEPS[currentStep]?.id;
     switch (stepId) {
+      case 'listing_type': return !!formData.listing_type;
       case 'type': return !!formData.property_type;
       case 'house_type': return !!formData.house_type;
       case 'title': return formData.title.length >= 5;
@@ -655,14 +658,19 @@ export default function CreateListing() {
   const renderStep = () => {
     const stepId = WIZARD_STEPS[currentStep]?.id;
     switch (stepId) {
+      case 'listing_type':
+        return (
+          <ListingTypeStep
+            listingType={formData.listing_type}
+            onListingTypeChange={v => handleChange('listing_type', v)}
+          />
+        );
       case 'type':
         return (
           <PropertyTypeStep
             propertyType={formData.property_type}
-            listingType={formData.listing_type}
             propertyTypeOther={formData.property_type_other}
             onPropertyTypeChange={v => handleChange('property_type', v)}
-            onListingTypeChange={v => handleChange('listing_type', v)}
             onPropertyTypeOtherChange={v => handleChange('property_type_other', v)}
           />
         );

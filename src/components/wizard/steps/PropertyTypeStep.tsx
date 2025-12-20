@@ -5,14 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 type PropertyType = 'apartment' | 'house' | 'room' | 'studio' | 'villa' | 'summer_house' | 'other';
-type ListingType = 'rent' | 'sale';
 
 interface PropertyTypeStepProps {
   propertyType: PropertyType;
-  listingType: ListingType;
   propertyTypeOther: string;
   onPropertyTypeChange: (type: PropertyType) => void;
-  onListingTypeChange: (type: ListingType) => void;
   onPropertyTypeOtherChange: (value: string) => void;
 }
 
@@ -28,10 +25,8 @@ const PROPERTY_TYPES: { value: PropertyType; label: string; icon: typeof Buildin
 
 export function PropertyTypeStep({
   propertyType,
-  listingType,
   propertyTypeOther,
   onPropertyTypeChange,
-  onListingTypeChange,
   onPropertyTypeOtherChange,
 }: PropertyTypeStepProps) {
   return (
@@ -41,7 +36,7 @@ export function PropertyTypeStep({
       emoji="🏠"
     >
       {/* Property Type Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
         {PROPERTY_TYPES.map(({ value, label, icon: Icon, description }) => (
           <button
             key={value}
@@ -77,7 +72,7 @@ export function PropertyTypeStep({
 
       {/* Other property type input */}
       {propertyType === 'other' && (
-        <div className="mb-8 max-w-md mx-auto">
+        <div className="mt-6 max-w-md mx-auto">
           <Label htmlFor="property_type_other">Describe your property type</Label>
           <Input
             id="property_type_other"
@@ -88,34 +83,6 @@ export function PropertyTypeStep({
           />
         </div>
       )}
-
-      {/* Listing Type Toggle */}
-      <div className="flex justify-center">
-        <div className="inline-flex bg-secondary rounded-full p-1">
-          <button
-            onClick={() => onListingTypeChange('rent')}
-            className={cn(
-              "px-6 py-3 rounded-full font-medium transition-all duration-300",
-              listingType === 'rent'
-                ? "bg-foreground text-background shadow-md"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            🔑 For Rent
-          </button>
-          <button
-            onClick={() => onListingTypeChange('sale')}
-            className={cn(
-              "px-6 py-3 rounded-full font-medium transition-all duration-300",
-              listingType === 'sale'
-                ? "bg-foreground text-background shadow-md"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            💰 For Sale
-          </button>
-        </div>
-      </div>
     </WizardStepWrapper>
   );
 }

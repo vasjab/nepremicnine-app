@@ -641,7 +641,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   const { t } = useTranslation();
   const { formatPriceLabel, currencySymbol } = useFormattedPrice();
   const isMobile = useIsMobile();
-  const [searchValue, setSearchValue] = useState(filters.city || '');
+  const [searchValue, setSearchValue] = useState(filters.search || '');
   const [isOpen, setIsOpen] = useState(false);
   const [areaUnit, setAreaUnit] = useState<AreaUnit>('sqm');
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -707,9 +707,9 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     }
 
     debounceRef.current = setTimeout(() => {
-      const newCity = searchValue.trim() || null;
-      if (newCity !== filters.city) {
-        onFiltersChange({ ...filters, city: newCity });
+      const newSearch = searchValue.trim() || null;
+      if (newSearch !== filters.search) {
+        onFiltersChange({ ...filters, search: newSearch });
       }
     }, 400);
 
@@ -725,12 +725,12 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
-    onFiltersChange({ ...filters, city: searchValue.trim() || null });
+    onFiltersChange({ ...filters, search: searchValue.trim() || null });
   };
 
   const clearSearch = () => {
     setSearchValue('');
-    onFiltersChange({ ...filters, city: null });
+    onFiltersChange({ ...filters, search: null });
   };
 
   const handleListingTypeChange = (value: string) => {
@@ -966,7 +966,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           <form onSubmit={handleSearch} className="relative flex-1">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
             <Input
-              placeholder={t('filters.searchCity')}
+              placeholder={t('filters.searchPlaceholder') || 'Search by city, title, keywords...'}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               className="w-full pl-11 pr-10 h-12 text-sm bg-secondary border-0 rounded-xl focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0"
