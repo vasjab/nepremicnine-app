@@ -176,6 +176,13 @@ export default function CreateListing() {
     utility_cost_estimate: '',
     // Sale expenses
     monthly_expenses: '',
+    expense_breakdown_enabled: false,
+    expense_hoa_fees: '',
+    expense_maintenance: '',
+    expense_property_tax: '',
+    expense_utilities: '',
+    expense_insurance: '',
+    expense_other: '',
   });
 
   const [manualCoordinates, setManualCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -357,6 +364,13 @@ export default function CreateListing() {
         utility_cost_estimate: (draftListing as any).utility_cost_estimate?.toString() || '',
         // Sale expenses
         monthly_expenses: (draftListing as any).monthly_expenses?.toString() || '',
+        expense_breakdown_enabled: (draftListing as any).expense_breakdown_enabled || false,
+        expense_hoa_fees: (draftListing as any).expense_hoa_fees?.toString() || '',
+        expense_maintenance: (draftListing as any).expense_maintenance?.toString() || '',
+        expense_property_tax: (draftListing as any).expense_property_tax?.toString() || '',
+        expense_utilities: (draftListing as any).expense_utilities?.toString() || '',
+        expense_insurance: (draftListing as any).expense_insurance?.toString() || '',
+        expense_other: (draftListing as any).expense_other?.toString() || '',
       });
       
       // Set coordinates
@@ -525,11 +539,14 @@ export default function CreateListing() {
       has_garage: formData.has_garage,
       has_carport: formData.has_carport,
       has_ev_charging: formData.has_ev_charging,
+      ev_charger_power: formData.ev_charger_power || null,
       has_bicycle_storage: formData.has_bicycle_storage,
+      has_stroller_storage: formData.has_stroller_storage,
       has_storage: formData.has_storage,
       has_basement: formData.has_basement,
       // Building amenities
       has_elevator: formData.has_elevator,
+      elevator_condition: formData.elevator_condition || null,
       has_shared_laundry: formData.has_shared_laundry,
       has_gym: formData.has_gym,
       has_sauna: formData.has_sauna,
@@ -537,15 +554,19 @@ export default function CreateListing() {
       has_common_room: formData.has_common_room,
       has_concierge: formData.has_concierge,
       has_security: formData.has_security,
+      has_alarm_system: formData.has_alarm_system,
+      has_cctv: formData.has_cctv,
       // Climate & Comfort
       has_fireplace: formData.has_fireplace,
       has_floor_heating: formData.has_floor_heating,
+      has_floor_cooling: formData.has_floor_cooling,
       has_air_conditioning: formData.has_air_conditioning,
       ac_type: formData.ac_type || null,
       ac_unit_count: formData.ac_unit_count ? parseInt(formData.ac_unit_count) : null,
       has_ventilation: formData.has_ventilation,
       has_heat_recovery_ventilation: formData.has_heat_recovery_ventilation,
       has_solar_panels: formData.has_solar_panels,
+      has_home_battery: formData.has_home_battery,
       // Equipment
       has_dishwasher: formData.has_dishwasher,
       has_washing_machine: formData.has_washing_machine,
@@ -555,6 +576,8 @@ export default function CreateListing() {
       has_large_windows: formData.has_large_windows,
       has_smart_home: formData.has_smart_home,
       has_built_in_wardrobes: formData.has_built_in_wardrobes,
+      has_window_shades: formData.has_window_shades,
+      has_electric_shades: formData.has_electric_shades,
       orientation: formData.orientation || null,
       // Accessibility
       has_step_free_access: formData.has_step_free_access,
@@ -585,6 +608,13 @@ export default function CreateListing() {
       utility_cost_estimate: formData.utility_cost_estimate ? parseFloat(formData.utility_cost_estimate) : null,
       // Sale costs
       monthly_expenses: formData.monthly_expenses ? parseFloat(formData.monthly_expenses) : null,
+      expense_breakdown_enabled: formData.expense_breakdown_enabled,
+      expense_hoa_fees: formData.expense_hoa_fees ? parseFloat(formData.expense_hoa_fees) : null,
+      expense_maintenance: formData.expense_maintenance ? parseFloat(formData.expense_maintenance) : null,
+      expense_property_tax: formData.expense_property_tax ? parseFloat(formData.expense_property_tax) : null,
+      expense_utilities: formData.expense_utilities ? parseFloat(formData.expense_utilities) : null,
+      expense_insurance: formData.expense_insurance ? parseFloat(formData.expense_insurance) : null,
+      expense_other: formData.expense_other ? parseFloat(formData.expense_other) : null,
     };
   };
 
@@ -912,8 +942,16 @@ export default function CreateListing() {
         return (
           <SaleCostsStep
             monthlyExpenses={formData.monthly_expenses}
+            expenseBreakdownEnabled={formData.expense_breakdown_enabled}
+            expenseHoaFees={formData.expense_hoa_fees}
+            expenseMaintenance={formData.expense_maintenance}
+            expensePropertyTax={formData.expense_property_tax}
+            expenseUtilities={formData.expense_utilities}
+            expenseInsurance={formData.expense_insurance}
+            expenseOther={formData.expense_other}
             currency={formData.currency}
             onChange={handleChange}
+            onBreakdownToggle={(enabled) => handleChange('expense_breakdown_enabled', enabled)}
           />
         );
       case 'review':

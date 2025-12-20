@@ -103,6 +103,13 @@ export type Database = {
           elevator_condition: string | null
           energy_rating: string | null
           ev_charger_power: string | null
+          expense_breakdown_enabled: boolean | null
+          expense_hoa_fees: number | null
+          expense_insurance: number | null
+          expense_maintenance: number | null
+          expense_other: number | null
+          expense_property_tax: number | null
+          expense_utilities: number | null
           floor_number: number | null
           floor_plan_url: string | null
           floor_plan_urls: string[] | null
@@ -219,6 +226,13 @@ export type Database = {
           elevator_condition?: string | null
           energy_rating?: string | null
           ev_charger_power?: string | null
+          expense_breakdown_enabled?: boolean | null
+          expense_hoa_fees?: number | null
+          expense_insurance?: number | null
+          expense_maintenance?: number | null
+          expense_other?: number | null
+          expense_property_tax?: number | null
+          expense_utilities?: number | null
           floor_number?: number | null
           floor_plan_url?: string | null
           floor_plan_urls?: string[] | null
@@ -335,6 +349,13 @@ export type Database = {
           elevator_condition?: string | null
           energy_rating?: string | null
           ev_charger_power?: string | null
+          expense_breakdown_enabled?: boolean | null
+          expense_hoa_fees?: number | null
+          expense_insurance?: number | null
+          expense_maintenance?: number | null
+          expense_other?: number | null
+          expense_property_tax?: number | null
+          expense_utilities?: number | null
           floor_number?: number | null
           floor_plan_url?: string | null
           floor_plan_urls?: string[] | null
