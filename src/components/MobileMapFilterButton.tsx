@@ -47,6 +47,13 @@ const SIZE_CONFIG = {
   sqft: { min: 50, max: 2150, step: 50, label: 'ft²' },
 } as const;
 
+// Price per sqm range config (based on listing type)
+const PRICE_PER_SQM_CONFIG = {
+  rent: { min: 0, max: 100, step: 5 }, // 0-100€/m² for rentals
+  sale: { min: 0, max: 15000, step: 250 }, // 0-15k€/m² for sales
+  default: { min: 0, max: 5000, step: 100 },
+} as const;
+
 const SQM_TO_SQFT = 10.764;
 
 // Count active filters
@@ -58,6 +65,7 @@ export function getActiveFilterCount(filters: ListingFilters): number {
   if (filters.min_bedrooms) count++;
   if (filters.min_price || filters.max_price) count++;
   if (filters.min_area || filters.max_area) count++;
+  if (filters.min_price_per_sqm || filters.max_price_per_sqm) count++;
   if (filters.city) count++;
   if (filters.is_furnished) count++;
   if (filters.allows_pets) count++;
@@ -257,6 +265,30 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
     });
   };
 
+  const handlePricePerSqmRangeChange = (values: number[]) => {
+    const [min, max] = values;
+    const config = getPricePerSqmConfig();
+    onFiltersChange({
+      ...filters,
+      min_price_per_sqm: min === config.min ? null : min,
+      max_price_per_sqm: max === config.max ? null : max,
+    });
+  };
+
+  const getPricePerSqmConfig = () => {
+    if (filters.listing_type === 'rent') return PRICE_PER_SQM_CONFIG.rent;
+    if (filters.listing_type === 'sale') return PRICE_PER_SQM_CONFIG.sale;
+    return PRICE_PER_SQM_CONFIG.default;
+  };
+
+  const getPricePerSqmRangeValues = (): [number, number] => {
+    const config = getPricePerSqmConfig();
+    return [
+      filters.min_price_per_sqm ?? config.min,
+      filters.max_price_per_sqm ?? config.max,
+    ];
+  };
+
   const clearFilters = () => {
     onFiltersChange({});
   };
@@ -294,6 +326,8 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
 
   const priceRangeValues = getPriceRangeValues();
   const sizeRangeValues = getDisplayedSizeRange();
+  const pricePerSqmConfig = getPricePerSqmConfig();
+  const pricePerSqmRangeValues = getPricePerSqmRangeValues();
 
   return (
     <Drawer open={isOpen} onOpenChange={setIsOpen}>
@@ -440,6 +474,28 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
               <div className="flex justify-between text-sm text-muted-foreground px-1">
                 <span>{sizeRangeValues[0]} {sizeConfig.label}</span>
                 <span>{sizeRangeValues[1] >= sizeConfig.max ? `${sizeConfig.max}+ ${sizeConfig.label}` : `${sizeRangeValues[1]} ${sizeConfig.label}`}</span>
+              </div>
+            </div>
+
+            {/* Price per sqm/sqft Slider */}
+            <div className="space-y-4">
+              <Label className="text-sm font-medium">
+                {t('filters.pricePerArea') || 'Price per'} {areaUnit === 'sqft' ? 'ft²' : 'm²'}
+              </Label>
+              <div className="pt-2 px-2">
+                <Slider
+                  value={pricePerSqmRangeValues}
+                  min={pricePerSqmConfig.min}
+                  max={pricePerSqmConfig.max}
+                  step={pricePerSqmConfig.step}
+                  thumbCount={2}
+                  onValueChange={handlePricePerSqmRangeChange}
+                  className="touch-none"
+                />
+              </div>
+              <div className="flex justify-between text-sm text-muted-foreground px-1">
+                <span>{formatPriceLabelLocal(pricePerSqmRangeValues[0])}</span>
+                <span>{pricePerSqmRangeValues[1] >= pricePerSqmConfig.max ? `${formatPriceLabelLocal(pricePerSqmConfig.max)}+` : formatPriceLabelLocal(pricePerSqmRangeValues[1])}</span>
               </div>
             </div>
 

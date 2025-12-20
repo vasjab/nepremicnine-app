@@ -232,7 +232,22 @@ export function useListings(filters?: ListingFilters, userId?: string) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as Listing[];
+      
+      let listings = data as Listing[];
+      
+      // Client-side filter: price per sqm (computed field)
+      if (filters?.min_price_per_sqm || filters?.max_price_per_sqm) {
+        const minPerSqm = filters.min_price_per_sqm || 0;
+        const maxPerSqm = filters.max_price_per_sqm || Infinity;
+        
+        listings = listings.filter(listing => {
+          if (!listing.area_sqm || listing.area_sqm <= 0) return true; // Include if no area
+          const pricePerSqm = listing.price / listing.area_sqm;
+          return pricePerSqm >= minPerSqm && pricePerSqm <= maxPerSqm;
+        });
+      }
+      
+      return listings;
     },
   });
 }

@@ -238,6 +238,10 @@ export interface ListingFilters {
   max_lease_months?: number | null;
   internet_included?: string | null;
   utilities_included?: string | null;
+  
+  // Price per area filters
+  min_price_per_sqm?: number | null;
+  max_price_per_sqm?: number | null;
 }
 
 export type AreaUnit = 'sqm' | 'sqft';

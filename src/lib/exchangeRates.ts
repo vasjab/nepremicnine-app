@@ -96,7 +96,7 @@ export function convertCurrency(
 export function formatCurrencyValue(
   amount: number,
   currency: Currency,
-  options?: { compact?: boolean }
+  options?: { compact?: boolean; roundedFull?: boolean }
 ): string {
   const symbol = CURRENCY_SYMBOLS[currency];
   
@@ -108,6 +108,25 @@ export function formatCurrencyValue(
       return `${symbol}${Math.round(amount / 1000)}k`;
     }
     return `${symbol}${Math.round(amount)}`;
+  }
+  
+  // Rounded full: show full number with sensible rounding (for price/sqm)
+  if (options?.roundedFull) {
+    let rounded: number;
+    if (amount < 1000) {
+      rounded = Math.round(amount / 10) * 10; // Round to nearest 10
+    } else if (amount < 10000) {
+      rounded = Math.round(amount / 50) * 50; // Round to nearest 50
+    } else {
+      rounded = Math.round(amount / 100) * 100; // Round to nearest 100
+    }
+    
+    const formatted = new Intl.NumberFormat('de-DE', {
+      style: 'decimal',
+      maximumFractionDigits: 0,
+    }).format(rounded);
+    
+    return `${symbol}${formatted}`;
   }
   
   // Use European number formatting (space as thousand separator)

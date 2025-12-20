@@ -16,6 +16,7 @@ export function useFormattedPrice() {
         isRental?: boolean; 
         showPeriod?: boolean; 
         compact?: boolean;
+        roundedFull?: boolean;
         period?: RentPeriod;
       }
     ) => {
@@ -37,7 +38,10 @@ export function useFormattedPrice() {
         }
       }
       
-      const formatted = formatCurrencyValue(displayPrice, currency, { compact: options?.compact });
+      const formatted = formatCurrencyValue(displayPrice, currency, { 
+        compact: options?.compact,
+        roundedFull: options?.roundedFull 
+      });
       
       if (options?.isRental && options?.showPeriod) {
         const periodSuffix = periodToUse === 'week' ? '/wk' : periodToUse === 'year' ? '/yr' : '/mo';

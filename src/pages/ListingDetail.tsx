@@ -388,7 +388,7 @@ export default function ListingDetail() {
                     </p>
                     {listing.area_sqm && listing.area_sqm > 0 && (
                       <p className="text-sm text-muted-foreground mt-1">
-                        {formatPrice(listing.price / listing.area_sqm, listing.currency, { compact: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
+                        {formatPrice(listing.price / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
                       </p>
                     )}
                   </div>
@@ -518,9 +518,9 @@ export default function ListingDetail() {
                       showPeriod: listing.listing_type === 'rent'
                     })}
                   </p>
-                  {listing.area_sqm && listing.area_sqm > 0 && (
+                {listing.area_sqm && listing.area_sqm > 0 && (
                     <p className="text-sm text-muted-foreground mt-1">
-                      {formatPrice(listing.price / listing.area_sqm, listing.currency, { compact: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
+                      {formatPrice(listing.price / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
                     </p>
                   )}
                 </div>
