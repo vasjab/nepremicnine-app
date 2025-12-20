@@ -113,6 +113,11 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
       const initialCenter: [number, number] = savedState?.center || [14.5058, 46.0515];
       const initialZoom = savedState?.zoom || 12;
 
+      // If we have a saved state (e.g. user is navigating back), don't auto-fit listings.
+      if (savedState) {
+        initialFitDone.current = true;
+      }
+
       const mapInstance = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/light-v11',
