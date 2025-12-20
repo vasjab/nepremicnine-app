@@ -1218,12 +1218,12 @@ export default function CreateListing() {
 
       <main className="pt-8">
         <div className="container mx-auto px-4">
-          {/* Sticky progress bar on desktop */}
-          <div className="sticky top-16 z-30 bg-background/95 backdrop-blur-md border-b border-border py-4 -mx-4 px-4">
+          {/* Sticky progress bar on desktop - matches Header h-14 */}
+          <div className="sticky top-14 z-30 bg-background border-b border-border py-4 -mx-4 px-4">
             <WizardProgress steps={WIZARD_STEPS} currentStep={currentStep} onStepClick={handleStepClick} completedSteps={completedSteps} />
           </div>
 
-          <div className="mt-8 max-w-3xl mx-auto">
+          <div className="mt-6 max-w-3xl mx-auto">
             <HoneypotField value={honeypot} onChange={setHoneypot} />
             {renderStep()}
           </div>
@@ -1258,7 +1258,15 @@ export default function CreateListing() {
 
       {/* Close Confirmation Dialog */}
       <AlertDialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
-        <AlertDialogContent>
+        <AlertDialogContent className="relative">
+          {/* Close button to go back to editing */}
+          <button 
+            onClick={() => setShowCloseConfirm(false)}
+            className="absolute right-4 top-4 h-8 w-8 rounded-full flex items-center justify-center hover:bg-secondary transition-colors"
+            aria-label="Go back to editing"
+          >
+            <X className="h-4 w-4" />
+          </button>
           <AlertDialogHeader>
             <AlertDialogTitle>Save your progress?</AlertDialogTitle>
             <AlertDialogDescription>
