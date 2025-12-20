@@ -246,7 +246,7 @@ export interface ListingFilters {
 
 export type AreaUnit = 'sqm' | 'sqft';
 
-export type SortOption = 'newest' | 'oldest' | 'price_asc' | 'price_desc' | 'size_asc' | 'size_desc';
+export type SortOption = 'newest' | 'oldest' | 'price_asc' | 'price_desc' | 'size_asc' | 'size_desc' | 'price_per_sqm_asc' | 'price_per_sqm_desc';
 
 export type ParkingType = 'street' | 'designated' | 'underground' | 'private';
 export type HeatingType = 'central' | 'electric' | 'gas' | 'heat_pump' | 'other';

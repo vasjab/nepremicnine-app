@@ -104,6 +104,16 @@ const Index = () => {
           return (a.area_sqm || 0) - (b.area_sqm || 0);
         case 'size_desc':
           return (b.area_sqm || 0) - (a.area_sqm || 0);
+        case 'price_per_sqm_asc': {
+          const aPricePerSqm = a.area_sqm ? a.price / a.area_sqm : Infinity;
+          const bPricePerSqm = b.area_sqm ? b.price / b.area_sqm : Infinity;
+          return aPricePerSqm - bPricePerSqm;
+        }
+        case 'price_per_sqm_desc': {
+          const aPricePerSqm = a.area_sqm ? a.price / a.area_sqm : -Infinity;
+          const bPricePerSqm = b.area_sqm ? b.price / b.area_sqm : -Infinity;
+          return bPricePerSqm - aPricePerSqm;
+        }
         default:
           return 0;
       }

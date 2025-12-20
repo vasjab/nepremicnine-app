@@ -1104,6 +1104,8 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
               <SelectItem value="price_desc">{t('filters.priceDesc')}</SelectItem>
               <SelectItem value="size_asc">{t('filters.sizeAsc')}</SelectItem>
               <SelectItem value="size_desc">{t('filters.sizeDesc')}</SelectItem>
+              <SelectItem value="price_per_sqm_asc">{t('filters.pricePerSqmAsc')}</SelectItem>
+              <SelectItem value="price_per_sqm_desc">{t('filters.pricePerSqmDesc')}</SelectItem>
             </SelectContent>
           </Select>
 
