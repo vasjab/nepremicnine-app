@@ -255,16 +255,7 @@ export function DetailsStep({
             checked={isFurnished}
             onCheckedChange={onFurnishedChange}
             infoText="Includes essential furniture like beds, sofas, dining table. Appliances can be added later."
-          >
-            <input
-              type="text"
-              value={furnishedDetails}
-              onChange={(e) => onFurnishedDetailsChange(e.target.value)}
-              placeholder="e.g., Fully furnished with bed, sofa, and kitchen appliances..."
-              maxLength={200}
-              className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground focus:border-accent focus:outline-none"
-            />
-          </ToggleCard>
+          />
         </section>
 
         {/* Section: Description */}
@@ -272,12 +263,17 @@ export function DetailsStep({
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold text-foreground">Description</h3>
             <span className="text-xs text-muted-foreground tabular-nums">
-              {description.length} / 5000
+              {description.length} / 10000
             </span>
           </div>
           <Textarea
             value={description}
-            onChange={(e) => onDescriptionChange(e.target.value)}
+            onChange={(e) => {
+              if (e.target.value.length <= 10000) {
+                onDescriptionChange(e.target.value);
+              }
+            }}
+            maxLength={10000}
             placeholder="Tell people what makes this place special..."
             rows={4}
             className="resize-none text-base"

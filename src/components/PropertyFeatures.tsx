@@ -49,6 +49,7 @@ import { Listing } from '@/types/listing';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { cn } from '@/lib/utils';
+import { InfoTooltip } from '@/components/ui/info-tooltip';
 
 interface PropertyFeaturesProps {
   listing: Listing;
@@ -127,31 +128,93 @@ const categoryThemes = {
   },
 };
 
-// Simple Feature Card (no detail) - Taller, centered layout
+// Feature descriptions for info tooltips
+const featureDescriptions: Record<string, string> = {
+  furnished: 'Property comes with essential furniture like beds, sofas, and dining table',
+  pets: 'Tenants are allowed to keep pets in the property',
+  balcony: 'An outdoor platform attached to the apartment, accessible from inside',
+  terrace: 'A larger outdoor paved area, often at ground level or rooftop',
+  rooftop: 'Shared or private terrace area on the building roof',
+  garden: 'Private or shared green outdoor space',
+  bbq: 'Dedicated outdoor area for barbecuing',
+  playground: 'Outdoor play area for children',
+  waterfront: 'Property is located near a body of water (lake, river, sea)',
+  view: 'Property offers scenic views from windows or outdoor areas',
+  parking: 'Dedicated parking space for vehicles',
+  garage: 'Enclosed parking structure attached to or near the property',
+  carport: 'Covered parking structure that is open on at least one side',
+  ev: 'Electric vehicle charging station available on premises',
+  bike: 'Secure storage area for bicycles',
+  storage: 'Additional storage space (basement, attic, or storage room)',
+  basement: 'Underground storage or living space',
+  elevator: 'Building has an elevator for easy access to higher floors',
+  laundry: 'Shared laundry room available in the building',
+  gym: 'Fitness center or gym available in the building',
+  sauna: 'Sauna facility available in the building',
+  pool: 'Swimming pool available in the building',
+  common: 'Common room or social space for residents',
+  concierge: 'Concierge or doorman service available',
+  security: 'Building has security personnel or systems',
+  fireplace: 'Wood-burning or gas fireplace for ambiance and heat',
+  floorHeat: 'Radiant heating system under the floor for even warmth',
+  district: 'Heat supplied from a central municipal facility',
+  heatPump: 'Efficient system that extracts heat from air, water, or ground',
+  ac: 'Active cooling system for temperature control in hot weather',
+  vent: 'Mechanical ventilation system for fresh air circulation',
+  solar: 'Photovoltaic panels that generate electricity from sunlight',
+  dishwasher: 'Built-in dishwasher for automatic dishwashing',
+  washer: 'In-unit washing machine for laundry',
+  dryer: 'Tumble dryer or heat pump dryer for drying clothes',
+  ceilings: 'Higher than standard ceiling height (typically 2.7m+)',
+  windows: 'Larger than standard windows for more natural light',
+  orientation: 'The direction the main windows or living areas face',
+  smart: 'Connected home automation for lighting, heating, security',
+  wardrobes: 'Permanent wardrobe storage built into walls',
+  stepFree: 'No steps or stairs required to enter the property',
+  wheelchair: 'Property is accessible for wheelchair users',
+  wideDoors: 'Door frames wider than standard (80cm+) for accessibility',
+  groundFloor: 'Property is on the ground floor with direct access',
+  garageElev: 'Elevator access directly from the garage level',
+  secureEntry: 'Controlled entrance with key card, code, or intercom',
+  intercom: 'Video or audio intercom system for visitors',
+  gated: 'Property is within a gated residential community',
+  fire: 'Smoke detectors, fire extinguishers, or sprinkler systems',
+  sound: 'Enhanced sound insulation between walls and floors',
+};
+
+// Simple Feature Card (no detail) - Horizontal layout with icon left
 function FeatureCard({ 
   icon: Icon, 
   label, 
   category,
+  featureId,
 }: { 
   icon: LucideIcon; 
   label: string; 
   category: keyof typeof categoryThemes;
+  featureId?: string;
 }) {
   const theme = categoryThemes[category];
+  const description = featureId ? featureDescriptions[featureId] : undefined;
   
   return (
     <div className={cn(
-      "flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl h-24 transition-all duration-200",
+      "relative flex items-center gap-3 p-4 rounded-xl h-24 transition-all duration-200",
       "bg-secondary/50 hover:bg-secondary border border-transparent hover:border-border/50",
       "cursor-default group"
     )}>
+      {description && (
+        <div className="absolute top-1.5 right-1.5">
+          <InfoTooltip content={description} />
+        </div>
+      )}
       <div className={cn(
-        "w-12 h-12 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105",
+        "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105",
         theme.iconBg
       )}>
         <Icon className={cn("h-6 w-6", theme.iconColor)} />
       </div>
-      <span className="text-sm font-medium text-foreground text-center leading-tight">
+      <span className="text-sm font-medium text-foreground leading-tight line-clamp-2 pr-6">
         {label}
       </span>
     </div>
@@ -164,29 +227,37 @@ function DetailFeatureCard({
   label, 
   detail,
   category,
+  featureId,
 }: { 
   icon: LucideIcon; 
   label: string; 
   detail: string;
   category: keyof typeof categoryThemes;
+  featureId?: string;
 }) {
   const theme = categoryThemes[category];
+  const description = featureId ? featureDescriptions[featureId] : undefined;
   
   return (
     <div className={cn(
-      "flex items-center gap-3 p-4 rounded-xl h-24 transition-all duration-200",
+      "relative flex items-center gap-3 p-4 rounded-xl h-24 transition-all duration-200",
       "bg-secondary/50 hover:bg-secondary border border-transparent hover:border-border/50",
       "cursor-default group"
     )}>
+      {description && (
+        <div className="absolute top-1.5 right-1.5">
+          <InfoTooltip content={description} />
+        </div>
+      )}
       <div className={cn(
         "w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105",
         theme.iconBg
       )}>
         <Icon className={cn("h-6 w-6", theme.iconColor)} />
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-foreground">{label}</p>
-        <p className="text-xs text-muted-foreground">{detail}</p>
+      <div className="min-w-0 flex-1 overflow-hidden pr-6">
+        <p className="text-sm font-medium text-foreground truncate">{label}</p>
+        <p className="text-xs text-muted-foreground truncate">{detail}</p>
       </div>
     </div>
   );
@@ -248,6 +319,7 @@ function CategorySection({
               label={feature.label}
               detail={feature.detail}
               category={feature.category}
+              featureId={feature.id}
             />
           ) : (
             <FeatureCard
@@ -255,6 +327,7 @@ function CategorySection({
               icon={feature.icon}
               label={feature.label}
               category={feature.category}
+              featureId={feature.id}
             />
           )
         ))}
@@ -456,7 +529,7 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
       id: 'ev', 
       icon: Zap, 
       label: 'EV Charging',
-      detail: evPower || null,
+      detail: evPower ? `${evPower} kW` : null,
       category: 'parking' 
     });
   }

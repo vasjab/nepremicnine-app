@@ -23,6 +23,12 @@ import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 export default function ListingDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -43,6 +49,7 @@ export default function ListingDetail() {
   const [showGallery, setShowGallery] = useState(false);
   const [scrollToFloorPlan, setScrollToFloorPlan] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showFullDescription, setShowFullDescription] = useState(false);
 
   // Track listing view for both authenticated and non-authenticated users
   useEffect(() => {
@@ -361,7 +368,22 @@ export default function ListingDetail() {
               {listing.description && (
                 <div className="bg-card rounded-3xl p-6 sm:p-8 shadow-sm border border-border/50">
                   <h2 className="text-xl font-semibold text-foreground mb-5 pb-4 border-b border-border/50">{t('listing.description')}</h2>
-                  <p className="text-muted-foreground whitespace-pre-line leading-relaxed text-base">{listing.description}</p>
+                  {listing.description.length > 500 ? (
+                    <>
+                      <p className="text-muted-foreground whitespace-pre-line leading-relaxed text-base">
+                        {listing.description.slice(0, 500)}...
+                      </p>
+                      <Button 
+                        variant="link" 
+                        className="p-0 h-auto mt-2 text-primary"
+                        onClick={() => setShowFullDescription(true)}
+                      >
+                        {t('listing.readMore') || 'Read more'}
+                      </Button>
+                    </>
+                  ) : (
+                    <p className="text-muted-foreground whitespace-pre-line leading-relaxed text-base">{listing.description}</p>
+                  )}
                 </div>
               )}
 
@@ -518,6 +540,18 @@ export default function ListingDetail() {
         title={listing.title}
         initialScrollToFloorPlan={scrollToFloorPlan}
       />
+
+      {/* Full description modal */}
+      <Dialog open={showFullDescription} onOpenChange={setShowFullDescription}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{t('listing.description')}</DialogTitle>
+          </DialogHeader>
+          <p className="text-muted-foreground whitespace-pre-line leading-relaxed text-base">
+            {listing.description}
+          </p>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

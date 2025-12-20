@@ -217,7 +217,7 @@ export function BuildingInfoStep({
                   )}>
                     {type.label}
                   </span>
-                  <span className="text-xs text-muted-foreground line-clamp-2">{type.info}</span>
+                  <span className="text-xs text-muted-foreground">{type.info}</span>
                 </button>
               );
             })}
