@@ -50,6 +50,12 @@ export function useListings(filters?: ListingFilters, userId?: string) {
       if (filters?.city) {
         query = query.ilike('city', `%${filters.city}%`);
       }
+      
+      // Multi-field search (title, description, city, address)
+      if (filters?.search) {
+        const searchTerm = filters.search.trim();
+        query = query.or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,city.ilike.%${searchTerm}%,address.ilike.%${searchTerm}%`);
+      }
 
       // Feature filters
       if (filters?.is_furnished === true) {
