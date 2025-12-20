@@ -561,15 +561,6 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
           />
         )}
 
-        {/* Attachment previews */}
-        {attachments.length > 0 && (
-          <AttachmentUploader
-            attachments={attachments}
-            onAttachmentsChange={setAttachments}
-            onImagePreviewClick={handleImageClick}
-            disabled={sendMessage.isPending}
-          />
-        )}
         
         <div className="flex gap-2">
           <AttachmentUploader
