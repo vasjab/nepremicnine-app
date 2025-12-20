@@ -100,9 +100,9 @@ function FilterSection({
   const [isOpen, setIsOpen] = useState(defaultOpen);
   
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="flex w-full items-center justify-between py-3 text-sm font-medium transition-colors hover:text-foreground will-change-transform">
-        <span className="flex items-center gap-2">
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border-b border-border/50">
+      <CollapsibleTrigger className="flex w-full items-center justify-between py-5 text-sm font-medium transition-colors hover:text-foreground will-change-transform">
+        <span className="flex items-center gap-3">
           {title}
           {hasActiveFilters && (
             <span className="h-2 w-2 rounded-full bg-accent animate-pulse-ring" />
@@ -113,7 +113,7 @@ function FilterSection({
           isOpen && "rotate-180"
         )} />
       </CollapsibleTrigger>
-      <CollapsibleContent className="space-y-3 pt-1 pb-4">
+      <CollapsibleContent className="space-y-3 pt-2 pb-6">
         {children}
       </CollapsibleContent>
     </Collapsible>
@@ -131,14 +131,21 @@ function ToggleFilter({
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between min-h-[44px]">
-      <Label className="text-sm font-normal cursor-pointer flex-1" onClick={() => onChange(!checked)}>
+    <div 
+      className={cn(
+        "flex items-center justify-between min-h-[56px] px-4 py-3 rounded-xl transition-all cursor-pointer",
+        checked ? "bg-accent/10 border border-accent/20" : "hover:bg-secondary/50"
+      )}
+      onClick={() => onChange(!checked)}
+    >
+      <Label className={cn("text-sm font-normal cursor-pointer flex-1", checked && "text-foreground")}>
         {label}
       </Label>
       <Switch 
         checked={checked} 
         onCheckedChange={onChange}
         className="data-[state=checked]:bg-accent"
+        onClick={(e) => e.stopPropagation()}
       />
     </div>
   );
@@ -345,16 +352,16 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
           )}
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="max-h-[85vh]">
-        <DrawerHeader className="pb-2">
+        <DrawerContent className="max-h-[85vh] flex flex-col">
+        <DrawerHeader className="pb-4 border-b border-border">
           <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
         </DrawerHeader>
-        <ScrollArea className="flex-1 px-4 pb-8 overflow-y-auto">
-          <div className="space-y-4 px-1">
+        <ScrollArea className="flex-1 px-4 overflow-y-auto">
+          <div className="space-y-6 px-1 pb-4">
             {/* Listing Type */}
-            <div className="space-y-3 pt-2">
-              <Label className="text-sm font-medium">{t('filters.listingType')}</Label>
-              <div className="flex flex-wrap gap-2">
+            <div className="space-y-4 pt-4 pb-2 border-b border-border/50">
+              <Label className="text-base font-medium">{t('filters.listingType')}</Label>
+              <div className="flex flex-wrap gap-3">
                 {LISTING_TYPES.map((type) => {
                   const isSelected = filters.listing_type === type.value;
                   const Icon = type.icon;
@@ -364,13 +371,13 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
                       type="button"
                       onClick={() => handleListingTypeChange(isSelected ? 'all' : type.value)}
                       className={cn(
-                        "flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border-2 cursor-pointer min-h-[48px] press-effect",
+                        "flex items-center gap-2.5 px-5 py-4 rounded-xl text-sm font-medium transition-all duration-200 border cursor-pointer min-h-[56px] press-effect",
                         isSelected 
                           ? 'bg-foreground text-background border-foreground' 
                           : 'bg-background text-foreground border-border hover:border-foreground/50'
                       )}
                     >
-                      <Icon className="h-4 w-4" />
+                      <Icon className="h-5 w-5" />
                       {type.label}
                     </button>
                   );
@@ -379,9 +386,9 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
             </div>
 
             {/* Property Type */}
-            <div className="space-y-3">
-              <Label className="text-sm font-medium">{t('filters.propertyType')}</Label>
-              <div className="flex flex-wrap gap-2">
+            <div className="space-y-4 pb-2 border-b border-border/50">
+              <Label className="text-base font-medium">{t('filters.propertyType')}</Label>
+              <div className="flex flex-wrap gap-3">
                 {PROPERTY_TYPES.map((type) => {
                   const isSelected = filters.property_types?.includes(type.value) || false;
                   const Icon = type.icon;
@@ -391,13 +398,13 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
                       type="button"
                       onClick={() => handlePropertyTypeToggle(type.value)}
                       className={cn(
-                        "flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 border-2 cursor-pointer min-h-[48px] press-effect",
+                        "flex items-center gap-2.5 px-5 py-4 rounded-xl text-sm font-medium transition-all duration-200 border cursor-pointer min-h-[56px] press-effect",
                         isSelected 
                           ? 'bg-foreground text-background border-foreground' 
                           : 'bg-background text-foreground border-border hover:border-foreground/50'
                       )}
                     >
-                      <Icon className="h-4 w-4" />
+                      <Icon className="h-5 w-5" />
                       {type.label}
                     </button>
                   );
@@ -406,13 +413,13 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
             </div>
 
             {/* Bedrooms */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">{t('filters.minimumRooms')}</Label>
+            <div className="space-y-3 py-2 border-b border-border/50">
+              <Label className="text-base font-medium">{t('filters.minimumRooms')}</Label>
               <Select
                 value={filters.min_bedrooms?.toString() || 'all'}
                 onValueChange={handleBedroomChange}
               >
-                <SelectTrigger className="bg-background h-12 rounded-xl">
+                <SelectTrigger className="bg-background h-14 rounded-xl text-base">
                   <SelectValue placeholder={t('filters.any')} />
                 </SelectTrigger>
                 <SelectContent className="bg-popover">
@@ -426,11 +433,15 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
             </div>
 
             {/* Price Range Slider */}
-            <div className="space-y-4">
-              <Label className="text-sm font-medium">
+            <div className="space-y-4 py-4 border-b border-border/50">
+              <Label className="text-base font-medium">
                 {filters.listing_type === 'rent' ? t('filters.monthlyCost') : filters.listing_type === 'sale' ? t('filters.totalPrice') : t('filters.price')}
               </Label>
-              <div className="pt-2 px-2">
+              <div className="flex justify-between text-sm text-muted-foreground px-1">
+                <span>{formatPriceLabelLocal(priceRangeValues[0])}</span>
+                <span>{priceRangeValues[1] >= priceConfig.max ? `${formatPriceLabelLocal(priceConfig.max)}+` : formatPriceLabelLocal(priceRangeValues[1])}</span>
+              </div>
+              <div className="px-3 py-2">
                 <Slider
                   value={priceRangeValues}
                   min={priceConfig.min}
@@ -441,26 +452,26 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
                   className="touch-none"
                 />
               </div>
-              <div className="flex justify-between text-sm text-muted-foreground px-1">
-                <span>{formatPriceLabelLocal(priceRangeValues[0])}</span>
-                <span>{priceRangeValues[1] >= priceConfig.max ? `${formatPriceLabelLocal(priceConfig.max)}+` : formatPriceLabelLocal(priceRangeValues[1])}</span>
-              </div>
             </div>
 
             {/* Size Range Slider */}
-            <div className="space-y-4">
+            <div className="space-y-4 py-4 border-b border-border/50">
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium">{t('filters.size')}</Label>
+                <Label className="text-base font-medium">{t('filters.size')}</Label>
                 <div className="flex items-center gap-2">
-                  <span className={cn("text-xs transition-colors", areaUnit === 'sqm' ? 'text-foreground font-medium' : 'text-muted-foreground')}>m²</span>
+                  <span className={cn("text-sm transition-colors", areaUnit === 'sqm' ? 'text-foreground font-medium' : 'text-muted-foreground')}>m²</span>
                   <Switch
                     checked={areaUnit === 'sqft'}
                     onCheckedChange={handleUnitToggle}
                   />
-                  <span className={cn("text-xs transition-colors", areaUnit === 'sqft' ? 'text-foreground font-medium' : 'text-muted-foreground')}>ft²</span>
+                  <span className={cn("text-sm transition-colors", areaUnit === 'sqft' ? 'text-foreground font-medium' : 'text-muted-foreground')}>ft²</span>
                 </div>
               </div>
-              <div className="pt-2 px-2">
+              <div className="flex justify-between text-sm text-muted-foreground px-1">
+                <span>{sizeRangeValues[0]} {sizeConfig.label}</span>
+                <span>{sizeRangeValues[1] >= sizeConfig.max ? `${sizeConfig.max}+ ${sizeConfig.label}` : `${sizeRangeValues[1]} ${sizeConfig.label}`}</span>
+              </div>
+              <div className="px-3 py-2">
                 <Slider
                   value={sizeRangeValues}
                   min={sizeConfig.min}
@@ -471,18 +482,18 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
                   className="touch-none"
                 />
               </div>
-              <div className="flex justify-between text-sm text-muted-foreground px-1">
-                <span>{sizeRangeValues[0]} {sizeConfig.label}</span>
-                <span>{sizeRangeValues[1] >= sizeConfig.max ? `${sizeConfig.max}+ ${sizeConfig.label}` : `${sizeRangeValues[1]} ${sizeConfig.label}`}</span>
-              </div>
             </div>
 
             {/* Price per sqm/sqft Slider */}
-            <div className="space-y-4">
-              <Label className="text-sm font-medium">
+            <div className="space-y-4 py-4 border-b border-border/50">
+              <Label className="text-base font-medium">
                 {t('filters.pricePerArea') || 'Price per'} {areaUnit === 'sqft' ? 'ft²' : 'm²'}
               </Label>
-              <div className="pt-2 px-2">
+              <div className="flex justify-between text-sm text-muted-foreground px-1">
+                <span>{formatPriceLabelLocal(pricePerSqmRangeValues[0])}</span>
+                <span>{pricePerSqmRangeValues[1] >= pricePerSqmConfig.max ? `${formatPriceLabelLocal(pricePerSqmConfig.max)}+` : formatPriceLabelLocal(pricePerSqmRangeValues[1])}</span>
+              </div>
+              <div className="px-3 py-2">
                 <Slider
                   value={pricePerSqmRangeValues}
                   min={pricePerSqmConfig.min}
@@ -493,14 +504,10 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
                   className="touch-none"
                 />
               </div>
-              <div className="flex justify-between text-sm text-muted-foreground px-1">
-                <span>{formatPriceLabelLocal(pricePerSqmRangeValues[0])}</span>
-                <span>{pricePerSqmRangeValues[1] >= pricePerSqmConfig.max ? `${formatPriceLabelLocal(pricePerSqmConfig.max)}+` : formatPriceLabelLocal(pricePerSqmRangeValues[1])}</span>
-              </div>
             </div>
 
             {/* Collapsible Sections */}
-            <div className="border-t border-border pt-4 space-y-1">
+            <div className="space-y-0 pt-2">
               {/* Features Section */}
               <FilterSection title={t('filters.features')} hasActiveFilters={hasFeaturesActive}>
                 <ToggleFilter 
@@ -626,24 +633,21 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
           </div>
         </ScrollArea>
         
-        {/* Sticky footer with Apply button */}
-        <div className="sticky bottom-0 left-0 right-0 p-4 bg-background border-t border-border space-y-2">
-          {hasActiveFilters && (
-            <Button
-              variant="outline"
-              className="w-full h-12 rounded-xl"
-              onClick={() => {
-                clearFilters();
-              }}
+        {/* Airbnb-style footer */}
+        <div className="sticky bottom-0 left-0 right-0 px-6 py-4 bg-background border-t border-border flex items-center justify-between gap-4">
+          {hasActiveFilters ? (
+            <button
+              onClick={clearFilters}
+              className="text-sm font-medium text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
             >
-              <X className="h-4 w-4 mr-2" />
-              {t('filters.clearAllFilters')}
-            </Button>
+              {t('filters.clearAll') || 'Clear all'}
+            </button>
+          ) : (
+            <div />
           )}
           <Button
-            variant="default"
-            className="w-full h-12 rounded-xl bg-accent text-accent-foreground hover:bg-accent/90"
             onClick={() => setIsOpen(false)}
+            className="bg-foreground text-background hover:bg-foreground/90 rounded-xl px-6 py-3 h-12 text-sm font-semibold min-w-[140px]"
           >
             {t('filters.applyFilters')}
           </Button>
