@@ -1,0 +1,205 @@
+import { WizardStepWrapper } from '../WizardStepWrapper';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
+import { Minus, Plus } from 'lucide-react';
+
+interface DetailsStepProps {
+  description: string;
+  bedrooms: string;
+  bathrooms: string;
+  areaSqm: string;
+  availableFrom: string;
+  availableUntil: string;
+  isFurnished: boolean;
+  allowsPets: boolean;
+  listingType: 'rent' | 'sale';
+  onDescriptionChange: (value: string) => void;
+  onBedroomsChange: (value: string) => void;
+  onBathroomsChange: (value: string) => void;
+  onAreaChange: (value: string) => void;
+  onAvailableFromChange: (value: string) => void;
+  onAvailableUntilChange: (value: string) => void;
+  onFurnishedChange: (value: boolean) => void;
+  onPetsChange: (value: boolean) => void;
+}
+
+// Number picker with plus/minus buttons
+function NumberPicker({ 
+  value, 
+  onChange, 
+  min = 0, 
+  max = 10,
+  label 
+}: { 
+  value: number; 
+  onChange: (v: number) => void; 
+  min?: number; 
+  max?: number;
+  label: string;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <span className="text-sm font-medium text-muted-foreground">{label}</span>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(min, value - 1))}
+          disabled={value <= min}
+          className={cn(
+            "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all",
+            value <= min 
+              ? "border-border text-muted-foreground cursor-not-allowed" 
+              : "border-foreground text-foreground hover:bg-foreground hover:text-background"
+          )}
+        >
+          <Minus className="h-4 w-4" />
+        </button>
+        <span className="w-12 text-center text-2xl font-bold">{value}</span>
+        <button
+          type="button"
+          onClick={() => onChange(Math.min(max, value + 1))}
+          disabled={value >= max}
+          className={cn(
+            "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all",
+            value >= max 
+              ? "border-border text-muted-foreground cursor-not-allowed" 
+              : "border-foreground text-foreground hover:bg-foreground hover:text-background"
+          )}
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function DetailsStep({
+  description,
+  bedrooms,
+  bathrooms,
+  areaSqm,
+  availableFrom,
+  availableUntil,
+  isFurnished,
+  allowsPets,
+  listingType,
+  onDescriptionChange,
+  onBedroomsChange,
+  onBathroomsChange,
+  onAreaChange,
+  onAvailableFromChange,
+  onAvailableUntilChange,
+  onFurnishedChange,
+  onPetsChange,
+}: DetailsStepProps) {
+  const isRental = listingType === 'rent';
+  const bedroomsNum = parseInt(bedrooms) || 0;
+  const bathroomsNum = parseInt(bathrooms) || 1;
+
+  return (
+    <WizardStepWrapper
+      title="Add the details"
+      subtitle="Help people understand what you're offering"
+      emoji="📝"
+    >
+      <div className="max-w-2xl mx-auto w-full space-y-8">
+        {/* Bedrooms & Bathrooms */}
+        <div className="flex justify-center gap-12">
+          <NumberPicker
+            label="Bedrooms"
+            value={bedroomsNum}
+            onChange={(v) => onBedroomsChange(v.toString())}
+            min={0}
+            max={20}
+          />
+          <NumberPicker
+            label="Bathrooms"
+            value={bathroomsNum}
+            onChange={(v) => onBathroomsChange(v.toString())}
+            min={1}
+            max={10}
+          />
+        </div>
+
+        {/* Area */}
+        <div className="flex flex-col items-center gap-2">
+          <Label className="text-sm font-medium text-muted-foreground">Living Area</Label>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              value={areaSqm}
+              onChange={(e) => onAreaChange(e.target.value)}
+              placeholder="65"
+              className="w-24 text-center text-2xl font-bold bg-transparent border-b-2 border-border focus:border-accent outline-none py-2"
+            />
+            <span className="text-xl text-muted-foreground">m²</span>
+          </div>
+        </div>
+
+        {/* Description */}
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Description</Label>
+          <Textarea
+            value={description}
+            onChange={(e) => onDescriptionChange(e.target.value)}
+            placeholder="Tell people what makes this place special..."
+            rows={4}
+            className="resize-none text-base"
+          />
+          <p className="text-xs text-muted-foreground text-right">
+            {description.length} / 5000 characters
+          </p>
+        </div>
+
+        {/* Rental-specific fields */}
+        {isRental && (
+          <div className="space-y-6 pt-4 border-t border-border">
+            {/* Dates */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Move-in Date</Label>
+                <input
+                  type="date"
+                  value={availableFrom}
+                  onChange={(e) => onAvailableFromChange(e.target.value)}
+                  className="w-full h-12 px-4 rounded-lg border border-border bg-background"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">End Date (optional)</Label>
+                <input
+                  type="date"
+                  value={availableUntil}
+                  min={availableFrom || undefined}
+                  onChange={(e) => onAvailableUntilChange(e.target.value)}
+                  className="w-full h-12 px-4 rounded-lg border border-border bg-background"
+                />
+              </div>
+            </div>
+
+            {/* Toggles */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-card rounded-xl border border-border">
+                <div>
+                  <p className="font-medium">🛋️ Furnished</p>
+                  <p className="text-sm text-muted-foreground">Property comes with furniture</p>
+                </div>
+                <Switch checked={isFurnished} onCheckedChange={onFurnishedChange} />
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-card rounded-xl border border-border">
+                <div>
+                  <p className="font-medium">🐕 Pets Allowed</p>
+                  <p className="text-sm text-muted-foreground">Tenants can have pets</p>
+                </div>
+                <Switch checked={allowsPets} onCheckedChange={onPetsChange} />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </WizardStepWrapper>
+  );
+}
