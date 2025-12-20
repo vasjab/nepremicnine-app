@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { List, MapIcon } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { List, MapIcon, X } from 'lucide-react';
 import { Listing, ListingFilters, SortOption } from '@/types/listing';
 import { useListings } from '@/hooks/useListings';
 import { useMobileViewPreference } from '@/hooks/useMobileViewPreference';
@@ -24,6 +24,7 @@ interface MapBounds {
 
 const Index = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation();
   const { user } = useAuth();
   const [filters, setFilters] = useState<ListingFilters>({});
@@ -35,11 +36,16 @@ const Index = () => {
   const listingRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const listContainerRef = useRef<HTMLDivElement>(null);
   
+  const landlordId = searchParams.get('landlord');
+  
   const { data: allListings, isLoading } = useListings(filters, user?.id);
 
-  // Filter listings based on map bounds
+  // Filter listings based on map bounds and landlord filter
   const filteredListings = useMemo(() => {
     let result = allListings?.filter(listing => {
+      // Filter by landlord if specified
+      if (landlordId && listing.user_id !== landlordId) return false;
+      
       if (!mapBounds) return true; // Show all if no bounds set yet
       
       return (
@@ -69,7 +75,12 @@ const Index = () => {
           return 0;
       }
     });
-  }, [allListings, mapBounds, sortBy]);
+  }, [allListings, mapBounds, sortBy, landlordId]);
+
+  const clearLandlordFilter = () => {
+    searchParams.delete('landlord');
+    setSearchParams(searchParams);
+  };
 
   const visibleListings = filteredListings;
 
@@ -130,6 +141,21 @@ const Index = () => {
         <div className={`w-full lg:w-[480px] xl:w-[540px] flex flex-col border-r border-border overflow-hidden ${
           mobileView === 'map' ? 'hidden lg:flex' : 'flex flex-1 min-h-0'
         }`}>
+          {landlordId && (
+            <div className="px-4 pt-3 pb-0">
+              <div className="flex items-center gap-2 bg-accent/10 text-accent-foreground rounded-lg px-3 py-2 text-sm">
+                <span>Showing listings from this landlord</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 ml-auto"
+                  onClick={clearLandlordFilter}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
           <FilterBar 
             filters={filters} 
             onFiltersChange={setFilters}
