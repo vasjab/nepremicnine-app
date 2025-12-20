@@ -132,14 +132,19 @@ export function DetailsStep({
             <Switch checked={isFurnished} onCheckedChange={onFurnishedChange} />
           </div>
           {isFurnished && (
-            <input
-              type="text"
-              value={furnishedDetails}
-              onChange={(e) => onFurnishedDetailsChange(e.target.value)}
-              placeholder="e.g., Fully furnished with bed, sofa, and kitchen appliances..."
-              maxLength={200}
-              className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground"
-            />
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={furnishedDetails}
+                onChange={(e) => onFurnishedDetailsChange(e.target.value)}
+                placeholder="e.g., Fully furnished with bed, sofa, and kitchen appliances..."
+                maxLength={200}
+                className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm placeholder:text-muted-foreground"
+              />
+              <p className="text-xs text-muted-foreground">
+                ℹ️ You'll be asked about specific appliances in a later step
+              </p>
+            </div>
           )}
         </div>
 
