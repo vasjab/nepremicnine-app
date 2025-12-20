@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect, useMemo, memo } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { List, MapIcon, X, Key, Banknote } from 'lucide-react';
+import { List, MapIcon, X } from 'lucide-react';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { Listing, ListingFilters, SortOption } from '@/types/listing';
 import { useListings } from '@/hooks/useListings';
@@ -248,55 +248,6 @@ const Index = () => {
     }
   }, [activeListingId]);
 
-  // Shared rent/sale tabs component
-  const RentSaleTabs = ({ collapsed = false }: { collapsed?: boolean }) => (
-    <div className={cn(
-      "grid transition-all duration-400 ease-in-out will-change-[grid-template-rows,opacity,transform]",
-      collapsed 
-        ? "grid-rows-[0fr] opacity-0 -translate-y-2 pointer-events-none" 
-        : "grid-rows-[1fr] opacity-100 translate-y-0"
-    )}>
-      <div className="overflow-hidden px-4 pt-4 pb-0">
-      <div className="flex bg-secondary rounded-xl p-1 gap-1">
-        <button
-          onClick={() => setFilters({ ...filters, listing_type: null })}
-          className={cn(
-            "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-            !filters.listing_type
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          All
-        </button>
-        <button
-          onClick={() => setFilters({ ...filters, listing_type: 'rent' })}
-          className={cn(
-            "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-            filters.listing_type === 'rent'
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <Key className="h-4 w-4" />
-          {t('listingTypes.rent')}
-        </button>
-        <button
-          onClick={() => setFilters({ ...filters, listing_type: 'sale' })}
-          className={cn(
-            "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-            filters.listing_type === 'sale'
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
-          )}
-        >
-          <Banknote className="h-4 w-4" />
-          {t('listingTypes.sale')}
-        </button>
-      </div>
-      </div>
-    </div>
-  );
 
   // Shared listings grid component
   const ListingsGrid = ({ showAnimations = true }: { showAnimations?: boolean }) => (
@@ -358,8 +309,6 @@ const Index = () => {
                   mobileView === 'list' ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
                 )}
               >
-                {/* Collapsible Rent/Sale Tabs */}
-                <RentSaleTabs collapsed={isHeaderCollapsed && mobileView === 'list'} />
 
                 {landlordId && (
                   <div className="px-4 pt-3 pb-0">
@@ -390,6 +339,7 @@ const Index = () => {
                   totalCount={visibleListings.length}
                   userId={user?.id}
                   isCollapsed={isHeaderCollapsed && mobileView === 'list'}
+                  showListingTypeTabs={true}
                 />
 
                 <div ref={listContainerRef} className="flex-1 overflow-y-auto p-3 sm:p-4 overscroll-contain">
@@ -471,8 +421,6 @@ const Index = () => {
               maxSize={55}
             >
               <div className="flex flex-col h-full border-r border-border overflow-hidden">
-                {/* For Rent / For Sale Tabs */}
-                <RentSaleTabs collapsed={isHeaderCollapsed} />
 
                 {landlordId && (
                   <div className="px-4 pt-3 pb-0">
@@ -503,6 +451,7 @@ const Index = () => {
                   totalCount={visibleListings.length}
                   userId={user?.id}
                   isCollapsed={isHeaderCollapsed}
+                  showListingTypeTabs={true}
                 />
 
                 <div ref={!isMobileLayout ? listContainerRef : undefined} className="flex-1 overflow-y-auto p-3 sm:p-4 @container">

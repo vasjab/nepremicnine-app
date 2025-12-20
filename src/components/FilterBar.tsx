@@ -67,6 +67,7 @@ interface FilterBarProps {
   totalCount?: number;
   userId?: string;
   isCollapsed?: boolean;
+  showListingTypeTabs?: boolean;
 }
 
 // Price ranges by listing type
@@ -646,7 +647,8 @@ function FilterContent({
   );
 }
 
-export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount, userId, isCollapsed = false }: FilterBarProps) {
+export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount, userId, isCollapsed = false, showListingTypeTabs = false }: FilterBarProps) {
+  const { trigger: haptic } = useHapticFeedback();
   const { t } = useTranslation();
   const { formatPriceLabel, currencySymbol } = useFormattedPrice();
   const isMobile = useIsMobile();
@@ -964,111 +966,152 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
   return (
     <div className="bg-background border-b border-border/50">
-      <div className="p-4">
-        {/* Collapsible Title & Search Section */}
+      <div className="px-4 pt-4 pb-3">
+        {/* Collapsible Section - unified animation */}
         <div className={cn(
-          "grid transition-all duration-400 ease-in-out will-change-[grid-template-rows,opacity]",
+          "grid transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[grid-template-rows,opacity]",
           isCollapsed 
             ? "grid-rows-[0fr] opacity-0" 
             : "grid-rows-[1fr] opacity-100"
         )}>
           <div className="overflow-hidden">
-          {/* Title */}
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">
-            {t('common.findHome')}
-          </h1>
-
-          {/* Search input + Filter button inline */}
-          <div className="flex items-center gap-3">
-            <form onSubmit={handleSearch} className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
-              <Input
-                placeholder={t('filters.searchPlaceholder') || 'Search by city, title, keywords...'}
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                className="w-full pl-11 pr-10 h-12 text-sm bg-secondary border-0 rounded-xl focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0"
-              />
-              {searchValue && (
+            {/* Rent/Sale Tabs - only shown when prop is true */}
+            {showListingTypeTabs && (
+              <div className="flex bg-secondary rounded-xl p-1 gap-1 mb-3">
                 <button
-                  type="button"
-                  onClick={clearSearch}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground hover:text-foreground transition-colors rounded-full"
+                  onClick={() => onFiltersChange({ ...filters, listing_type: null })}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                    !filters.listing_type
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
                 >
-                  <X className="h-4 w-4" />
+                  All
                 </button>
-              )}
-            </form>
-
-            {/* Filter button - Drawer on mobile, Dialog on desktop */}
-            {isMobile ? (
-              <Drawer open={isOpen} onOpenChange={setIsOpen}>
-                <DrawerTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    className="relative shrink-0 rounded-xl h-12 w-12 border-border/50"
-                  >
-                    <SlidersHorizontal className="h-5 w-5" />
-                    {totalActiveFilters > 0 && (
-                      <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
-                        {totalActiveFilters}
-                      </Badge>
-                    )}
-                  </Button>
-                </DrawerTrigger>
-                <DrawerContent className="max-h-[85vh]">
-                  <DrawerHeader className="pb-2">
-                    <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
-                  </DrawerHeader>
-                  <ScrollArea className="flex-1 px-4 pb-8 overflow-y-auto">
-                    <FilterContent {...filterContentProps} />
-                  </ScrollArea>
-                </DrawerContent>
-              </Drawer>
-            ) : (
-              <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                <DialogTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    className="relative shrink-0 rounded-xl h-12 w-12 border-border/50"
-                  >
-                    <SlidersHorizontal className="h-5 w-5" />
-                    {totalActiveFilters > 0 && (
-                      <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
-                        {totalActiveFilters}
-                      </Badge>
-                    )}
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md max-h-[85vh] p-0 rounded-2xl">
-                  <DialogHeader className="p-4 pb-2">
-                    <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
-                  </DialogHeader>
-                  <ScrollArea className="max-h-[calc(85vh-80px)] px-4 pb-6">
-                    <FilterContent {...filterContentProps} />
-                  </ScrollArea>
-                </DialogContent>
-              </Dialog>
-            )}
-          </div>
-
-          {/* Active filter chips */}
-          {activeChips.length > 0 && (
-            <div className="flex items-center gap-2 flex-wrap mt-4">
-              {activeChips.map((chip) => (
-                <Badge
-                  key={chip.label}
-                  variant="secondary"
-                  className="pl-3 pr-2 py-1.5 gap-1.5 cursor-pointer hover:bg-secondary/80 transition-all rounded-full text-xs font-medium press-effect"
-                  onClick={chip.onRemove}
+                <button
+                  onClick={() => onFiltersChange({ ...filters, listing_type: 'rent' })}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                    filters.listing_type === 'rent'
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
                 >
-                  {chip.label}
-                  <X className="h-3 w-3" />
-                </Badge>
-              ))}
+                  <Key className="h-4 w-4" />
+                  {t('listingTypes.rent')}
+                </button>
+                <button
+                  onClick={() => onFiltersChange({ ...filters, listing_type: 'sale' })}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                    filters.listing_type === 'sale'
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <Banknote className="h-4 w-4" />
+                  {t('listingTypes.sale')}
+                </button>
+              </div>
+            )}
+
+            {/* Title */}
+            <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground mb-3">
+              {t('common.findHome')}
+            </h1>
+
+            {/* Search input + Filter button inline */}
+            <div className="flex items-center gap-2">
+              <form onSubmit={handleSearch} className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+                <Input
+                  placeholder={t('filters.searchPlaceholder') || 'Search by city, title, keywords...'}
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  className="w-full pl-10 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0"
+                />
+                {searchValue && (
+                  <button
+                    type="button"
+                    onClick={clearSearch}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground hover:text-foreground transition-colors rounded-full"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </form>
+
+              {/* Filter button - Drawer on mobile, Dialog on desktop */}
+              {isMobile ? (
+                <Drawer open={isOpen} onOpenChange={setIsOpen}>
+                  <DrawerTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="relative shrink-0 rounded-xl h-10 w-10 border-border/50"
+                    >
+                      <SlidersHorizontal className="h-4 w-4" />
+                      {totalActiveFilters > 0 && (
+                        <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
+                          {totalActiveFilters}
+                        </Badge>
+                      )}
+                    </Button>
+                  </DrawerTrigger>
+                  <DrawerContent className="max-h-[85vh]">
+                    <DrawerHeader className="pb-2">
+                      <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
+                    </DrawerHeader>
+                    <ScrollArea className="flex-1 px-4 pb-8 overflow-y-auto">
+                      <FilterContent {...filterContentProps} />
+                    </ScrollArea>
+                  </DrawerContent>
+                </Drawer>
+              ) : (
+                <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      className="relative shrink-0 rounded-xl h-10 w-10 border-border/50"
+                    >
+                      <SlidersHorizontal className="h-4 w-4" />
+                      {totalActiveFilters > 0 && (
+                        <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
+                          {totalActiveFilters}
+                        </Badge>
+                      )}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md max-h-[85vh] p-0 rounded-2xl">
+                    <DialogHeader className="p-4 pb-2">
+                      <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
+                    </DialogHeader>
+                    <ScrollArea className="max-h-[calc(85vh-80px)] px-4 pb-6">
+                      <FilterContent {...filterContentProps} />
+                    </ScrollArea>
+                  </DialogContent>
+                </Dialog>
+              )}
             </div>
-          )}
+
+            {/* Active filter chips */}
+            {activeChips.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap mt-3">
+                {activeChips.map((chip) => (
+                  <Badge
+                    key={chip.label}
+                    variant="secondary"
+                    className="pl-3 pr-2 py-1 gap-1.5 cursor-pointer hover:bg-secondary/80 transition-all rounded-full text-xs font-medium press-effect"
+                    onClick={chip.onRemove}
+                  >
+                    {chip.label}
+                    <X className="h-3 w-3" />
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -1076,16 +1119,16 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
         {totalCount !== undefined && (
           <div className={cn(
             "flex items-center justify-between gap-2",
-            !isCollapsed && "mt-4"
+            !isCollapsed && "mt-3"
           )}>
             <p className="text-sm text-muted-foreground">
               {totalCount === 1 ? t('listing.listingCount', { count: totalCount }) : t('listing.listingsCount', { count: totalCount.toLocaleString() })}
             </p>
             
-            <div className="flex items-center gap-2">
-              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-1.5">
+              <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
               <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
-                <SelectTrigger className="w-[140px] h-9 text-sm bg-secondary border-0 rounded-xl">
+                <SelectTrigger className="w-[130px] h-8 text-xs bg-secondary border-0 rounded-lg">
                   <SelectValue placeholder={t('filters.sortBy')} />
                 </SelectTrigger>
                 <SelectContent className="bg-popover rounded-xl">
