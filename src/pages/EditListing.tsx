@@ -397,14 +397,23 @@ export default function EditListing() {
   const addressRef = useRef<HTMLDivElement>(null);
   const cityRef = useRef<HTMLDivElement>(null);
   const imagesRef = useRef<HTMLDivElement>(null);
+  // Bonus field refs
+  const descriptionRef = useRef<HTMLDivElement>(null);
+  const areaRef = useRef<HTMLDivElement>(null);
+  const floorRef = useRef<HTMLDivElement>(null);
+  const outdoorRef = useRef<HTMLDivElement>(null);
+  const parkingRef = useRef<HTMLDivElement>(null);
+  const amenitiesRef = useRef<HTMLDivElement>(null);
+  const buildingInfoRef = useRef<HTMLDivElement>(null);
+  const rentalTermsRef = useRef<HTMLDivElement>(null);
 
   // Scroll to field helper
   const scrollToField = (ref: React.RefObject<HTMLElement>) => {
     ref.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
-  // Checklist items
-  const checklistItems: ChecklistItem[] = [
+  // Required checklist items
+  const requiredChecklistItems: ChecklistItem[] = [
     {
       id: 'title',
       label: t('checklist.title'),
@@ -442,6 +451,77 @@ export default function EditListing() {
       onClick: () => scrollToField(imagesRef),
     },
   ];
+
+  // Bonus checklist items
+  const bonusChecklistItems: ChecklistItem[] = [
+    {
+      id: 'description',
+      label: t('checklist.description'),
+      isComplete: !!formData.description?.trim() && formData.description.trim().length >= 20,
+      isOptional: true,
+      onClick: () => scrollToField(descriptionRef),
+    },
+    {
+      id: 'area',
+      label: t('checklist.area'),
+      isComplete: !!formData.area_sqm && parseFloat(formData.area_sqm) > 0,
+      isOptional: true,
+      onClick: () => scrollToField(areaRef),
+    },
+    {
+      id: 'floorInfo',
+      label: t('checklist.floorInfo'),
+      isComplete: !!formData.floor_number || !!formData.total_floors_building,
+      isOptional: true,
+      onClick: () => scrollToField(floorRef),
+    },
+    {
+      id: 'outdoor',
+      label: t('checklist.outdoor'),
+      isComplete: formData.has_balcony || formData.has_terrace || formData.has_garden,
+      isOptional: true,
+      onClick: () => scrollToField(outdoorRef),
+    },
+    {
+      id: 'parking',
+      label: t('checklist.parking'),
+      isComplete: formData.has_parking || formData.has_garage,
+      isOptional: true,
+      onClick: () => scrollToField(parkingRef),
+    },
+    {
+      id: 'amenities',
+      label: t('checklist.amenities'),
+      isComplete: formData.has_storage || formData.has_air_conditioning || formData.has_dishwasher || formData.has_washing_machine,
+      isOptional: true,
+      onClick: () => scrollToField(amenitiesRef),
+    },
+    {
+      id: 'buildingInfo',
+      label: t('checklist.buildingInfo'),
+      isComplete: !!formData.heating_type || !!formData.energy_rating || !!formData.year_built,
+      isOptional: true,
+      onClick: () => scrollToField(buildingInfoRef),
+    },
+    ...(isRental ? [
+      {
+        id: 'moveInDate',
+        label: t('checklist.moveInDate'),
+        isComplete: !!formData.available_from,
+        isOptional: true,
+        onClick: () => scrollToField(rentalTermsRef),
+      },
+      {
+        id: 'deposit',
+        label: t('checklist.deposit'),
+        isComplete: !!formData.deposit_amount && parseFloat(formData.deposit_amount) > 0,
+        isOptional: true,
+        onClick: () => scrollToField(rentalTermsRef),
+      },
+    ] : []),
+  ];
+
+  const checklistItems: ChecklistItem[] = [...requiredChecklistItems, ...bonusChecklistItems];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -771,21 +851,23 @@ export default function EditListing() {
                 </FormField>
               </div>
 
-              <FormField
-                label="Description"
-                htmlFor="description"
-                error={getError('description')}
-              >
-                <Textarea
-                  id="description"
-                  placeholder="Describe your property..."
-                  rows={4}
-                  value={formData.description}
-                  onChange={(e) => handleChange('description', e.target.value)}
-                  onBlur={() => handleBlur('description')}
-                  className={cn(getError('description') && 'border-destructive')}
-                />
-              </FormField>
+              <div ref={descriptionRef}>
+                <FormField
+                  label="Description"
+                  htmlFor="description"
+                  error={getError('description')}
+                >
+                  <Textarea
+                    id="description"
+                    placeholder="Describe your property..."
+                    rows={4}
+                    value={formData.description}
+                    onChange={(e) => handleChange('description', e.target.value)}
+                    onBlur={() => handleBlur('description')}
+                    className={cn(getError('description') && 'border-destructive')}
+                  />
+                </FormField>
+              </div>
 
               <div ref={priceRef}>
                 <FormField
@@ -943,17 +1025,19 @@ export default function EditListing() {
                   </Select>
                 </FormField>
 
-                <FormField label="Area (m²)" htmlFor="area" error={getError('area_sqm')}>
-                  <Input
-                    id="area"
-                    type="number"
-                    placeholder="65"
-                    value={formData.area_sqm}
-                    onChange={(e) => handleChange('area_sqm', e.target.value)}
-                    onBlur={() => handleBlur('area_sqm')}
-                    className={cn(getError('area_sqm') && 'border-destructive')}
-                  />
-                </FormField>
+                <div ref={areaRef}>
+                  <FormField label="Area (m²)" htmlFor="area" error={getError('area_sqm')}>
+                    <Input
+                      id="area"
+                      type="number"
+                      placeholder="65"
+                      value={formData.area_sqm}
+                      onChange={(e) => handleChange('area_sqm', e.target.value)}
+                      onBlur={() => handleBlur('area_sqm')}
+                      className={cn(getError('area_sqm') && 'border-destructive')}
+                    />
+                  </FormField>
+                </div>
               </div>
 
               {/* Rental-specific dates */}
@@ -1010,7 +1094,7 @@ export default function EditListing() {
 
             {/* Building & Floor - for apartments */}
             {isApartmentType && (
-              <div className="space-y-4">
+              <div ref={floorRef} className="space-y-4">
                 <h2 className="text-xl font-semibold text-foreground">Building & Floor</h2>
                 
                 <div className="grid sm:grid-cols-3 gap-4">
@@ -1066,7 +1150,7 @@ export default function EditListing() {
             )}
 
             {/* Outdoor Features */}
-            <div className="space-y-4">
+            <div ref={outdoorRef} className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Outdoor Features</h2>
               
               <div className="grid sm:grid-cols-2 gap-4">
@@ -1112,7 +1196,7 @@ export default function EditListing() {
             </div>
 
             {/* Parking */}
-            <div className="space-y-4">
+            <div ref={parkingRef} className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Parking</h2>
               
               <div className="flex items-center gap-2">
@@ -1166,7 +1250,7 @@ export default function EditListing() {
             </div>
 
             {/* Amenities */}
-            <div className="space-y-4">
+            <div ref={amenitiesRef} className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Amenities</h2>
               
               <div className="grid sm:grid-cols-2 gap-4">
@@ -1206,7 +1290,7 @@ export default function EditListing() {
             </div>
 
             {/* Building Info */}
-            <div className="space-y-4">
+            <div ref={buildingInfoRef} className="space-y-4">
               <h2 className="text-xl font-semibold text-foreground">Building Info</h2>
               
               <div className="grid sm:grid-cols-2 gap-4">
@@ -1281,7 +1365,7 @@ export default function EditListing() {
 
             {/* Rental Terms - only for rentals */}
             {isRental && (
-              <div className="space-y-4">
+              <div ref={rentalTermsRef} className="space-y-4">
                 <h2 className="text-xl font-semibold text-foreground">Rental Terms</h2>
                 
                 <div className="grid sm:grid-cols-2 gap-4">
