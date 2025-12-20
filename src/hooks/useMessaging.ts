@@ -98,12 +98,10 @@ export function useConversations(userId: string | undefined) {
             .eq('is_deleted', false)
             .neq('sender_id', userId);
 
-          // Get other user's profile
+          // Get other user's profile using secure function
           const otherUserId = conv.renter_id === userId ? conv.landlord_id : conv.renter_id;
           const { data: profile } = await supabase
-            .from('profiles')
-            .select('id:user_id, full_name, avatar_url')
-            .eq('user_id', otherUserId)
+            .rpc('get_profile_for_viewer', { p_profile_user_id: otherUserId })
             .single();
 
           return {
