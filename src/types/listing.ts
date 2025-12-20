@@ -81,9 +81,12 @@ export interface SavedListing {
   created_at: string;
 }
 
+export type OwnerFilter = 'all' | 'mine' | 'others';
+
 export interface ListingFilters {
   listing_type?: 'rent' | 'sale' | null;
   property_types?: string[] | null;
+  owner_filter?: OwnerFilter;
   min_price?: number | null;
   max_price?: number | null;
   min_bedrooms?: number | null;

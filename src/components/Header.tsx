@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Heart, PlusCircle, User, Menu, X, MessageCircle } from 'lucide-react';
+import { Home, Heart, PlusCircle, User, Menu, X, MessageCircle, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -135,6 +135,12 @@ export function Header() {
                       <Link to="/profile" className="cursor-pointer">
                         <User className="mr-2 h-4 w-4" />
                         {t('common.profile')}
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard" className="cursor-pointer">
+                        <BarChart3 className="mr-2 h-4 w-4" />
+                        {t('nav.dashboard')}
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>

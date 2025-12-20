@@ -2,15 +2,22 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Listing, ListingFilters } from '@/types/listing';
 
-export function useListings(filters?: ListingFilters) {
+export function useListings(filters?: ListingFilters, userId?: string) {
   return useQuery({
-    queryKey: ['listings', filters],
+    queryKey: ['listings', filters, userId],
     queryFn: async () => {
       let query = supabase
         .from('listings')
         .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
+
+      // Owner filter
+      if (filters?.owner_filter === 'mine' && userId) {
+        query = query.eq('user_id', userId);
+      } else if (filters?.owner_filter === 'others' && userId) {
+        query = query.neq('user_id', userId);
+      }
 
       // Basic filters
       if (filters?.listing_type) {

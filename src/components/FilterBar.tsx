@@ -1,6 +1,6 @@
-import { Search, SlidersHorizontal, X, ArrowUpDown, Building2, Home, DoorOpen, Square, Castle, Key, Banknote, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search, SlidersHorizontal, X, ArrowUpDown, Building2, Home, DoorOpen, Square, Castle, Key, Banknote, ChevronDown, ChevronUp, User, Users } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
-import { ListingFilters, SortOption, AreaUnit } from '@/types/listing';
+import { ListingFilters, SortOption, AreaUnit, OwnerFilter } from '@/types/listing';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +45,7 @@ interface FilterBarProps {
   sortBy: SortOption;
   onSortChange: (sort: SortOption) => void;
   totalCount?: number;
+  userId?: string;
 }
 
 // Price ranges by listing type
@@ -424,7 +425,7 @@ function FilterContent({
   );
 }
 
-export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount }: FilterBarProps) {
+export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount, userId }: FilterBarProps) {
   const { t } = useTranslation();
   const { formatPriceLabel, currencySymbol } = useFormattedPrice();
   const isMobile = useIsMobile();
@@ -432,6 +433,12 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   const [isOpen, setIsOpen] = useState(false);
   const [areaUnit, setAreaUnit] = useState<AreaUnit>('sqm');
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  const OWNER_FILTERS: { value: OwnerFilter; label: string; icon: React.ElementType }[] = [
+    { value: 'all', label: t('filters.allListings'), icon: Users },
+    { value: 'mine', label: t('filters.myListings'), icon: User },
+    { value: 'others', label: t('filters.othersListings'), icon: Users },
+  ];
 
   const LISTING_TYPES = [
     { value: 'rent', label: t('listingTypes.rent'), icon: Key },
@@ -717,6 +724,13 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     hasRentalActive,
   };
 
+  const handleOwnerFilterChange = (value: OwnerFilter) => {
+    onFiltersChange({
+      ...filters,
+      owner_filter: value === 'all' ? undefined : value,
+    });
+  };
+
   return (
     <div className="bg-background border-b border-border/50">
       <div className="p-4">
@@ -724,6 +738,32 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
         <h1 className="font-display text-2xl sm:text-3xl font-bold text-foreground mb-4">
           {t('common.findHome')}
         </h1>
+
+        {/* Owner filter toggle - only show for logged in users */}
+        {userId && (
+          <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1">
+            {OWNER_FILTERS.map((filter) => {
+              const isSelected = (filters.owner_filter || 'all') === filter.value;
+              const Icon = filter.icon;
+              return (
+                <button
+                  key={filter.value}
+                  type="button"
+                  onClick={() => handleOwnerFilterChange(filter.value)}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap",
+                    isSelected 
+                      ? 'bg-foreground text-background' 
+                      : 'bg-secondary text-foreground hover:bg-secondary/80'
+                  )}
+                >
+                  <Icon className="h-4 w-4" />
+                  {filter.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Search input + Filter button inline */}
         <div className="flex items-center gap-3">
