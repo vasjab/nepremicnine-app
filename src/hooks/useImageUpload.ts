@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { compressImage, generateUniqueFilename, isValidImageType, isWithinSizeLimit, formatBytes } from '@/lib/imageCompression';
 import { useToast } from '@/hooks/use-toast';
 
-interface UploadedImage {
+export interface UploadedImage {
   id: string;
   url: string;
   name: string;
