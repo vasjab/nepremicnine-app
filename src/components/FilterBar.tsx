@@ -1026,26 +1026,44 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
               </div>
             )}
 
-            {/* Title + Results count + Sort - all in one line */}
-            <div className="flex items-center justify-between gap-3 mb-3">
-              <div className="flex items-center gap-3 min-w-0">
-                <h1 className="font-display text-xl sm:text-2xl font-bold text-foreground whitespace-nowrap">
-                  {t('common.findHome')}
-                </h1>
-                {totalCount !== undefined && (
-                  <span className="text-sm text-muted-foreground whitespace-nowrap">
-                    {totalCount.toLocaleString()} {totalCount === 1 ? 'listing' : 'listings'}
-                  </span>
+            {/* Compact toolbar: Search + Count + Sort + Filters - all in one line */}
+            <div className="flex items-center gap-2 w-full">
+              {/* Search input with hover effect */}
+              <form onSubmit={handleSearch} className="relative flex-1 min-w-0">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+                <Input
+                  placeholder={t('nav.searchPlaceholder')}
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  className="w-full pl-10 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl transition-all duration-200 hover:bg-secondary/80 hover:shadow-sm focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0 focus-visible:ring-inset"
+                />
+                {searchValue && (
+                  <button
+                    type="button"
+                    onClick={clearSearch}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-all duration-200"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
                 )}
-              </div>
-              
-              <div className="flex items-center gap-1.5 shrink-0">
-                <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+              </form>
+
+              {/* Listings count as subtle pill - hidden on small screens */}
+              {totalCount !== undefined && (
+                <div className="hidden md:flex items-center px-3 py-1.5 bg-muted/50 rounded-full text-xs text-muted-foreground whitespace-nowrap transition-all duration-200 hover:bg-muted cursor-default">
+                  <span className="font-medium">{totalCount.toLocaleString()}</span>
+                  <span className="ml-1 opacity-70">{totalCount === 1 ? 'listing' : 'listings'}</span>
+                </div>
+              )}
+
+              {/* Sort dropdown with hover effect */}
+              <div className="shrink-0">
                 <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
-                  <SelectTrigger className="w-[130px] h-8 text-xs bg-secondary border-0 rounded-lg">
+                  <SelectTrigger className="h-9 w-[115px] px-2.5 text-xs bg-secondary/80 border-0 rounded-xl transition-all duration-200 hover:bg-accent/10 hover:scale-[1.02] hover:shadow-sm">
+                    <ArrowUpDown className="h-3 w-3 mr-1 text-muted-foreground shrink-0" />
                     <SelectValue placeholder={t('filters.sortBy')} />
                   </SelectTrigger>
-                  <SelectContent className="bg-popover rounded-xl">
+                  <SelectContent className="bg-popover rounded-xl shadow-lg">
                     <SelectItem value="newest">{t('filters.newest')}</SelectItem>
                     <SelectItem value="oldest">{t('filters.oldest')}</SelectItem>
                     <SelectItem value="price_asc">{t('filters.priceAsc')}</SelectItem>
@@ -1055,28 +1073,6 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            {/* Search input + Filter button inline */}
-            <div className="flex items-center gap-2 w-full overflow-hidden">
-              <form onSubmit={handleSearch} className="relative flex-1 min-w-0 overflow-hidden">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
-                <Input
-                  placeholder={t('nav.searchPlaceholder')}
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                  className="w-full pl-10 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-0 focus-visible:ring-inset"
-                />
-                {searchValue && (
-                  <button
-                    type="button"
-                    onClick={clearSearch}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground hover:text-foreground transition-colors rounded-full"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </form>
 
               {/* Filter button - Drawer on mobile, Dialog on desktop */}
               {isMobile ? (
@@ -1085,11 +1081,11 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                     <Button 
                       variant="outline" 
                       size="icon" 
-                      className="relative shrink-0 rounded-xl h-10 w-10 border-border/50"
+                      className="relative shrink-0 rounded-xl h-10 w-10 border-border/50 transition-all duration-200 hover:bg-accent hover:text-accent-foreground hover:scale-105 hover:shadow-md hover:border-accent"
                     >
                       <SlidersHorizontal className="h-4 w-4" />
                       {totalActiveFilters > 0 && (
-                        <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
+                        <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground animate-scale-in">
                           {totalActiveFilters}
                         </Badge>
                       )}
@@ -1110,11 +1106,11 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                     <Button 
                       variant="outline" 
                       size="icon" 
-                      className="relative shrink-0 rounded-xl h-10 w-10 border-border/50"
+                      className="relative shrink-0 rounded-xl h-10 w-10 border-border/50 transition-all duration-200 hover:bg-accent hover:text-accent-foreground hover:scale-105 hover:shadow-md hover:border-accent"
                     >
                       <SlidersHorizontal className="h-4 w-4" />
                       {totalActiveFilters > 0 && (
-                        <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
+                        <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground animate-scale-in">
                           {totalActiveFilters}
                         </Badge>
                       )}
