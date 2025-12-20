@@ -48,12 +48,19 @@ export function AddressAutocomplete({
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const justSelectedRef = useRef(false);
 
   const debouncedQuery = useDebounce(value, 300);
 
   // Fetch suggestions when query changes
   useEffect(() => {
     const fetchSuggestions = async () => {
+      // Skip fetching if we just selected a suggestion
+      if (justSelectedRef.current) {
+        justSelectedRef.current = false;
+        return;
+      }
+
       if (!debouncedQuery || debouncedQuery.length < 3) {
         setSuggestions([]);
         return;
@@ -145,6 +152,7 @@ export function AddressAutocomplete({
   }, []);
 
   const handleSelect = (suggestion: AddressSuggestion) => {
+    justSelectedRef.current = true;
     onChange(suggestion.address);
     onSelect(suggestion);
     setIsOpen(false);

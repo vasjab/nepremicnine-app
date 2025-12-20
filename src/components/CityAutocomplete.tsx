@@ -73,7 +73,7 @@ export function CityAutocomplete({
       try {
         const response = await fetch(
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(debouncedQuery)}.json?` +
-          `access_token=${token}&autocomplete=true&country=${country}&types=place&limit=5`
+          `access_token=${token}&autocomplete=true&country=${country}&types=locality,neighborhood,place&limit=5`
         );
 
         if (!response.ok) {

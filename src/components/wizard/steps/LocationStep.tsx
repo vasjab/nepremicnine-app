@@ -88,6 +88,7 @@ export function LocationStep({
               hasError={!!errors.city}
               country={getCountryCode(country)}
             />
+            <p className="text-xs text-muted-foreground">Enter the city or town name</p>
             {errors.city && (
               <p className="text-sm text-destructive">{errors.city}</p>
             )}
@@ -113,6 +114,7 @@ export function LocationStep({
               country={getCountryCode(country)}
               city={city}
             />
+            <p className="text-xs text-muted-foreground">Start typing to see suggestions, or enter manually</p>
             {errors.address && (
               <p className="text-sm text-destructive">{errors.address}</p>
             )}
