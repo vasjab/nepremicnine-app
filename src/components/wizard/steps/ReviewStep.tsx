@@ -53,7 +53,7 @@ export function ReviewStep({
   hasValidLocation,
   onEditStep,
 }: ReviewStepProps) {
-  const checkItems: CheckItem[] = [
+  const requiredItems: CheckItem[] = [
     {
       label: 'Property type selected',
       isComplete: !!formData.property_type,
@@ -78,6 +78,9 @@ export function ReviewStep({
       step: 3,
       icon: DollarSign,
     },
+  ];
+
+  const optionalItems: CheckItem[] = [
     {
       label: 'Photos uploaded',
       isComplete: images.length > 0,
@@ -86,7 +89,7 @@ export function ReviewStep({
     },
   ];
 
-  const allComplete = checkItems.every(item => item.isComplete);
+  const allComplete = requiredItems.every(item => item.isComplete);
   const price = parseFloat(formData.price) || 0;
 
   return (
@@ -162,10 +165,10 @@ export function ReviewStep({
           </div>
         </div>
 
-        {/* Checklist */}
+        {/* Required Checklist */}
         <div className="bg-card rounded-xl border border-border p-4 space-y-3">
-          <h4 className="font-medium text-foreground">Pre-flight checklist</h4>
-          {checkItems.map((item, index) => (
+          <h4 className="font-medium text-foreground">Required</h4>
+          {requiredItems.map((item, index) => (
             <div 
               key={index}
               className={cn(
@@ -196,6 +199,46 @@ export function ReviewStep({
                 >
                   <Edit3 className="h-4 w-4 mr-1" />
                   Fix
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Optional Checklist */}
+        <div className="bg-card rounded-xl border border-border/50 p-4 space-y-3">
+          <h4 className="font-medium text-muted-foreground text-sm">Optional (recommended)</h4>
+          {optionalItems.map((item, index) => (
+            <div 
+              key={index}
+              className={cn(
+                "flex items-center justify-between p-3 rounded-lg transition-colors",
+                item.isComplete ? "bg-success/10" : "bg-muted/50"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                {item.isComplete ? (
+                  <CheckCircle2 className="h-5 w-5 text-success" />
+                ) : (
+                  <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                )}
+                <span className={cn(
+                  "font-medium",
+                  item.isComplete ? "text-foreground" : "text-muted-foreground"
+                )}>
+                  {item.label}
+                </span>
+              </div>
+              
+              {!item.isComplete && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onEditStep(item.step)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Edit3 className="h-4 w-4 mr-1" />
+                  Add
                 </Button>
               )}
             </div>

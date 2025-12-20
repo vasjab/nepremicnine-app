@@ -1,4 +1,23 @@
-import { Search, SlidersHorizontal, X, ArrowUpDown, Building2, Home, DoorOpen, Square, Castle, Key, Banknote, ChevronDown, ChevronUp, User, Users } from 'lucide-react';
+import { 
+  Search, SlidersHorizontal, X, ArrowUpDown, Building2, Home, DoorOpen, Square, Castle, 
+  Key, Banknote, ChevronDown, User, Users, 
+  // Outdoor icons
+  Flower2, Waves, Eye, Mountain,
+  // Parking icons
+  Car, Zap, Bike, Package,
+  // Building amenities icons
+  ArrowUp, Dumbbell, Droplets, Shield,
+  // Energy icons
+  Flame, ThermometerSun, Sun, Smartphone,
+  // Equipment icons
+  Wind, UtensilsCrossed,
+  // Accessibility icons
+  Accessibility,
+  // Safety icons
+  Lock, Users2,
+  // Availability icons
+  Calendar
+} from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { ListingFilters, SortOption, AreaUnit, OwnerFilter } from '@/types/listing';
 import { Button } from '@/components/ui/button';
@@ -66,24 +85,31 @@ const SQM_TO_SQFT = 10.764;
 // Collapsible filter section component
 function FilterSection({ 
   title, 
+  icon: Icon,
   children, 
   defaultOpen = false,
-  hasActiveFilters = false 
+  hasActiveFilters = false,
+  activeCount = 0
 }: { 
   title: string; 
+  icon?: React.ElementType;
   children: React.ReactNode; 
   defaultOpen?: boolean;
   hasActiveFilters?: boolean;
+  activeCount?: number;
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
   
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-      <CollapsibleTrigger className="flex w-full items-center justify-between py-3 text-sm font-medium transition-colors hover:text-foreground">
+      <CollapsibleTrigger className="flex w-full items-center justify-between py-3 text-sm font-medium transition-colors hover:text-foreground group">
         <span className="flex items-center gap-2">
+          {Icon && <Icon className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />}
           {title}
-          {hasActiveFilters && (
-            <span className="h-2 w-2 rounded-full bg-accent animate-pulse-ring" />
+          {activeCount > 0 && (
+            <Badge variant="secondary" className="h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
+              {activeCount}
+            </Badge>
           )}
         </span>
         <ChevronDown className={cn(
@@ -91,32 +117,44 @@ function FilterSection({
           isOpen && "rotate-180"
         )} />
       </CollapsibleTrigger>
-      <CollapsibleContent className="space-y-3 pt-1 pb-4 animate-accordion-down">
+      <CollapsibleContent className="space-y-2 pt-1 pb-4 animate-accordion-down">
         {children}
       </CollapsibleContent>
     </Collapsible>
   );
 }
 
-// Toggle filter button component with larger touch target
+// Toggle filter button component with icon
 function ToggleFilter({ 
   label, 
+  icon: Icon,
   checked, 
   onChange 
 }: { 
   label: string; 
+  icon?: React.ElementType;
   checked: boolean; 
   onChange: (checked: boolean) => void;
 }) {
   return (
-    <div className="flex items-center justify-between min-h-[44px]">
-      <Label className="text-sm font-normal cursor-pointer flex-1" onClick={() => onChange(!checked)}>
-        {label}
-      </Label>
+    <div 
+      className={cn(
+        "flex items-center justify-between min-h-[44px] px-3 py-2 rounded-lg transition-all cursor-pointer",
+        checked ? "bg-accent/10 border border-accent/20" : "hover:bg-secondary/50"
+      )}
+      onClick={() => onChange(!checked)}
+    >
+      <div className="flex items-center gap-2.5">
+        {Icon && <Icon className={cn("h-4 w-4", checked ? "text-accent" : "text-muted-foreground")} />}
+        <Label className={cn("text-sm font-normal cursor-pointer", checked && "text-foreground")}>
+          {label}
+        </Label>
+      </div>
       <Switch 
         checked={checked} 
         onCheckedChange={onChange}
         className="data-[state=checked]:bg-accent"
+        onClick={(e) => e.stopPropagation()}
       />
     </div>
   );
@@ -146,14 +184,17 @@ function FilterContent({
   formatPriceLabelLocal,
   areaUnit,
   isApartmentTypeSelected,
-  isHouseTypeSelected,
   isRentalSelected,
-  hasFeaturesActive,
-  hasBuildingActive,
-  hasOutdoorActive,
-  hasParkingActive,
-  hasAmenitiesActive,
-  hasRentalActive,
+  // Active filter counts
+  activeOutdoorCount,
+  activeParkingCount,
+  activeBuildingAmenitiesCount,
+  activeEnergyCount,
+  activeEquipmentCount,
+  activeAccessibilityCount,
+  activeSafetyCount,
+  activeAvailabilityCount,
+  activeFeaturesCount,
 }: any) {
   return (
     <div className="space-y-4 px-1">
@@ -286,9 +327,10 @@ function FilterContent({
       {/* Collapsible Sections */}
       <div className="border-t border-border pt-4 space-y-1">
         {/* Features Section */}
-        <FilterSection title={t('filters.features')} hasActiveFilters={hasFeaturesActive}>
+        <FilterSection title={t('filters.features')} icon={Home} activeCount={activeFeaturesCount}>
           <ToggleFilter 
             label={t('filters.furnished')} 
+            icon={Home}
             checked={filters.is_furnished || false} 
             onChange={(v) => handleBooleanFilter('is_furnished', v)} 
           />
@@ -299,61 +341,193 @@ function FilterContent({
           />
         </FilterSection>
 
-        {/* Building & Floor Section - conditional */}
-        {(isApartmentTypeSelected || isHouseTypeSelected) && (
-          <FilterSection title={t('filters.buildingFloor')} hasActiveFilters={hasBuildingActive}>
-            {isApartmentTypeSelected && (
-              <ToggleFilter 
-                label={t('filters.hasElevator')} 
-                checked={filters.has_elevator || false} 
-                onChange={(v) => handleBooleanFilter('has_elevator', v)} 
-              />
-            )}
-          </FilterSection>
-        )}
-
-        {/* Outdoor Section */}
-        <FilterSection title={t('filters.outdoor')} hasActiveFilters={hasOutdoorActive}>
+        {/* Outdoor & Views Section */}
+        <FilterSection title="Outdoor & Views" icon={Flower2} activeCount={activeOutdoorCount}>
           <ToggleFilter 
             label={t('filters.hasBalcony')} 
+            icon={Square}
             checked={filters.has_balcony || false} 
             onChange={(v) => handleBooleanFilter('has_balcony', v)} 
           />
           <ToggleFilter 
             label={t('filters.hasTerrace')} 
+            icon={Square}
             checked={filters.has_terrace || false} 
             onChange={(v) => handleBooleanFilter('has_terrace', v)} 
           />
           <ToggleFilter 
+            label="Rooftop Terrace" 
+            icon={Building2}
+            checked={filters.has_rooftop_terrace || false} 
+            onChange={(v) => handleBooleanFilter('has_rooftop_terrace', v)} 
+          />
+          <ToggleFilter 
             label={t('filters.hasGarden')} 
+            icon={Flower2}
             checked={filters.has_garden || false} 
             onChange={(v) => handleBooleanFilter('has_garden', v)} 
           />
+          <ToggleFilter 
+            label="Waterfront" 
+            icon={Waves}
+            checked={filters.has_waterfront || false} 
+            onChange={(v) => handleBooleanFilter('has_waterfront', v)} 
+          />
+          <ToggleFilter 
+            label="Has View" 
+            icon={Eye}
+            checked={filters.has_view || false} 
+            onChange={(v) => handleBooleanFilter('has_view', v)} 
+          />
+          {filters.has_view && (
+            <div className="pl-3 space-y-2">
+              <Label className="text-sm font-normal text-muted-foreground">View Type</Label>
+              <Select
+                value={filters.view_type || 'any'}
+                onValueChange={(v) => onFiltersChange({ ...filters, view_type: v === 'any' ? null : v })}
+              >
+                <SelectTrigger className="bg-background h-10 rounded-lg">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent className="bg-popover">
+                  <SelectItem value="any">Any</SelectItem>
+                  <SelectItem value="city">City View</SelectItem>
+                  <SelectItem value="sea">Sea View</SelectItem>
+                  <SelectItem value="mountain">Mountain View</SelectItem>
+                  <SelectItem value="park">Park View</SelectItem>
+                  <SelectItem value="garden">Garden View</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </FilterSection>
 
-        {/* Parking Section */}
-        <FilterSection title={t('filters.parking')} hasActiveFilters={hasParkingActive}>
+        {/* Parking & Storage Section */}
+        <FilterSection title="Parking & Storage" icon={Car} activeCount={activeParkingCount}>
           <ToggleFilter 
             label={t('filters.hasParking')} 
+            icon={Car}
             checked={filters.has_parking || false} 
             onChange={(v) => handleBooleanFilter('has_parking', v)} 
           />
           <ToggleFilter 
             label={t('filters.hasGarage')} 
+            icon={Car}
             checked={filters.has_garage || false} 
             onChange={(v) => handleBooleanFilter('has_garage', v)} 
           />
+          <ToggleFilter 
+            label="EV Charging" 
+            icon={Zap}
+            checked={filters.has_ev_charging || false} 
+            onChange={(v) => handleBooleanFilter('has_ev_charging', v)} 
+          />
+          <ToggleFilter 
+            label="Bicycle Storage" 
+            icon={Bike}
+            checked={filters.has_bicycle_storage || false} 
+            onChange={(v) => handleBooleanFilter('has_bicycle_storage', v)} 
+          />
+          <ToggleFilter 
+            label={t('filters.hasStorage')} 
+            icon={Package}
+            checked={filters.has_storage || false} 
+            onChange={(v) => handleBooleanFilter('has_storage', v)} 
+          />
+          <ToggleFilter 
+            label="Basement" 
+            icon={ArrowUp}
+            checked={filters.has_basement || false} 
+            onChange={(v) => handleBooleanFilter('has_basement', v)} 
+          />
         </FilterSection>
 
-        {/* Amenities Section */}
-        <FilterSection title={t('filters.amenities')} hasActiveFilters={hasAmenitiesActive}>
+        {/* Building Amenities Section - for apartments */}
+        {isApartmentTypeSelected && (
+          <FilterSection title="Building Amenities" icon={Building2} activeCount={activeBuildingAmenitiesCount}>
+            <ToggleFilter 
+              label={t('filters.hasElevator')} 
+              icon={ArrowUp}
+              checked={filters.has_elevator || false} 
+              onChange={(v) => handleBooleanFilter('has_elevator', v)} 
+            />
+            <ToggleFilter 
+              label="Pool" 
+              icon={Droplets}
+              checked={filters.has_pool || false} 
+              onChange={(v) => handleBooleanFilter('has_pool', v)} 
+            />
+            <ToggleFilter 
+              label="Gym" 
+              icon={Dumbbell}
+              checked={filters.has_gym || false} 
+              onChange={(v) => handleBooleanFilter('has_gym', v)} 
+            />
+            <ToggleFilter 
+              label="Sauna" 
+              icon={ThermometerSun}
+              checked={filters.has_sauna || false} 
+              onChange={(v) => handleBooleanFilter('has_sauna', v)} 
+            />
+            <ToggleFilter 
+              label="Concierge" 
+              icon={Users2}
+              checked={filters.has_concierge || false} 
+              onChange={(v) => handleBooleanFilter('has_concierge', v)} 
+            />
+            <ToggleFilter 
+              label="Security" 
+              icon={Shield}
+              checked={filters.has_security || false} 
+              onChange={(v) => handleBooleanFilter('has_security', v)} 
+            />
+            <ToggleFilter 
+              label="Shared Laundry" 
+              checked={filters.has_shared_laundry || false} 
+              onChange={(v) => handleBooleanFilter('has_shared_laundry', v)} 
+            />
+          </FilterSection>
+        )}
+
+        {/* Energy & Comfort Section */}
+        <FilterSection title="Energy & Comfort" icon={Flame} activeCount={activeEnergyCount}>
+          <ToggleFilter 
+            label="Fireplace" 
+            icon={Flame}
+            checked={filters.has_fireplace || false} 
+            onChange={(v) => handleBooleanFilter('has_fireplace', v)} 
+          />
+          <ToggleFilter 
+            label="Floor Heating" 
+            icon={ThermometerSun}
+            checked={filters.has_floor_heating || false} 
+            onChange={(v) => handleBooleanFilter('has_floor_heating', v)} 
+          />
           <ToggleFilter 
             label={t('filters.hasAirConditioning')} 
+            icon={Wind}
             checked={filters.has_air_conditioning || false} 
             onChange={(v) => handleBooleanFilter('has_air_conditioning', v)} 
           />
           <ToggleFilter 
+            label="Solar Panels" 
+            icon={Sun}
+            checked={filters.has_solar_panels || false} 
+            onChange={(v) => handleBooleanFilter('has_solar_panels', v)} 
+          />
+          <ToggleFilter 
+            label="Smart Home" 
+            icon={Smartphone}
+            checked={filters.has_smart_home || false} 
+            onChange={(v) => handleBooleanFilter('has_smart_home', v)} 
+          />
+        </FilterSection>
+
+        {/* Equipment Section */}
+        <FilterSection title="Equipment" icon={UtensilsCrossed} activeCount={activeEquipmentCount}>
+          <ToggleFilter 
             label={t('filters.hasDishwasher')} 
+            icon={UtensilsCrossed}
             checked={filters.has_dishwasher || false} 
             onChange={(v) => handleBooleanFilter('has_dishwasher', v)} 
           />
@@ -363,22 +537,60 @@ function FilterContent({
             onChange={(v) => handleBooleanFilter('has_washing_machine', v)} 
           />
           <ToggleFilter 
-            label={t('filters.hasStorage')} 
-            checked={filters.has_storage || false} 
-            onChange={(v) => handleBooleanFilter('has_storage', v)} 
+            label="Dryer" 
+            checked={filters.has_dryer || false} 
+            onChange={(v) => handleBooleanFilter('has_dryer', v)} 
           />
         </FilterSection>
 
-        {/* Rental Terms Section - only for rentals */}
+        {/* Accessibility Section */}
+        <FilterSection title="Accessibility" icon={Accessibility} activeCount={activeAccessibilityCount}>
+          <ToggleFilter 
+            label="Step-free Access" 
+            icon={Accessibility}
+            checked={filters.has_step_free_access || false} 
+            onChange={(v) => handleBooleanFilter('has_step_free_access', v)} 
+          />
+          <ToggleFilter 
+            label="Wheelchair Accessible" 
+            icon={Accessibility}
+            checked={filters.has_wheelchair_accessible || false} 
+            onChange={(v) => handleBooleanFilter('has_wheelchair_accessible', v)} 
+          />
+        </FilterSection>
+
+        {/* Safety & Privacy Section */}
+        <FilterSection title="Safety & Privacy" icon={Lock} activeCount={activeSafetyCount}>
+          <ToggleFilter 
+            label="Secure Entrance" 
+            icon={Lock}
+            checked={filters.has_secure_entrance || false} 
+            onChange={(v) => handleBooleanFilter('has_secure_entrance', v)} 
+          />
+          <ToggleFilter 
+            label="Gated Community" 
+            icon={Shield}
+            checked={filters.has_gated_community || false} 
+            onChange={(v) => handleBooleanFilter('has_gated_community', v)} 
+          />
+        </FilterSection>
+
+        {/* Availability Section - only for rentals */}
         {isRentalSelected && (
-          <FilterSection title={t('filters.rentalTerms')} hasActiveFilters={hasRentalActive}>
-            <div className="space-y-2">
+          <FilterSection title="Availability & Terms" icon={Calendar} activeCount={activeAvailabilityCount}>
+            <ToggleFilter 
+              label="Move-in Immediately" 
+              icon={Calendar}
+              checked={filters.move_in_immediately || false} 
+              onChange={(v) => handleBooleanFilter('move_in_immediately', v)} 
+            />
+            <div className="space-y-2 px-3 py-2">
               <Label className="text-sm font-normal">{t('filters.internetIncluded')}</Label>
               <Select
                 value={filters.internet_included || 'any'}
                 onValueChange={(v) => onFiltersChange({ ...filters, internet_included: v === 'any' ? null : v })}
               >
-                <SelectTrigger className="bg-background h-12 rounded-xl">
+                <SelectTrigger className="bg-background h-10 rounded-lg">
                   <SelectValue placeholder={t('filters.any')} />
                 </SelectTrigger>
                 <SelectContent className="bg-popover">
@@ -388,13 +600,13 @@ function FilterContent({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 px-3 py-2">
               <Label className="text-sm font-normal">{t('filters.utilitiesIncluded')}</Label>
               <Select
                 value={filters.utilities_included || 'any'}
                 onValueChange={(v) => onFiltersChange({ ...filters, utilities_included: v === 'any' ? null : v })}
               >
-                <SelectTrigger className="bg-background h-12 rounded-xl">
+                <SelectTrigger className="bg-background h-10 rounded-lg">
                   <SelectValue placeholder={t('filters.any')} />
                 </SelectTrigger>
                 <SelectContent className="bg-popover">
@@ -456,10 +668,6 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   // Check if apartment-type properties are selected
   const isApartmentTypeSelected = filters.property_types?.some(t => 
     ['apartment', 'room', 'studio'].includes(t)
-  ) ?? true;
-  
-  const isHouseTypeSelected = filters.property_types?.some(t => 
-    ['house', 'villa'].includes(t)
   ) ?? true;
 
   const isRentalSelected = filters.listing_type === 'rent' || filters.listing_type === null;
@@ -600,13 +808,16 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
   const hasActiveFilters = Object.values(filters).some(v => v !== null && v !== undefined && (Array.isArray(v) ? v.length > 0 : true));
 
-  // Check which sections have active filters
-  const hasFeaturesActive = !!(filters.is_furnished || filters.allows_pets);
-  const hasBuildingActive = !!(filters.has_elevator || filters.min_floor != null || filters.min_property_floors != null);
-  const hasOutdoorActive = !!(filters.has_balcony || filters.has_terrace || filters.has_garden);
-  const hasParkingActive = !!(filters.has_parking || filters.has_garage);
-  const hasAmenitiesActive = !!(filters.has_air_conditioning || filters.has_dishwasher || filters.has_washing_machine || filters.has_storage);
-  const hasRentalActive = !!(filters.internet_included || filters.utilities_included);
+  // Count active filters per section
+  const activeFeaturesCount = [filters.is_furnished, filters.allows_pets].filter(Boolean).length;
+  const activeOutdoorCount = [filters.has_balcony, filters.has_terrace, filters.has_garden, filters.has_rooftop_terrace, filters.has_waterfront, filters.has_view].filter(Boolean).length;
+  const activeParkingCount = [filters.has_parking, filters.has_garage, filters.has_ev_charging, filters.has_bicycle_storage, filters.has_storage, filters.has_basement].filter(Boolean).length;
+  const activeBuildingAmenitiesCount = [filters.has_elevator, filters.has_pool, filters.has_gym, filters.has_sauna, filters.has_concierge, filters.has_security, filters.has_shared_laundry].filter(Boolean).length;
+  const activeEnergyCount = [filters.has_fireplace, filters.has_floor_heating, filters.has_air_conditioning, filters.has_solar_panels, filters.has_smart_home].filter(Boolean).length;
+  const activeEquipmentCount = [filters.has_dishwasher, filters.has_washing_machine, filters.has_dryer].filter(Boolean).length;
+  const activeAccessibilityCount = [filters.has_step_free_access, filters.has_wheelchair_accessible].filter(Boolean).length;
+  const activeSafetyCount = [filters.has_secure_entrance, filters.has_gated_community].filter(Boolean).length;
+  const activeAvailabilityCount = [filters.move_in_immediately, filters.internet_included, filters.utilities_included].filter(v => v != null && v !== false).length;
 
   // Format price for display
   const formatPriceLabelLocal = (value: number): string => {
@@ -683,6 +894,18 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     if (filters.has_dishwasher) chips.push({ label: t('filters.hasDishwasher'), onRemove: () => handleBooleanFilter('has_dishwasher', false) });
     if (filters.has_washing_machine) chips.push({ label: t('filters.hasWashingMachine'), onRemove: () => handleBooleanFilter('has_washing_machine', false) });
     if (filters.has_storage) chips.push({ label: t('filters.hasStorage'), onRemove: () => handleBooleanFilter('has_storage', false) });
+    // New filter chips
+    if (filters.has_ev_charging) chips.push({ label: 'EV Charging', onRemove: () => handleBooleanFilter('has_ev_charging', false) });
+    if (filters.has_pool) chips.push({ label: 'Pool', onRemove: () => handleBooleanFilter('has_pool', false) });
+    if (filters.has_gym) chips.push({ label: 'Gym', onRemove: () => handleBooleanFilter('has_gym', false) });
+    if (filters.has_sauna) chips.push({ label: 'Sauna', onRemove: () => handleBooleanFilter('has_sauna', false) });
+    if (filters.has_waterfront) chips.push({ label: 'Waterfront', onRemove: () => handleBooleanFilter('has_waterfront', false) });
+    if (filters.has_view) chips.push({ label: 'Has View', onRemove: () => handleBooleanFilter('has_view', false) });
+    if (filters.has_floor_heating) chips.push({ label: 'Floor Heating', onRemove: () => handleBooleanFilter('has_floor_heating', false) });
+    if (filters.has_smart_home) chips.push({ label: 'Smart Home', onRemove: () => handleBooleanFilter('has_smart_home', false) });
+    if (filters.has_step_free_access) chips.push({ label: 'Step-free Access', onRemove: () => handleBooleanFilter('has_step_free_access', false) });
+    if (filters.has_secure_entrance) chips.push({ label: 'Secure Entrance', onRemove: () => handleBooleanFilter('has_secure_entrance', false) });
+    if (filters.move_in_immediately) chips.push({ label: 'Move-in Immediately', onRemove: () => handleBooleanFilter('move_in_immediately', false) });
 
     return chips;
   };
@@ -714,22 +937,21 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     formatPriceLabelLocal,
     areaUnit,
     isApartmentTypeSelected,
-    isHouseTypeSelected,
     isRentalSelected,
-    hasFeaturesActive,
-    hasBuildingActive,
-    hasOutdoorActive,
-    hasParkingActive,
-    hasAmenitiesActive,
-    hasRentalActive,
+    activeOutdoorCount,
+    activeParkingCount,
+    activeBuildingAmenitiesCount,
+    activeEnergyCount,
+    activeEquipmentCount,
+    activeAccessibilityCount,
+    activeSafetyCount,
+    activeAvailabilityCount,
+    activeFeaturesCount,
   };
 
-  const handleOwnerFilterChange = (value: OwnerFilter) => {
-    onFiltersChange({
-      ...filters,
-      owner_filter: value === 'all' ? undefined : value,
-    });
-  };
+  const totalActiveFilters = activeOutdoorCount + activeParkingCount + activeBuildingAmenitiesCount + 
+    activeEnergyCount + activeEquipmentCount + activeAccessibilityCount + activeSafetyCount + 
+    activeAvailabilityCount + activeFeaturesCount;
 
   return (
     <div className="bg-background border-b border-border/50">
@@ -770,8 +992,10 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   className="relative shrink-0 rounded-xl h-12 w-12 border-border/50"
                 >
                   <SlidersHorizontal className="h-5 w-5" />
-                  {hasActiveFilters && (
-                    <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-accent" />
+                  {totalActiveFilters > 0 && (
+                    <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
+                      {totalActiveFilters}
+                    </Badge>
                   )}
                 </Button>
               </DrawerTrigger>
@@ -793,8 +1017,10 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   className="relative shrink-0 rounded-xl h-12 w-12 border-border/50"
                 >
                   <SlidersHorizontal className="h-5 w-5" />
-                  {hasActiveFilters && (
-                    <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-accent" />
+                  {totalActiveFilters > 0 && (
+                    <Badge className="absolute -top-2 -right-2 h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
+                      {totalActiveFilters}
+                    </Badge>
                   )}
                 </Button>
               </DialogTrigger>

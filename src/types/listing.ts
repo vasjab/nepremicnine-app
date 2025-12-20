@@ -159,6 +159,7 @@ export interface ListingFilters {
   allows_pets?: boolean | null;
   available_from?: string | null;
   available_until?: string | null;
+  move_in_immediately?: boolean | null;
   
   // Building/Floor filters
   min_floor?: number | null;
@@ -171,17 +172,47 @@ export interface ListingFilters {
   has_balcony?: boolean | null;
   has_terrace?: boolean | null;
   has_garden?: boolean | null;
+  has_rooftop_terrace?: boolean | null;
+  has_waterfront?: boolean | null;
+  has_view?: boolean | null;
+  view_type?: string | null;
   
   // Parking filters
   has_parking?: boolean | null;
   parking_type?: string | null;
   has_garage?: boolean | null;
+  has_ev_charging?: boolean | null;
+  has_bicycle_storage?: boolean | null;
+  has_basement?: boolean | null;
   
-  // Amenities filters
+  // Building Amenities filters
+  has_gym?: boolean | null;
+  has_pool?: boolean | null;
+  has_sauna?: boolean | null;
+  has_concierge?: boolean | null;
+  has_security?: boolean | null;
+  has_shared_laundry?: boolean | null;
+  
+  // Equipment filters
   has_storage?: boolean | null;
   has_air_conditioning?: boolean | null;
   has_dishwasher?: boolean | null;
   has_washing_machine?: boolean | null;
+  has_dryer?: boolean | null;
+  
+  // Energy & Comfort filters
+  has_fireplace?: boolean | null;
+  has_floor_heating?: boolean | null;
+  has_solar_panels?: boolean | null;
+  has_smart_home?: boolean | null;
+  
+  // Accessibility filters
+  has_step_free_access?: boolean | null;
+  has_wheelchair_accessible?: boolean | null;
+  
+  // Safety filters
+  has_secure_entrance?: boolean | null;
+  has_gated_community?: boolean | null;
   
   // Building info filters
   heating_type?: string | null;
