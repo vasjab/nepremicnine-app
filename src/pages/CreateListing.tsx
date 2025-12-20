@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Eye } from 'lucide-react';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCreateListing } from '@/hooks/useListings';
@@ -29,6 +29,8 @@ import { useImageUpload } from '@/hooks/useImageUpload';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { CURRENCIES, CURRENCY_SYMBOLS, type Currency } from '@/lib/exchangeRates';
+import { ListingPreviewModal } from '@/components/ListingPreviewModal';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Validation schema for listing data
 const listingSchema = z.object({
@@ -128,12 +130,16 @@ export default function CreateListing() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const createListing = useCreateListing();
   const firstErrorRef = useRef<HTMLDivElement>(null);
 
   // Bot protection
   const [honeypot, setHoneypot] = useState('');
   const { checkRateLimit, isLimited, remainingTime } = useRateLimit(LISTING_RATE_LIMIT);
+
+  // Preview modal state
+  const [showPreview, setShowPreview] = useState(false);
 
   // Image upload hook
   const {
@@ -1226,18 +1232,27 @@ export default function CreateListing() {
             </div>
 
             {/* Submit */}
-            <div className="flex gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="sm:flex-1"
                 onClick={() => navigate(-1)}
               >
                 Cancel
               </Button>
               <Button
+                type="button"
+                variant="secondary"
+                className="sm:flex-1"
+                onClick={() => setShowPreview(true)}
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                {t('preview.previewButton')}
+              </Button>
+              <Button
                 type="submit"
-                className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
+                className="sm:flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
                 disabled={createListing.isPending || isLimited || isGeocoding}
               >
                 {createListing.isPending ? 'Creating...' : isGeocoding ? 'Finding location...' : 'Create Listing'}
@@ -1252,6 +1267,15 @@ export default function CreateListing() {
           </form>
         </div>
       </main>
+
+      {/* Preview Modal */}
+      <ListingPreviewModal
+        formData={formData}
+        uploadedImages={uploadedImages}
+        coordinates={manualCoordinates || coordinates}
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+      />
     </div>
   );
 }
