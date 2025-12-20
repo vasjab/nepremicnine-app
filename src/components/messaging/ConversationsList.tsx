@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { MessageCircle, Trash2, Loader2 } from 'lucide-react';
+import { MessageCircle, Trash2, Loader2, Home, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Conversation } from '@/hooks/useMessaging';
 import { useDeleteConversation } from '@/hooks/useDeleteConversation';
 import { cn } from '@/lib/utils';
@@ -134,10 +135,16 @@ export function ConversationsList({
                   )}
                 </div>
 
-                {/* Listing title */}
-                <p className="text-xs text-muted-foreground truncate mb-1">
-                  {conversation.listing?.title}
-                </p>
+                {/* Listing title - clickable link */}
+                <Link
+                  to={`/listing/${conversation.listing?.id}`}
+                  className="text-xs text-muted-foreground truncate mb-1 hover:text-accent hover:underline flex items-center gap-1 w-fit"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Home className="h-3 w-3 flex-shrink-0" />
+                  <span className="truncate">{conversation.listing?.title}</span>
+                  <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                </Link>
 
                 {/* Last message */}
                 <div className="flex items-center gap-2">

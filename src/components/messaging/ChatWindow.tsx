@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { format, isToday, isYesterday, differenceInMinutes } from 'date-fns';
-import { ArrowLeft, Send, Loader2, MoreVertical, User, Trash2, Reply } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, MoreVertical, User, Trash2, Reply, Home, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Message, Conversation, useMessages, useSendMessage, useMarkMessagesRead, useEditMessage, useDeleteMessage } from '@/hooks/useMessaging';
 import { useMessageReactions, useToggleReaction } from '@/hooks/useMessageReactions';
 import { useAuth } from '@/contexts/AuthContext';
@@ -331,9 +332,15 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
             <h2 className="font-semibold text-foreground truncate">
               {otherUser?.full_name || (isRenter ? 'Landlord' : 'Renter')}
             </h2>
-            <p className="text-xs text-muted-foreground truncate">
-              {conversation.listing?.title}
-            </p>
+            <Link 
+              to={`/listing/${conversation.listing?.id}`}
+              className="text-xs text-muted-foreground truncate hover:text-accent hover:underline flex items-center gap-1"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Home className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">{conversation.listing?.title}</span>
+              <ExternalLink className="h-3 w-3 flex-shrink-0" />
+            </Link>
           </div>
         </button>
 
