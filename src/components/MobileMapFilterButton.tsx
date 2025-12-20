@@ -356,7 +356,7 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
         <DrawerHeader className="pb-4 border-b border-border">
           <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
         </DrawerHeader>
-        <ScrollArea className="flex-1 px-4 overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto px-4">
           <div className="space-y-6 px-1 pb-4">
             {/* Listing Type */}
             <div className="space-y-4 pt-4 pb-2 border-b border-border/50">
@@ -631,7 +631,7 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
               )}
             </div>
           </div>
-        </ScrollArea>
+        </div>
         
         {/* Airbnb-style footer */}
         <div className="sticky bottom-0 left-0 right-0 px-6 py-4 bg-background border-t border-border flex items-center justify-between gap-4">

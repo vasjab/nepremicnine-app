@@ -1128,9 +1128,9 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                 <DrawerHeader className="pb-4 border-b border-border shrink-0">
                   <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
                 </DrawerHeader>
-                <ScrollArea className="flex-1 min-h-0 px-4">
+                <div className="flex-1 min-h-0 overflow-y-auto px-4">
                   <FilterContent {...filterContentProps} />
-                </ScrollArea>
+                </div>
                 {/* Airbnb-style footer */}
                 <div className="sticky bottom-0 left-0 right-0 px-6 py-4 bg-background border-t border-border flex items-center justify-between gap-4">
                   {hasActiveFilters ? (
@@ -1174,9 +1174,9 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                 <DialogHeader className="p-6 pb-4 border-b border-border shrink-0">
                   <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
                 </DialogHeader>
-                <ScrollArea className="flex-1 min-h-0 px-6">
+                <div className="flex-1 min-h-0 overflow-y-auto px-6">
                   <FilterContent {...filterContentProps} />
-                </ScrollArea>
+                </div>
                 {/* Airbnb-style footer */}
                 <div className="px-6 py-5 bg-background border-t border-border flex items-center justify-between gap-4">
                   {hasActiveFilters ? (
