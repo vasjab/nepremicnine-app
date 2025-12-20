@@ -2,17 +2,16 @@ import { WizardStepWrapper } from '../WizardStepWrapper';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { InfoTooltip } from '@/components/ui/info-tooltip';
 import { cn } from '@/lib/utils';
 import { 
   Flame, 
   Building2, 
-  RefreshCw, 
   Zap, 
   Fuel, 
   TreePine, 
-  Thermometer, 
   Settings,
+  RefreshCw,
+  Heater,
   type LucideIcon
 } from 'lucide-react';
 
@@ -20,7 +19,9 @@ interface BuildingInfoStepProps {
   floorNumber: string;
   totalFloorsBuilding: string;
   propertyFloors: string;
-  heatingType: string;
+  heatingDistribution: string;
+  heatingSource: string;
+  heatPumpType: string;
   heatingTypeOther: string;
   energyRating: string;
   yearBuilt: string;
@@ -29,22 +30,33 @@ interface BuildingInfoStepProps {
   onChange: (field: string, value: string) => void;
 }
 
-interface HeatingType {
+interface HeatingOption {
   value: string;
   label: string;
   icon: LucideIcon;
   info: string;
 }
 
-const HEATING_TYPES: HeatingType[] = [
-  { value: 'central', label: 'Central', icon: Flame, info: 'Central boiler distributes hot water through radiators or underfloor pipes throughout the building' },
-  { value: 'district', label: 'District', icon: Building2, info: 'Heat supplied from a central municipal facility through an insulated pipe network to multiple buildings' },
-  { value: 'heat_pump', label: 'Heat Pump', icon: RefreshCw, info: 'Efficient system that extracts heat from air, water, or ground — can also provide cooling' },
-  { value: 'electric', label: 'Electric', icon: Zap, info: 'Electric baseboard heaters, radiators, or infrared panels — simple but can be costly to run' },
-  { value: 'gas', label: 'Gas', icon: Fuel, info: 'Natural gas powered boiler or furnace system — common and efficient for heating' },
-  { value: 'wood', label: 'Wood/Pellet', icon: TreePine, info: 'Wood burning stove or automated pellet boiler — eco-friendly with proper sourcing' },
-  { value: 'geothermal', label: 'Geothermal', icon: Thermometer, info: 'Uses stable underground temperature for highly efficient heating and cooling' },
-  { value: 'other', label: 'Other', icon: Settings, info: 'Other heating system not listed above' },
+const HEATING_DISTRIBUTION: HeatingOption[] = [
+  { value: 'central', label: 'Central Heating', icon: Building2, info: 'One heating source distributes heat throughout the property via radiators, underfloor pipes, or vents' },
+  { value: 'individual', label: 'Individual Heaters', icon: Heater, info: 'Each room has its own heating unit (wall heaters, radiators, portable heaters)' },
+  { value: 'district', label: 'District Heating', icon: Flame, info: 'Heat supplied from a central municipal facility shared by multiple buildings' },
+];
+
+const HEATING_SOURCES: HeatingOption[] = [
+  { value: 'gas', label: 'Gas', icon: Fuel, info: 'Natural gas powered boiler or heaters' },
+  { value: 'electric', label: 'Electric', icon: Zap, info: 'Electric boiler, radiators, or baseboard heaters' },
+  { value: 'heat_pump', label: 'Heat Pump', icon: RefreshCw, info: 'Efficient system that extracts heat from air, water, or ground' },
+  { value: 'wood_pellet', label: 'Wood/Pellet', icon: TreePine, info: 'Wood burning stove or automated pellet boiler' },
+  { value: 'oil', label: 'Oil', icon: Fuel, info: 'Oil-fired boiler system' },
+  { value: 'other', label: 'Other', icon: Settings, info: 'Other heating source not listed' },
+];
+
+const HEAT_PUMP_TYPES = [
+  { value: 'air_to_air', label: 'Air-to-Air', info: 'Most common and affordable. Extracts heat from outdoor air, delivers warm air directly into rooms' },
+  { value: 'air_to_water', label: 'Air-to-Water', info: 'Extracts heat from outdoor air, heats water for radiators or underfloor heating' },
+  { value: 'ground_source', label: 'Ground Source (Geothermal)', info: 'Extracts heat from underground via buried pipes. Very efficient but higher install cost' },
+  { value: 'water_source', label: 'Water Source', info: 'Extracts heat from a lake, well, or groundwater' },
 ];
 
 const ENERGY_RATINGS = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
@@ -60,7 +72,9 @@ export function BuildingInfoStep({
   floorNumber,
   totalFloorsBuilding,
   propertyFloors,
-  heatingType,
+  heatingDistribution,
+  heatingSource,
+  heatPumpType,
   heatingTypeOther,
   energyRating,
   yearBuilt,
@@ -72,6 +86,12 @@ export function BuildingInfoStep({
   const isHouseType = ['house', 'villa'].includes(propertyType);
   
   const currentYear = new Date().getFullYear();
+  
+  // Show heating source options for central and individual, but not district
+  const showHeatingSource = heatingDistribution === 'central' || heatingDistribution === 'individual';
+  
+  // Show heat pump type when heat pump is selected as source
+  const showHeatPumpType = heatingSource === 'heat_pump';
 
   return (
     <WizardStepWrapper
@@ -130,57 +150,136 @@ export function BuildingInfoStep({
           </div>
         )}
 
-        {/* Heating type - Button cards */}
+        {/* Heating System - Step 1: Distribution */}
         <div className="space-y-3">
-          <Label>Heating type</Label>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {HEATING_TYPES.map((type) => {
+          <Label>Heating distribution</Label>
+          <p className="text-xs text-muted-foreground -mt-1">How is heat distributed throughout the property?</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {HEATING_DISTRIBUTION.map((type) => {
               const Icon = type.icon;
-              const isSelected = heatingType === type.value;
+              const isSelected = heatingDistribution === type.value;
               return (
                 <button
                   key={type.value}
                   type="button"
-                  onClick={() => onChange('heating_type', type.value)}
+                  onClick={() => {
+                    onChange('heating_distribution', type.value);
+                    // Reset dependent fields when changing distribution
+                    if (type.value === 'district') {
+                      onChange('heating_source', '');
+                      onChange('heat_pump_type', '');
+                    }
+                  }}
                   className={cn(
-                    "relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 text-center min-h-[90px]",
+                    "flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 text-center min-h-[100px]",
                     isSelected
                       ? "border-primary bg-primary/5 shadow-md"
                       : "border-border hover:border-primary/50 hover:bg-secondary/50"
                   )}
                 >
-                  <div className="absolute top-2 right-2">
-                    <InfoTooltip content={type.info} />
-                  </div>
                   <Icon className={cn(
                     "h-6 w-6 transition-colors",
                     isSelected ? "text-primary" : "text-muted-foreground"
                   )} />
                   <span className={cn(
-                    "text-xs font-medium transition-colors",
+                    "text-sm font-medium transition-colors",
                     isSelected ? "text-primary" : "text-foreground"
                   )}>
                     {type.label}
                   </span>
-                  {isSelected && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full flex items-center justify-center">
-                      <span className="text-primary-foreground text-[10px]">✓</span>
-                    </div>
-                  )}
+                  <span className="text-xs text-muted-foreground line-clamp-2">{type.info}</span>
                 </button>
               );
             })}
           </div>
-          
-          {heatingType === 'other' && (
-            <Input
-              placeholder="Describe heating type..."
-              value={heatingTypeOther}
-              onChange={(e) => onChange('heating_type_other', e.target.value)}
-              className="mt-2"
-            />
-          )}
         </div>
+
+        {/* Heating System - Step 2: Heat Source */}
+        {showHeatingSource && (
+          <div className="space-y-3">
+            <Label>Heat source</Label>
+            <p className="text-xs text-muted-foreground -mt-1">What type of heating system powers the property?</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {HEATING_SOURCES.map((type) => {
+                const Icon = type.icon;
+                const isSelected = heatingSource === type.value;
+                return (
+                  <button
+                    key={type.value}
+                    type="button"
+                    onClick={() => {
+                      onChange('heating_source', type.value);
+                      // Reset heat pump type if not heat pump
+                      if (type.value !== 'heat_pump') {
+                        onChange('heat_pump_type', '');
+                      }
+                    }}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 text-center min-h-[80px]",
+                      isSelected
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : "border-border hover:border-primary/50 hover:bg-secondary/50"
+                    )}
+                  >
+                    <Icon className={cn(
+                      "h-5 w-5 transition-colors",
+                      isSelected ? "text-primary" : "text-muted-foreground"
+                    )} />
+                    <span className={cn(
+                      "text-xs font-medium transition-colors",
+                      isSelected ? "text-primary" : "text-foreground"
+                    )}>
+                      {type.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            
+            {heatingSource === 'other' && (
+              <Input
+                placeholder="Describe heating source..."
+                value={heatingTypeOther}
+                onChange={(e) => onChange('heating_type_other', e.target.value)}
+                className="mt-2"
+              />
+            )}
+          </div>
+        )}
+
+        {/* Heating System - Step 3: Heat Pump Type */}
+        {showHeatPumpType && (
+          <div className="space-y-3">
+            <Label>Heat pump type</Label>
+            <p className="text-xs text-muted-foreground -mt-1">What type of heat pump is installed?</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {HEAT_PUMP_TYPES.map((type) => {
+                const isSelected = heatPumpType === type.value;
+                return (
+                  <button
+                    key={type.value}
+                    type="button"
+                    onClick={() => onChange('heat_pump_type', type.value)}
+                    className={cn(
+                      "flex flex-col items-start gap-1 p-3 rounded-xl border-2 transition-all duration-200 text-left",
+                      isSelected
+                        ? "border-primary bg-primary/5 shadow-md"
+                        : "border-border hover:border-primary/50 hover:bg-secondary/50"
+                    )}
+                  >
+                    <span className={cn(
+                      "text-sm font-medium transition-colors",
+                      isSelected ? "text-primary" : "text-foreground"
+                    )}>
+                      {type.label}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{type.info}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Energy rating */}
         <div className="space-y-2">

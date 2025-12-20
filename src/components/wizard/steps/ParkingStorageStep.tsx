@@ -26,7 +26,6 @@ interface ParkingStorageStepProps {
   hasBicycleStorage: boolean;
   hasStrollerStorage: boolean;
   hasStorage: boolean;
-  hasBasement: boolean;
   onFeatureToggle: (feature: string, value: boolean) => void;
   onChange: (field: string, value: string) => void;
 }
@@ -48,8 +47,7 @@ const PARKING_FEATURES: FeatureCard[] = [
 const STORAGE_FEATURES: FeatureCard[] = [
   { id: 'has_bicycle_storage', label: 'Bicycle Storage', icon: Bike, info: 'Secure common area for storing bicycles' },
   { id: 'has_stroller_storage', label: 'Stroller Storage', icon: Baby, info: 'Common storage room for baby strollers and prams' },
-  { id: 'has_storage', label: 'Storage Room', icon: Package, info: 'Private storage unit or locker in common area' },
-  { id: 'has_basement', label: 'Basement', icon: ArrowDown, info: 'Private basement or cellar space for storage' },
+  { id: 'has_storage', label: 'Storage Room', icon: Package, info: 'Private storage space — can be a basement, attic, locker, or dedicated room in common area' },
 ];
 
 const PARKING_TYPES = [
@@ -77,7 +75,6 @@ export function ParkingStorageStep({
   hasBicycleStorage,
   hasStrollerStorage,
   hasStorage,
-  hasBasement,
   onFeatureToggle,
   onChange,
 }: ParkingStorageStepProps) {
@@ -92,7 +89,6 @@ export function ParkingStorageStep({
     has_bicycle_storage: hasBicycleStorage,
     has_stroller_storage: hasStrollerStorage,
     has_storage: hasStorage,
-    has_basement: hasBasement,
   };
 
   const allFeatureValues = { ...parkingFeatureValues, ...storageFeatureValues };
