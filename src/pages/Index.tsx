@@ -177,7 +177,7 @@ const Index = () => {
         </div>
 
         {/* Right panel - Map */}
-        <div className={`flex-1 ${
+        <div className={`flex-1 h-full min-h-0 ${
           mobileView === 'list' ? 'hidden lg:block' : 'block'
         }`}>
           <MapView
