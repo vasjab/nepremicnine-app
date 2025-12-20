@@ -75,8 +75,8 @@ export function Header() {
               className={cn(
                 'relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
                 isActive('/') 
-                  ? 'text-foreground' 
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'text-foreground bg-secondary/60' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
               )}
             >
               {t('nav.findHome')}
@@ -89,8 +89,8 @@ export function Header() {
               className={cn(
                 'relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
                 isActive('/sold-rented') 
-                  ? 'text-foreground' 
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'text-foreground bg-secondary/60' 
+                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
               )}
             >
               {t('soldRented.recentlySold')}
@@ -105,8 +105,8 @@ export function Header() {
                   className={cn(
                     'relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
                     isActive('/saved') 
-                      ? 'text-foreground' 
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? 'text-foreground bg-secondary/60' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
                   )}
                 >
                   {t('nav.saved')}
@@ -119,8 +119,8 @@ export function Header() {
                   className={cn(
                     'relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
                     isActive('/my-listings') 
-                      ? 'text-foreground' 
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? 'text-foreground bg-secondary/60' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
                   )}
                 >
                   {t('nav.myListings')}
