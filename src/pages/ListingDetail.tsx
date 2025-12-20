@@ -271,7 +271,7 @@ export default function ListingDetail() {
           )}
 
           {/* Type badge */}
-          <div className="absolute bottom-4 left-4">
+          <div className="absolute top-4 left-4">
             <span className="px-3 py-1.5 rounded-lg bg-card/90 backdrop-blur-sm text-sm font-medium">
               {listing.listing_type === 'rent' ? t('listingTypes.rent') : t('listingTypes.sale')}
             </span>
