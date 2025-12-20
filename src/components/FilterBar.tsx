@@ -1124,11 +1124,11 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   </span>
                 )}
               </div>
-              <DrawerContent className="max-h-[85vh] flex flex-col">
-                <DrawerHeader className="pb-4 border-b border-border">
+              <DrawerContent className="max-h-[85vh] flex flex-col overflow-hidden">
+                <DrawerHeader className="pb-4 border-b border-border shrink-0">
                   <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
                 </DrawerHeader>
-                <ScrollArea className="flex-1 px-4 overflow-y-auto">
+                <ScrollArea className="flex-1 min-h-0 px-4">
                   <FilterContent {...filterContentProps} />
                 </ScrollArea>
                 {/* Airbnb-style footer */}
@@ -1145,10 +1145,10 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   )}
                   <Button
                     onClick={() => setIsOpen(false)}
-                    className="bg-foreground text-background hover:bg-foreground/90 rounded-xl px-6 py-3 h-12 text-sm font-semibold min-w-[140px]"
+                    className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-xl px-6 py-3 h-12 text-sm font-semibold min-w-[140px]"
                   >
                     {totalCount !== undefined 
-                      ? `${t('filters.show') || 'Show'} ${totalCount.toLocaleString()} ${totalCount === 1 ? t('filters.listing') || 'listing' : t('filters.listings') || 'listings'}`
+                      ? `${t('filters.show')} ${totalCount.toLocaleString()} ${totalCount === 1 ? t('filters.listing') : t('filters.listings')}`
                       : t('filters.applyFilters')
                     }
                   </Button>
@@ -1170,11 +1170,11 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   </span>
                 )}
               </div>
-              <DialogContent className="sm:max-w-lg max-h-[85vh] p-0 rounded-2xl flex flex-col">
-                <DialogHeader className="p-6 pb-4 border-b border-border">
+              <DialogContent className="sm:max-w-lg max-h-[85vh] p-0 rounded-2xl flex flex-col overflow-hidden">
+                <DialogHeader className="p-6 pb-4 border-b border-border shrink-0">
                   <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
                 </DialogHeader>
-                <ScrollArea className="flex-1 max-h-[calc(85vh-180px)] px-6">
+                <ScrollArea className="flex-1 min-h-0 px-6">
                   <FilterContent {...filterContentProps} />
                 </ScrollArea>
                 {/* Airbnb-style footer */}
@@ -1191,10 +1191,10 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   )}
                   <Button
                     onClick={() => setIsOpen(false)}
-                    className="bg-foreground text-background hover:bg-foreground/90 rounded-xl px-6 py-3 h-12 text-sm font-semibold min-w-[160px]"
+                    className="bg-accent text-accent-foreground hover:bg-accent/90 rounded-xl px-6 py-3 h-12 text-sm font-semibold min-w-[160px]"
                   >
                     {totalCount !== undefined 
-                      ? `${t('filters.show') || 'Show'} ${totalCount.toLocaleString()} ${totalCount === 1 ? t('filters.listing') || 'listing' : t('filters.listings') || 'listings'}`
+                      ? `${t('filters.show')} ${totalCount.toLocaleString()} ${totalCount === 1 ? t('filters.listing') : t('filters.listings')}`
                       : t('filters.applyFilters')
                     }
                   </Button>
