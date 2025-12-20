@@ -382,7 +382,8 @@
   padding: 0 !important;
   border-radius: 16px !important;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
-  overflow: hidden;
+  overflow: visible !important;
+  max-height: none !important;
 }
 
 .mapboxgl-popup-tip {
@@ -391,13 +392,14 @@
 
 .listing-popup .mapboxgl-popup-content {
   background: white;
-  overflow: hidden !important;
+  overflow: visible !important;
   border-radius: 16px !important;
 }
 
 .listing-popup .mapboxgl-popup-content > div {
-  overflow: hidden;
+  overflow: visible;
   border-radius: 16px;
+  background: white;
 }
 
 .mapboxgl-popup-close-button {
