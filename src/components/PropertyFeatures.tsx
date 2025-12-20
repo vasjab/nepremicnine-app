@@ -48,12 +48,6 @@ import { Listing } from '@/types/listing';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { cn } from '@/lib/utils';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
 
 interface PropertyFeaturesProps {
   listing: Listing;
@@ -73,61 +67,78 @@ const categoryThemes = {
   outdoor: {
     iconBg: 'bg-emerald-100 dark:bg-emerald-900/40',
     iconColor: 'text-emerald-600 dark:text-emerald-400',
+    headerColor: 'text-emerald-700 dark:text-emerald-400',
+    label: 'Outdoor & Views',
   },
   parking: {
     iconBg: 'bg-blue-100 dark:bg-blue-900/40',
     iconColor: 'text-blue-600 dark:text-blue-400',
+    headerColor: 'text-blue-700 dark:text-blue-400',
+    label: 'Parking & Storage',
   },
   building: {
     iconBg: 'bg-violet-100 dark:bg-violet-900/40',
     iconColor: 'text-violet-600 dark:text-violet-400',
+    headerColor: 'text-violet-700 dark:text-violet-400',
+    label: 'Building Amenities',
   },
   energy: {
     iconBg: 'bg-amber-100 dark:bg-amber-900/40',
     iconColor: 'text-amber-600 dark:text-amber-400',
+    headerColor: 'text-amber-700 dark:text-amber-400',
+    label: 'Energy & Climate',
   },
   equipment: {
     iconBg: 'bg-sky-100 dark:bg-sky-900/40',
     iconColor: 'text-sky-600 dark:text-sky-400',
+    headerColor: 'text-sky-700 dark:text-sky-400',
+    label: 'Appliances',
   },
   interior: {
     iconBg: 'bg-rose-100 dark:bg-rose-900/40',
     iconColor: 'text-rose-600 dark:text-rose-400',
+    headerColor: 'text-rose-700 dark:text-rose-400',
+    label: 'Interior Features',
   },
   accessibility: {
     iconBg: 'bg-teal-100 dark:bg-teal-900/40',
     iconColor: 'text-teal-600 dark:text-teal-400',
+    headerColor: 'text-teal-700 dark:text-teal-400',
+    label: 'Accessibility',
   },
   safety: {
     iconBg: 'bg-slate-200 dark:bg-slate-800',
     iconColor: 'text-slate-600 dark:text-slate-400',
+    headerColor: 'text-slate-700 dark:text-slate-400',
+    label: 'Safety & Security',
   },
   basic: {
     iconBg: 'bg-primary/10',
     iconColor: 'text-primary',
+    headerColor: 'text-primary',
+    label: 'Basics',
   },
   info: {
     iconBg: 'bg-muted',
     iconColor: 'text-muted-foreground',
+    headerColor: 'text-muted-foreground',
+    label: 'Info',
   },
 };
 
-// Compact Feature Card component
+// Simple Feature Card (no detail)
 function FeatureCard({ 
   icon: Icon, 
   label, 
-  detail,
   category,
 }: { 
   icon: LucideIcon; 
   label: string; 
-  detail?: string | null;
   category: keyof typeof categoryThemes;
 }) {
   const theme = categoryThemes[category];
-  const hasDetail = detail && detail.length > 0;
   
-  const CardContent = (
+  return (
     <div className={cn(
       "flex flex-col items-center gap-1.5 p-3 rounded-xl transition-all duration-200",
       "bg-secondary/50 hover:bg-secondary border border-transparent hover:border-border/50",
@@ -139,27 +150,45 @@ function FeatureCard({
       )}>
         <Icon className={cn("h-5 w-5", theme.iconColor)} />
       </div>
-      <span className="text-xs font-medium text-foreground text-center leading-tight line-clamp-2">
+      <span className="text-xs font-medium text-foreground text-center leading-tight">
         {label}
       </span>
     </div>
   );
+}
 
-  if (hasDetail) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
-          {CardContent}
-        </TooltipTrigger>
-        <TooltipContent side="top" className="text-sm">
-          <span className="font-medium">{label}</span>
-          <span className="text-muted-foreground ml-1">• {detail}</span>
-        </TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  return CardContent;
+// Detail Feature Card - larger, shows extra info inline
+function DetailFeatureCard({ 
+  icon: Icon, 
+  label, 
+  detail,
+  category,
+}: { 
+  icon: LucideIcon; 
+  label: string; 
+  detail: string;
+  category: keyof typeof categoryThemes;
+}) {
+  const theme = categoryThemes[category];
+  
+  return (
+    <div className={cn(
+      "flex items-center gap-3 p-3 rounded-xl transition-all duration-200",
+      "bg-secondary/50 hover:bg-secondary border border-transparent hover:border-border/50",
+      "cursor-default group col-span-2"
+    )}>
+      <div className={cn(
+        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105",
+        theme.iconBg
+      )}>
+        <Icon className={cn("h-5 w-5", theme.iconColor)} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-foreground">{label}</p>
+        <p className="text-xs text-muted-foreground">{detail}</p>
+      </div>
+    </div>
+  );
 }
 
 // Info Card for non-boolean values (larger, more prominent)
@@ -185,8 +214,49 @@ function InfoCard({
         <Icon className={cn("h-5 w-5", theme.iconColor)} />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-xs text-muted-foreground truncate">{label}</p>
-        <p className="font-semibold text-foreground text-sm truncate">{value}</p>
+        <p className="text-xs text-muted-foreground break-words">{label}</p>
+        <p className="font-semibold text-foreground text-sm break-words">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+// Category Section with header and feature grid
+function CategorySection({
+  categoryKey,
+  features,
+}: {
+  categoryKey: keyof typeof categoryThemes;
+  features: Feature[];
+}) {
+  const theme = categoryThemes[categoryKey];
+  
+  if (features.length === 0) return null;
+  
+  return (
+    <div className="space-y-2">
+      <h3 className={cn("text-xs font-semibold uppercase tracking-wide", theme.headerColor)}>
+        {theme.label}
+      </h3>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+        {features.map((feature) => (
+          feature.detail ? (
+            <DetailFeatureCard
+              key={feature.id}
+              icon={feature.icon}
+              label={feature.label}
+              detail={feature.detail}
+              category={feature.category}
+            />
+          ) : (
+            <FeatureCard
+              key={feature.id}
+              icon={feature.icon}
+              label={feature.label}
+              category={feature.category}
+            />
+          )
+        ))}
       </div>
     </div>
   );
@@ -237,39 +307,62 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
   };
 
   const viewTypeLabels: Record<string, string> = {
-    mountain: 'Mountain',
-    city: 'City',
-    sea: 'Sea',
-    park: 'Park',
-    garden: 'Garden',
-    lake: 'Lake',
+    mountain: 'Mountain View',
+    city: 'City View',
+    sea: 'Sea View',
+    park: 'Park View',
+    garden: 'Garden View',
+    lake: 'Lake View',
   };
 
   const orientationLabels: Record<string, string> = {
-    south: 'South',
-    north: 'North',
-    east: 'East',
-    west: 'West',
-    'south-east': 'SE',
-    'south-west': 'SW',
-    'north-east': 'NE',
-    'north-west': 'NW',
+    south: 'South Facing',
+    north: 'North Facing',
+    east: 'East Facing',
+    west: 'West Facing',
+    'south-east': 'Southeast Facing',
+    'south-west': 'Southwest Facing',
+    'north-east': 'Northeast Facing',
+    'north-west': 'Northwest Facing',
   };
 
-  // Build feature list dynamically
-  const allFeatures: Feature[] = [];
+  // Note: Some detailed properties like ev_charger_power, waterfront_distance_m, etc.
+  // are stored in the database but not yet exposed in the Listing type interface.
+
+  // Build feature lists by category
+  const outdoorFeatures: Feature[] = [];
+  const parkingFeatures: Feature[] = [];
+  const buildingFeatures: Feature[] = [];
+  const energyFeatures: Feature[] = [];
+  const equipmentFeatures: Feature[] = [];
+  const interiorFeatures: Feature[] = [];
+  const accessibilityFeatures: Feature[] = [];
+  const safetyFeatures: Feature[] = [];
+  const basicFeatures: Feature[] = [];
 
   // Basic features
   if (listing.is_furnished) {
-    allFeatures.push({ id: 'furnished', icon: Sofa, label: t('listing.furnished'), category: 'basic' });
+    basicFeatures.push({ 
+      id: 'furnished', 
+      icon: Sofa, 
+      label: t('listing.furnished'), 
+      detail: listing.furnished_details || null,
+      category: 'basic' 
+    });
   }
   if (listing.allows_pets) {
-    allFeatures.push({ id: 'pets', icon: TreePine, label: t('listing.petsAllowed'), category: 'basic' });
+    basicFeatures.push({ 
+      id: 'pets', 
+      icon: TreePine, 
+      label: t('listing.petsAllowed'), 
+      detail: listing.pets_details || null,
+      category: 'basic' 
+    });
   }
 
   // Outdoor features
   if (listing.has_balcony) {
-    allFeatures.push({ 
+    outdoorFeatures.push({ 
       id: 'balcony', 
       icon: Sun, 
       label: t('listing.balcony'), 
@@ -278,7 +371,7 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     });
   }
   if (listing.has_terrace) {
-    allFeatures.push({ 
+    outdoorFeatures.push({ 
       id: 'terrace', 
       icon: Trees, 
       label: t('listing.terrace'), 
@@ -287,10 +380,10 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     });
   }
   if (listing.has_rooftop_terrace) {
-    allFeatures.push({ id: 'rooftop', icon: Building2, label: 'Rooftop', category: 'outdoor' });
+    outdoorFeatures.push({ id: 'rooftop', icon: Building2, label: 'Rooftop Terrace', category: 'outdoor' });
   }
   if (listing.has_garden) {
-    allFeatures.push({ 
+    outdoorFeatures.push({ 
       id: 'garden', 
       icon: Flower2, 
       label: t('listing.garden'), 
@@ -299,128 +392,150 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     });
   }
   if (listing.has_bbq_area) {
-    allFeatures.push({ id: 'bbq', icon: Flame, label: 'BBQ', category: 'outdoor' });
+    outdoorFeatures.push({ id: 'bbq', icon: Flame, label: 'BBQ Area', category: 'outdoor' });
   }
   if (listing.has_playground) {
-    allFeatures.push({ id: 'playground', icon: PlayCircle, label: 'Playground', category: 'outdoor' });
+    outdoorFeatures.push({ id: 'playground', icon: PlayCircle, label: 'Playground', category: 'outdoor' });
   }
   if (listing.has_waterfront) {
-    allFeatures.push({ id: 'waterfront', icon: Waves, label: 'Waterfront', category: 'outdoor' });
+    outdoorFeatures.push({ 
+      id: 'waterfront', 
+      icon: Waves, 
+      label: 'Waterfront',
+      category: 'outdoor' 
+    });
   }
   if (listing.has_view) {
-    allFeatures.push({ 
+    outdoorFeatures.push({ 
       id: 'view', 
       icon: Eye, 
-      label: 'View', 
-      detail: listing.view_type ? viewTypeLabels[listing.view_type] : null,
+      label: listing.view_type ? viewTypeLabels[listing.view_type] || 'View' : 'View',
       category: 'outdoor' 
     });
   }
 
   // Parking & Storage
   if (listing.has_parking) {
-    const parkingDetail = [
-      listing.parking_type ? parkingTypeLabels[listing.parking_type] : null,
-      listing.parking_spaces && listing.parking_spaces > 1 ? `${listing.parking_spaces}×` : null
-    ].filter(Boolean).join(' ');
-    allFeatures.push({ 
+    const parkingDetails: string[] = [];
+    if (listing.parking_type) {
+      parkingDetails.push(parkingTypeLabels[listing.parking_type] || listing.parking_type);
+    }
+    if (listing.parking_spaces && listing.parking_spaces > 1) {
+      parkingDetails.push(`${listing.parking_spaces} spaces`);
+    }
+    parkingFeatures.push({ 
       id: 'parking', 
       icon: Car, 
       label: t('listing.parking'), 
-      detail: parkingDetail || null,
+      detail: parkingDetails.length > 0 ? parkingDetails.join(' • ') : null,
       category: 'parking' 
     });
   }
   if (listing.has_garage) {
-    allFeatures.push({ id: 'garage', icon: Warehouse, label: t('listing.garage'), category: 'parking' });
+    parkingFeatures.push({ id: 'garage', icon: Warehouse, label: t('listing.garage'), category: 'parking' });
   }
   if (listing.has_carport) {
-    allFeatures.push({ id: 'carport', icon: SquareParking, label: 'Carport', category: 'parking' });
+    parkingFeatures.push({ id: 'carport', icon: SquareParking, label: 'Carport', category: 'parking' });
   }
   if (listing.has_ev_charging) {
-    allFeatures.push({ id: 'ev', icon: Zap, label: 'EV Charging', category: 'parking' });
+    parkingFeatures.push({ 
+      id: 'ev', 
+      icon: Zap, 
+      label: 'EV Charging',
+      category: 'parking' 
+    });
   }
   if (listing.has_bicycle_storage) {
-    allFeatures.push({ id: 'bike', icon: Bike, label: 'Bike Storage', category: 'parking' });
+    parkingFeatures.push({ id: 'bike', icon: Bike, label: 'Bicycle Storage', category: 'parking' });
   }
   if (listing.has_storage) {
-    allFeatures.push({ id: 'storage', icon: Package, label: t('listing.storage'), category: 'parking' });
+    parkingFeatures.push({ id: 'storage', icon: Package, label: t('listing.storage'), category: 'parking' });
   }
   if (listing.has_basement) {
-    allFeatures.push({ id: 'basement', icon: ArrowDown, label: 'Basement', category: 'parking' });
+    parkingFeatures.push({ id: 'basement', icon: ArrowDown, label: 'Basement', category: 'parking' });
   }
 
   // Building amenities (apartments)
   if (isApartmentType) {
     if (listing.has_elevator) {
-      allFeatures.push({ id: 'elevator', icon: ArrowUp, label: t('listing.elevator'), category: 'building' });
+      buildingFeatures.push({ 
+        id: 'elevator', 
+        icon: ArrowUp, 
+        label: t('listing.elevator'),
+        category: 'building' 
+      });
     }
     if (listing.has_shared_laundry) {
-      allFeatures.push({ id: 'laundry', icon: Shirt, label: 'Laundry', category: 'building' });
+      buildingFeatures.push({ id: 'laundry', icon: Shirt, label: 'Shared Laundry', category: 'building' });
     }
     if (listing.has_gym) {
-      allFeatures.push({ id: 'gym', icon: Dumbbell, label: 'Gym', category: 'building' });
+      buildingFeatures.push({ id: 'gym', icon: Dumbbell, label: 'Fitness Center', category: 'building' });
     }
     if (listing.has_sauna) {
-      allFeatures.push({ id: 'sauna', icon: ThermometerSun, label: 'Sauna', category: 'building' });
+      buildingFeatures.push({ id: 'sauna', icon: ThermometerSun, label: 'Sauna', category: 'building' });
     }
     if (listing.has_pool) {
-      allFeatures.push({ id: 'pool', icon: Droplets, label: 'Pool', category: 'building' });
+      buildingFeatures.push({ id: 'pool', icon: Droplets, label: 'Swimming Pool', category: 'building' });
     }
     if (listing.has_common_room) {
-      allFeatures.push({ id: 'common', icon: Sofa, label: 'Common Room', category: 'building' });
+      buildingFeatures.push({ id: 'common', icon: Sofa, label: 'Common Room', category: 'building' });
     }
     if (listing.has_concierge) {
-      allFeatures.push({ id: 'concierge', icon: Bell, label: 'Concierge', category: 'building' });
+      buildingFeatures.push({ id: 'concierge', icon: Bell, label: 'Concierge', category: 'building' });
     }
     if (listing.has_security) {
-      allFeatures.push({ id: 'security', icon: Shield, label: 'Security', category: 'building' });
+      buildingFeatures.push({ id: 'security', icon: Shield, label: 'Building Security', category: 'building' });
     }
   }
 
   // Energy & Climate
   if (listing.has_fireplace) {
-    allFeatures.push({ id: 'fireplace', icon: Flame, label: 'Fireplace', category: 'energy' });
+    energyFeatures.push({ id: 'fireplace', icon: Flame, label: 'Fireplace', category: 'energy' });
   }
   if (listing.has_floor_heating) {
-    allFeatures.push({ id: 'floorHeat', icon: ThermometerSun, label: 'Floor Heat', category: 'energy' });
+    energyFeatures.push({ id: 'floorHeat', icon: ThermometerSun, label: 'Floor Heating', category: 'energy' });
   }
   if (listing.has_district_heating) {
-    allFeatures.push({ id: 'district', icon: Factory, label: 'District Heat', category: 'energy' });
+    energyFeatures.push({ id: 'district', icon: Factory, label: 'District Heating', category: 'energy' });
   }
   if (listing.has_heat_pump) {
-    allFeatures.push({ id: 'heatPump', icon: RefreshCw, label: 'Heat Pump', category: 'energy' });
+    energyFeatures.push({ id: 'heatPump', icon: RefreshCw, label: 'Heat Pump', category: 'energy' });
   }
   if (listing.has_air_conditioning) {
-    allFeatures.push({ id: 'ac', icon: Wind, label: 'A/C', category: 'energy' });
+    energyFeatures.push({ 
+      id: 'ac', 
+      icon: Wind, 
+      label: 'Air Conditioning',
+      category: 'energy' 
+    });
   }
   if (listing.has_ventilation) {
-    allFeatures.push({ id: 'vent', icon: Fan, label: 'Ventilation', category: 'energy' });
+    energyFeatures.push({ id: 'vent', icon: Fan, label: 'Ventilation System', category: 'energy' });
   }
   if (listing.has_solar_panels) {
-    allFeatures.push({ id: 'solar', icon: Sun, label: 'Solar', category: 'energy' });
+    energyFeatures.push({ id: 'solar', icon: Sun, label: 'Solar Panels', category: 'energy' });
   }
 
   // Equipment
   if (listing.has_dishwasher) {
-    allFeatures.push({ id: 'dishwasher', icon: Droplets, label: t('listing.dishwasher'), category: 'equipment' });
+    equipmentFeatures.push({ id: 'dishwasher', icon: Droplets, label: t('listing.dishwasher'), category: 'equipment' });
   }
   if (listing.has_washing_machine) {
-    allFeatures.push({ id: 'washer', icon: Shirt, label: t('listing.washingMachine'), category: 'equipment' });
+    equipmentFeatures.push({ id: 'washer', icon: Shirt, label: t('listing.washingMachine'), category: 'equipment' });
   }
   if (listing.has_dryer) {
-    allFeatures.push({ id: 'dryer', icon: Wind, label: 'Dryer', category: 'equipment' });
+    equipmentFeatures.push({ id: 'dryer', icon: Wind, label: 'Tumble Dryer', category: 'equipment' });
   }
 
   // Interior
   if (listing.has_high_ceilings) {
-    allFeatures.push({ id: 'ceilings', icon: ArrowUp, label: 'High Ceilings', category: 'interior' });
+    interiorFeatures.push({ id: 'ceilings', icon: ArrowUp, label: 'High Ceilings', category: 'interior' });
   }
   if (listing.has_large_windows) {
-    allFeatures.push({ id: 'windows', icon: Square, label: 'Large Windows', category: 'interior' });
+    interiorFeatures.push({ id: 'windows', icon: Square, label: 'Large Windows', category: 'interior' });
   }
   if (listing.orientation) {
-    allFeatures.push({ 
+    interiorFeatures.push({ 
       id: 'orientation', 
       icon: Compass, 
       label: orientationLabels[listing.orientation] || listing.orientation,
@@ -428,50 +543,76 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     });
   }
   if (listing.has_smart_home) {
-    allFeatures.push({ id: 'smart', icon: Smartphone, label: 'Smart Home', category: 'interior' });
+    interiorFeatures.push({ id: 'smart', icon: Smartphone, label: 'Smart Home', category: 'interior' });
   }
   if (listing.has_built_in_wardrobes) {
-    allFeatures.push({ id: 'wardrobes', icon: DoorClosed, label: 'Wardrobes', category: 'interior' });
+    interiorFeatures.push({ id: 'wardrobes', icon: DoorClosed, label: 'Built-in Wardrobes', category: 'interior' });
   }
 
   // Accessibility
   if (listing.has_step_free_access) {
-    allFeatures.push({ id: 'stepFree', icon: ArrowUp, label: 'Step-free', category: 'accessibility' });
+    accessibilityFeatures.push({ id: 'stepFree', icon: ArrowUp, label: 'Step-free Access', category: 'accessibility' });
   }
   if (listing.has_wheelchair_accessible) {
-    allFeatures.push({ id: 'wheelchair', icon: Accessibility, label: 'Wheelchair', category: 'accessibility' });
+    accessibilityFeatures.push({ id: 'wheelchair', icon: Accessibility, label: 'Wheelchair Accessible', category: 'accessibility' });
   }
   if (listing.has_wide_doorways) {
-    allFeatures.push({ id: 'wideDoors', icon: Square, label: 'Wide Doors', category: 'accessibility' });
+    accessibilityFeatures.push({ id: 'wideDoors', icon: Square, label: 'Wide Doorways', category: 'accessibility' });
   }
   if (listing.has_ground_floor_access) {
-    allFeatures.push({ id: 'groundFloor', icon: Home, label: 'Ground Floor', category: 'accessibility' });
+    accessibilityFeatures.push({ id: 'groundFloor', icon: Home, label: 'Ground Floor Access', category: 'accessibility' });
   }
   if (listing.has_elevator_from_garage) {
-    allFeatures.push({ id: 'garageElev', icon: ArrowUp, label: 'Garage Elevator', category: 'accessibility' });
+    accessibilityFeatures.push({ id: 'garageElev', icon: ArrowUp, label: 'Elevator from Garage', category: 'accessibility' });
   }
 
   // Safety
   if (listing.has_secure_entrance) {
-    allFeatures.push({ id: 'secureEntry', icon: Lock, label: 'Secure Entry', category: 'safety' });
+    safetyFeatures.push({ id: 'secureEntry', icon: Lock, label: 'Secure Entrance', category: 'safety' });
   }
   if (listing.has_intercom) {
-    allFeatures.push({ id: 'intercom', icon: Phone, label: 'Intercom', category: 'safety' });
+    safetyFeatures.push({ id: 'intercom', icon: Phone, label: 'Intercom System', category: 'safety' });
   }
   if (listing.has_gated_community) {
-    allFeatures.push({ id: 'gated', icon: Shield, label: 'Gated', category: 'safety' });
+    safetyFeatures.push({ id: 'gated', icon: Shield, label: 'Gated Community', category: 'safety' });
   }
   if (listing.has_fire_safety) {
-    allFeatures.push({ id: 'fire', icon: Flame, label: 'Fire Safety', category: 'safety' });
+    safetyFeatures.push({ id: 'fire', icon: Flame, label: 'Fire Safety System', category: 'safety' });
   }
   if (listing.has_soundproofing) {
-    allFeatures.push({ id: 'sound', icon: VolumeX, label: 'Soundproof', category: 'safety' });
+    safetyFeatures.push({ id: 'sound', icon: VolumeX, label: 'Soundproofing', category: 'safety' });
   }
 
-  // How many to show initially
-  const INITIAL_DISPLAY_COUNT = 12;
-  const displayedFeatures = showAll ? allFeatures : allFeatures.slice(0, INITIAL_DISPLAY_COUNT);
-  const hiddenCount = allFeatures.length - INITIAL_DISPLAY_COUNT;
+  // Combine all features for counting
+  const allFeatures = [
+    ...basicFeatures,
+    ...outdoorFeatures,
+    ...parkingFeatures,
+    ...buildingFeatures,
+    ...energyFeatures,
+    ...equipmentFeatures,
+    ...interiorFeatures,
+    ...accessibilityFeatures,
+    ...safetyFeatures,
+  ];
+
+  // Categories to show (in order)
+  const categories = [
+    { key: 'basic' as const, features: basicFeatures },
+    { key: 'outdoor' as const, features: outdoorFeatures },
+    { key: 'parking' as const, features: parkingFeatures },
+    { key: 'building' as const, features: buildingFeatures },
+    { key: 'energy' as const, features: energyFeatures },
+    { key: 'equipment' as const, features: equipmentFeatures },
+    { key: 'interior' as const, features: interiorFeatures },
+    { key: 'accessibility' as const, features: accessibilityFeatures },
+    { key: 'safety' as const, features: safetyFeatures },
+  ].filter(cat => cat.features.length > 0);
+
+  // For "show more/less" functionality
+  const INITIAL_CATEGORIES = 4;
+  const displayedCategories = showAll ? categories : categories.slice(0, INITIAL_CATEGORIES);
+  const hiddenCategoryCount = categories.length - INITIAL_CATEGORIES;
 
   // Building info cards (always shown separately)
   const buildingInfoCards: { icon: LucideIcon; label: string; value: string | number }[] = [];
@@ -506,7 +647,7 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
   if (listing.property_condition) {
     buildingInfoCards.push({ 
       icon: Home, 
-      label: t('filters.condition'), 
+      label: t('filters.propertyCondition'), 
       value: conditionLabels[listing.property_condition] || listing.property_condition 
     });
   }
@@ -552,82 +693,79 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
   }
 
   return (
-    <TooltipProvider delayDuration={300}>
-      <div className="space-y-6">
-        {/* Section Header */}
-        <h2 className="text-xl font-semibold text-foreground pb-4 border-b border-border/50">
-          {t('listing.features')}
-        </h2>
+    <div className="space-y-6">
+      {/* Section Header */}
+      <h2 className="text-xl font-semibold text-foreground pb-4 border-b border-border/50">
+        {t('listing.features')}
+      </h2>
 
-        {/* Building Info Cards (prominent display) */}
-        {buildingInfoCards.length > 0 && (
+      {/* Building Info Cards (prominent display) */}
+      {buildingInfoCards.length > 0 && (
+        <div className="grid grid-cols-2 gap-3">
+          {buildingInfoCards.map((card) => (
+            <InfoCard 
+              key={card.label} 
+              icon={card.icon} 
+              label={card.label} 
+              value={card.value}
+              category="info"
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Feature Categories */}
+      {allFeatures.length > 0 && (
+        <div className="space-y-5">
+          {displayedCategories.map((cat) => (
+            <CategorySection 
+              key={cat.key} 
+              categoryKey={cat.key} 
+              features={cat.features} 
+            />
+          ))}
+
+          {/* Show All Button */}
+          {hiddenCategoryCount > 0 && (
+            <button
+              onClick={() => setShowAll(!showAll)}
+              className={cn(
+                "flex items-center gap-2 text-sm font-medium transition-colors",
+                "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <ChevronDown className={cn(
+                "h-4 w-4 transition-transform duration-200",
+                showAll && "rotate-180"
+              )} />
+              {showAll 
+                ? 'Show less' 
+                : `Show ${hiddenCategoryCount} more categories (${allFeatures.length} features total)`
+              }
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Rental Terms Cards */}
+      {rentalTermCards.length > 0 && (
+        <div className="space-y-3 pt-2 border-t border-border/50">
+          <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+            {t('filters.rentalTerms')}
+          </h3>
           <div className="grid grid-cols-2 gap-3">
-            {buildingInfoCards.map((card) => (
+            {rentalTermCards.map((card) => (
               <InfoCard 
                 key={card.label} 
                 icon={card.icon} 
                 label={card.label} 
                 value={card.value}
-                category="info"
+                category="basic"
               />
             ))}
           </div>
-        )}
-
-        {/* Feature Grid */}
-        {allFeatures.length > 0 && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
-              {displayedFeatures.map((feature) => (
-                <FeatureCard
-                  key={feature.id}
-                  icon={feature.icon}
-                  label={feature.label}
-                  detail={feature.detail}
-                  category={feature.category}
-                />
-              ))}
-            </div>
-
-            {/* Show All Button */}
-            {hiddenCount > 0 && (
-              <button
-                onClick={() => setShowAll(!showAll)}
-                className={cn(
-                  "flex items-center gap-2 text-sm font-medium transition-colors",
-                  "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                <ChevronDown className={cn(
-                  "h-4 w-4 transition-transform duration-200",
-                  showAll && "rotate-180"
-                )} />
-                {showAll ? 'Show less' : `Show all ${allFeatures.length} features`}
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Rental Terms Cards */}
-        {rentalTermCards.length > 0 && (
-          <div className="space-y-3 pt-2 border-t border-border/50">
-            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
-              {t('filters.rentalTerms')}
-            </h3>
-            <div className="grid grid-cols-2 gap-3">
-              {rentalTermCards.map((card) => (
-                <InfoCard 
-                  key={card.label} 
-                  icon={card.icon} 
-                  label={card.label} 
-                  value={card.value}
-                  category="basic"
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </TooltipProvider>
+        </div>
+      )}
+    </div>
   );
 }
