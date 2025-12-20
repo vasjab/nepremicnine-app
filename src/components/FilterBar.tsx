@@ -107,28 +107,44 @@ function FilterSection({
   activeCount?: number;
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  
+  const handleOpenChange = (open: boolean) => {
+    setIsOpen(open);
+    if (open && sectionRef.current) {
+      // Small delay to allow the content to expand first
+      setTimeout(() => {
+        sectionRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 50);
+    }
+  };
   
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="border-b border-border/50">
-      <CollapsibleTrigger className="flex w-full items-center justify-between py-5 text-sm font-medium transition-colors hover:text-foreground group">
-        <span className="flex items-center gap-3">
-          {Icon && <Icon className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />}
-          {title}
-          {activeCount > 0 && (
-            <Badge variant="secondary" className="h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
-              {activeCount}
-            </Badge>
-          )}
-        </span>
-        <ChevronDown className={cn(
-          "h-4 w-4 text-muted-foreground transition-transform duration-200",
-          isOpen && "rotate-180"
-        )} />
-      </CollapsibleTrigger>
-      <CollapsibleContent className="space-y-3 pt-2 pb-6 animate-accordion-down">
-        {children}
-      </CollapsibleContent>
-    </Collapsible>
+    <div ref={sectionRef}>
+      <Collapsible open={isOpen} onOpenChange={handleOpenChange} className="border-b border-border/50">
+        <CollapsibleTrigger className="flex w-full items-center justify-between py-5 text-sm font-medium transition-colors hover:text-foreground group">
+          <span className="flex items-center gap-3">
+            {Icon && <Icon className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />}
+            {title}
+            {activeCount > 0 && (
+              <Badge variant="secondary" className="h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
+                {activeCount}
+              </Badge>
+            )}
+          </span>
+          <ChevronDown className={cn(
+            "h-4 w-4 text-muted-foreground transition-transform duration-200",
+            isOpen && "rotate-180"
+          )} />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="space-y-3 pt-2 pb-6 animate-accordion-down">
+          {children}
+        </CollapsibleContent>
+      </Collapsible>
+    </div>
   );
 }
 
