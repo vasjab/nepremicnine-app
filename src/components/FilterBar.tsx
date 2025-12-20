@@ -978,7 +978,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
         {/* Single row: Search + Sort + Filters + Count */}
         <div className="flex items-center gap-2">
           {/* Compact search */}
-          <form onSubmit={handleSearch} className="relative w-[140px] shrink-0">
+          <form onSubmit={handleSearch} className="relative flex-1 min-w-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
             <Input
               placeholder="Search..."
@@ -999,7 +999,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           
           {/* Sort dropdown */}
           <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
-            <SelectTrigger className="flex-1 h-10 px-3 text-sm bg-secondary border-0 rounded-xl">
+            <SelectTrigger className="shrink-0 w-auto h-10 px-3 text-sm bg-secondary border-0 rounded-xl">
               <ArrowUpDown className="h-4 w-4 mr-2 text-muted-foreground shrink-0" />
               <SelectValue placeholder={t('filters.sortBy')} />
             </SelectTrigger>
@@ -1017,7 +1017,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           {isMobile ? (
             <Drawer open={isOpen} onOpenChange={setIsOpen}>
               <DrawerTrigger asChild>
-                <Button className="flex-1 rounded-xl h-10 border-0 bg-accent text-accent-foreground font-medium">
+                <Button className="shrink-0 rounded-xl h-10 px-3 border-0 bg-accent text-accent-foreground font-medium">
                   <SlidersHorizontal className="h-4 w-4 mr-2" />
                   Filters
                   {totalActiveFilters > 0 && (
@@ -1039,7 +1039,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           ) : (
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <DialogTrigger asChild>
-                <Button className="flex-1 rounded-xl h-10 border-0 bg-accent text-accent-foreground font-medium">
+                <Button className="shrink-0 rounded-xl h-10 px-3 border-0 bg-accent text-accent-foreground font-medium">
                   <SlidersHorizontal className="h-4 w-4 mr-2" />
                   Filters
                   {totalActiveFilters > 0 && (
