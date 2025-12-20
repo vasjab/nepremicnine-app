@@ -394,6 +394,18 @@ const translations = {
       incompleteTitle: 'Incomplete Listing',
       incompleteDescription: 'Missing fields: {fields}. You can still preview, but complete these before publishing.',
     },
+    checklist: {
+      formCompletion: 'Form Completion',
+      complete: 'complete',
+      title: 'Title',
+      price: 'Price',
+      address: 'Address',
+      city: 'City',
+      location: 'Valid Location',
+      images: 'At Least 1 Image',
+      allComplete: 'All required fields complete!',
+      clickToNavigate: 'Click an item to navigate to that field',
+    },
   },
   sl: {
     common: {
@@ -782,6 +794,18 @@ const translations = {
       actionsDisabled: 'Dejanja so onemogočena v načinu predogleda',
       incompleteTitle: 'Nepopoln oglas',
       incompleteDescription: 'Manjkajoča polja: {fields}. Še vedno si lahko ogledate predogled, vendar jih izpolnite pred objavo.',
+    },
+    checklist: {
+      formCompletion: 'Izpolnjenost obrazca',
+      complete: 'izpolnjeno',
+      title: 'Naslov',
+      price: 'Cena',
+      address: 'Naslov nepremičnine',
+      city: 'Mesto',
+      location: 'Veljavna lokacija',
+      images: 'Vsaj 1 slika',
+      allComplete: 'Vsa obvezna polja so izpolnjena!',
+      clickToNavigate: 'Kliknite na element za navigacijo do tega polja',
     },
   },
 } as const;
