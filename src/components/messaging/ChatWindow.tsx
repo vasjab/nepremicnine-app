@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { format, isToday, isYesterday, differenceInMinutes } from 'date-fns';
-import { ArrowLeft, Send, Loader2, MoreVertical, User, Trash2, Reply, Home, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Send, Loader2, MoreVertical, User, Trash2, Reply, Home, ExternalLink, Pencil, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Message, Conversation, useMessages, useSendMessage, useMarkMessagesRead, useEditMessage, useDeleteMessage } from '@/hooks/useMessaging';
 import { useMessageReactions, useToggleReaction } from '@/hooks/useMessageReactions';
@@ -103,6 +103,9 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [replyToMessage, setReplyToMessage] = useState<Message | null>(null);
+  
+  // Mobile message selection state
+  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
 
   const { data: messages = [], isLoading, refetch } = useMessages(conversation.id);
   const sendMessage = useSendMessage();
@@ -324,7 +327,22 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
 
   const handleReply = (message: Message) => {
     setReplyToMessage(message);
+    setSelectedMessageId(null);
     textareaRef.current?.focus();
+  };
+
+  // Handle mobile message tap to show action menu
+  const handleMessageTap = (messageId: string) => {
+    if (!isMobile) return;
+    setSelectedMessageId(prev => prev === messageId ? null : messageId);
+  };
+
+  // Close mobile action menu when tapping elsewhere
+  const handleContainerTap = (e: React.MouseEvent) => {
+    // Only close if clicking directly on the container, not on a message
+    if (e.target === e.currentTarget) {
+      setSelectedMessageId(null);
+    }
   };
 
   const getReplyToContent = (replyToId: string | null | undefined) => {
@@ -340,9 +358,9 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
   const messageGroups = groupMessagesByDate(messages);
 
   return (
-    <div className="flex flex-col h-full bg-background">
-      {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-border bg-card">
+    <div className="flex flex-col h-full bg-background overflow-hidden">
+      {/* Header - sticky */}
+      <div className="sticky top-0 z-10 flex items-center gap-3 p-4 border-b border-border bg-card flex-shrink-0">
         {showBackButton && (
           <Button variant="ghost" size="icon" onClick={onBack} className="flex-shrink-0">
             <ArrowLeft className="h-5 w-5" />
@@ -514,13 +532,16 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
                         onTouchEnd={canSwipe ? handleTouchEnd : undefined}
                       >
                         <div
+                          onClick={isMobile && !message.is_deleted && !isEditing ? () => handleMessageTap(message.id) : undefined}
                           className={cn(
                             "rounded-2xl px-4 py-2",
+                            isMobile && "touch-action-manipulation cursor-pointer",
                             isMine
                               ? "bg-accent text-accent-foreground rounded-br-md"
                               : "bg-secondary text-foreground rounded-bl-md",
                             message.is_deleted && "opacity-60 italic",
-                            isHighlighted && "ring-2 ring-primary"
+                            isHighlighted && "ring-2 ring-primary",
+                            isMobile && selectedMessageId === message.id && "ring-2 ring-accent/50"
                           )}
                         >
                           {message.is_deleted ? (
@@ -600,6 +621,71 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
                             onToggle={(emoji) => handleReaction(message.id, emoji)}
                             isMine={isMine}
                           />
+                        )}
+
+                        {/* Mobile action bar - shown when message is selected */}
+                        {isMobile && selectedMessageId === message.id && !message.is_deleted && !isEditing && (
+                          <div className={cn(
+                            "flex items-center gap-1 mt-2 p-1 rounded-lg bg-card border border-border shadow-lg animate-fade-in",
+                            isMine ? "justify-end" : "justify-start"
+                          )}>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleReply(message);
+                              }}
+                            >
+                              <Reply className="h-4 w-4" />
+                            </Button>
+                            <EmojiReactionPicker
+                              onSelect={(emoji) => {
+                                handleReaction(message.id, emoji);
+                                setSelectedMessageId(null);
+                              }}
+                            />
+                            {canEditMessage(message) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingMessageId(message.id);
+                                  setSelectedMessageId(null);
+                                }}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                            )}
+                            {canDeleteMessage(message) && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(message.id);
+                                  setSelectedMessageId(null);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedMessageId(null);
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </div>
