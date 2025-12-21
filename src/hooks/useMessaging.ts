@@ -9,6 +9,10 @@ export interface Conversation {
   last_message_at: string;
   created_at: string;
   updated_at: string;
+  is_pinned_by_renter?: boolean;
+  is_pinned_by_landlord?: boolean;
+  is_marked_unread_by_renter?: boolean;
+  is_marked_unread_by_landlord?: boolean;
   listing?: {
     id: string;
     title: string;
@@ -132,8 +136,8 @@ export function useConversations(userId: string | undefined) {
         profileMap.set(id, profile);
       });
 
-      // Step 5: Combine all data
-      return conversations.map(conv => {
+      // Step 5: Combine all data and sort (pinned first)
+      const result = conversations.map(conv => {
         const otherUserId = conv.renter_id === userId ? conv.landlord_id : conv.renter_id;
         const profile = profileMap.get(otherUserId);
         
@@ -145,6 +149,17 @@ export function useConversations(userId: string | undefined) {
             ? { id: profile.user_id, full_name: profile.full_name, avatar_url: profile.avatar_url }
             : { id: otherUserId, full_name: null, avatar_url: null },
         } as Conversation;
+      });
+
+      // Sort: pinned first, then by last_message_at
+      return result.sort((a, b) => {
+        const aIsPinned = a.renter_id === userId ? a.is_pinned_by_renter : a.is_pinned_by_landlord;
+        const bIsPinned = b.renter_id === userId ? b.is_pinned_by_renter : b.is_pinned_by_landlord;
+        
+        if (aIsPinned && !bIsPinned) return -1;
+        if (!aIsPinned && bIsPinned) return 1;
+        
+        return new Date(b.last_message_at || 0).getTime() - new Date(a.last_message_at || 0).getTime();
       });
     },
     enabled: !!userId,
@@ -439,5 +454,58 @@ export function useUnreadCount(userId: string | undefined) {
     },
     enabled: !!userId,
     refetchInterval: 30000,
+  });
+}
+
+// Pin or unpin a conversation
+export function usePinConversation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ conversationId, userId, isRenter, isPinned }: {
+      conversationId: string;
+      userId: string;
+      isRenter: boolean;
+      isPinned: boolean;
+    }) => {
+      const updateField = isRenter ? 'is_pinned_by_renter' : 'is_pinned_by_landlord';
+      
+      const { error } = await supabase
+        .from('conversations')
+        .update({ [updateField]: isPinned })
+        .eq('id', conversationId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+    },
+  });
+}
+
+// Mark a conversation as unread/read for the current user
+export function useMarkConversationUnread() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ conversationId, userId, isRenter, isMarkedUnread }: {
+      conversationId: string;
+      userId: string;
+      isRenter: boolean;
+      isMarkedUnread: boolean;
+    }) => {
+      const updateField = isRenter ? 'is_marked_unread_by_renter' : 'is_marked_unread_by_landlord';
+      
+      const { error } = await supabase
+        .from('conversations')
+        .update({ [updateField]: isMarkedUnread })
+        .eq('id', conversationId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ['unread-count'] });
+    },
   });
 }
