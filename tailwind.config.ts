@@ -133,6 +133,14 @@ export default {
           "45%": { transform: "scale(1.15)" },
           "60%": { transform: "scale(1)" },
         },
+        "slide-in-from-right": {
+          "0%": { transform: "translateX(100%)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
+        },
+        "slide-in-from-left": {
+          "0%": { transform: "translateX(-100%)", opacity: "0" },
+          "100%": { transform: "translateX(0)", opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
@@ -146,6 +154,8 @@ export default {
         "bounce-subtle": "bounce-subtle 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
         "slide-up-spring": "slide-up-spring 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)",
         "heart-beat": "heart-beat 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "slide-in-from-right": "slide-in-from-right 0.3s ease-out",
+        "slide-in-from-left": "slide-in-from-left 0.3s ease-out",
       },
       transitionTimingFunction: {
         spring: "cubic-bezier(0.34, 1.56, 0.64, 1)",
