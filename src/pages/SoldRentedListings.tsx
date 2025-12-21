@@ -302,12 +302,12 @@ export default function SoldRentedListings() {
                   />
                   
                   <TabsContent value="sold" className="flex-1 overflow-hidden m-0">
-                    <div ref={listContainerRef} className="h-full overflow-y-auto p-3 sm:p-4 @container">
+                    <div ref={listContainerRef} className="h-full rubber-band-scroll p-3 sm:p-4 @container">
                       <ListingsGrid showAnimations={true} />
                     </div>
                   </TabsContent>
                   <TabsContent value="rented" className="flex-1 overflow-hidden m-0">
-                    <div ref={listContainerRef} className="h-full overflow-y-auto p-3 sm:p-4 @container">
+                    <div ref={listContainerRef} className="h-full rubber-band-scroll p-3 sm:p-4 @container">
                       <ListingsGrid showAnimations={true} />
                     </div>
                   </TabsContent>
@@ -390,12 +390,12 @@ export default function SoldRentedListings() {
                 />
                 
                 <TabsContent value="sold" className="flex-1 overflow-hidden m-0">
-                  <div ref={listContainerRef} className="h-full overflow-y-auto p-3 sm:p-4 @container">
+                  <div ref={listContainerRef} className="h-full rubber-band-scroll p-3 sm:p-4 @container">
                     <ListingsGrid showAnimations={false} />
                   </div>
                 </TabsContent>
                 <TabsContent value="rented" className="flex-1 overflow-hidden m-0">
-                  <div ref={listContainerRef} className="h-full overflow-y-auto p-3 sm:p-4 @container">
+                  <div ref={listContainerRef} className="h-full rubber-band-scroll p-3 sm:p-4 @container">
                     <ListingsGrid showAnimations={false} />
                   </div>
                 </TabsContent>

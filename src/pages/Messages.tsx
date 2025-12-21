@@ -143,7 +143,7 @@ export default function Messages() {
                   className="w-full"
                 />
               </div>
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 rubber-band-scroll">
                 <ConversationsList
                   conversations={conversations}
                   selectedId={selectedConversation?.id}
@@ -175,7 +175,7 @@ export default function Messages() {
               className="w-full"
             />
           </div>
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 rubber-band-scroll">
             <ConversationsList
               conversations={conversations}
               selectedId={selectedConversation?.id}

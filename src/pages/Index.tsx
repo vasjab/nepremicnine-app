@@ -270,7 +270,7 @@ const Index = () => {
                   userId={user?.id}
                 />
 
-                <div ref={listContainerRef} className="flex-1 overflow-y-auto p-3 sm:p-4 overscroll-contain">
+                <div ref={listContainerRef} className="flex-1 rubber-band-scroll p-3 sm:p-4">
                   <ListingsGrid showAnimations={true} />
                 </div>
               </div>
@@ -371,7 +371,7 @@ const Index = () => {
                 userId={user?.id}
               />
 
-              <div ref={!isMobileLayout ? listContainerRef : undefined} className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 @container">
+              <div ref={!isMobileLayout ? listContainerRef : undefined} className="flex-1 min-h-0 rubber-band-scroll p-3 sm:p-4 @container">
                 <ListingsGrid showAnimations={false} />
               </div>
             </div>

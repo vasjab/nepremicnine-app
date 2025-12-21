@@ -324,6 +324,14 @@
     user-select: none;
   }
 
+  /* Rubber band / elastic scrolling like iOS */
+  .rubber-band-scroll {
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: auto;
+  }
+
   /* Touch-safe button for iOS Safari */
   .touch-safe-button {
     touch-action: manipulation;
