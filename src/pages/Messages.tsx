@@ -7,7 +7,7 @@ import { ConversationsList } from '@/components/messaging/ConversationsList';
 import { ChatWindow } from '@/components/messaging/ChatWindow';
 import { MessageSearch } from '@/components/messaging/MessageSearch';
 import { cn } from '@/lib/utils';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,24 +16,46 @@ export default function Messages() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [highlightMessageId, setHighlightMessageId] = useState<string | undefined>();
   
   const { data: conversations = [], isLoading, refetch } = useConversations(user?.id);
 
+  // Get conversation ID from URL query param
+  const urlConversationId = searchParams.get('conversation');
+
   // Auto-select conversation from navigation state (e.g., from "Contact Landlord")
   const stateConversationId = (location.state as { conversationId?: string })?.conversationId;
   
+  // Restore conversation from URL param on mount or when conversations load
   useEffect(() => {
-    if (stateConversationId && conversations.length > 0 && !selectedConversation) {
-      const convo = conversations.find(c => c.id === stateConversationId);
-      if (convo) {
-        setSelectedConversation(convo);
-        // Clear the state so it doesn't re-trigger
-        window.history.replaceState({}, document.title);
+    if (conversations.length > 0 && !selectedConversation) {
+      // Priority: state > URL param
+      const targetId = stateConversationId || urlConversationId;
+      if (targetId) {
+        const convo = conversations.find(c => c.id === targetId);
+        if (convo) {
+          setSelectedConversation(convo);
+          // Clear the navigation state if it was from there
+          if (stateConversationId) {
+            window.history.replaceState({}, document.title);
+          }
+        }
       }
     }
-  }, [stateConversationId, conversations, selectedConversation]);
+  }, [stateConversationId, urlConversationId, conversations, selectedConversation]);
+
+  // Sync selected conversation to URL
+  const handleSelectConversation = useCallback((conversation: Conversation | null) => {
+    setSelectedConversation(conversation);
+    if (conversation) {
+      navigate(`/messages?conversation=${conversation.id}`, { replace: true });
+    } else {
+      navigate('/messages', { replace: true });
+    }
+  }, [navigate]);
 
   // Subscribe to realtime updates for conversations
   useEffect(() => {
@@ -93,10 +115,10 @@ export default function Messages() {
   const handleSearchResultClick = useCallback((conversationId: string, messageId: string) => {
     const conversation = conversations.find(c => c.id === conversationId);
     if (conversation) {
-      setSelectedConversation(conversation);
+      handleSelectConversation(conversation);
       setHighlightMessageId(messageId);
     }
-  }, [conversations]);
+  }, [conversations, handleSelectConversation]);
 
   if (!user) {
     return (
@@ -132,7 +154,7 @@ export default function Messages() {
             <ChatWindow
               conversation={selectedConversation}
               showBackButton
-              onBack={() => setSelectedConversation(null)}
+              onBack={() => handleSelectConversation(null)}
               highlightMessageId={highlightMessageId}
             />
           ) : (
@@ -147,7 +169,7 @@ export default function Messages() {
                 <ConversationsList
                   conversations={conversations}
                   selectedId={selectedConversation?.id}
-                  onSelect={setSelectedConversation}
+                  onSelect={handleSelectConversation}
                   isLoading={isLoading}
                 />
               </div>
@@ -179,7 +201,7 @@ export default function Messages() {
             <ConversationsList
               conversations={conversations}
               selectedId={selectedConversation?.id}
-              onSelect={setSelectedConversation}
+              onSelect={handleSelectConversation}
               isLoading={isLoading}
             />
           </div>
