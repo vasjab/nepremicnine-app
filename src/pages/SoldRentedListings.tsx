@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Home, List, MapIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
+import { FilterBar } from '@/components/FilterBar';
 import { ListingCard } from '@/components/ListingCard';
 import { MapView } from '@/components/MapView';
 import { ListingDetailModal } from '@/components/ListingDetailModal';
@@ -14,7 +15,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useMobileViewPreference } from '@/hooks/useMobileViewPreference';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
-import { Listing, ListingFilters } from '@/types/listing';
+import { useAuth } from '@/contexts/AuthContext';
+import { Listing, ListingFilters, SortOption } from '@/types/listing';
 import { cn } from '@/lib/utils';
 
 interface MapBounds {
@@ -49,6 +51,7 @@ export default function SoldRentedListings() {
   const navigate = useNavigate();
   const isMobileLayout = useIsMobile();
   const { trigger: haptic } = useHapticFeedback();
+  const { user } = useAuth();
   
   const [activeTab, setActiveTab] = useState<'sold' | 'rented'>('sold');
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
@@ -57,6 +60,7 @@ export default function SoldRentedListings() {
   const [modalListing, setModalListing] = useState<Listing | null>(null);
   const [mobileView, setMobileView] = useMobileViewPreference();
   const [filters, setFilters] = useState<ListingFilters>({});
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
   
   const listingRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const listContainerRef = useRef<HTMLDivElement>(null);
@@ -67,18 +71,82 @@ export default function SoldRentedListings() {
   const isLoading = activeTab === 'sold' ? isSoldLoading : isRentedLoading;
   const allListings = activeTab === 'sold' ? soldListings : rentedListings;
 
-  // Filter listings based on map bounds
+  // Filter listings based on map bounds, filters, and sorting
   const filteredListings = useMemo(() => {
     if (!allListings) return [];
-    if (!mapBounds) return allListings;
     
-    return allListings.filter(listing => 
-      listing.latitude >= mapBounds.south &&
-      listing.latitude <= mapBounds.north &&
-      listing.longitude >= mapBounds.west &&
-      listing.longitude <= mapBounds.east
-    );
-  }, [allListings, mapBounds]);
+    let result = allListings.filter(listing => {
+      // Map bounds filter
+      if (mapBounds) {
+        if (
+          listing.latitude < mapBounds.south ||
+          listing.latitude > mapBounds.north ||
+          listing.longitude < mapBounds.west ||
+          listing.longitude > mapBounds.east
+        ) return false;
+      }
+      
+      // Search filter
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        const matchesSearch = 
+          listing.title?.toLowerCase().includes(searchLower) ||
+          listing.address?.toLowerCase().includes(searchLower) ||
+          listing.city?.toLowerCase().includes(searchLower) ||
+          listing.description?.toLowerCase().includes(searchLower);
+        if (!matchesSearch) return false;
+      }
+      
+      // Property type filter
+      if (filters.property_types?.length && !filters.property_types.includes(listing.property_type)) return false;
+      
+      // Price filter
+      if (filters.min_price && listing.price < filters.min_price) return false;
+      if (filters.max_price && listing.price > filters.max_price) return false;
+      
+      // Size filter
+      if (filters.min_area && (!listing.area_sqm || listing.area_sqm < filters.min_area)) return false;
+      if (filters.max_area && listing.area_sqm && listing.area_sqm > filters.max_area) return false;
+      
+      // Bedrooms filter
+      if (filters.min_bedrooms && listing.bedrooms < filters.min_bedrooms) return false;
+      
+      // Bathrooms filter
+      if (filters.min_bathrooms && listing.bathrooms < filters.min_bathrooms) return false;
+      
+      return true;
+    });
+
+    // Apply sorting
+    return result.sort((a, b) => {
+      switch (sortBy) {
+        case 'newest':
+          return new Date(b.completed_at || b.created_at).getTime() - new Date(a.completed_at || a.created_at).getTime();
+        case 'oldest':
+          return new Date(a.completed_at || a.created_at).getTime() - new Date(b.completed_at || b.created_at).getTime();
+        case 'price_asc':
+          return a.price - b.price;
+        case 'price_desc':
+          return b.price - a.price;
+        case 'size_asc':
+          return (a.area_sqm || 0) - (b.area_sqm || 0);
+        case 'size_desc':
+          return (b.area_sqm || 0) - (a.area_sqm || 0);
+        case 'price_per_sqm_asc': {
+          const aPricePerSqm = a.area_sqm ? a.price / a.area_sqm : Infinity;
+          const bPricePerSqm = b.area_sqm ? b.price / b.area_sqm : Infinity;
+          return aPricePerSqm - bPricePerSqm;
+        }
+        case 'price_per_sqm_desc': {
+          const aPricePerSqm = a.area_sqm ? a.price / a.area_sqm : -Infinity;
+          const bPricePerSqm = b.area_sqm ? b.price / b.area_sqm : -Infinity;
+          return bPricePerSqm - aPricePerSqm;
+        }
+        default:
+          return 0;
+      }
+    });
+  }, [allListings, mapBounds, sortBy, filters]);
 
   const handleListingClick = (listing: Listing) => {
     navigate(`/listing/${listing.id}`);
@@ -224,6 +292,15 @@ export default function SoldRentedListings() {
                 >
                   <TabsHeader />
                   
+                  <FilterBar
+                    filters={filters}
+                    onFiltersChange={setFilters}
+                    sortBy={sortBy}
+                    onSortChange={setSortBy}
+                    totalCount={filteredListings.length}
+                    userId={user?.id}
+                  />
+                  
                   <TabsContent value="sold" className="flex-1 overflow-hidden m-0">
                     <div ref={listContainerRef} className="h-full overflow-y-auto p-3 sm:p-4 @container">
                       <ListingsGrid showAnimations={true} />
@@ -302,6 +379,15 @@ export default function SoldRentedListings() {
               {/* Left panel - Tabs + Listings (50%) */}
               <div className="w-1/2 flex flex-col h-full min-h-0 border-r border-border overflow-hidden">
                 <TabsHeader />
+                
+                <FilterBar
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  sortBy={sortBy}
+                  onSortChange={setSortBy}
+                  totalCount={filteredListings.length}
+                  userId={user?.id}
+                />
                 
                 <TabsContent value="sold" className="flex-1 overflow-hidden m-0">
                   <div ref={listContainerRef} className="h-full overflow-y-auto p-3 sm:p-4 @container">
