@@ -384,7 +384,7 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 rubber-band-scroll p-4 space-y-4">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
