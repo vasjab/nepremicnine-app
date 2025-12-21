@@ -407,6 +407,26 @@
   60% { transform: scale(1); }
 }
 
+/* FLIP animation highlight pulse for conversation cards */
+@keyframes highlight-pulse {
+  0% { 
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0.4);
+    background-color: hsl(var(--primary) / 0.1);
+  }
+  50% { 
+    box-shadow: 0 0 0 8px hsl(var(--primary) / 0.1);
+    background-color: hsl(var(--primary) / 0.15);
+  }
+  100% { 
+    box-shadow: 0 0 0 0 hsl(var(--primary) / 0);
+    background-color: transparent;
+  }
+}
+
+.animate-highlight-pulse {
+  animation: highlight-pulse 0.8s ease-out forwards;
+}
+
 /* Mapbox popup styling */
 .mapboxgl-popup-content {
   padding: 0 !important;
