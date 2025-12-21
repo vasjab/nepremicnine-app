@@ -401,25 +401,25 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
               <MoreVertical className="h-5 w-5" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setProfileModalOpen(true)}>
-              <User className="h-4 w-4 mr-2" />
+          <DropdownMenuContent align="end" className="p-2 min-w-[200px]">
+            <DropdownMenuItem onClick={() => setProfileModalOpen(true)} className="px-4 py-3 text-base cursor-pointer">
+              <User className="h-5 w-5 mr-3" />
               View Profile
             </DropdownMenuItem>
-            <DropdownMenuItem asChild>
+            <DropdownMenuItem asChild className="px-4 py-3 text-base cursor-pointer">
               <Link to={`/listing/${conversation.listing?.id}`}>
-                <Home className="h-4 w-4 mr-2" />
+                <Home className="h-5 w-5 mr-3" />
                 View Listing
               </Link>
             </DropdownMenuItem>
             
-            <DropdownMenuSeparator className="my-2" />
+            <DropdownMenuSeparator className="my-3" />
             
             <DropdownMenuItem 
               onClick={() => setDeleteDialogOpen(true)}
-              className="text-destructive focus:text-destructive"
+              className="px-4 py-3 text-base cursor-pointer text-destructive focus:text-destructive"
             >
-              <Trash2 className="h-4 w-4 mr-2" />
+              <Trash2 className="h-5 w-5 mr-3" />
               Delete Conversation
             </DropdownMenuItem>
           </DropdownMenuContent>
