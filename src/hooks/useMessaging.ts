@@ -356,7 +356,7 @@ export function useDeleteMessage() {
   });
 }
 
-// Mark messages as read
+// Mark messages as read and clear manual unread flag
 export function useMarkMessagesRead() {
   const queryClient = useQueryClient();
 
@@ -365,14 +365,35 @@ export function useMarkMessagesRead() {
       conversationId: string;
       userId: string;
     }) => {
-      const { error } = await supabase
+      // First, get conversation to determine if user is renter or landlord
+      const { data: conversation, error: convError } = await supabase
+        .from('conversations')
+        .select('renter_id, landlord_id')
+        .eq('id', conversationId)
+        .single();
+
+      if (convError) throw convError;
+
+      const isRenter = conversation.renter_id === userId;
+      const updateField = isRenter ? 'is_marked_unread_by_renter' : 'is_marked_unread_by_landlord';
+
+      // Mark all messages as read
+      const { error: msgError } = await supabase
         .from('messages')
         .update({ is_read: true, read_at: new Date().toISOString() })
         .eq('conversation_id', conversationId)
         .neq('sender_id', userId)
         .eq('is_read', false);
 
-      if (error) throw error;
+      if (msgError) throw msgError;
+
+      // Also clear the manual unread flag
+      const { error: flagError } = await supabase
+        .from('conversations')
+        .update({ [updateField]: false })
+        .eq('id', conversationId);
+
+      if (flagError) throw flagError;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['messages', variables.conversationId] });

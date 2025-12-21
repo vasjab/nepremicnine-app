@@ -154,12 +154,22 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
     }
   }, [messages, highlightMessageId]);
 
-  // Mark messages as read when opening conversation
+  // Mark messages as read when user scrolls to bottom
   useEffect(() => {
-    if (user && conversation.id) {
-      markAsRead.mutate({ conversationId: conversation.id, userId: user.id });
-    }
-  }, [conversation.id, user]);
+    if (!user || !messagesEndRef.current) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && messages.length > 0) {
+          markAsRead.mutate({ conversationId: conversation.id, userId: user.id });
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    observer.observe(messagesEndRef.current);
+    return () => observer.disconnect();
+  }, [conversation.id, user, messages.length]);
 
   // Subscribe to realtime messages and reactions
   useEffect(() => {
