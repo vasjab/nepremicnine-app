@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { MessageCircle, Trash2, Loader2, Home, MoreVertical, Pin, Mail, MailOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -47,6 +47,65 @@ export function ConversationsList({
   const deleteConversation = useDeleteConversation();
   const pinConversation = usePinConversation();
   const markConversationUnread = useMarkConversationUnread();
+
+  // FLIP animation tracking
+  const [prevPositions, setPrevPositions] = useState<Record<string, number>>({});
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const isFirstRender = useRef(true);
+
+  // Track position changes and apply FLIP animation
+  useLayoutEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      // Store initial positions
+      const positions: Record<string, number> = {};
+      conversations.forEach((conv, index) => {
+        positions[conv.id] = index;
+      });
+      setPrevPositions(positions);
+      return;
+    }
+
+    // Calculate and apply FLIP animations
+    conversations.forEach((conv, newIndex) => {
+      const oldIndex = prevPositions[conv.id];
+      const element = itemRefs.current[conv.id];
+      
+      if (element && oldIndex !== undefined && oldIndex !== newIndex) {
+        // Calculate how far it moved (in pixels)
+        const delta = (oldIndex - newIndex) * element.offsetHeight;
+        
+        // FLIP: Start from old position immediately
+        element.style.transform = `translateY(${delta}px)`;
+        element.style.transition = 'none';
+        
+        // Force reflow to apply the transform
+        element.offsetHeight;
+        
+        // Animate to final position with spring-like easing
+        requestAnimationFrame(() => {
+          element.style.transition = 'transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)';
+          element.style.transform = 'translateY(0)';
+          
+          // Add highlight pulse effect
+          element.classList.add('animate-highlight-pulse');
+          
+          // Remove highlight after animation completes
+          setTimeout(() => {
+            element.classList.remove('animate-highlight-pulse');
+            element.style.transition = '';
+          }, 800);
+        });
+      }
+    });
+
+    // Store new positions for next comparison
+    const newPositions: Record<string, number> = {};
+    conversations.forEach((conv, index) => {
+      newPositions[conv.id] = index;
+    });
+    setPrevPositions(newPositions);
+  }, [conversations]);
 
   const handleDeleteClick = (conversationId: string) => {
     setConversationToDelete(conversationId);
@@ -140,9 +199,10 @@ export function ConversationsList({
         return (
           <div
             key={conversation.id}
+            ref={(el) => { itemRefs.current[conversation.id] = el; }}
             className={cn(
               "w-full p-4 flex gap-3 text-left group relative",
-              "transition-all duration-300 ease-out",
+              "transition-colors duration-300 ease-out",
               "hover:bg-secondary/50",
               isSelected && "bg-primary/15 border-l-4 border-primary",
               !isSelected && hasUnread && "bg-accent/10 border-l-4 border-accent"
