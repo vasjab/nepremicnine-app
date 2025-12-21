@@ -724,7 +724,7 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
       </div>
 
       {/* Input - fixed at bottom with flex-shrink-0 */}
-      <div className="flex-shrink-0 p-4 border-t border-border bg-card space-y-2">
+      <div className="flex-shrink-0 p-4 border-t border-border bg-card space-y-2" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
         {/* Reply preview */}
         {replyToMessage && (
           <ReplyPreview
@@ -751,7 +751,7 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
             onChange={handleInputChange}
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
-            className="min-h-[44px] max-h-32 resize-none flex-1"
+            className="min-h-[44px] max-h-32 resize-none flex-1 text-base"
             rows={1}
           />
           <Button
