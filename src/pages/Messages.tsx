@@ -147,9 +147,9 @@ export default function Messages() {
   // Mobile: Show either list or chat
   if (isMobile) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">
         <Header />
-        <main className="pt-16 h-[calc(100dvh-4rem)] overflow-hidden">
+        <main className="flex-1 pt-16 overflow-hidden">
           {selectedConversation ? (
             <ChatWindow
               conversation={selectedConversation}
@@ -184,9 +184,9 @@ export default function Messages() {
 
   // Desktop: Split view
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-[100dvh] bg-background flex flex-col overflow-hidden">
       <Header />
-      <main className="pt-16 h-[calc(100dvh-4rem)] flex">
+      <main className="flex-1 pt-16 flex overflow-hidden">
         {/* Conversations sidebar */}
         <div className={cn(
           "w-80 xl:w-96 border-r border-border flex-shrink-0",
