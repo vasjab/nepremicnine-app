@@ -356,6 +356,12 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
               <User className="h-4 w-4 mr-2" />
               View Profile
             </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to={`/listing/${conversation.listing?.id}`}>
+                <Home className="h-4 w-4 mr-2" />
+                View Listing
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => setDeleteDialogOpen(true)}
               className="text-destructive focus:text-destructive"
