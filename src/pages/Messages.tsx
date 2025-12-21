@@ -158,20 +158,22 @@ export default function Messages() {
               highlightMessageId={highlightMessageId}
             />
           ) : (
-            <div className="flex flex-col h-full">
-              <div className="p-4 border-b border-border">
+            <div className="flex flex-col h-full overflow-hidden">
+              <div className="p-4 border-b border-border flex-shrink-0">
                 <MessageSearch 
                   onResultClick={handleSearchResultClick}
                   className="w-full"
                 />
               </div>
-              <div className="flex-1 rubber-band-scroll">
-                <ConversationsList
-                  conversations={conversations}
-                  selectedId={selectedConversation?.id}
-                  onSelect={handleSelectConversation}
-                  isLoading={isLoading}
-                />
+              <div className="flex-1 overflow-hidden">
+                <div className="h-full rubber-band-scroll">
+                  <ConversationsList
+                    conversations={conversations}
+                    selectedId={selectedConversation?.id}
+                    onSelect={handleSelectConversation}
+                    isLoading={isLoading}
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -188,22 +190,24 @@ export default function Messages() {
         {/* Conversations sidebar */}
         <div className={cn(
           "w-80 xl:w-96 border-r border-border flex-shrink-0",
-          "flex flex-col bg-card"
+          "flex flex-col bg-card overflow-hidden"
         )}>
-          <div className="p-4 border-b border-border space-y-3">
+          <div className="p-4 border-b border-border space-y-3 flex-shrink-0">
             <h1 className="text-xl font-semibold text-foreground">Messages</h1>
             <MessageSearch 
               onResultClick={handleSearchResultClick}
               className="w-full"
             />
           </div>
-          <div className="flex-1 rubber-band-scroll">
-            <ConversationsList
-              conversations={conversations}
-              selectedId={selectedConversation?.id}
-              onSelect={handleSelectConversation}
-              isLoading={isLoading}
-            />
+          <div className="flex-1 overflow-hidden">
+            <div className="h-full rubber-band-scroll">
+              <ConversationsList
+                conversations={conversations}
+                selectedId={selectedConversation?.id}
+                onSelect={handleSelectConversation}
+                isLoading={isLoading}
+              />
+            </div>
           </div>
         </div>
 
