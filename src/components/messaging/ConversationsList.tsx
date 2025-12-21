@@ -141,10 +141,11 @@ export function ConversationsList({
           <div
             key={conversation.id}
             className={cn(
-              "w-full p-4 flex gap-3 text-left transition-colors group relative",
+              "w-full p-4 flex gap-3 text-left group relative",
+              "transition-all duration-300 ease-out",
               "hover:bg-secondary/50",
-              isSelected && "bg-secondary",
-              hasUnread && "bg-accent/10 border-l-4 border-accent"
+              isSelected && "bg-primary/15 border-l-4 border-primary",
+              !isSelected && hasUnread && "bg-accent/10 border-l-4 border-accent"
             )}
           >
             <button
