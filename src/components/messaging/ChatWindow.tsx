@@ -564,7 +564,10 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
         
         {/* Typing indicator */}
         {isOtherTyping && (
-          <TypingIndicator userName={otherUser?.full_name || undefined} />
+          <TypingIndicator 
+            userName={otherUser?.full_name || undefined} 
+            avatarUrl={otherUser?.avatar_url || undefined}
+          />
         )}
         
         <div ref={messagesEndRef} />

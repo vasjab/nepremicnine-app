@@ -202,10 +202,10 @@ export function ConversationsList({
             ref={(el) => { itemRefs.current[conversation.id] = el; }}
             className={cn(
               "w-full p-4 flex gap-3 text-left group relative",
-              "transition-colors duration-300 ease-out",
+              "transition-all duration-200 ease-out",
               "hover:bg-secondary/50",
               "border-l-4 border-transparent",
-              isSelected && "bg-primary/15 !border-primary",
+              isSelected && "bg-primary/10 !border-primary pl-5 shadow-sm",
               !isSelected && hasUnread && "bg-accent/10 !border-accent"
             )}
           >
