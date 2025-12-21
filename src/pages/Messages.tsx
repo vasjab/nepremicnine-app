@@ -149,7 +149,7 @@ export default function Messages() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="pt-16 h-[calc(100dvh-4rem)]">
+        <main className="pt-16 h-[calc(100dvh-4rem)] overflow-hidden">
           {selectedConversation ? (
             <ChatWindow
               conversation={selectedConversation}

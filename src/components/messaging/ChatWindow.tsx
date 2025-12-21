@@ -90,6 +90,7 @@ const EDIT_TIME_LIMIT_MINUTES = 15;
 export function ChatWindow({ conversation, onBack, showBackButton, highlightMessageId, onConversationDeleted }: ChatWindowProps) {
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -170,12 +171,24 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
   // Typing indicator
   const { isOtherTyping, setTyping } = useTypingIndicator(conversation.id, user?.id);
 
-  // Scroll to bottom or highlighted message
+  // Scroll to bottom or highlighted message - scroll within container only
   useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    
     if (highlightMessageId && highlightRef.current) {
-      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Scroll to highlighted message within the container
+      const element = highlightRef.current;
+      const elementTop = element.offsetTop;
+      const containerHeight = container.clientHeight;
+      const elementHeight = element.clientHeight;
+      container.scrollTo({ 
+        top: elementTop - (containerHeight / 2) + (elementHeight / 2), 
+        behavior: 'smooth' 
+      });
     } else {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      // Scroll to bottom of container
+      container.scrollTop = container.scrollHeight;
     }
   }, [messages, highlightMessageId]);
 
@@ -359,8 +372,8 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
 
   return (
     <div className="flex flex-col h-full bg-background overflow-hidden">
-      {/* Header - sticky */}
-      <div className="sticky top-0 z-10 flex items-center gap-3 p-4 border-b border-border bg-card flex-shrink-0">
+      {/* Header - fixed at top with flex-shrink-0 */}
+      <div className="flex-shrink-0 z-10 flex items-center gap-3 p-4 border-b border-border bg-card">
         {showBackButton && (
           <Button variant="ghost" size="icon" onClick={onBack} className="flex-shrink-0">
             <ArrowLeft className="h-5 w-5" />
@@ -426,9 +439,12 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
         </DropdownMenu>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full rubber-band-scroll p-4 space-y-4">
+      {/* Messages - scrollable container with min-h-0 for flex overflow on iOS */}
+      <div 
+        ref={scrollContainerRef}
+        className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 p-4 space-y-4"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+      >
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -705,11 +721,10 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
         )}
         
         <div ref={messagesEndRef} />
-        </div>
       </div>
 
-      {/* Input */}
-      <div className="p-4 border-t border-border bg-card space-y-2">
+      {/* Input - fixed at bottom with flex-shrink-0 */}
+      <div className="flex-shrink-0 p-4 border-t border-border bg-card space-y-2">
         {/* Reply preview */}
         {replyToMessage && (
           <ReplyPreview
