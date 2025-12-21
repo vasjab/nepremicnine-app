@@ -29,7 +29,6 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
   const unsaveListing = useUnsaveListing();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHeartAnimating, setIsHeartAnimating] = useState(false);
-  const [slideDirection, setSlideDirection] = useState<'left' | 'right' | null>(null);
 
   const isSoldOrRented = listing.status === 'sold' || listing.status === 'rented';
   const isSold = listing.status === 'sold';
@@ -37,7 +36,6 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
   const goToPrevImage = useCallback(() => {
     if (listing.images && listing.images.length > 1) {
-      setSlideDirection('right');
       setCurrentImageIndex((prev) => 
         prev === 0 ? listing.images!.length - 1 : prev - 1
       );
@@ -46,7 +44,6 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
   const goToNextImage = useCallback(() => {
     if (listing.images && listing.images.length > 1) {
-      setSlideDirection('left');
       setCurrentImageIndex((prev) => 
         prev === listing.images!.length - 1 ? 0 : prev + 1
       );
@@ -151,17 +148,23 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
         {...swipeHandlers}
       >
         {listing.images && listing.images.length > 0 ? (
-          <img
-            key={currentImageIndex}
-            src={listing.images[currentImageIndex]}
-            alt={`${listing.title} - Photo ${currentImageIndex + 1}`}
-            className={cn(
-              "w-full h-full object-cover",
-              isSoldOrRented && showStatusOverlay && "saturate-[0.7]",
-              slideDirection === 'left' && "animate-slide-in-from-right",
-              slideDirection === 'right' && "animate-slide-in-from-left"
-            )}
-          />
+          <div 
+            className="flex h-full transition-transform duration-300 ease-out"
+            style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
+          >
+            {listing.images.map((image, index) => (
+              <img
+                key={index}
+                src={image}
+                alt={`${listing.title} - Photo ${index + 1}`}
+                className={cn(
+                  "w-full h-full object-cover flex-shrink-0",
+                  isSoldOrRented && showStatusOverlay && "saturate-[0.7]"
+                )}
+                style={{ minWidth: '100%' }}
+              />
+            ))}
+          </div>
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-secondary">
             <span className="text-muted-foreground text-sm">{t('listing.noImage')}</span>
@@ -208,7 +211,6 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
                   key={index}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSlideDirection(index > currentImageIndex ? 'left' : 'right');
                     setCurrentImageIndex(index);
                   }}
                   className={cn(
