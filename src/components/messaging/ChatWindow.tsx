@@ -29,6 +29,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -393,6 +394,9 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
                 View Listing
               </Link>
             </DropdownMenuItem>
+            
+            <DropdownMenuSeparator className="my-2" />
+            
             <DropdownMenuItem 
               onClick={() => setDeleteDialogOpen(true)}
               className="text-destructive focus:text-destructive"
