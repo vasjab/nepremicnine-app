@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Heart, PlusCircle, User, Menu, X, MessageCircle, BarChart3, History, Globe, Search } from 'lucide-react';
+import { Home, Heart, PlusCircle, User, Menu, X, MessageCircle, BarChart3, History, Globe } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -68,7 +68,7 @@ export function Header() {
             )}
           </div>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation - Simplified */}
           <nav className="hidden md:flex items-center gap-1">
             <Link
               to="/"
@@ -98,47 +98,10 @@ export function Header() {
                 <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent" />
               )}
             </Link>
-            {user && (
-              <>
-                <Link
-                  to="/saved"
-                  className={cn(
-                    'relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
-                    isActive('/saved') 
-                      ? 'text-foreground bg-secondary/60' 
-                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
-                  )}
-                >
-                  {t('nav.saved')}
-                  {isActive('/saved') && (
-                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent" />
-                  )}
-                </Link>
-                <Link
-                  to="/my-listings"
-                  className={cn(
-                    'relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
-                    isActive('/my-listings') 
-                      ? 'text-foreground bg-secondary/60' 
-                      : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
-                  )}
-                >
-                  {t('nav.myListings')}
-                  {isActive('/my-listings') && (
-                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent" />
-                  )}
-                </Link>
-              </>
-            )}
           </nav>
 
           {/* Right side */}
           <div className="flex items-center gap-1 sm:gap-2">
-            {/* International Settings - hidden on mobile, in burger menu */}
-            <div className="hidden md:block">
-              <InternationalSettings />
-            </div>
-
             {user ? (
               <>
                 {/* Messages button with badge */}
@@ -199,12 +162,6 @@ export function Header() {
                       </DropdownMenuItem>
                       <DropdownMenuSeparator className="my-2" />
                       <DropdownMenuItem asChild className="px-4 py-3.5 text-base focus:bg-secondary/50 rounded-none">
-                        <Link to="/dashboard" className="cursor-pointer">
-                          <BarChart3 className="mr-4 h-5 w-5" />
-                          {t('nav.dashboard')}
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="px-4 py-3.5 text-base focus:bg-secondary/50 rounded-none">
                         <Link to="/saved" className="cursor-pointer">
                           <Heart className="mr-4 h-5 w-5" />
                           {t('common.savedListings')}
@@ -216,6 +173,17 @@ export function Header() {
                           {t('common.myListings')}
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="px-4 py-3.5 text-base focus:bg-secondary/50 rounded-none">
+                        <Link to="/dashboard" className="cursor-pointer">
+                          <BarChart3 className="mr-4 h-5 w-5" />
+                          {t('nav.dashboard')}
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="my-2" />
+                      {/* Language & Region - opens dialog */}
+                      <div className="px-0 py-0">
+                        <InternationalSettings trigger="menu-item" />
+                      </div>
                       <DropdownMenuSeparator className="my-2" />
                       <DropdownMenuItem onClick={signOut} className="cursor-pointer px-4 py-3.5 text-base text-destructive focus:bg-destructive/10 focus:text-destructive rounded-none">
                         {t('common.signOut')}
@@ -226,6 +194,8 @@ export function Header() {
               </>
             ) : (
               <div className="hidden md:flex items-center gap-2">
+                {/* Language & Region for non-logged in users */}
+                <InternationalSettings trigger="icon" />
                 <Link to="/auth">
                   <Button variant="ghost" size="sm" className="rounded-full">
                     {t('common.logIn')}
@@ -279,6 +249,20 @@ export function Header() {
               {user ? (
                 <>
                   <Link
+                    to="/saved"
+                    className={cn(
+                      'flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors touch-safe-button border-b border-border/20',
+                      isActive('/saved') 
+                        ? 'text-foreground' 
+                        : 'text-foreground hover:bg-secondary/30'
+                    )}
+                    onClick={() => setMobileMenuOpen(false)}
+                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  >
+                    <Heart className="h-6 w-6" />
+                    {t('common.savedListings')}
+                  </Link>
+                  <Link
                     to="/my-listings"
                     className={cn(
                       'flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors touch-safe-button border-b border-border/20',
@@ -324,10 +308,9 @@ export function Header() {
                   {/* Section separator */}
                   <div className="h-2 bg-muted/30" />
                   
-                  {/* Localization inside menu */}
-                  <div className="px-6 py-4 flex items-center gap-4 border-b border-border/20">
-                    <Globe className="h-6 w-6 text-muted-foreground" />
-                    <InternationalSettings />
+                  {/* Language & Region - Opens dialog */}
+                  <div className="border-b border-border/20">
+                    <InternationalSettings trigger="menu-item" onOpenChange={() => setMobileMenuOpen(false)} />
                   </div>
                   
                   {/* Section separator */}
@@ -359,10 +342,9 @@ export function Header() {
                   {/* Section separator */}
                   <div className="h-2 bg-muted/30" />
                   
-                  {/* Localization for non-logged in users */}
-                  <div className="px-6 py-4 flex items-center gap-4 border-b border-border/20">
-                    <Globe className="h-6 w-6 text-muted-foreground" />
-                    <InternationalSettings />
+                  {/* Language & Region for non-logged in users */}
+                  <div className="border-b border-border/20">
+                    <InternationalSettings trigger="menu-item" onOpenChange={() => setMobileMenuOpen(false)} />
                   </div>
                   
                   {/* Section separator */}
