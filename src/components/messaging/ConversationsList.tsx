@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { MessageCircle, Trash2, Loader2, Home, MoreVertical, Pin, Mail, MailOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +26,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
 
 interface ConversationsListProps {
   conversations: Conversation[];
@@ -42,11 +49,17 @@ export function ConversationsList({
   isLoading,
 }: ConversationsListProps) {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
   const deleteConversation = useDeleteConversation();
   const pinConversation = usePinConversation();
   const markConversationUnread = useMarkConversationUnread();
+
+  // Long press state for mobile action sheet
+  const [actionSheetOpen, setActionSheetOpen] = useState(false);
+  const [longPressConversation, setLongPressConversation] = useState<Conversation | null>(null);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
   // FLIP animation tracking
   const [prevPositions, setPrevPositions] = useState<Record<string, number>>({});
@@ -156,6 +169,50 @@ export function ConversationsList({
     });
   };
 
+  // Long press handlers for mobile
+  const handleTouchStart = (conversation: Conversation) => {
+    longPressTimer.current = setTimeout(() => {
+      setLongPressConversation(conversation);
+      setActionSheetOpen(true);
+    }, 500);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
+
+  const handleConversationClick = (conversation: Conversation) => {
+    // Only select if action sheet is not open
+    if (!actionSheetOpen) {
+      onSelect(conversation);
+    }
+  };
+
+  // Action sheet handlers
+  const handleActionSheetPin = async () => {
+    if (longPressConversation) {
+      await handlePinToggle(longPressConversation);
+      setActionSheetOpen(false);
+    }
+  };
+
+  const handleActionSheetMarkUnread = async () => {
+    if (longPressConversation) {
+      await handleMarkUnreadToggle(longPressConversation);
+      setActionSheetOpen(false);
+    }
+  };
+
+  const handleActionSheetDelete = () => {
+    if (longPressConversation) {
+      handleDeleteClick(longPressConversation.id);
+      setActionSheetOpen(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="p-4 space-y-3">
@@ -200,13 +257,16 @@ export function ConversationsList({
           <div
             key={conversation.id}
             ref={(el) => { itemRefs.current[conversation.id] = el; }}
-            onClick={() => onSelect(conversation)}
+            onClick={() => handleConversationClick(conversation)}
+            onTouchStart={isMobile ? () => handleTouchStart(conversation) : undefined}
+            onTouchEnd={isMobile ? handleTouchEnd : undefined}
+            onTouchMove={isMobile ? handleTouchEnd : undefined}
             className={cn(
               "w-full p-4 flex gap-3 text-left group relative cursor-pointer",
               "transition-all duration-200 ease-out",
               "hover:bg-secondary/50",
               "border-l-4 border-transparent",
-              "touch-action-manipulation",
+              "touch-action-manipulation select-none",
               isSelected && "bg-primary/10 !border-primary pl-5 shadow-sm",
               !isSelected && hasUnread && "bg-accent/10 !border-accent"
             )}
@@ -269,52 +329,54 @@ export function ConversationsList({
               </div>
             </div>
 
-            {/* Dropdown menu */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 self-center text-muted-foreground"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-popover">
-                <DropdownMenuItem onClick={() => handlePinToggle(conversation)}>
-                  <Pin className="h-4 w-4 mr-2" />
-                  {isPinned ? 'Unpin' : 'Pin'}
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to={`/listing/${conversation.listing?.id}`}>
-                    <Home className="h-4 w-4 mr-2" />
-                    View Listing
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleMarkUnreadToggle(conversation)}>
-                  {hasUnread ? (
-                    <>
-                      <MailOpen className="h-4 w-4 mr-2" />
-                      Mark as Read
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="h-4 w-4 mr-2" />
-                      Mark as Unread
-                    </>
-                  )}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  onClick={() => handleDeleteClick(conversation.id)}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* Dropdown menu - desktop only */}
+            {!isMobile && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 self-center text-muted-foreground"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-popover">
+                  <DropdownMenuItem onClick={() => handlePinToggle(conversation)}>
+                    <Pin className="h-4 w-4 mr-2" />
+                    {isPinned ? 'Unpin' : 'Pin'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={`/listing/${conversation.listing?.id}`}>
+                      <Home className="h-4 w-4 mr-2" />
+                      View Listing
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleMarkUnreadToggle(conversation)}>
+                    {hasUnread ? (
+                      <>
+                        <MailOpen className="h-4 w-4 mr-2" />
+                        Mark as Read
+                      </>
+                    ) : (
+                      <>
+                        <Mail className="h-4 w-4 mr-2" />
+                        Mark as Unread
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={() => handleDeleteClick(conversation.id)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         );
       })}
@@ -342,6 +404,80 @@ export function ConversationsList({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Mobile Action Sheet */}
+      <Drawer open={actionSheetOpen} onOpenChange={setActionSheetOpen}>
+        <DrawerContent>
+          <DrawerHeader className="text-left">
+            <DrawerTitle className="flex items-center gap-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={longPressConversation?.other_user?.avatar_url || undefined} />
+                <AvatarFallback className="bg-accent text-accent-foreground">
+                  {longPressConversation?.other_user?.full_name?.[0]?.toUpperCase() || '?'}
+                </AvatarFallback>
+              </Avatar>
+              <span>{longPressConversation?.other_user?.full_name || 'Conversation'}</span>
+            </DrawerTitle>
+          </DrawerHeader>
+          <div className="p-4 pb-8 space-y-1">
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start h-12 text-base"
+              onClick={handleActionSheetPin}
+            >
+              <Pin className="h-5 w-5 mr-3" />
+              {longPressConversation && (
+                (longPressConversation.renter_id === user?.id 
+                  ? longPressConversation.is_pinned_by_renter 
+                  : longPressConversation.is_pinned_by_landlord) 
+                  ? 'Unpin' 
+                  : 'Pin'
+              )}
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start h-12 text-base" 
+              asChild
+              onClick={() => setActionSheetOpen(false)}
+            >
+              <Link to={`/listing/${longPressConversation?.listing?.id}`}>
+                <Home className="h-5 w-5 mr-3" />
+                View Listing
+              </Link>
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start h-12 text-base"
+              onClick={handleActionSheetMarkUnread}
+            >
+              {longPressConversation && (
+                ((longPressConversation.unread_count || 0) > 0 || 
+                  (longPressConversation.renter_id === user?.id 
+                    ? longPressConversation.is_marked_unread_by_renter 
+                    : longPressConversation.is_marked_unread_by_landlord)) ? (
+                  <>
+                    <MailOpen className="h-5 w-5 mr-3" />
+                    Mark as Read
+                  </>
+                ) : (
+                  <>
+                    <Mail className="h-5 w-5 mr-3" />
+                    Mark as Unread
+                  </>
+                )
+              )}
+            </Button>
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start h-12 text-base text-destructive hover:text-destructive"
+              onClick={handleActionSheetDelete}
+            >
+              <Trash2 className="h-5 w-5 mr-3" />
+              Delete
+            </Button>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 }
