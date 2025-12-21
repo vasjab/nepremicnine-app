@@ -204,8 +204,9 @@ export function ConversationsList({
               "w-full p-4 flex gap-3 text-left group relative",
               "transition-colors duration-300 ease-out",
               "hover:bg-secondary/50",
-              isSelected && "bg-primary/15 border-l-4 border-primary",
-              !isSelected && hasUnread && "bg-accent/10 border-l-4 border-accent"
+              "border-l-4 border-transparent",
+              isSelected && "bg-primary/15 !border-primary",
+              !isSelected && hasUnread && "bg-accent/10 !border-accent"
             )}
           >
             <button
