@@ -149,7 +149,7 @@ export default function Messages() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="pt-16 h-[calc(100vh-4rem)]">
+        <main className="pt-16 h-[calc(100dvh-4rem)]">
           {selectedConversation ? (
             <ChatWindow
               conversation={selectedConversation}
@@ -186,7 +186,7 @@ export default function Messages() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="pt-16 h-[calc(100vh-4rem)] flex">
+      <main className="pt-16 h-[calc(100dvh-4rem)] flex">
         {/* Conversations sidebar */}
         <div className={cn(
           "w-80 xl:w-96 border-r border-border flex-shrink-0",

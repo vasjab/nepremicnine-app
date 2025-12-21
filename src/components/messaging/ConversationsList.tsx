@@ -200,77 +200,74 @@ export function ConversationsList({
           <div
             key={conversation.id}
             ref={(el) => { itemRefs.current[conversation.id] = el; }}
+            onClick={() => onSelect(conversation)}
             className={cn(
-              "w-full p-4 flex gap-3 text-left group relative",
+              "w-full p-4 flex gap-3 text-left group relative cursor-pointer",
               "transition-all duration-200 ease-out",
               "hover:bg-secondary/50",
               "border-l-4 border-transparent",
+              "touch-action-manipulation",
               isSelected && "bg-primary/10 !border-primary pl-5 shadow-sm",
               !isSelected && hasUnread && "bg-accent/10 !border-accent"
             )}
           >
-            <button
-              onClick={() => onSelect(conversation)}
-              className="flex gap-3 flex-1 min-w-0"
-            >
-              {/* Avatar with pin indicator */}
-              <div className="relative flex-shrink-0">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={otherUser?.avatar_url || undefined} />
-                  <AvatarFallback className="bg-accent text-accent-foreground">
-                    {otherUser?.full_name?.[0]?.toUpperCase() || (isRenter ? 'L' : 'R')}
-                  </AvatarFallback>
-                </Avatar>
-                {isPinned && (
-                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
-                    <Pin className="h-2.5 w-2.5 text-primary-foreground" />
-                  </div>
+            {/* Avatar with pin indicator */}
+            <div className="relative flex-shrink-0">
+              <Avatar className="h-12 w-12">
+                <AvatarImage src={otherUser?.avatar_url || undefined} />
+                <AvatarFallback className="bg-accent text-accent-foreground">
+                  {otherUser?.full_name?.[0]?.toUpperCase() || (isRenter ? 'L' : 'R')}
+                </AvatarFallback>
+              </Avatar>
+              {isPinned && (
+                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                  <Pin className="h-2.5 w-2.5 text-primary-foreground" />
+                </div>
+              )}
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className={cn(
+                  "font-medium text-sm truncate",
+                  hasUnread && "font-semibold"
+                )}>
+                  {otherUser?.full_name || (isRenter ? 'Landlord' : 'Renter')}
+                </span>
+                {conversation.last_message && (
+                  <span className="text-xs text-muted-foreground flex-shrink-0">
+                    {formatDistanceToNow(new Date(conversation.last_message.created_at), { addSuffix: false })}
+                  </span>
                 )}
               </div>
 
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className={cn(
-                    "font-medium text-sm truncate",
-                    hasUnread && "font-semibold"
-                  )}>
-                    {otherUser?.full_name || (isRenter ? 'Landlord' : 'Renter')}
-                  </span>
-                  {conversation.last_message && (
-                    <span className="text-xs text-muted-foreground flex-shrink-0">
-                      {formatDistanceToNow(new Date(conversation.last_message.created_at), { addSuffix: false })}
-                    </span>
-                  )}
-                </div>
+              {/* Listing title - plain text now */}
+              <p className="text-xs text-muted-foreground truncate mb-1 flex items-center gap-1">
+                <Home className="h-3 w-3 flex-shrink-0" />
+                <span className="truncate">{conversation.listing?.title}</span>
+              </p>
 
-                {/* Listing title - plain text now */}
-                <p className="text-xs text-muted-foreground truncate mb-1 flex items-center gap-1">
-                  <Home className="h-3 w-3 flex-shrink-0" />
-                  <span className="truncate">{conversation.listing?.title}</span>
+              {/* Last message */}
+              <div className="flex items-center gap-2">
+                <p className={cn(
+                  "text-sm truncate flex-1",
+                  hasUnread ? "text-foreground font-medium" : "text-muted-foreground"
+                )}>
+                  {conversation.last_message?.sender_id === user?.id && (
+                    <span className="text-muted-foreground">You: </span>
+                  )}
+                  {conversation.last_message?.content || 'No messages yet'}
                 </p>
 
-                {/* Last message */}
-                <div className="flex items-center gap-2">
-                  <p className={cn(
-                    "text-sm truncate flex-1",
-                    hasUnread ? "text-foreground font-medium" : "text-muted-foreground"
-                  )}>
-                    {conversation.last_message?.sender_id === user?.id && (
-                      <span className="text-muted-foreground">You: </span>
-                    )}
-                    {conversation.last_message?.content || 'No messages yet'}
-                  </p>
-
-                  {/* Unread badge */}
-                  {hasUnread && (conversation.unread_count || 0) > 0 && (
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-medium">
-                      {conversation.unread_count}
-                    </span>
-                  )}
-                </div>
+                {/* Unread badge */}
+                {hasUnread && (conversation.unread_count || 0) > 0 && (
+                  <span className="flex-shrink-0 w-5 h-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-medium">
+                    {conversation.unread_count}
+                  </span>
+                )}
               </div>
-            </button>
+            </div>
 
             {/* Dropdown menu */}
             <DropdownMenu>
