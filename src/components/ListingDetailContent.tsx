@@ -198,17 +198,31 @@ export function ListingDetailContent({
               </>
             )}
             
-            <div className="relative w-full h-full">
-              <img
-                src={listing.images[currentImageIndex]}
-                alt={`${listing.title} - Photo ${currentImageIndex + 1}`}
-                className={cn(
-                  "w-full h-full object-cover transition-all duration-500",
-                  "group-hover:scale-[1.02]"
-                )}
-              />
+            <div className="relative w-full h-full overflow-hidden">
+              {/* Sliding images container */}
+              <div 
+                className="flex h-full transition-transform duration-300 ease-out"
+                style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
+              >
+                {listing.images.map((image, index) => (
+                  <div 
+                    key={index} 
+                    className="relative h-full flex-shrink-0"
+                    style={{ minWidth: '100%' }}
+                  >
+                    <img
+                      src={image}
+                      alt={`${listing.title} - Photo ${index + 1}`}
+                      className={cn(
+                        "w-full h-full object-cover",
+                        "group-hover:scale-[1.02] transition-transform duration-500"
+                      )}
+                    />
+                  </div>
+                ))}
+              </div>
               {/* Gradient overlay for better text visibility */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
             </div>
 
             {/* Navigation arrows */}
