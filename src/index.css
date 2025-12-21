@@ -127,17 +127,27 @@
   html {
     height: 100%;
     height: -webkit-fill-available;
+    overflow: hidden;
   }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    min-height: 100%;
-    min-height: -webkit-fill-available;
+    height: 100%;
+    height: -webkit-fill-available;
+    overflow: hidden;
   }
 
   #root {
-    min-height: 100%;
-    min-height: -webkit-fill-available;
+    height: 100%;
+    height: -webkit-fill-available;
+    overflow: hidden;
+  }
+
+  /* Prevent iOS zoom on input focus */
+  @supports (-webkit-touch-callout: none) {
+    input, textarea, select {
+      font-size: 16px !important;
+    }
   }
 
   h1, h2, h3, h4, h5, h6 {
