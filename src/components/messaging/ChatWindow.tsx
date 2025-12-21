@@ -7,6 +7,8 @@ import { useMessageReactions, useToggleReaction } from '@/hooks/useMessageReacti
 import { useAuth } from '@/contexts/AuthContext';
 import { useTypingIndicator } from '@/hooks/useTypingIndicator';
 import { useDeleteConversation } from '@/hooks/useDeleteConversation';
+import { useMessageSwipe } from '@/hooks/useMessageSwipe';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -86,6 +88,7 @@ const EDIT_TIME_LIMIT_MINUTES = 15;
 
 export function ChatWindow({ conversation, onBack, showBackButton, highlightMessageId, onConversationDeleted }: ChatWindowProps) {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -107,6 +110,24 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
   const deleteMessage = useDeleteMessage();
   const deleteConversation = useDeleteConversation();
   const toggleReaction = useToggleReaction();
+
+  // Swipe to reply (mobile only)
+  const handleSwipeReply = (messageId: string) => {
+    const message = messages.find(m => m.id === messageId);
+    if (message && !message.is_deleted) {
+      setReplyToMessage(message);
+      textareaRef.current?.focus();
+    }
+  };
+
+  const {
+    handleTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    getSwipeStyles,
+    getReplyIconOpacity,
+    getReplyIconScale,
+  } = useMessageSwipe({ onSwipeComplete: handleSwipeReply });
 
   // Fetch reactions for all messages
   const messageIds = useMemo(() => messages.map(m => m.id), [messages]);
@@ -413,19 +434,35 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
                   const isEditing = editingMessageId === message.id;
                   const messageReactions = reactionsMap.get(message.id) || [];
                   const replyTo = getReplyToContent(message.reply_to_message_id);
+                  const canSwipe = isMobile && !message.is_deleted && !isEditing;
 
                   return (
                     <div
                       key={message.id}
                       ref={isHighlighted ? highlightRef : undefined}
                       className={cn(
-                        "flex group",
+                        "flex group relative",
                         isMine ? "justify-end" : "justify-start",
                         isHighlighted && "animate-pulse"
                       )}
                     >
-                      {/* Action buttons for other's messages (left side) */}
-                      {!isMine && !message.is_deleted && !isEditing && (
+                      {/* Swipe reply icon indicator (mobile) */}
+                      {canSwipe && (
+                        <div 
+                          className={cn(
+                            "absolute left-0 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-full bg-accent/20 pointer-events-none",
+                            isMine ? "left-0" : "left-0"
+                          )}
+                          style={{
+                            opacity: getReplyIconOpacity(message.id),
+                            transform: `translateY(-50%) scale(${getReplyIconScale(message.id)})`,
+                          }}
+                        >
+                          <Reply className="h-4 w-4 text-accent" />
+                        </div>
+                      )}
+                      {/* Action buttons for other's messages (left side) - desktop only */}
+                      {!isMobile && !isMine && !message.is_deleted && !isEditing && (
                         <div className="self-center mr-1 flex gap-0.5">
                           <EmojiReactionPicker
                             onSelect={(emoji) => handleReaction(message.id, emoji)}
@@ -441,8 +478,8 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
                         </div>
                       )}
 
-                      {/* Context menu for own messages */}
-                      {isMine && !isEditing && (
+                      {/* Context menu for own messages - desktop only */}
+                      {!isMobile && isMine && !isEditing && (
                         <div className="self-center mr-1 flex gap-0.5">
                           <EmojiReactionPicker
                             onSelect={(emoji) => handleReaction(message.id, emoji)}
@@ -464,7 +501,13 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
                         </div>
                       )}
 
-                      <div className="flex flex-col max-w-[75%]">
+                      <div 
+                        className="flex flex-col max-w-[75%]"
+                        style={canSwipe ? getSwipeStyles(message.id) : undefined}
+                        onTouchStart={canSwipe ? (e) => handleTouchStart(e, message.id) : undefined}
+                        onTouchMove={canSwipe ? handleTouchMove : undefined}
+                        onTouchEnd={canSwipe ? handleTouchEnd : undefined}
+                      >
                         <div
                           className={cn(
                             "rounded-2xl px-4 py-2",
