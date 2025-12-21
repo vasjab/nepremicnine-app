@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { MessageCircle, Trash2, Loader2, Home, ExternalLink } from 'lucide-react';
+import { MessageCircle, Trash2, Loader2, Home, MoreVertical, Pin, Mail, MailOpen } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Conversation } from '@/hooks/useMessaging';
+import { Conversation, usePinConversation, useMarkConversationUnread } from '@/hooks/useMessaging';
 import { useDeleteConversation } from '@/hooks/useDeleteConversation';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,6 +18,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface ConversationsListProps {
   conversations: Conversation[];
@@ -38,9 +45,10 @@ export function ConversationsList({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [conversationToDelete, setConversationToDelete] = useState<string | null>(null);
   const deleteConversation = useDeleteConversation();
+  const pinConversation = usePinConversation();
+  const markConversationUnread = useMarkConversationUnread();
 
-  const handleDeleteClick = (e: React.MouseEvent, conversationId: string) => {
-    e.stopPropagation();
+  const handleDeleteClick = (conversationId: string) => {
     setConversationToDelete(conversationId);
     setDeleteDialogOpen(true);
   };
@@ -57,6 +65,36 @@ export function ConversationsList({
       setDeleteDialogOpen(false);
       setConversationToDelete(null);
     }
+  };
+
+  const handlePinToggle = async (conversation: Conversation) => {
+    if (!user) return;
+    const isRenter = conversation.renter_id === user.id;
+    const currentlyPinned = isRenter ? conversation.is_pinned_by_renter : conversation.is_pinned_by_landlord;
+    
+    await pinConversation.mutateAsync({
+      conversationId: conversation.id,
+      userId: user.id,
+      isRenter,
+      isPinned: !currentlyPinned,
+    });
+  };
+
+  const handleMarkUnreadToggle = async (conversation: Conversation) => {
+    if (!user) return;
+    const isRenter = conversation.renter_id === user.id;
+    const hasUnread = (conversation.unread_count || 0) > 0;
+    const isMarkedUnread = isRenter ? conversation.is_marked_unread_by_renter : conversation.is_marked_unread_by_landlord;
+    
+    // If has real unread or is marked unread, we mark as read; otherwise mark as unread
+    const shouldMarkUnread = !hasUnread && !isMarkedUnread;
+    
+    await markConversationUnread.mutateAsync({
+      conversationId: conversation.id,
+      userId: user.id,
+      isRenter,
+      isMarkedUnread: shouldMarkUnread,
+    });
   };
 
   if (isLoading) {
@@ -93,9 +131,11 @@ export function ConversationsList({
     <div className="divide-y divide-border">
       {conversations.map((conversation) => {
         const isSelected = selectedId === conversation.id;
-        const hasUnread = (conversation.unread_count || 0) > 0;
-        const otherUser = conversation.other_user;
         const isRenter = conversation.renter_id === user?.id;
+        const isPinned = isRenter ? conversation.is_pinned_by_renter : conversation.is_pinned_by_landlord;
+        const isMarkedUnread = isRenter ? conversation.is_marked_unread_by_renter : conversation.is_marked_unread_by_landlord;
+        const hasUnread = (conversation.unread_count || 0) > 0 || isMarkedUnread;
+        const otherUser = conversation.other_user;
 
         return (
           <div
@@ -104,27 +144,34 @@ export function ConversationsList({
               "w-full p-4 flex gap-3 text-left transition-colors group relative",
               "hover:bg-secondary/50",
               isSelected && "bg-secondary",
-              hasUnread && "bg-accent/5"
+              hasUnread && "bg-accent/10 border-l-4 border-accent"
             )}
           >
             <button
               onClick={() => onSelect(conversation)}
               className="flex gap-3 flex-1 min-w-0"
             >
-              {/* Avatar */}
-              <Avatar className="h-12 w-12 flex-shrink-0">
-                <AvatarImage src={otherUser?.avatar_url || undefined} />
-                <AvatarFallback className="bg-accent text-accent-foreground">
-                  {otherUser?.full_name?.[0]?.toUpperCase() || (isRenter ? 'L' : 'R')}
-                </AvatarFallback>
-              </Avatar>
+              {/* Avatar with pin indicator */}
+              <div className="relative flex-shrink-0">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={otherUser?.avatar_url || undefined} />
+                  <AvatarFallback className="bg-accent text-accent-foreground">
+                    {otherUser?.full_name?.[0]?.toUpperCase() || (isRenter ? 'L' : 'R')}
+                  </AvatarFallback>
+                </Avatar>
+                {isPinned && (
+                  <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                    <Pin className="h-2.5 w-2.5 text-primary-foreground" />
+                  </div>
+                )}
+              </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2 mb-1">
                   <span className={cn(
                     "font-medium text-sm truncate",
-                    hasUnread ? "text-foreground" : "text-foreground"
+                    hasUnread && "font-semibold"
                   )}>
                     {otherUser?.full_name || (isRenter ? 'Landlord' : 'Renter')}
                   </span>
@@ -135,16 +182,11 @@ export function ConversationsList({
                   )}
                 </div>
 
-                {/* Listing title - clickable link */}
-                <Link
-                  to={`/listing/${conversation.listing?.id}`}
-                  className="text-xs text-muted-foreground truncate mb-1 hover:text-accent hover:underline flex items-center gap-1 w-fit"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                {/* Listing title - plain text now */}
+                <p className="text-xs text-muted-foreground truncate mb-1 flex items-center gap-1">
                   <Home className="h-3 w-3 flex-shrink-0" />
                   <span className="truncate">{conversation.listing?.title}</span>
-                  <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                </Link>
+                </p>
 
                 {/* Last message */}
                 <div className="flex items-center gap-2">
@@ -159,7 +201,7 @@ export function ConversationsList({
                   </p>
 
                   {/* Unread badge */}
-                  {hasUnread && (
+                  {hasUnread && (conversation.unread_count || 0) > 0 && (
                     <span className="flex-shrink-0 w-5 h-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-medium">
                       {conversation.unread_count}
                     </span>
@@ -168,15 +210,52 @@ export function ConversationsList({
               </div>
             </button>
 
-            {/* Delete button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => handleDeleteClick(e, conversation.id)}
-              className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 self-center text-muted-foreground hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            {/* Dropdown menu */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 self-center text-muted-foreground"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-popover">
+                <DropdownMenuItem onClick={() => handlePinToggle(conversation)}>
+                  <Pin className="h-4 w-4 mr-2" />
+                  {isPinned ? 'Unpin' : 'Pin'}
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to={`/listing/${conversation.listing?.id}`}>
+                    <Home className="h-4 w-4 mr-2" />
+                    View Listing
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleMarkUnreadToggle(conversation)}>
+                  {hasUnread ? (
+                    <>
+                      <MailOpen className="h-4 w-4 mr-2" />
+                      Mark as Read
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="h-4 w-4 mr-2" />
+                      Mark as Unread
+                    </>
+                  )}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  onClick={() => handleDeleteClick(conversation.id)}
+                  className="text-destructive focus:text-destructive"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         );
       })}

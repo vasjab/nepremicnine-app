@@ -18,6 +18,10 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_marked_unread_by_landlord: boolean | null
+          is_marked_unread_by_renter: boolean | null
+          is_pinned_by_landlord: boolean | null
+          is_pinned_by_renter: boolean | null
           landlord_id: string
           last_message_at: string | null
           listing_id: string
@@ -27,6 +31,10 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_marked_unread_by_landlord?: boolean | null
+          is_marked_unread_by_renter?: boolean | null
+          is_pinned_by_landlord?: boolean | null
+          is_pinned_by_renter?: boolean | null
           landlord_id: string
           last_message_at?: string | null
           listing_id: string
@@ -36,6 +44,10 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_marked_unread_by_landlord?: boolean | null
+          is_marked_unread_by_renter?: boolean | null
+          is_pinned_by_landlord?: boolean | null
+          is_pinned_by_renter?: boolean | null
           landlord_id?: string
           last_message_at?: string | null
           listing_id?: string
