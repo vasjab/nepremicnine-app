@@ -48,6 +48,7 @@ import { cn } from '@/lib/utils';
 
 interface PropertyFeaturesProps {
   listing: Listing;
+  maxItems?: number;
 }
 
 interface Feature {
@@ -130,7 +131,7 @@ function CategorySection({
   );
 }
 
-export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
+export function PropertyFeatures({ listing, maxItems }: PropertyFeaturesProps) {
   const { t } = useTranslation();
 
   const isApartmentType = ['apartment', 'room', 'studio'].includes(listing.property_type);
@@ -308,6 +309,25 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
   ].filter(cat => cat.features.length > 0);
 
   if (categories.length === 0) return null;
+
+  // Flat preview mode: no category headers, just a grid of items
+  if (maxItems) {
+    const allFeatures = categories.flatMap(cat => cat.features);
+    const displayed = allFeatures.slice(0, maxItems);
+    return (
+      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
+        {displayed.map((feature) => (
+          <FeatureItem
+            key={feature.id}
+            icon={feature.icon}
+            label={feature.label}
+            detail={feature.detail}
+            category={feature.category}
+          />
+        ))}
+      </ul>
+    );
+  }
 
   return (
     <div className="space-y-5">

@@ -74,7 +74,7 @@ export default function CreateListing() {
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const { checkRateLimit, isLimited, remainingTime } = useRateLimit(LISTING_RATE_LIMIT);
 
-  const { images, isUploading, uploadProgress, uploadImages, removeImage, reorderImages, setImages } = useImageUpload({ userId: user?.id || '' });
+  const { images, isUploading, uploadProgress, uploadImages, removeImage, reorderImages, updateImageDescription, setImages } = useImageUpload({ userId: user?.id || '' });
   const { floorPlans, isUploading: isUploadingFloorPlans, uploadProgress: floorPlanProgress, uploadFloorPlans, removeFloorPlan, reorderFloorPlans, setFloorPlans } = useFloorPlanUpload({ userId: user?.id || '' });
 
   const [formData, setFormData] = useState({
@@ -872,6 +872,7 @@ export default function CreateListing() {
             onUpload={uploadImages}
             onRemove={removeImage}
             onReorder={reorderImages}
+            onDescriptionChange={updateImageDescription}
           />
         );
       case 'floorplans':

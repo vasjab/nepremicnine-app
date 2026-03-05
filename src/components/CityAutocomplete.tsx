@@ -7,7 +7,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 const MAPBOX_TOKEN_KEY = 'hemma_mapbox_token';
 
 const getMapboxToken = (): string => {
-  return localStorage.getItem(MAPBOX_TOKEN_KEY) || process.env.NEXT_PUBLIC_MAPBOX_PUBLIC_TOKEN || '';
+  return localStorage.getItem(MAPBOX_TOKEN_KEY) || import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || '';
 };
 
 interface CitySuggestion {

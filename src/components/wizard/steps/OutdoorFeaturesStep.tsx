@@ -117,24 +117,29 @@ export function OutdoorFeaturesStep({
                 type="button"
                 onClick={() => onFeatureToggle(id, !isSelected)}
                 className={cn(
-                  "relative flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all duration-200",
-                  "hover:scale-105 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2",
+                  "relative flex flex-col items-center justify-center p-5 rounded-2xl border transition-all duration-200",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
                   isSelected
-                    ? "border-accent bg-accent/10 text-foreground"
-                    : "border-border bg-card text-muted-foreground hover:border-accent/50"
+                    ? "border-blue-500 bg-blue-50/50 shadow-[0_1px_4px_hsl(217_91%_60%/0.12),0_0_0_1px_hsl(217_91%_60%/0.2)]"
+                    : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-[0_2px_8px_hsl(0_0%_0%/0.06)]"
                 )}
               >
                 <div className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center mb-2 transition-colors",
-                  isSelected ? "bg-accent text-accent-foreground" : "bg-secondary"
+                  "w-11 h-11 rounded-[12px] flex items-center justify-center mb-2.5 transition-all duration-200",
+                  isSelected
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-500"
                 )}>
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-5 w-5" strokeWidth={1.75} />
                 </div>
-                <span className="text-sm font-medium text-center">{label}</span>
-                
+                <span className={cn(
+                  "text-sm font-semibold text-center tracking-tight transition-colors",
+                  isSelected ? "text-gray-900" : "text-gray-600"
+                )}>{label}</span>
+
                 {isSelected && (
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-accent rounded-full flex items-center justify-center">
-                    <svg className="w-3 h-3 text-accent-foreground" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="absolute top-2 right-2 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center shadow-sm">
+                    <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/>
                     </svg>
                   </div>

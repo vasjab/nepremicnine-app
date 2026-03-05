@@ -9,6 +9,7 @@ interface UploadedImage {
   name: string;
   size: number;
   compressedSize?: number;
+  description?: string;
 }
 
 interface PhotosStepProps {
@@ -18,6 +19,7 @@ interface PhotosStepProps {
   onUpload: (files: FileList | File[]) => void;
   onRemove: (id: string) => void;
   onReorder: (startIndex: number, endIndex: number) => void;
+  onDescriptionChange?: (id: string, description: string) => void;
   disabled?: boolean;
 }
 
@@ -35,6 +37,7 @@ export function PhotosStep({
   onUpload,
   onRemove,
   onReorder,
+  onDescriptionChange,
   disabled,
 }: PhotosStepProps) {
   const hasImages = images.length > 0;
@@ -76,6 +79,7 @@ export function PhotosStep({
             onUpload={onUpload}
             onRemove={onRemove}
             onReorder={onReorder}
+            onDescriptionChange={onDescriptionChange}
             maxImages={20}
             disabled={disabled}
           />

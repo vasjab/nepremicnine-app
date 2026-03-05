@@ -9,6 +9,7 @@ export interface UploadedImage {
   name: string;
   size: number;
   compressedSize?: number;
+  description?: string;
 }
 
 interface UseImageUploadOptions {
@@ -24,6 +25,7 @@ interface UseImageUploadReturn {
   uploadImages: (files: FileList | File[]) => Promise<void>;
   removeImage: (id: string) => void;
   reorderImages: (startIndex: number, endIndex: number) => void;
+  updateImageDescription: (id: string, description: string) => void;
   setImages: (images: UploadedImage[]) => void;
 }
 
@@ -152,6 +154,10 @@ export function useImageUpload({
     });
   }, []);
 
+  const updateImageDescription = useCallback((id: string, description: string) => {
+    setImages(prev => prev.map(img => img.id === id ? { ...img, description } : img));
+  }, []);
+
   return {
     images,
     isUploading,
@@ -159,6 +165,7 @@ export function useImageUpload({
     uploadImages,
     removeImage,
     reorderImages,
+    updateImageDescription,
     setImages,
   };
 }

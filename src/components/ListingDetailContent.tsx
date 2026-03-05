@@ -462,51 +462,34 @@ export function ListingDetailContent({
                 {listing.title}
               </h1>
 
-              {/* Key specs */}
-              <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="inline-flex items-center gap-1.5 rounded-[10px] bg-blue-50 px-3 py-2 text-[13px] font-semibold text-blue-700">
-                  <BedDouble className="h-4 w-4 text-blue-400" />
-                  {listing.bedrooms} {t('listing.bedrooms')}
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-[10px] bg-sky-50 px-3 py-2 text-[13px] font-semibold text-sky-700">
-                  <Bath className="h-4 w-4 text-sky-400" />
-                  {listing.bathrooms} {t('listing.bathrooms')}
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-[10px] bg-violet-50 px-3 py-2 text-[13px] font-semibold text-violet-700">
-                  <Ruler className="h-4 w-4 text-violet-400" />
-                  {formatArea(listing.area_sqm)}
-                </span>
-                <span className="inline-flex items-center gap-1.5 rounded-[10px] bg-amber-50 px-3 py-2 text-[13px] font-semibold text-amber-700">
-                  <Home className="h-4 w-4 text-amber-400" />
-                  {propertyTypeLabels[listing.property_type] || listing.property_type}
-                </span>
-              </div>
+              {/* Key specs — Airbnb-style inline */}
+              <p className="text-base text-gray-600 mb-3">
+                {listing.bedrooms} {t('listing.bedrooms')} &middot; {listing.bathrooms} {t('listing.bathrooms')} &middot; {formatArea(listing.area_sqm)} &middot; {propertyTypeLabels[listing.property_type] || listing.property_type}
+              </p>
 
               {/* Highlights */}
-              {highlights.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
+              {(highlights.length > 0 || listing.floor_plan_urls?.length > 0 || listing.floor_plan_url) && (
+                <div className="flex flex-wrap gap-2">
                   {highlights.map((h) => (
-                    <span key={h} className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
+                    <span key={h} className="inline-flex items-center rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700">
                       {h}
                     </span>
                   ))}
+                  {(listing.floor_plan_urls?.length > 0 || listing.floor_plan_url) && (
+                    <button
+                      onClick={() => { setScrollToFloorPlan(true); setShowGallery(true); }}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <LayoutGrid className="h-3 w-3" />
+                      {t('listing.floorPlan')}
+                    </button>
+                  )}
                 </div>
-              )}
-
-              {/* Floor plan link */}
-              {(listing.floor_plan_urls?.length > 0 || listing.floor_plan_url) && (
-                <button
-                  onClick={() => { setScrollToFloorPlan(true); setShowGallery(true); }}
-                  className="flex items-center gap-1.5 text-sm text-blue-600 font-medium mt-3 hover:underline underline-offset-4"
-                >
-                  <LayoutGrid className="h-3.5 w-3.5" />
-                  {t('listing.floorPlan')}
-                </button>
               )}
             </div>
 
             {/* Mobile price + CTA card */}
-            <div className="lg:hidden glass-card overflow-hidden">
+            <div className="lg:hidden rounded-xl border border-gray-200 shadow-sm overflow-hidden">
               <div className="p-5">
                 <div className="flex items-center justify-between gap-4">
                   <div className="min-w-0">
@@ -546,117 +529,81 @@ export function ListingDetailContent({
               </div>
             </div>
 
-            {/* Description card */}
+            {/* Description */}
             {listing.description && (
-              <div className="glass-card overflow-hidden">
-                <div className="flex items-center gap-2.5 border-b border-gray-100 px-5 py-4">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-blue-50">
-                    <FileText className="h-4 w-4 text-blue-500" />
-                  </div>
-                  <h2 className="text-[15px] font-semibold tracking-tight text-gray-900">{t('listing.description')}</h2>
-                </div>
-                <div className="px-5 py-5">
-                  <div className="text-gray-600 whitespace-pre-line leading-[1.7] text-[15px]">
-                    {showFullDescription || listing.description.length <= 400 ? (
-                      <>
-                        <p>{listing.description}</p>
-                        {listing.description.length > 400 && (
-                          <button
-                            className="mt-3 text-sm font-semibold text-blue-600 hover:underline underline-offset-4"
-                            onClick={() => setShowFullDescription(false)}
-                          >
-                            Show less
-                          </button>
-                        )}
-                      </>
-                    ) : (
-                      <>
-                        <p>{listing.description.slice(0, 400)}...</p>
+              <div className="py-8 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('listing.description')}</h2>
+                <div className="text-gray-600 whitespace-pre-line leading-relaxed text-[15px]">
+                  {showFullDescription || listing.description.length <= 400 ? (
+                    <>
+                      <p>{listing.description}</p>
+                      {listing.description.length > 400 && (
                         <button
-                          className="mt-3 text-sm font-semibold text-blue-600 hover:underline underline-offset-4"
-                          onClick={() => setShowFullDescription(true)}
+                          className="mt-4 text-sm font-semibold text-gray-900 underline underline-offset-4"
+                          onClick={() => setShowFullDescription(false)}
                         >
-                          Read more
+                          Show less
                         </button>
-                      </>
-                    )}
-                  </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <p>{listing.description.slice(0, 400)}...</p>
+                      <button
+                        className="mt-4 text-sm font-semibold text-gray-900 underline underline-offset-4"
+                        onClick={() => setShowFullDescription(true)}
+                      >
+                        Show more &rsaquo;
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             )}
 
-            {/* Property Details card */}
+            {/* Property Details */}
             {detailRows.length > 0 && (
-              <div className="glass-card overflow-hidden">
-                <div className="flex items-center gap-2.5 border-b border-gray-100 px-5 py-4">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-violet-50">
-                    <Info className="h-4 w-4 text-violet-500" />
-                  </div>
-                  <h2 className="text-[15px] font-semibold tracking-tight text-gray-900">Property Details</h2>
-                </div>
-                <div className="px-5 py-4">
-                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
-                    {detailRows.map((row) => (
-                      <div key={row.label} className="flex items-center justify-between py-3.5 border-b border-gray-100 last:border-0">
-                        <dt className="text-sm text-gray-500">{row.label}</dt>
-                        <dd className="text-sm font-semibold text-gray-900 text-right">{row.value}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                </div>
+              <div className="py-8 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Property Details</h2>
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+                  {detailRows.map((row) => (
+                    <div key={row.label} className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                      <dt className="text-sm text-gray-500">{row.label}</dt>
+                      <dd className="text-sm font-semibold text-gray-900 text-right">{row.value}</dd>
+                    </div>
+                  ))}
+                </dl>
               </div>
             )}
 
-            {/* Features & Amenities card */}
+            {/* Features & Amenities */}
             {featureCount > 0 && (
-              <div className="glass-card overflow-hidden">
-                <button
-                  className="flex items-center justify-between w-full px-5 py-4 border-b border-gray-100"
-                  onClick={() => setShowFeatures(!showFeatures)}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-amber-50">
-                      <Sparkles className="h-4 w-4 text-amber-500" />
-                    </div>
-                    <div className="text-left">
-                      <h2 className="text-[15px] font-semibold tracking-tight text-gray-900">
-                        {t('listing.features')}
-                      </h2>
-                      <p className="text-xs text-gray-400 mt-0.5">{featureCount} amenities available</p>
-                    </div>
-                  </div>
-                  <span className="flex items-center gap-1 text-sm text-gray-900 font-medium">
-                    {showFeatures ? 'Hide' : 'Show all'}
-                    {showFeatures ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                  </span>
-                </button>
-                {showFeatures && (
-                  <div className="px-5 py-5 animate-fade-in">
-                    <PropertyFeatures listing={listing} />
-                  </div>
+              <div className="py-8 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                  {t('listing.features')}
+                </h2>
+                <PropertyFeatures listing={listing} maxItems={showFeatures ? undefined : 10} />
+                {featureCount > 10 && (
+                  <button
+                    className="mt-4 text-sm font-semibold text-gray-900 underline underline-offset-4"
+                    onClick={() => setShowFeatures(!showFeatures)}
+                  >
+                    {showFeatures ? 'Show less' : `Show all ${featureCount} amenities`}
+                  </button>
                 )}
               </div>
             )}
 
-            {/* Location card */}
-            <div className="glass-card overflow-hidden">
-              <div className="flex items-center gap-2.5 border-b border-gray-100 px-5 py-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-emerald-50">
-                  <MapPin className="h-4 w-4 text-emerald-500" />
-                </div>
-                <div>
-                  <h2 className="text-[15px] font-semibold tracking-tight text-gray-900">{t('listing.location')}</h2>
-                  <p className="text-xs text-gray-400 mt-0.5">{listing.address}, {listing.city}</p>
-                </div>
-              </div>
-              <div className="p-0">
-                <div className="h-[300px] sm:h-[360px]">
-                  <ListingLocationMap
-                    latitude={listing.latitude}
-                    longitude={listing.longitude}
-                    address={listing.address}
-                  />
-                </div>
+            {/* Location */}
+            <div className="py-8">
+              <h2 className="text-lg font-semibold text-gray-900 mb-1">{t('listing.location')}</h2>
+              <p className="text-sm text-gray-500 mb-4">{listing.address}, {listing.city}</p>
+              <div className="h-[300px] sm:h-[360px] rounded-xl overflow-hidden">
+                <ListingLocationMap
+                  latitude={listing.latitude}
+                  longitude={listing.longitude}
+                  address={listing.address}
+                />
               </div>
             </div>
           </div>
@@ -665,7 +612,7 @@ export function ListingDetailContent({
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24 space-y-4">
               {/* Price card */}
-              <div className="glass-card overflow-hidden">
+              <div className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                 {!isCompleted ? (
                   <div className="p-6">
                     <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-2">
@@ -741,7 +688,7 @@ export function ListingDetailContent({
                       <div className="pt-4" />
                       <Button
                         variant="gradient"
-                        className="w-full h-12 text-[15px] font-semibold rounded-xl"
+                        className="w-full h-10 text-sm font-semibold rounded-xl"
                         disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
                         onClick={handleContactLandlord}
                       >
@@ -753,7 +700,7 @@ export function ListingDetailContent({
 
                   <Button
                     variant="outline"
-                    className="w-full h-12 text-[15px] font-semibold rounded-xl border-black/[0.08] hover:border-black/[0.12]"
+                    className="w-full h-10 text-sm font-semibold rounded-xl border-gray-200 hover:border-gray-300"
                     onClick={handleSaveClick}
                   >
                     <Heart className={cn('h-4 w-4 mr-2', isSaved && 'fill-current text-rose-500')} />

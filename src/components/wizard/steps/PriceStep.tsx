@@ -44,15 +44,15 @@ export function PriceStep({
             <input
               type="text"
               inputMode="numeric"
-              value={price}
+              value={price ? formatDisplayPrice(price) : ''}
               onChange={(e) => {
-                // Only allow numbers
+                // Strip non-numeric chars (including thousand separators) then store raw number
                 const value = e.target.value.replace(/[^0-9]/g, '');
                 onPriceChange(value);
               }}
               placeholder="0"
               className={cn(
-                "text-4xl md:text-5xl font-bold bg-transparent border-none outline-none text-center w-full max-w-[200px]",
+                "text-4xl md:text-5xl font-bold bg-transparent border-none outline-none text-center w-full max-w-[280px]",
                 "placeholder:text-muted-foreground/30"
               )}
             />

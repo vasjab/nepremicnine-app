@@ -29,7 +29,7 @@ interface LocationPreviewMapProps {
 const MAPBOX_TOKEN_KEY = 'hemma_mapbox_token';
 
 const getMapboxToken = (): string => {
-  return localStorage.getItem(MAPBOX_TOKEN_KEY) || process.env.NEXT_PUBLIC_MAPBOX_PUBLIC_TOKEN || '';
+  return localStorage.getItem(MAPBOX_TOKEN_KEY) || import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || '';
 };
 
 export function LocationPreviewMap({
@@ -151,6 +151,10 @@ export function LocationPreviewMap({
       });
 
       map.current.on('load', () => {
+        // Force resize after load to fix gray map when container was hidden during wizard animation
+        setTimeout(() => {
+          map.current?.resize();
+        }, 100);
         setMapReady(true);
       });
 

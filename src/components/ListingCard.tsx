@@ -288,30 +288,33 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
       </div>
 
       {/* Content */}
-      <div className="p-4">
-        {/* Property type label */}
-        <div className="flex items-center gap-1.5 mb-2">
+      <div className="px-4 pt-3.5 pb-4">
+        {/* Top row: property type + location */}
+        <div className="flex items-center justify-between mb-1.5">
           <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">
             {propertyTypeLabel}
           </span>
+          <span className="text-[11px] text-muted-foreground font-medium inline-flex items-center gap-1">
+            <MapPin className="h-3 w-3" />
+            {listing.city}
+          </span>
         </div>
 
-        <div className="flex items-start justify-between gap-2 mb-1.5">
-          <h3 className="font-bold text-foreground line-clamp-1 text-[15px] tracking-tight">
-            {listing.address}
-          </h3>
-        </div>
+        <h3 className="font-bold text-foreground line-clamp-1 text-[15px] tracking-tight mb-2">
+          {listing.address}
+        </h3>
 
-        <div className="flex items-center gap-3 text-[13px] text-muted-foreground mb-2.5">
-          <span className="inline-flex items-center gap-1">
+        {/* Stats row */}
+        <div className="flex items-center gap-1 mb-3">
+          <span className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground bg-gray-50 rounded-lg px-2.5 py-1">
             <Bed className="h-3.5 w-3.5" />
             {listing.bedrooms}
           </span>
-          <span className="inline-flex items-center gap-1">
+          <span className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground bg-gray-50 rounded-lg px-2.5 py-1">
             <Bath className="h-3.5 w-3.5" />
             {listing.bathrooms}
           </span>
-          <span className="inline-flex items-center gap-1">
+          <span className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground bg-gray-50 rounded-lg px-2.5 py-1">
             <Maximize2 className="h-3.5 w-3.5" />
             {formatArea(listing.area_sqm)}
           </span>
@@ -323,20 +326,20 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
             {displayBadges.map((badge, index) => {
               const Icon = badge.icon;
               const colorMap: Record<string, string> = {
-                blue: 'bg-blue-50 text-blue-600',
-                indigo: 'bg-indigo-50 text-indigo-600',
-                green: 'bg-emerald-50 text-emerald-600',
-                sky: 'bg-sky-50 text-sky-600',
+                blue: 'bg-blue-50 text-blue-700',
+                indigo: 'bg-indigo-50 text-indigo-700',
+                green: 'bg-emerald-50 text-emerald-700',
+                sky: 'bg-sky-50 text-sky-700',
               };
               return (
                 <span
                   key={index}
                   className={cn(
-                    "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide",
-                    colorMap[badge.color] || 'bg-gray-50 text-gray-500'
+                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold tracking-wide",
+                    colorMap[badge.color] || 'bg-gray-50 text-gray-600'
                   )}
                 >
-                  <Icon className="h-3 w-3" />
+                  <Icon className="h-3.5 w-3.5" />
                   {badge.label}
                 </span>
               );
@@ -345,55 +348,43 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
         )}
 
         {/* Price section */}
-        <div className="flex items-center justify-between pt-1">
-          <div className="flex items-stretch">
-            <div className="flex flex-col">
-              {/* For sold/rented listings with final price */}
-              {isSoldOrRented && showStatusOverlay && hasFinalPrice ? (
-                <>
-                  {/* Final price with percentage difference */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg font-extrabold text-foreground tracking-tight">
-                      {formatPrice(listing.final_price!, listing.currency, { isRental, showPeriod: isRental })}
-                    </span>
-                    <span className={cn(
-                      "text-xs font-medium flex items-center gap-0.5",
-                      priceDiff < 0 ? "text-red-500" : priceDiff > 0 ? "text-emerald-500" : "text-muted-foreground"
-                    )}>
-                      {priceDiff < 0 ? <TrendingDown className="h-3 w-3" /> : priceDiff > 0 ? <TrendingUp className="h-3 w-3" /> : null}
-                      {priceDiff !== 0 && `${priceDiff > 0 ? '+' : ''}${priceDiffPercent}%`}
-                    </span>
-                  </div>
-                  {/* Original listed price - strikethrough */}
-                  <span className="text-xs text-muted-foreground line-through">
-                    {formatPrice(listing.price, listing.currency, { isRental, showPeriod: false })}
+        <div className="flex items-end justify-between pt-1.5 border-t border-gray-100">
+          <div className="flex flex-col">
+            {/* For sold/rented listings with final price */}
+            {isSoldOrRented && showStatusOverlay && hasFinalPrice ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-extrabold text-foreground tracking-tight">
+                    {formatPrice(listing.final_price!, listing.currency, { isRental, showPeriod: isRental })}
                   </span>
-                </>
-              ) : (
-                /* Regular listing price */
-                <span className="text-lg font-extrabold text-foreground tracking-tight">
-                  {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
+                  <span className={cn(
+                    "text-xs font-medium flex items-center gap-0.5",
+                    priceDiff < 0 ? "text-red-500" : priceDiff > 0 ? "text-emerald-500" : "text-muted-foreground"
+                  )}>
+                    {priceDiff < 0 ? <TrendingDown className="h-3 w-3" /> : priceDiff > 0 ? <TrendingUp className="h-3 w-3" /> : null}
+                    {priceDiff !== 0 && `${priceDiff > 0 ? '+' : ''}${priceDiffPercent}%`}
+                  </span>
+                </div>
+                <span className="text-xs text-muted-foreground line-through">
+                  {formatPrice(listing.price, listing.currency, { isRental, showPeriod: false })}
                 </span>
-              )}
-              {/* Price per sqm - always show */}
-              {listing.area_sqm && listing.area_sqm > 0 && (
-                <span className="text-xs text-muted-foreground">
-                  {formatPrice((hasFinalPrice && isSoldOrRented && showStatusOverlay ? listing.final_price! : listing.price) / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="flex flex-col items-end text-right">
-            {formattedDate && (
-              <span className="text-xs text-muted-foreground">
-                {formattedDate}
+              </>
+            ) : (
+              <span className="text-lg font-extrabold text-foreground tracking-tight">
+                {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
               </span>
             )}
-            <span className="text-xs text-muted-foreground font-medium inline-flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
-              {listing.city}
-            </span>
+            {listing.area_sqm && listing.area_sqm > 0 && (
+              <span className="text-[11px] text-muted-foreground">
+                {formatPrice((hasFinalPrice && isSoldOrRented && showStatusOverlay ? listing.final_price! : listing.price) / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
+              </span>
+            )}
           </div>
+          {formattedDate && (
+            <span className="text-[11px] text-muted-foreground">
+              {formattedDate}
+            </span>
+          )}
         </div>
       </div>
     </article>

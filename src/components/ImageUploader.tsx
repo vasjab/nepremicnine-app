@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Upload, X, GripVertical, ImageIcon, Loader2 } from 'lucide-react';
+import { Upload, X, GripVertical, ImageIcon, Loader2, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatBytes } from '@/lib/imageCompression';
 import { Progress } from '@/components/ui/progress';
@@ -10,6 +10,7 @@ interface UploadedImage {
   name: string;
   size: number;
   compressedSize?: number;
+  description?: string;
 }
 
 interface ImageUploaderProps {
@@ -19,6 +20,7 @@ interface ImageUploaderProps {
   onUpload: (files: FileList | File[]) => void;
   onRemove: (id: string) => void;
   onReorder: (startIndex: number, endIndex: number) => void;
+  onDescriptionChange?: (id: string, description: string) => void;
   maxImages?: number;
   disabled?: boolean;
 }
@@ -30,13 +32,16 @@ export function ImageUploader({
   onUpload,
   onRemove,
   onReorder,
+  onDescriptionChange,
   maxImages = 20,
   disabled = false,
 }: ImageUploaderProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [editingDescriptionId, setEditingDescriptionId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const descriptionInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -91,12 +96,17 @@ export function ImageUploader({
   }, [disabled, isUploading]);
 
   // Drag and drop for reordering
-  const handleImageDragStart = useCallback((index: number) => {
+  const handleImageDragStart = useCallback((e: React.DragEvent, index: number) => {
     setDraggedIndex(index);
+    // Set a transparent drag image so the browser default doesn't interfere
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move';
+    }
   }, []);
 
   const handleImageDragOver = useCallback((e: React.DragEvent, index: number) => {
     e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
     if (draggedIndex !== null && draggedIndex !== index) {
       setDragOverIndex(index);
     }
@@ -115,6 +125,26 @@ export function ImageUploader({
     setDraggedIndex(null);
     setDragOverIndex(null);
   }, []);
+
+  // Calculate visual shift for items between dragged and target positions
+  const getItemTransform = useCallback((index: number): string => {
+    if (draggedIndex === null || dragOverIndex === null) return '';
+    if (index === draggedIndex) return '';
+
+    // Items between source and target need to shift
+    if (draggedIndex < dragOverIndex) {
+      // Dragging forward: items between shift left
+      if (index > draggedIndex && index <= dragOverIndex) {
+        return 'translateX(-8px)';
+      }
+    } else {
+      // Dragging backward: items between shift right
+      if (index < draggedIndex && index >= dragOverIndex) {
+        return 'translateX(8px)';
+      }
+    }
+    return '';
+  }, [draggedIndex, dragOverIndex]);
 
   return (
     <div className="space-y-4">
@@ -190,16 +220,25 @@ export function ImageUploader({
             <div
               key={image.id}
               draggable
-              onDragStart={() => handleImageDragStart(index)}
+              onDragStart={(e) => handleImageDragStart(e, index)}
               onDragOver={(e) => handleImageDragOver(e, index)}
               onDrop={(e) => handleImageDrop(e, index)}
               onDragEnd={handleImageDragEnd}
+              style={{
+                transform: getItemTransform(index),
+                transition: draggedIndex !== null
+                  ? 'transform 200ms ease, opacity 200ms ease, box-shadow 200ms ease'
+                  : 'transform 300ms ease, opacity 300ms ease, box-shadow 300ms ease',
+              }}
               className={cn(
                 "relative group aspect-square rounded-xl overflow-hidden bg-muted",
-                "transition-all duration-200 cursor-grab active:cursor-grabbing",
-                draggedIndex === index && "opacity-50 scale-95",
-                dragOverIndex === index && "ring-2 ring-accent ring-offset-2",
-                index === 0 && "ring-2 ring-accent"
+                "cursor-grab active:cursor-grabbing",
+                draggedIndex === index && "opacity-40 scale-[0.92] ring-2 ring-accent/50 z-10",
+                dragOverIndex === index && draggedIndex !== index && [
+                  "ring-2 ring-accent ring-offset-2 ring-offset-background",
+                  "shadow-lg shadow-accent/20",
+                ],
+                draggedIndex === null && index === 0 && "ring-2 ring-accent"
               )}
             >
               <img
@@ -212,13 +251,37 @@ export function ImageUploader({
               {/* Overlay with actions */}
               <div className={cn(
                 "absolute inset-0 bg-black/50 flex items-center justify-center gap-2",
-                "opacity-0 group-hover:opacity-100 transition-opacity"
+                "opacity-0 group-hover:opacity-100 transition-opacity",
+                editingDescriptionId === image.id && "opacity-0 pointer-events-none"
               )}>
                 {/* Drag handle */}
                 <div className="p-2 rounded-lg bg-card/90 backdrop-blur-sm">
                   <GripVertical className="h-5 w-5 text-foreground" />
                 </div>
-                
+
+                {/* Description button */}
+                {onDescriptionChange && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingDescriptionId(image.id);
+                      setTimeout(() => descriptionInputRef.current?.focus(), 50);
+                    }}
+                    className={cn(
+                      "p-2 rounded-lg backdrop-blur-sm transition-colors",
+                      image.description
+                        ? "bg-accent/90 hover:bg-accent"
+                        : "bg-card/90 hover:bg-card"
+                    )}
+                  >
+                    <MessageSquare className={cn(
+                      "h-5 w-5",
+                      image.description ? "text-accent-foreground" : "text-foreground"
+                    )} />
+                  </button>
+                )}
+
                 {/* Remove button */}
                 <button
                   type="button"
@@ -235,19 +298,54 @@ export function ImageUploader({
                 </button>
               </div>
 
-              {/* Primary badge for first image */}
-              {index === 0 && (
-                <div className="absolute top-2 left-2 px-2 py-1 rounded-md bg-accent text-accent-foreground text-xs font-medium">
-                  Primary
+              {/* Description editor */}
+              {editingDescriptionId === image.id && onDescriptionChange && (
+                <div
+                  className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center p-3 z-20"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <input
+                    ref={descriptionInputRef}
+                    type="text"
+                    placeholder="Add a caption..."
+                    defaultValue={image.description || ''}
+                    maxLength={100}
+                    className="w-full px-3 py-2 rounded-lg bg-card/95 text-foreground text-sm placeholder:text-muted-foreground border border-border/50 focus:outline-none focus:ring-2 focus:ring-accent"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        onDescriptionChange(image.id, (e.target as HTMLInputElement).value);
+                        setEditingDescriptionId(null);
+                      }
+                      if (e.key === 'Escape') {
+                        setEditingDescriptionId(null);
+                      }
+                    }}
+                    onBlur={(e) => {
+                      onDescriptionChange(image.id, e.target.value);
+                      setEditingDescriptionId(null);
+                    }}
+                  />
+                  <p className="text-[10px] text-white/60 mt-1.5">Enter to save, Esc to cancel</p>
                 </div>
               )}
 
-              {/* File size info */}
+              {/* Position badge */}
+              <div className={cn(
+                "absolute top-2 left-2 px-2 py-1 rounded-md text-xs font-medium",
+                "transition-colors duration-200",
+                index === 0
+                  ? "bg-accent text-accent-foreground"
+                  : "bg-card/90 backdrop-blur-sm text-foreground"
+              )}>
+                {index === 0 ? 'Cover' : `#${index + 1}`}
+              </div>
+
+              {/* Caption or file size info */}
               <div className="absolute bottom-2 left-2 right-2">
                 <div className="px-2 py-1 rounded-md bg-card/90 backdrop-blur-sm text-xs text-foreground truncate">
-                  {image.compressedSize 
+                  {image.description || (image.compressedSize
                     ? `${formatBytes(image.compressedSize)} (saved ${Math.round((1 - image.compressedSize / image.size) * 100)}%)`
-                    : formatBytes(image.size)
+                    : formatBytes(image.size))
                   }
                 </div>
               </div>
