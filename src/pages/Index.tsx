@@ -64,12 +64,17 @@ const Index = () => {
     }
     
     const fetchLandlordName = async () => {
-      const { data } = await supabase
-        .rpc('get_profile_for_viewer', { p_profile_user_id: landlordId })
-        .single();
-      setLandlordName(data?.full_name || 'Landlord');
+      try {
+        const { data, error } = await supabase
+          .rpc('get_profile_for_viewer', { p_profile_user_id: landlordId })
+          .single();
+        if (error) throw error;
+        setLandlordName(data?.full_name || 'Landlord');
+      } catch {
+        setLandlordName('Landlord');
+      }
     };
-    
+
     fetchLandlordName();
   }, [landlordId]);
 
@@ -140,10 +145,11 @@ const Index = () => {
   }, []);
 
   // Handle marker click - scroll to card and highlight it with animation
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const handleMarkerClick = useCallback((listing: Listing) => {
     setActiveListingId(listing.id);
     setHighlightedFromMap(listing.id);
-    
+
     // Scroll the card into view
     const cardElement = listingRefs.current[listing.id];
     if (cardElement && listContainerRef.current) {
@@ -152,9 +158,10 @@ const Index = () => {
         block: 'center',
       });
     }
-    
-    // Clear the highlight animation after 3 seconds
-    setTimeout(() => {
+
+    // Clear previous timer and set new one
+    clearTimeout(highlightTimerRef.current);
+    highlightTimerRef.current = setTimeout(() => {
       setHighlightedFromMap(null);
     }, 3000);
   }, []);

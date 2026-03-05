@@ -302,6 +302,7 @@ function calculateSimilarityScore(candidate: Listing, reference: Listing): numbe
   }
   
   // Price similarity (up to 20 points)
+  if (reference.price <= 0) return score;
   const priceDiff = Math.abs(candidate.price - reference.price) / reference.price;
   if (priceDiff <= 0.1) score += 20;
   else if (priceDiff <= 0.25) score += 15;

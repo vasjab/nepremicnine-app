@@ -234,12 +234,15 @@ export function useSendMessage() {
       attachmentFiles?: { file: File; type: string }[];
       replyToMessageId?: string;
     }) => {
+      const trimmedContent = content.trim();
+      if (!trimmedContent) throw new Error('Message content cannot be empty');
+
       const { data: message, error } = await supabase
         .from('messages')
         .insert({
           conversation_id: conversationId,
           sender_id: senderId,
-          content: content.trim(),
+          content: trimmedContent,
           reply_to_message_id: replyToMessageId || null,
         })
         .select()
@@ -250,7 +253,9 @@ export function useSendMessage() {
       // Upload attachments if any
       if (attachmentFiles && attachmentFiles.length > 0) {
         for (const { file, type } of attachmentFiles) {
-          const fileExt = file.name.split('.').pop();
+          // Sanitize file extension to prevent directory traversal
+          const rawExt = file.name.split('.').pop() || 'bin';
+          const fileExt = rawExt.replace(/[^a-zA-Z0-9]/g, '');
           const fileName = `${senderId}/${message.id}/${crypto.randomUUID()}.${fileExt}`;
           
           const { error: uploadError } = await supabase.storage
@@ -420,7 +425,7 @@ export function useGetOrCreateConversation() {
         .eq('listing_id', listingId)
         .eq('renter_id', renterId)
         .eq('landlord_id', landlordId)
-        .single();
+        .maybeSingle();
 
       if (existing) return existing;
 

@@ -30,7 +30,7 @@ export function useFormattedPrice() {
       if (options?.isRental) {
         switch (periodToUse) {
           case 'week':
-            displayPrice = convertedPrice / 4.33; // Monthly to weekly
+            displayPrice = convertedPrice / (365 / 12 / 7); // Monthly to weekly
             break;
           case 'year':
             displayPrice = convertedPrice * 12; // Monthly to yearly

@@ -76,12 +76,10 @@ export function useImageUpload({
     setIsUploading(true);
     setUploadProgress(0);
 
-    const uploadedImages: UploadedImage[] = [];
     let completedCount = 0;
 
-    for (const file of validFiles) {
+    const uploadOne = async (file: File): Promise<UploadedImage | null> => {
       try {
-        // Compress the image
         const compressed = await compressImage(file, {
           maxWidth: 1920,
           maxHeight: 1920,
@@ -89,11 +87,9 @@ export function useImageUpload({
           type: 'image/webp',
         });
 
-        // Generate unique filename
         const filename = generateUniqueFilename(file.name, 'webp');
         const filePath = `${userId}/${filename}`;
 
-        // Upload to Supabase Storage
         const { error: uploadError } = await supabase.storage
           .from('listing-images')
           .upload(filePath, compressed.blob, {
@@ -101,26 +97,22 @@ export function useImageUpload({
             upsert: false,
           });
 
-        if (uploadError) {
-          throw uploadError;
-        }
+        if (uploadError) throw uploadError;
 
-        // Get public URL
         const { data: { publicUrl } } = supabase.storage
           .from('listing-images')
           .getPublicUrl(filePath);
 
-        uploadedImages.push({
+        completedCount++;
+        setUploadProgress(Math.round((completedCount / validFiles.length) * 100));
+
+        return {
           id: crypto.randomUUID(),
           url: publicUrl,
           name: file.name,
           size: file.size,
           compressedSize: compressed.compressedSize,
-        });
-
-        completedCount++;
-        setUploadProgress(Math.round((completedCount / validFiles.length) * 100));
-
+        };
       } catch (error) {
         console.error('Upload error:', error);
         toast({
@@ -128,8 +120,12 @@ export function useImageUpload({
           title: 'Upload failed',
           description: `Failed to upload ${file.name}`,
         });
+        return null;
       }
-    }
+    };
+
+    const results = await Promise.all(validFiles.map(uploadOne));
+    const uploadedImages = results.filter((img): img is UploadedImage => img !== null);
 
     if (uploadedImages.length > 0) {
       setImages(prev => [...prev, ...uploadedImages]);

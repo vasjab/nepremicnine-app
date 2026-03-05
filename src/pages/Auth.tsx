@@ -101,14 +101,16 @@ export default function Auth() {
       });
       
       if (error) {
-        // Fail open if rate limit check fails
-        return true;
+        // Fail closed if rate limit check fails — safer default
+        console.warn('Rate limit check failed:', error.message);
+        return false;
       }
-      
+
       return data?.allowed !== false;
     } catch {
-      // Fail open on network errors
-      return true;
+      // Fail closed on network errors — prevent abuse
+      console.warn('Rate limit check network error');
+      return false;
     }
   };
 

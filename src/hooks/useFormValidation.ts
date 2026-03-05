@@ -54,8 +54,9 @@ export function useFormValidation<T extends Record<string, unknown>>(
           return newErrors;
         });
         return true;
-      } catch {
-        return true; // Don't block on validation errors
+      } catch (e) {
+        console.warn('Validation error for field:', field, e);
+        return false;
       }
     },
     [schema]

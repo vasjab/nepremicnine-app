@@ -312,7 +312,7 @@ export function ListingDetailContent({
           isAnimating && !isClosing ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
         )}>
           <div className="flex flex-row gap-3">
-            {((listing as any).floor_plan_urls?.length > 0 || listing.floor_plan_url) && (
+            {(listing.floor_plan_urls?.length > 0 || listing.floor_plan_url) && (
               <button
                 onClick={() => {
                   setScrollToFloorPlan(true);
@@ -620,7 +620,7 @@ export function ListingDetailContent({
       <ImageGalleryModal
         images={listing.images || []}
         floorPlanUrl={listing.floor_plan_url}
-        floorPlanUrls={(listing as any).floor_plan_urls || []}
+        floorPlanUrls={listing.floor_plan_urls || []}
         isOpen={showGallery}
         onClose={() => {
           setShowGallery(false);

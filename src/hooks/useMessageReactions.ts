@@ -45,7 +45,7 @@ export function useToggleReaction() {
         .eq('message_id', messageId)
         .eq('user_id', userId)
         .eq('emoji', emoji)
-        .single();
+        .maybeSingle();
 
       if (existing) {
         // Remove reaction

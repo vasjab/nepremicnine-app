@@ -482,7 +482,7 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
   }
   if (listing.has_waterfront) {
     // Show waterfront with distance if available
-    const waterfrontDistance = (listing as any).waterfront_distance_m;
+    const waterfrontDistance = listing.waterfront_distance_m;
     outdoorFeatures.push({ 
       id: 'waterfront', 
       icon: Waves, 
@@ -524,7 +524,7 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     parkingFeatures.push({ id: 'carport', icon: SquareParking, label: 'Carport', category: 'parking' });
   }
   if (listing.has_ev_charging) {
-    const evPower = (listing as any).ev_charger_power;
+    const evPower = listing.ev_charger_power;
     parkingFeatures.push({ 
       id: 'ev', 
       icon: Zap, 
@@ -547,7 +547,7 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
   if (isApartmentType) {
     if (listing.has_elevator) {
       // Show elevator with condition if available
-      const elevatorCondition = (listing as any).elevator_condition;
+      const elevatorCondition = listing.elevator_condition;
       buildingFeatures.push({ 
         id: 'elevator', 
         icon: ArrowUp, 
@@ -577,8 +577,8 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     if (listing.has_security) {
       // Show security with sub-details if available
       const securityDetails: string[] = [];
-      if ((listing as any).has_alarm_system) securityDetails.push('Alarm System');
-      if ((listing as any).has_cctv) securityDetails.push('CCTV');
+      if (listing.has_alarm_system) securityDetails.push('Alarm System');
+      if (listing.has_cctv) securityDetails.push('CCTV');
       buildingFeatures.push({ 
         id: 'security', 
         icon: Shield, 
@@ -603,8 +603,8 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
     energyFeatures.push({ id: 'heatPump', icon: RefreshCw, label: 'Heat Pump', category: 'energy' });
   }
   if (listing.has_air_conditioning) {
-    const acType = (listing as any).ac_type;
-    const acCount = (listing as any).ac_unit_count;
+    const acType = listing.ac_type;
+    const acCount = listing.ac_unit_count;
     let acDetail = null;
     if (acType || acCount) {
       const parts: string[] = [];
@@ -735,7 +735,7 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
   }
 
   // Show heating distribution if available
-  const heatingDistribution = (listing as any).heating_distribution;
+  const heatingDistribution = listing.heating_distribution;
   if (heatingDistribution) {
     buildingInfoCards.push({ 
       icon: Heater, 
