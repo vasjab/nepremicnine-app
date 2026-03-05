@@ -47,14 +47,14 @@ export function Header() {
 
           {/* Desktop Navigation - DESIGN.md pill tab bar */}
           <nav className="hidden md:flex items-center">
-            <div className="flex gap-1 rounded-xl border border-black/[0.07] bg-black/[0.03] p-1">
+            <div className="flex gap-0.5 rounded-xl border border-gray-200/70 bg-gray-50/80 p-1">
               <Link
                 href="/"
                 className={cn(
-                  'flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all border',
+                  'flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 border',
                   isActive('/')
-                    ? 'bg-white shadow-sm text-gray-900 border-black/[0.06]'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'bg-white shadow-sm text-gray-900 border-gray-200/60'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-white/60'
                 )}
               >
                 <Search className="h-3.5 w-3.5" />
@@ -63,10 +63,10 @@ export function Header() {
               <Link
                 href="/sold-rented"
                 className={cn(
-                  'flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all border',
+                  'flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 border',
                   isActive('/sold-rented')
-                    ? 'bg-white shadow-sm text-gray-900 border-black/[0.06]'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                    ? 'bg-white shadow-sm text-gray-900 border-gray-200/60'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-white/60'
                 )}
               >
                 <History className="h-3.5 w-3.5" />
@@ -77,10 +77,10 @@ export function Header() {
                   <Link
                     href="/saved"
                     className={cn(
-                      'flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all border',
+                      'flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 border',
                       isActive('/saved')
-                        ? 'bg-white shadow-sm text-gray-900 border-black/[0.06]'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        ? 'bg-white shadow-sm text-gray-900 border-gray-200/60'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-white/60'
                     )}
                   >
                     <Heart className="h-3.5 w-3.5" />

@@ -680,7 +680,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
 
   return (
     <div className="relative w-full h-full">
-      <div ref={mapContainer} className="absolute inset-0" />
+      <div ref={mapContainer} className="w-full h-full" />
       
       {/* Map Style Switcher */}
       <div className="absolute top-3 left-3 z-10 flex gap-1 bg-background/95 backdrop-blur-sm rounded-lg p-1 shadow-md border border-border/50">
