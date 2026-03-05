@@ -169,19 +169,21 @@
 @layer components {
   /* ─── Listing Card ─────────────────────────────── */
   .listing-card {
-    @apply bg-card rounded-2xl overflow-hidden;
-    border: 1px solid hsl(var(--border));
+    @apply bg-card rounded-[20px] overflow-hidden;
+    border: 1px solid hsl(var(--border) / 0.6);
     box-shadow:
-      0 1px 3px hsl(var(--glass-shadow)),
-      0 4px 16px -4px hsl(var(--glass-shadow));
-    transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+      0 0 0 0.5px hsl(var(--border) / 0.3),
+      0 1px 2px hsl(var(--glass-shadow) / 0.5),
+      0 4px 20px -6px hsl(var(--glass-shadow));
+    transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
   }
 
   .listing-card:hover {
-    border-color: hsl(220 20% 85%);
+    border-color: hsl(220 20% 82%);
     box-shadow:
-      0 4px 12px hsl(220 25% 10% / 0.08),
-      0 8px 30px -8px hsl(220 25% 10% / 0.12);
+      0 0 0 0.5px hsl(220 25% 10% / 0.04),
+      0 4px 12px hsl(220 25% 10% / 0.06),
+      0 12px 36px -8px hsl(220 25% 10% / 0.1);
   }
 
   /* ─── Touch Targets ────────────────────────────── */

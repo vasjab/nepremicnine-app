@@ -311,7 +311,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
         {/* Type badge */}
         {(!isSoldOrRented || !showStatusOverlay) && (
           <div className="absolute bottom-3 left-3 z-10">
-            <span className="px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wide bg-white/95 backdrop-blur-sm text-gray-700 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
+            <span className="px-3.5 py-1.5 rounded-full text-[12px] font-bold tracking-wide bg-white/95 backdrop-blur-sm text-gray-700 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
               {t(`listingTypes.${listing.listing_type}`)}
             </span>
           </div>
@@ -319,58 +319,58 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
       </div>
 
       {/* Content */}
-      <div className="px-4 pt-3.5 pb-4 antialiased">
+      <div className="px-5 pt-4 pb-5 antialiased">
         {/* Header: Location + type */}
-        <div className="flex items-center gap-1.5 mb-1.5">
-          <MapPin className="h-3.5 w-3.5 text-foreground/40 shrink-0" />
-          <span className="text-[13px] font-semibold text-foreground/80 truncate tracking-[-0.01em]">
+        <div className="flex items-center gap-1.5 mb-2">
+          <MapPin className="h-3.5 w-3.5 text-foreground/35 shrink-0" />
+          <span className="text-[13.5px] font-semibold text-foreground/65 truncate tracking-[-0.01em]">
             {listing.city}
           </span>
-          <span className="text-foreground/25 mx-0.5">·</span>
-          <span className="text-[10px] text-foreground/50 uppercase tracking-[0.08em] font-bold shrink-0">
+          <span className="text-foreground/20 mx-0.5">·</span>
+          <span className="text-[10.5px] text-foreground/40 uppercase tracking-[0.06em] font-semibold shrink-0">
             {propertyTypeLabel}
           </span>
         </div>
 
         {/* Address */}
-        <h3 className="font-extrabold text-foreground line-clamp-1 text-[15px] tracking-[-0.02em] leading-snug mb-3">
+        <h3 className="font-extrabold text-foreground line-clamp-1 text-[16.5px] tracking-[-0.025em] leading-snug mb-3.5">
           {listing.address}
         </h3>
 
         {/* Key specs row — pill-style chips */}
-        <div className="flex items-center gap-1.5 mb-3">
+        <div className="flex items-center gap-2 mb-3.5">
           {listing.bedrooms != null && (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/[0.08] ring-1 ring-inset ring-black/[0.04] dark:ring-white/[0.06]">
-              <Bed className="h-3.5 w-3.5 text-foreground/45" />
-              <span className="text-[12px] font-bold text-foreground/90 tabular-nums">{listing.bedrooms}</span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 dark:bg-white/[0.06] ring-1 ring-inset ring-black/[0.06] dark:ring-white/[0.08]">
+              <Bed className="h-4 w-4 text-foreground/40" />
+              <span className="text-[13px] font-bold text-foreground/80 tabular-nums">{listing.bedrooms}</span>
             </div>
           )}
           {listing.bathrooms != null && (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/[0.08] ring-1 ring-inset ring-black/[0.04] dark:ring-white/[0.06]">
-              <Bath className="h-3.5 w-3.5 text-foreground/45" />
-              <span className="text-[12px] font-bold text-foreground/90 tabular-nums">{listing.bathrooms}</span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 dark:bg-white/[0.06] ring-1 ring-inset ring-black/[0.06] dark:ring-white/[0.08]">
+              <Bath className="h-4 w-4 text-foreground/40" />
+              <span className="text-[13px] font-bold text-foreground/80 tabular-nums">{listing.bathrooms}</span>
             </div>
           )}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/[0.08] ring-1 ring-inset ring-black/[0.04] dark:ring-white/[0.06]">
-            <Maximize2 className="h-3.5 w-3.5 text-foreground/45" />
-            <span className="text-[12px] font-bold text-foreground/90 tabular-nums">{formatArea(listing.area_sqm)}</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-50 dark:bg-white/[0.06] ring-1 ring-inset ring-black/[0.06] dark:ring-white/[0.08]">
+            <Maximize2 className="h-4 w-4 text-foreground/40" />
+            <span className="text-[13px] font-bold text-foreground/80 tabular-nums">{formatArea(listing.area_sqm)}</span>
           </div>
         </div>
 
         {/* Features row — colored micro-pills */}
         {(displayBadges.length > 0 || (isRental && listing.is_furnished) || (isRental && listing.allows_pets)) && (
-          <div className="flex flex-wrap items-center gap-1.5 mb-3">
+          <div className="flex flex-wrap items-center gap-1.5 mb-3.5">
             {displayBadges.map((badge, index) => {
               const Icon = badge.icon;
               return (
                 <Tooltip key={index}>
                   <TooltipTrigger asChild>
                     <div className={cn(
-                      "inline-flex items-center gap-1 px-2 py-[3px] rounded-full ring-1 ring-inset ring-current/[0.12] transition-colors",
+                      "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ring-1 ring-inset ring-current/[0.15] transition-colors",
                       badge.bg, badge.text
                     )}>
-                      <Icon className="h-3 w-3" />
-                      <span className="text-[10.5px] font-semibold tracking-[-0.01em] leading-none">{badge.label}</span>
+                      <Icon className="h-3.5 w-3.5" />
+                      <span className="text-[12px] font-semibold tracking-[-0.01em] leading-none">{badge.label}</span>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent><p>{badge.label}</p></TooltipContent>
@@ -378,19 +378,19 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               );
             })}
             {isRental && listing.is_furnished && (
-              <div className="inline-flex items-center gap-1 px-2 py-[3px] rounded-full ring-1 ring-inset ring-amber-600/[0.12] bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400">
-                <Sofa className="h-3 w-3" />
-                <span className="text-[10.5px] font-semibold tracking-[-0.01em] leading-none">{t('listing.furnished')}</span>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ring-1 ring-inset ring-amber-600/[0.15] bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400">
+                <Sofa className="h-3.5 w-3.5" />
+                <span className="text-[12px] font-semibold tracking-[-0.01em] leading-none">{t('listing.furnished')}</span>
               </div>
             )}
             {isRental && listing.allows_pets && (
-              <div className="inline-flex items-center gap-1 px-2 py-[3px] rounded-full ring-1 ring-inset ring-pink-500/[0.12] bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400">
-                <PawPrint className="h-3 w-3" />
-                <span className="text-[10.5px] font-semibold tracking-[-0.01em] leading-none">{t('listing.petsAllowed')}</span>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ring-1 ring-inset ring-pink-500/[0.15] bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400">
+                <PawPrint className="h-3.5 w-3.5" />
+                <span className="text-[12px] font-semibold tracking-[-0.01em] leading-none">{t('listing.petsAllowed')}</span>
               </div>
             )}
             {extraBadgeCount > 0 && (
-              <span className="text-[10.5px] text-foreground/35 font-bold pl-0.5">
+              <span className="text-[12px] text-foreground/30 font-bold pl-0.5">
                 +{extraBadgeCount}
               </span>
             )}
@@ -398,14 +398,14 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
         )}
 
         {/* Divider */}
-        <div className="border-t border-black/[0.06] dark:border-white/[0.08] pt-3">
+        <div className="border-t border-black/[0.05] dark:border-white/[0.07] pt-3.5 mt-0.5">
           {/* Price section */}
           <div className="flex items-end justify-between">
             <div>
               {isSoldOrRented && showStatusOverlay && hasFinalPrice ? (
                 <>
                   <div className="flex items-center gap-2">
-                    <span className="text-[18px] font-black text-foreground tracking-[-0.03em] leading-none">
+                    <span className="text-[22px] font-black text-foreground tracking-[-0.03em] leading-none">
                       {formatPrice(listing.final_price!, listing.currency, { isRental, showPeriod: isRental })}
                     </span>
                     <span className={cn(
@@ -416,24 +416,24 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
                       {priceDiff !== 0 && `${priceDiff > 0 ? '+' : ''}${priceDiffPercent}%`}
                     </span>
                   </div>
-                  <span className="text-[11px] text-foreground/40 line-through mt-0.5 block font-medium">
+                  <span className="text-[12px] text-foreground/35 line-through mt-1 block font-medium">
                     {formatPrice(listing.price, listing.currency, { isRental, showPeriod: false })}
                   </span>
                 </>
               ) : (
-                <span className="text-[18px] font-black text-foreground tracking-[-0.03em] leading-none">
+                <span className="text-[22px] font-black text-foreground tracking-[-0.03em] leading-none">
                   {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
                 </span>
               )}
               {listing.area_sqm && listing.area_sqm > 0 && (
-                <span className="text-[11px] font-semibold text-foreground/40 mt-1 block tabular-nums tracking-[-0.01em]">
+                <span className="text-[12.5px] font-semibold text-foreground/35 mt-1.5 block tabular-nums tracking-[-0.01em]">
                   {formatPrice((hasFinalPrice && isSoldOrRented && showStatusOverlay ? listing.final_price! : listing.price) / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
                 </span>
               )}
             </div>
             <div className="text-right flex flex-col items-end gap-1">
               {formattedDate && (
-                <span className="text-[10.5px] text-foreground/35 font-medium leading-tight tracking-[-0.01em]">
+                <span className="text-[12px] text-foreground/30 font-medium leading-tight tracking-[-0.01em]">
                   {formattedDate}
                 </span>
               )}
@@ -442,9 +442,9 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
           {/* Rental availability */}
           {isRental && !isSoldOrRented && (formattedAvailFrom || listing.move_in_immediately) && (
-            <div className="flex items-center gap-1.5 mt-2.5 px-2.5 py-1.5 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/30">
+            <div className="flex items-center gap-2 mt-3 px-3 py-2 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-800/30">
               <CalendarDays className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 tracking-[-0.01em]">
+              <span className="text-[12px] font-semibold text-emerald-700 dark:text-emerald-300 tracking-[-0.01em]">
                 {listing.move_in_immediately
                   ? t('listing.availableNow')
                   : formattedAvailFrom && `${t('listing.from')} ${formattedAvailFrom}`}
