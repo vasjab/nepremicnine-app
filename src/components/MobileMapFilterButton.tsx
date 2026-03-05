@@ -370,7 +370,7 @@ export function MobileMapFilterButton({ filters, onFiltersChange }: MobileMapFil
       </DrawerTrigger>
         <DrawerContent className="max-h-[85vh] flex flex-col">
         <DrawerHeader className="pb-4 border-b border-border">
-          <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
+          <DrawerTitle className="text-xl">{t('filters.filters')}</DrawerTitle>
         </DrawerHeader>
         <div className="flex-1 min-h-0 overflow-y-auto px-4">
           <div className="space-y-6 px-1 pb-4">

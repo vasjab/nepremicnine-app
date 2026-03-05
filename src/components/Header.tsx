@@ -28,7 +28,7 @@ export function Header() {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
+    <header className="fixed top-0 left-0 right-0 z-50 glass-strong">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14">
           {/* Logo */}
@@ -36,7 +36,7 @@ export function Header() {
             href="/" 
             className="flex items-center gap-2 transition-opacity hover:opacity-80"
           >
-            <span className="font-display text-2xl font-bold text-foreground">
+            <span className="text-xl font-black text-foreground tracking-tight">
               hemma
             </span>
           </Link>
@@ -72,34 +72,28 @@ export function Header() {
           </div>
 
           {/* Desktop Navigation - Simplified */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center bg-secondary/50 rounded-full p-1">
             <Link
               href="/"
               className={cn(
-                'relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
-                isActive('/') 
-                  ? 'text-foreground bg-secondary/60' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
+                'px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200',
+                isActive('/')
+                  ? 'text-foreground bg-card shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               {t('nav.findHome')}
-              {isActive('/') && (
-                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent" />
-              )}
             </Link>
             <Link
               href="/sold-rented"
               className={cn(
-                'relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
-                isActive('/sold-rented') 
-                  ? 'text-foreground bg-secondary/60' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-secondary/40'
+                'px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200',
+                isActive('/sold-rented')
+                  ? 'text-foreground bg-card shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               {t('soldRented.recentlySold')}
-              {isActive('/sold-rented') && (
-                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-accent" />
-              )}
             </Link>
           </nav>
 
@@ -117,7 +111,7 @@ export function Header() {
                   >
                     <MessageCircle className="h-5 w-5" />
                     {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-medium">
+                      <span className="absolute -top-1 -right-1 min-w-5 h-5 rounded-full bg-accent text-white text-[10px] flex items-center justify-center font-bold px-1">
                         {unreadCount > 9 ? '9+' : unreadCount}
                       </span>
                     )}
@@ -145,7 +139,7 @@ export function Header() {
                         <User className="h-5 w-5" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-64 py-2 rounded-xl shadow-xl shadow-black/10">
+                    <DropdownMenuContent align="end" className="w-64 py-2 rounded-2xl shadow-float border-border/50 bg-card/95 backdrop-blur-xl">
                       <DropdownMenuItem asChild className="px-4 py-3.5 text-base focus:bg-secondary/50 rounded-none">
                         <Link href="/profile" className="cursor-pointer">
                           <User className="mr-4 h-5 w-5" />
@@ -157,7 +151,7 @@ export function Header() {
                           <MessageCircle className="mr-4 h-5 w-5" />
                           Messages
                           {unreadCount > 0 && (
-                            <span className="ml-auto w-5 h-5 rounded-full bg-accent text-accent-foreground text-xs flex items-center justify-center font-medium">
+                            <span className="ml-auto min-w-5 h-5 rounded-full bg-accent text-white text-[10px] flex items-center justify-center font-bold px-1">
                               {unreadCount > 9 ? '9+' : unreadCount}
                             </span>
                           )}
@@ -231,7 +225,7 @@ export function Header() {
 
         {/* Mobile Navigation - Airbnb-style clean design */}
         {mobileMenuOpen && (
-          <nav className="md:hidden py-0 border-t border-border/30 animate-slide-down">
+          <nav className="md:hidden py-0 border-t border-border/20 animate-slide-down bg-card/98 backdrop-blur-xl">
             <div className="flex flex-col">
               {/* Sold/Rented */}
               <Link

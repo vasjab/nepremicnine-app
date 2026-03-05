@@ -200,14 +200,17 @@ export default function Auth() {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Left side - Form */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8">
+        <div className="w-full max-w-md animate-fade-in">
           <div className="text-center mb-8">
-            <h1 className="font-display text-3xl font-bold text-foreground mb-2">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-accent/10 mb-5">
+              <span className="text-xl font-black text-accent">h</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 tracking-tight">
               {isSignUp ? t('auth.createAccount') : t('auth.welcomeBack')}
             </h1>
-            <p className="text-muted-foreground">
-              {isSignUp 
+            <p className="text-muted-foreground text-sm sm:text-base">
+              {isSignUp
                 ? t('auth.joinToFind')
                 : t('auth.signInToContinue')}
             </p>
@@ -322,34 +325,35 @@ export default function Auth() {
       </div>
 
       {/* Right side - Image/Branding */}
-      <div className="hidden lg:flex flex-1 bg-secondary items-center justify-center p-12">
-        <div className="max-w-md text-center">
-          <h2 className="font-display text-4xl font-bold text-foreground mb-4">
+      <div className="hidden lg:flex flex-1 bg-secondary/50 items-center justify-center p-12 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-accent/10" />
+        <div className="max-w-md text-center relative z-10">
+          <h2 className="text-4xl font-bold text-foreground mb-4 tracking-tight">
             {t('auth.findPerfectHome')}
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-muted-foreground leading-relaxed">
             {t('auth.findPerfectHomeDesc')}
           </p>
           <div className="mt-12 grid grid-cols-2 gap-4 text-left">
-            <div className="bg-card p-4 rounded-xl">
+            <div className="glass p-5 rounded-2xl">
               <span className="text-2xl mb-2 block">🏠</span>
-              <h3 className="font-semibold text-foreground">{t('auth.browseListings')}</h3>
-              <p className="text-sm text-muted-foreground">{t('auth.browseListingsDesc')}</p>
+              <h3 className="font-bold text-foreground">{t('auth.browseListings')}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{t('auth.browseListingsDesc')}</p>
             </div>
-            <div className="bg-card p-4 rounded-xl">
+            <div className="glass p-5 rounded-2xl">
               <span className="text-2xl mb-2 block">❤️</span>
-              <h3 className="font-semibold text-foreground">{t('auth.saveFavorites')}</h3>
-              <p className="text-sm text-muted-foreground">{t('auth.saveFavoritesDesc')}</p>
+              <h3 className="font-bold text-foreground">{t('auth.saveFavorites')}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{t('auth.saveFavoritesDesc')}</p>
             </div>
-            <div className="bg-card p-4 rounded-xl">
+            <div className="glass p-5 rounded-2xl">
               <span className="text-2xl mb-2 block">📝</span>
-              <h3 className="font-semibold text-foreground">{t('auth.listYourHome')}</h3>
-              <p className="text-sm text-muted-foreground">{t('auth.listYourHomeDesc')}</p>
+              <h3 className="font-bold text-foreground">{t('auth.listYourHome')}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{t('auth.listYourHomeDesc')}</p>
             </div>
-            <div className="bg-card p-4 rounded-xl">
+            <div className="glass p-5 rounded-2xl">
               <span className="text-2xl mb-2 block">🔒</span>
-              <h3 className="font-semibold text-foreground">{t('auth.secureAndTrusted')}</h3>
-              <p className="text-sm text-muted-foreground">{t('auth.secureAndTrustedDesc')}</p>
+              <h3 className="font-bold text-foreground">{t('auth.secureAndTrusted')}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{t('auth.secureAndTrustedDesc')}</p>
             </div>
           </div>
         </div>

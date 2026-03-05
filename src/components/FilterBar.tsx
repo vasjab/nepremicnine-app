@@ -1119,7 +1119,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
               </div>
               <DrawerContent className="max-h-[85vh] flex flex-col overflow-hidden">
                 <DrawerHeader className="pb-4 border-b border-border shrink-0">
-                  <DrawerTitle className="font-display text-xl">{t('filters.filters')}</DrawerTitle>
+                  <DrawerTitle className="text-xl">{t('filters.filters')}</DrawerTitle>
                 </DrawerHeader>
                 <div className="flex-1 min-h-0 overflow-y-auto px-4">
                   <FilterContent {...filterContentProps} />
@@ -1166,7 +1166,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
               </div>
               <DialogContent className="sm:max-w-lg max-h-[85vh] p-0 rounded-2xl flex flex-col overflow-hidden">
                 <DialogHeader className="p-6 pb-4 border-b border-border shrink-0">
-                  <DialogTitle className="font-display text-xl">{t('filters.filters')}</DialogTitle>
+                  <DialogTitle className="text-xl">{t('filters.filters')}</DialogTitle>
                 </DialogHeader>
                 <div className="flex-1 min-h-0 overflow-y-auto px-6">
                   <FilterContent {...filterContentProps} />

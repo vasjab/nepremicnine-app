@@ -93,7 +93,7 @@ const LandlordProfile = () => {
       
       <div className="h-14" />
 
-      <main className="container max-w-6xl mx-auto px-4 py-8">
+      <main className="container max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-fade-in">
         {/* Back button */}
         <Button
           variant="ghost"
@@ -106,7 +106,7 @@ const LandlordProfile = () => {
         </Button>
 
         {/* Profile Section */}
-        <div className="bg-card rounded-xl border border-border p-6 mb-8">
+        <div className="bg-card rounded-2xl border border-border/60 p-6 mb-8 shadow-card">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             {/* Avatar */}
             {isLoadingProfile ? (
@@ -129,7 +129,7 @@ const LandlordProfile = () => {
                 </>
               ) : (
                 <>
-                  <h1 className="text-2xl font-bold text-foreground mb-2">{displayName}</h1>
+                  <h1 className="text-2xl font-bold text-foreground mb-2 tracking-tight">{displayName}</h1>
                   {profile?.bio && (
                     <p className="text-muted-foreground mb-4">{profile.bio}</p>
                   )}

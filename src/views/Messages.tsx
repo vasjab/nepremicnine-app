@@ -185,8 +185,8 @@ export default function Messages() {
           "w-80 xl:w-96 border-r border-border flex-shrink-0",
           "flex flex-col bg-card overflow-hidden"
         )}>
-          <div className="p-4 border-b border-border space-y-3 flex-shrink-0">
-            <h1 className="text-xl font-semibold text-foreground">Messages</h1>
+          <div className="p-4 border-b border-border/50 space-y-3 flex-shrink-0">
+            <h1 className="text-xl font-bold text-foreground tracking-tight">Messages</h1>
             <MessageSearch 
               onResultClick={handleSearchResultClick}
               className="w-full"

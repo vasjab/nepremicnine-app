@@ -46,11 +46,11 @@ export default function SavedListings() {
       <Header />
       
       <main className="pt-16">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="font-display text-3xl font-bold text-foreground mb-2">
+        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-fade-in">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 tracking-tight">
             {t('saved.title')}
           </h1>
-          <p className="text-muted-foreground mb-8">
+          <p className="text-muted-foreground text-sm sm:text-base mb-6 sm:mb-8">
             {t('saved.subtitle')}
           </p>
 

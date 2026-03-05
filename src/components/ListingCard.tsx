@@ -261,7 +261,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
         {/* Type badge - hide if showing status overlay */}
         {(!isSoldOrRented || !showStatusOverlay) && (
           <div className="absolute bottom-3 left-3 z-10">
-            <span className="px-3 py-1.5 rounded-xl glass text-xs font-semibold">
+            <span className="px-3 py-1.5 rounded-full glass text-xs font-bold">
               {t(`listingTypes.${listing.listing_type}`)}
             </span>
           </div>
@@ -271,13 +271,13 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
       {/* Content */}
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-1.5">
-          <h3 className="font-semibold text-foreground line-clamp-1 text-[15px]">
+          <h3 className="font-bold text-foreground line-clamp-1 text-[15px] tracking-tight">
             {listing.address}
           </h3>
         </div>
 
-        <p className="text-sm text-muted-foreground mb-2">
-          {propertyTypeLabel} • {listing.bedrooms} {listing.bedrooms !== 1 ? t('filters.rooms') : t('filters.room')} • {formatArea(listing.area_sqm)}
+        <p className="text-[13px] text-muted-foreground mb-2.5">
+          {propertyTypeLabel} · {listing.bedrooms} {listing.bedrooms !== 1 ? t('filters.rooms') : t('filters.room')} · {formatArea(listing.area_sqm)}
         </p>
 
         {/* Feature badges */}
@@ -288,7 +288,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               return (
                 <span 
                   key={index}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary/80 text-xs text-muted-foreground font-medium"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-secondary text-[11px] text-muted-foreground font-medium"
                 >
                   <Icon className="h-3 w-3" />
                   {badge.label}
@@ -305,7 +305,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               <>
                 {/* Final price with percentage difference */}
                 <div className="flex items-center gap-2">
-                  <span className="text-lg font-bold text-foreground">
+                  <span className="text-lg font-extrabold text-foreground tracking-tight">
                     {formatPrice(listing.final_price!, listing.currency, { isRental, showPeriod: isRental })}
                   </span>
                   <span className={cn(
@@ -323,7 +323,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               </>
             ) : (
               /* Regular listing price */
-              <span className="text-lg font-bold text-foreground">
+              <span className="text-lg font-extrabold text-foreground tracking-tight">
                 {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
               </span>
             )}

@@ -130,7 +130,7 @@ export function ReviewStep({
 
           {/* Content */}
           <div className="p-5 space-y-3">
-            <h3 className="font-display text-xl font-semibold text-foreground line-clamp-2">
+            <h3 className="text-xl font-semibold text-foreground line-clamp-2">
               {formData.title || 'Your listing title'}
             </h3>
             

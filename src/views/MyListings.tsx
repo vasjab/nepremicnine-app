@@ -384,13 +384,13 @@ export default function MyListings() {
       <Header />
       
       <main className="pt-16">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-between mb-8">
+        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-fade-in">
+          <div className="flex items-center justify-between mb-6 sm:mb-8">
             <div>
-              <h1 className="font-display text-3xl font-bold text-foreground mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1 tracking-tight">
                 {t('myListings.title')}
               </h1>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-sm sm:text-base">
                 {t('myListings.subtitle')}
               </p>
             </div>

@@ -508,7 +508,7 @@ export function ListingPreviewModal({ formData, uploadedImages, coordinates, isO
             <div className="lg:col-span-2 space-y-6 sm:space-y-8">
               {/* Header */}
               <div>
-                <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2">
                   {listing.title}
                 </h1>
                 <div className="flex items-center gap-2 text-muted-foreground">

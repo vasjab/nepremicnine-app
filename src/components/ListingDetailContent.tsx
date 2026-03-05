@@ -362,7 +362,7 @@ export function ListingDetailContent({
           <div className="lg:col-span-2 space-y-6 sm:space-y-8">
             {/* Header */}
             <div>
-              <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2 tracking-tight">
                 {listing.title}
               </h1>
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -409,7 +409,7 @@ export function ListingDetailContent({
             {/* Description */}
             {listing.description && (
               <div>
-                <h2 className="text-xl font-semibold text-foreground mb-3">{t('listing.description')}</h2>
+                <h2 className="text-xl font-bold text-foreground mb-3 tracking-tight">{t('listing.description')}</h2>
                 {listing.description.length > 500 ? (
                   <>
                     <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
@@ -449,9 +449,8 @@ export function ListingDetailContent({
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className={cn(
-              "sticky top-24 bg-card rounded-2xl p-6 shadow-elevated",
-              "transition-all duration-300",
-              "hover:shadow-xl"
+              "sticky top-24 bg-card rounded-2xl p-6 border border-border/60 shadow-card",
+              "transition-all duration-300"
             )}>
               {/* Transaction Complete Section for Sold/Rented */}
               {isCompleted && (

@@ -25,7 +25,7 @@ export function WizardStepWrapper({
             {emoji}
           </span>
         )}
-        <h1 className="font-display text-2xl md:text-4xl font-bold text-foreground mb-2">
+        <h1 className="text-2xl md:text-4xl font-bold text-foreground mb-2">
           {title}
         </h1>
         {subtitle && (

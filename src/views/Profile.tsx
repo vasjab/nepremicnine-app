@@ -110,17 +110,17 @@ export default function ProfilePage() {
       <Header />
       
       <main className="pt-16">
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-xl mx-auto">
-            <h1 className="font-display text-3xl font-bold text-foreground mb-8">
+        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          <div className="max-w-xl mx-auto animate-fade-in">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-6 sm:mb-8 tracking-tight">
               My Profile
             </h1>
 
             {loading ? (
               <div className="space-y-4">
-                <div className="h-24 w-24 rounded-full bg-muted animate-pulse" />
-                <div className="h-10 bg-muted rounded animate-pulse" />
-                <div className="h-10 bg-muted rounded animate-pulse" />
+                <div className="h-24 w-24 rounded-full bg-muted skeleton-shimmer" />
+                <div className="h-11 bg-muted rounded-xl skeleton-shimmer" />
+                <div className="h-11 bg-muted rounded-xl skeleton-shimmer" />
               </div>
             ) : (
               <div className="space-y-8">

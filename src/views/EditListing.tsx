@@ -950,10 +950,10 @@ export default function EditListing() {
             Back
           </Button>
 
-          <h1 className="font-display text-3xl font-bold text-foreground mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 tracking-tight">
             Edit listing
           </h1>
-          <p className="text-muted-foreground mb-8">
+          <p className="text-muted-foreground text-sm sm:text-base mb-6 sm:mb-8">
             Update your property details
           </p>
 
