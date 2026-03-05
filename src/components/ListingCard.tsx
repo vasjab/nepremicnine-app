@@ -319,45 +319,45 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
       </div>
 
       {/* Content */}
-      <div className="px-4 pt-3 pb-4">
+      <div className="px-4 pt-3.5 pb-4 antialiased">
         {/* Header: Location + type */}
-        <div className="flex items-center gap-1.5 mb-1">
-          <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-          <span className="text-[13px] font-semibold text-foreground/70 truncate">
+        <div className="flex items-center gap-1.5 mb-1.5">
+          <MapPin className="h-3.5 w-3.5 text-foreground/40 shrink-0" />
+          <span className="text-[13px] font-semibold text-foreground/80 truncate tracking-[-0.01em]">
             {listing.city}
           </span>
-          <span className="text-muted-foreground/50 mx-0.5">·</span>
-          <span className="text-[11px] text-muted-foreground/70 uppercase tracking-wider font-semibold shrink-0">
+          <span className="text-foreground/25 mx-0.5">·</span>
+          <span className="text-[10px] text-foreground/50 uppercase tracking-[0.08em] font-bold shrink-0">
             {propertyTypeLabel}
           </span>
         </div>
 
         {/* Address */}
-        <h3 className="font-bold text-foreground line-clamp-1 text-[15px] tracking-tight mb-3">
+        <h3 className="font-extrabold text-foreground line-clamp-1 text-[15px] tracking-[-0.02em] leading-snug mb-3">
           {listing.address}
         </h3>
 
         {/* Key specs row — pill-style chips */}
         <div className="flex items-center gap-1.5 mb-3">
           {listing.bedrooms != null && (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/80 dark:bg-muted/50">
-              <Bed className="h-4 w-4 text-foreground/50" />
-              <span className="text-[13px] font-semibold text-foreground">{listing.bedrooms}</span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/[0.08] ring-1 ring-inset ring-black/[0.04] dark:ring-white/[0.06]">
+              <Bed className="h-3.5 w-3.5 text-foreground/45" />
+              <span className="text-[12px] font-bold text-foreground/90 tabular-nums">{listing.bedrooms}</span>
             </div>
           )}
           {listing.bathrooms != null && (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/80 dark:bg-muted/50">
-              <Bath className="h-4 w-4 text-foreground/50" />
-              <span className="text-[13px] font-semibold text-foreground">{listing.bathrooms}</span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/[0.08] ring-1 ring-inset ring-black/[0.04] dark:ring-white/[0.06]">
+              <Bath className="h-3.5 w-3.5 text-foreground/45" />
+              <span className="text-[12px] font-bold text-foreground/90 tabular-nums">{listing.bathrooms}</span>
             </div>
           )}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/80 dark:bg-muted/50">
-            <Maximize2 className="h-4 w-4 text-foreground/50" />
-            <span className="text-[13px] font-semibold text-foreground">{formatArea(listing.area_sqm)}</span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-white/[0.08] ring-1 ring-inset ring-black/[0.04] dark:ring-white/[0.06]">
+            <Maximize2 className="h-3.5 w-3.5 text-foreground/45" />
+            <span className="text-[12px] font-bold text-foreground/90 tabular-nums">{formatArea(listing.area_sqm)}</span>
           </div>
         </div>
 
-        {/* Features row — icon chips with labels */}
+        {/* Features row — colored micro-pills */}
         {(displayBadges.length > 0 || (isRental && listing.is_furnished) || (isRental && listing.allows_pets)) && (
           <div className="flex flex-wrap items-center gap-1.5 mb-3">
             {displayBadges.map((badge, index) => {
@@ -365,9 +365,12 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               return (
                 <Tooltip key={index}>
                   <TooltipTrigger asChild>
-                    <div className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-md transition-colors", badge.bg, badge.text)}>
-                      <Icon className="h-3.5 w-3.5" />
-                      <span className="text-[11px] font-medium">{badge.label}</span>
+                    <div className={cn(
+                      "inline-flex items-center gap-1 px-2 py-[3px] rounded-full ring-1 ring-inset ring-current/[0.12] transition-colors",
+                      badge.bg, badge.text
+                    )}>
+                      <Icon className="h-3 w-3" />
+                      <span className="text-[10.5px] font-semibold tracking-[-0.01em] leading-none">{badge.label}</span>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent><p>{badge.label}</p></TooltipContent>
@@ -375,19 +378,19 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               );
             })}
             {isRental && listing.is_furnished && (
-              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400">
-                <Sofa className="h-3.5 w-3.5" />
-                <span className="text-[11px] font-medium">{t('listing.furnished')}</span>
+              <div className="inline-flex items-center gap-1 px-2 py-[3px] rounded-full ring-1 ring-inset ring-amber-600/[0.12] bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400">
+                <Sofa className="h-3 w-3" />
+                <span className="text-[10.5px] font-semibold tracking-[-0.01em] leading-none">{t('listing.furnished')}</span>
               </div>
             )}
             {isRental && listing.allows_pets && (
-              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400">
-                <PawPrint className="h-3.5 w-3.5" />
-                <span className="text-[11px] font-medium">{t('listing.petsAllowed')}</span>
+              <div className="inline-flex items-center gap-1 px-2 py-[3px] rounded-full ring-1 ring-inset ring-pink-500/[0.12] bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400">
+                <PawPrint className="h-3 w-3" />
+                <span className="text-[10.5px] font-semibold tracking-[-0.01em] leading-none">{t('listing.petsAllowed')}</span>
               </div>
             )}
             {extraBadgeCount > 0 && (
-              <span className="text-[11px] text-muted-foreground/60 font-medium pl-0.5">
+              <span className="text-[10.5px] text-foreground/35 font-bold pl-0.5">
                 +{extraBadgeCount}
               </span>
             )}
@@ -395,42 +398,42 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
         )}
 
         {/* Divider */}
-        <div className="border-t border-border/70 pt-3">
+        <div className="border-t border-black/[0.06] dark:border-white/[0.08] pt-3">
           {/* Price section */}
           <div className="flex items-end justify-between">
             <div>
               {isSoldOrRented && showStatusOverlay && hasFinalPrice ? (
                 <>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg font-extrabold text-foreground tracking-tight leading-none">
+                    <span className="text-[18px] font-black text-foreground tracking-[-0.03em] leading-none">
                       {formatPrice(listing.final_price!, listing.currency, { isRental, showPeriod: isRental })}
                     </span>
                     <span className={cn(
-                      "text-xs font-semibold flex items-center gap-0.5 px-1.5 py-0.5 rounded-full",
-                      priceDiff < 0 ? "text-red-600 bg-red-50" : priceDiff > 0 ? "text-emerald-600 bg-emerald-50" : "text-muted-foreground"
+                      "text-[11px] font-bold flex items-center gap-0.5 px-1.5 py-0.5 rounded-full",
+                      priceDiff < 0 ? "text-red-600 bg-red-50 ring-1 ring-inset ring-red-500/15" : priceDiff > 0 ? "text-emerald-600 bg-emerald-50 ring-1 ring-inset ring-emerald-500/15" : "text-muted-foreground"
                     )}>
                       {priceDiff < 0 ? <TrendingDown className="h-3 w-3" /> : priceDiff > 0 ? <TrendingUp className="h-3 w-3" /> : null}
                       {priceDiff !== 0 && `${priceDiff > 0 ? '+' : ''}${priceDiffPercent}%`}
                     </span>
                   </div>
-                  <span className="text-xs text-muted-foreground line-through mt-0.5 block">
+                  <span className="text-[11px] text-foreground/40 line-through mt-0.5 block font-medium">
                     {formatPrice(listing.price, listing.currency, { isRental, showPeriod: false })}
                   </span>
                 </>
               ) : (
-                <span className="text-lg font-extrabold text-foreground tracking-tight leading-none">
+                <span className="text-[18px] font-black text-foreground tracking-[-0.03em] leading-none">
                   {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
                 </span>
               )}
               {listing.area_sqm && listing.area_sqm > 0 && (
-                <span className="text-[12px] font-medium text-muted-foreground mt-1 block">
+                <span className="text-[11px] font-semibold text-foreground/40 mt-1 block tabular-nums tracking-[-0.01em]">
                   {formatPrice((hasFinalPrice && isSoldOrRented && showStatusOverlay ? listing.final_price! : listing.price) / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
                 </span>
               )}
             </div>
             <div className="text-right flex flex-col items-end gap-1">
               {formattedDate && (
-                <span className="text-[11px] text-muted-foreground/70 leading-tight">
+                <span className="text-[10.5px] text-foreground/35 font-medium leading-tight tracking-[-0.01em]">
                   {formattedDate}
                 </span>
               )}
@@ -439,9 +442,9 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
           {/* Rental availability */}
           {isRental && !isSoldOrRented && (formattedAvailFrom || listing.move_in_immediately) && (
-            <div className="flex items-center gap-1.5 mt-2.5 px-2.5 py-1.5 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/20 border border-emerald-100/80 dark:border-emerald-900/30">
+            <div className="flex items-center gap-1.5 mt-2.5 px-2.5 py-1.5 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/30">
               <CalendarDays className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
+              <span className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300 tracking-[-0.01em]">
                 {listing.move_in_immediately
                   ? t('listing.availableNow')
                   : formattedAvailFrom && `${t('listing.from')} ${formattedAvailFrom}`}
