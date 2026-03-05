@@ -1083,7 +1083,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
           
           {/* Sort dropdown */}
           <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
-            <SelectTrigger className="shrink-0 w-10 md:w-auto md:max-w-[120px] h-10 px-3 text-sm bg-secondary border-0 rounded-xl">
+            <SelectTrigger className="shrink-0 w-10 md:w-auto md:max-w-[120px] h-10 px-3 text-sm bg-secondary border-0 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 hover:border-0 transition-colors">
               <ArrowUpDown className="h-4 w-4 md:mr-2 text-muted-foreground shrink-0" />
               <span className="hidden md:inline truncate">
                 <SelectValue placeholder={t('filters.sortBy')} />
@@ -1106,7 +1106,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
             <Drawer open={isOpen} onOpenChange={setIsOpen}>
               <div className="relative shrink-0">
                 <DrawerTrigger asChild>
-                <button className={`flex items-center justify-center rounded-xl h-10 w-10 text-sm font-medium transition-all ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-foreground hover:bg-muted'}`}>
+                <button className={`flex items-center justify-center rounded-xl h-10 w-10 text-sm font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-foreground hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
                     <SlidersHorizontal className="h-4 w-4" />
                   </button>
                 </DrawerTrigger>
@@ -1152,7 +1152,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <div className="relative shrink-0">
                 <DialogTrigger asChild>
-                  <button className={`flex items-center gap-1.5 rounded-xl h-10 px-3 text-sm font-medium transition-all ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-foreground hover:bg-muted'}`}>
+                  <button className={`flex items-center gap-1.5 rounded-xl h-10 px-3 text-sm font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-foreground hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
                     <SlidersHorizontal className="h-4 w-4" />
                     <span>Filters</span>
                   </button>
