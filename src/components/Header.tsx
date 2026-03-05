@@ -28,9 +28,9 @@ export function Header() {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass-strong">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
       <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 relative">
 
           {/* Logo */}
           <Link
@@ -45,53 +45,47 @@ export function Header() {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1">
+          {/* Desktop Navigation — Airbnb-style centered tabs */}
+          <nav className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2 h-full">
             <Link
               href="/"
               className={cn(
-                'nav-pill nav-blue group',
-                isActive('/') && 'is-active'
+                'flex items-center gap-2 h-full px-4 text-[13px] font-medium transition-colors relative',
+                isActive('/') ? 'text-gray-900' : 'text-gray-500 hover:text-gray-800'
               )}
             >
-              <span className={cn(
-                "flex h-6 w-6 items-center justify-center rounded-lg transition-colors duration-200",
-                isActive('/') ? "bg-blue-100 text-blue-600" : "text-gray-400 group-hover:text-blue-500"
-              )}>
-                <Search className="h-3.5 w-3.5" />
-              </span>
+              <Search className="h-4 w-4" />
               <span>{t('nav.findHome')}</span>
+              {isActive('/') && (
+                <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-gray-900 rounded-full" />
+              )}
             </Link>
             <Link
               href="/sold-rented"
               className={cn(
-                'nav-pill nav-amber group',
-                isActive('/sold-rented') && 'is-active'
+                'flex items-center gap-2 h-full px-4 text-[13px] font-medium transition-colors relative',
+                isActive('/sold-rented') ? 'text-gray-900' : 'text-gray-500 hover:text-gray-800'
               )}
             >
-              <span className={cn(
-                "flex h-6 w-6 items-center justify-center rounded-lg transition-colors duration-200",
-                isActive('/sold-rented') ? "bg-amber-100 text-amber-600" : "text-gray-400 group-hover:text-amber-500"
-              )}>
-                <History className="h-3.5 w-3.5" />
-              </span>
+              <History className="h-4 w-4" />
               <span>{t('soldRented.recentlySold')}</span>
+              {isActive('/sold-rented') && (
+                <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-gray-900 rounded-full" />
+              )}
             </Link>
             {user && (
               <Link
                 href="/saved"
                 className={cn(
-                  'nav-pill nav-rose group',
-                  isActive('/saved') && 'is-active'
+                  'flex items-center gap-2 h-full px-4 text-[13px] font-medium transition-colors relative',
+                  isActive('/saved') ? 'text-gray-900' : 'text-gray-500 hover:text-gray-800'
                 )}
               >
-                <span className={cn(
-                  "flex h-6 w-6 items-center justify-center rounded-lg transition-colors duration-200",
-                  isActive('/saved') ? "bg-rose-100 text-rose-500" : "text-gray-400 group-hover:text-rose-400"
-                )}>
-                  <Heart className="h-3.5 w-3.5" />
-                </span>
+                <Heart className="h-4 w-4" />
                 <span>{t('common.savedListings')}</span>
+                {isActive('/saved') && (
+                  <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-gray-900 rounded-full" />
+                )}
               </Link>
             )}
           </nav>
@@ -147,29 +141,29 @@ export function Header() {
                     )}
                   </Button>
                 </Link>
-                <Link href="/create-listing" className="hidden sm:block">
+                <Link href="/create-listing" className="hidden sm:block ml-0.5">
                   <Button
-                    variant="gradient"
-                    className="gap-2 rounded-xl h-10 px-5 text-[13px] font-semibold ml-0.5"
+                    className="gap-2 rounded-full h-9 px-4 text-[13px] font-semibold bg-rose-500 hover:bg-rose-600 text-white shadow-sm transition-colors"
                   >
-                    <PlusCircle className="h-4 w-4" />
+                    <PlusCircle className="h-3.5 w-3.5" />
                     {t('common.createListing')}
                   </Button>
                 </Link>
                 {/* Desktop user menu */}
-                <div className="hidden md:block ml-0.5">
+                <div className="hidden md:block ml-1">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="relative rounded-full h-10 w-10 border border-black/[0.08] hover:bg-gray-100/80"
+                      <button
+                        className="relative flex items-center gap-2.5 h-10 pl-3 pr-1.5 rounded-full border border-gray-200 hover:shadow-md transition-shadow bg-white cursor-pointer"
                       >
-                        <User className="h-[22px] w-[22px] text-gray-600" />
+                        <Menu className="h-4 w-4 text-gray-600" />
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-500 text-white">
+                          <User className="h-4 w-4" />
+                        </div>
                         {unreadCount > 0 && (
-                          <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white" />
+                          <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white" />
                         )}
-                      </Button>
+                      </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-64 py-1.5 rounded-2xl border-gray-200/60 bg-white">
                       <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-sky-50 rounded-xl mx-1 cursor-pointer">
@@ -242,9 +236,8 @@ export function Header() {
                 </Link>
                 <Link href="/auth?mode=signup">
                   <Button
-                    variant="gradient"
                     size="sm"
-                    className="rounded-xl px-5"
+                    className="rounded-full px-5 bg-rose-500 hover:bg-rose-600 text-white"
                   >
                     {t('common.signUp')}
                   </Button>
@@ -399,7 +392,7 @@ export function Header() {
 
                   <Link
                     href="/create-listing"
-                    className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-semibold text-white bg-gradient-to-r from-slate-700 to-slate-900 shadow-sm"
+                    className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-semibold text-white bg-rose-500 shadow-sm"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white/20">
@@ -443,7 +436,7 @@ export function Header() {
                   </Link>
                   <Link
                     href="/auth?mode=signup"
-                    className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-semibold text-white bg-gradient-to-r from-slate-700 to-slate-900 shadow-sm"
+                    className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-semibold text-white bg-rose-500 shadow-sm"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white/20">
