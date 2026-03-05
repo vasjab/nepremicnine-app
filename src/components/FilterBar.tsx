@@ -1213,7 +1213,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
               <Badge
                 key={chip.label}
                 variant="secondary"
-                className="pl-3 pr-2 py-1 gap-1.5 cursor-pointer hover:bg-accent/15 hover:text-accent-foreground transition-all rounded-full text-xs font-medium press-effect"
+                className="pl-3 pr-1.5 py-1 gap-1 cursor-pointer hover:bg-gray-200/80 hover:text-gray-800 transition-all duration-150 rounded-full text-[11px] font-semibold tracking-wide active:scale-[0.95]"
                 onClick={chip.onRemove}
               >
                 {chip.label}

@@ -191,7 +191,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
         {/* NEW badge for listings less than 3 days old */}
         {isNew && !isSoldOrRented && (
           <div className="absolute top-3 left-3 z-20">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[11px] font-semibold uppercase tracking-wide">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-sm text-gray-600 text-[10px] font-bold uppercase tracking-wider shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
               New
             </span>
           </div>
@@ -280,7 +280,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
         {/* Type badge */}
         {(!isSoldOrRented || !showStatusOverlay) && (
           <div className="absolute bottom-3 left-3 z-10">
-            <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/90 text-slate-700 backdrop-blur-sm">
+            <span className="px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wide bg-white/95 backdrop-blur-sm text-gray-700 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
               {t(`listingTypes.${listing.listing_type}`)}
             </span>
           </div>
@@ -325,7 +325,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               return (
                 <span
                   key={index}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-gray-50 text-gray-500 ring-1 ring-gray-100"
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-gray-50 text-gray-500"
                 >
                   <Icon className="h-3 w-3" />
                   {badge.label}

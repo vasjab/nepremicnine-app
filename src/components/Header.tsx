@@ -47,14 +47,14 @@ export function Header() {
 
           {/* Desktop Navigation - DESIGN.md pill tab bar */}
           <nav className="hidden md:flex items-center">
-            <div className="flex gap-0.5 rounded-xl border border-gray-200/70 bg-gray-50/80 p-1">
+            <div className="flex gap-1 rounded-[14px] bg-gray-100/80 p-1">
               <Link
                 href="/"
                 className={cn(
-                  'flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 border',
+                  'flex items-center justify-center gap-1.5 rounded-[10px] px-4 py-2 text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.97]',
                   isActive('/')
-                    ? 'bg-white shadow-sm text-gray-900 border-gray-200/60'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-white/60'
+                    ? 'bg-white text-gray-900 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)]'
+                    : 'text-gray-500 hover:text-gray-800'
                 )}
               >
                 <Search className="h-3.5 w-3.5" />
@@ -63,10 +63,10 @@ export function Header() {
               <Link
                 href="/sold-rented"
                 className={cn(
-                  'flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 border',
+                  'flex items-center justify-center gap-1.5 rounded-[10px] px-4 py-2 text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.97]',
                   isActive('/sold-rented')
-                    ? 'bg-white shadow-sm text-gray-900 border-gray-200/60'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-white/60'
+                    ? 'bg-white text-gray-900 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)]'
+                    : 'text-gray-500 hover:text-gray-800'
                 )}
               >
                 <History className="h-3.5 w-3.5" />
@@ -77,10 +77,10 @@ export function Header() {
                   <Link
                     href="/saved"
                     className={cn(
-                      'flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 border',
+                      'flex items-center justify-center gap-1.5 rounded-[10px] px-4 py-2 text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.97]',
                       isActive('/saved')
-                        ? 'bg-white shadow-sm text-gray-900 border-gray-200/60'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-white/60'
+                        ? 'bg-white text-gray-900 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)]'
+                        : 'text-gray-500 hover:text-gray-800'
                     )}
                   >
                     <Heart className="h-3.5 w-3.5" />
@@ -163,19 +163,19 @@ export function Header() {
                         )}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-64 py-2 rounded-2xl shadow-2xl border-gray-200/60 bg-white">
-                      <DropdownMenuItem asChild className="px-4 py-3 text-sm focus:bg-gray-50 rounded-none cursor-pointer">
+                    <DropdownMenuContent align="end" className="w-64 py-1.5 rounded-2xl border-gray-200/60 bg-white">
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-50 rounded-xl mx-1 cursor-pointer">
                         <Link href="/profile">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-slate-100 text-slate-600 mr-3">
-                            <User className="h-3.5 w-3.5" />
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-600 mr-3">
+                            <User className="h-4 w-4" />
                           </div>
                           {t('common.profile')}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="px-4 py-3 text-sm focus:bg-gray-50 rounded-none cursor-pointer">
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-50 rounded-xl mx-1 cursor-pointer">
                         <Link href="/messages">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-gray-100 text-gray-500 mr-3">
-                            <MessageCircle className="h-3.5 w-3.5" />
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-500 mr-3">
+                            <MessageCircle className="h-4 w-4" />
                           </div>
                           Messages
                           {unreadCount > 0 && (
@@ -185,38 +185,38 @@ export function Header() {
                           )}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator className="my-1.5" />
-                      <DropdownMenuItem asChild className="px-4 py-3 text-sm focus:bg-gray-50 rounded-none cursor-pointer">
+                      <DropdownMenuSeparator className="my-1" />
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-50 rounded-xl mx-1 cursor-pointer">
                         <Link href="/saved">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-gray-100 text-gray-500 mr-3">
-                            <Heart className="h-3.5 w-3.5" />
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-500 mr-3">
+                            <Heart className="h-4 w-4" />
                           </div>
                           {t('common.savedListings')}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="px-4 py-3 text-sm focus:bg-gray-50 rounded-none cursor-pointer">
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-50 rounded-xl mx-1 cursor-pointer">
                         <Link href="/my-listings">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-gray-100 text-gray-500 mr-3">
-                            <Home className="h-3.5 w-3.5" />
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-500 mr-3">
+                            <Home className="h-4 w-4" />
                           </div>
                           {t('common.myListings')}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="px-4 py-3 text-sm focus:bg-gray-50 rounded-none cursor-pointer">
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-50 rounded-xl mx-1 cursor-pointer">
                         <Link href="/dashboard">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-gray-100 text-gray-500 mr-3">
-                            <BarChart3 className="h-3.5 w-3.5" />
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-500 mr-3">
+                            <BarChart3 className="h-4 w-4" />
                           </div>
                           {t('nav.dashboard')}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator className="my-1.5" />
+                      <DropdownMenuSeparator className="my-1" />
                       {/* Language & Region */}
                       <div className="px-0 py-0">
                         <InternationalSettings trigger="menu-item" />
                       </div>
-                      <DropdownMenuSeparator className="my-1.5" />
-                      <DropdownMenuItem onClick={signOut} className="cursor-pointer px-4 py-3 text-sm text-red-600 focus:bg-red-50 focus:text-red-600 rounded-none">
+                      <DropdownMenuSeparator className="my-1" />
+                      <DropdownMenuItem onClick={signOut} className="cursor-pointer px-3.5 py-2.5 text-sm text-red-600 focus:bg-red-50 focus:text-red-600 rounded-xl mx-1">
                         {t('common.signOut')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -258,7 +258,7 @@ export function Header() {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <nav className="md:hidden py-2 border-t border-black/[0.06] animate-slide-down">
+          <nav className="md:hidden py-2 border-t border-gray-100 animate-slide-down">
             <div className="flex flex-col py-2">
               {/* Sold/Rented */}
               <Link
@@ -272,7 +272,7 @@ export function Header() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <div className={cn(
-                  'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
+                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]',
                   isActive('/sold-rented') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
                 )}>
                   <History className="h-4 w-4" />
@@ -293,7 +293,7 @@ export function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
+                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]',
                       isActive('/saved') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
                     )}>
                       <Heart className="h-4 w-4" />
@@ -311,7 +311,7 @@ export function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
+                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]',
                       isActive('/my-listings') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
                     )}>
                       <Home className="h-4 w-4" />
@@ -329,7 +329,7 @@ export function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
+                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]',
                       isActive('/profile') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
                     )}>
                       <User className="h-4 w-4" />
@@ -347,7 +347,7 @@ export function Header() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className={cn(
-                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
+                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]',
                       isActive('/dashboard') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
                     )}>
                       <BarChart3 className="h-4 w-4" />
@@ -371,7 +371,7 @@ export function Header() {
                     className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-semibold text-white bg-gradient-to-r from-slate-700 to-slate-900 shadow-sm"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/20">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white/20">
                       <PlusCircle className="h-4 w-4" />
                     </div>
                     {t('common.createListing')}
@@ -415,7 +415,7 @@ export function Header() {
                     className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-semibold text-white bg-gradient-to-r from-slate-700 to-slate-900 shadow-sm"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/20">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-white/20">
                       <PlusCircle className="h-4 w-4" />
                     </div>
                     {t('common.signUp')}

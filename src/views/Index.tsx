@@ -309,14 +309,14 @@ const Index = () => {
 
             {/* Mobile view toggle - iOS Safari optimized */}
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
-              <div className="flex glass-strong rounded-full shadow-float p-1">
+              <div className="flex rounded-full bg-gray-900/90 backdrop-blur-xl p-1 shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
                 <button
                   type="button"
                   className={cn(
-                    'flex items-center justify-center rounded-full px-5 py-2.5 min-h-[44px] min-w-[80px] text-sm font-semibold transition-all duration-200 touch-safe-button',
+                    'flex items-center justify-center rounded-full px-5 py-2.5 min-h-[44px] min-w-[80px] text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.95] touch-safe-button',
                     mobileView === 'list'
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/25'
-                      : 'text-muted-foreground hover:text-foreground',
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-400 hover:text-white',
                   )}
                   onClick={() => {
                     haptic('medium');
@@ -324,16 +324,16 @@ const Index = () => {
                   }}
                   style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
-                  <List className="h-4 w-4 mr-2" />
+                  <List className="h-4 w-4 mr-1.5" />
                   {t('map.list')}
                 </button>
                 <button
                   type="button"
                   className={cn(
-                    'flex items-center justify-center rounded-full px-5 py-2.5 min-h-[44px] min-w-[80px] text-sm font-semibold transition-all duration-200 touch-safe-button',
+                    'flex items-center justify-center rounded-full px-5 py-2.5 min-h-[44px] min-w-[80px] text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.95] touch-safe-button',
                     mobileView === 'map'
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/25'
-                      : 'text-muted-foreground hover:text-foreground',
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-400 hover:text-white',
                   )}
                   onClick={() => {
                     haptic('medium');
@@ -341,7 +341,7 @@ const Index = () => {
                   }}
                   style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
-                  <MapIcon className="h-4 w-4 mr-2" />
+                  <MapIcon className="h-4 w-4 mr-1.5" />
                   {t('map.map')}
                 </button>
               </div>

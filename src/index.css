@@ -189,28 +189,36 @@
     @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
   }
 
-  /* ─── Filter Pills (DESIGN.md pill/chip) ──────── */
+  /* ─── Filter Pills ──────────────────────────────── */
   .filter-pill {
-    @apply px-3.5 py-1.5 rounded-full text-sm font-medium transition-all duration-200 min-h-[36px] flex items-center gap-1.5 cursor-pointer select-none;
+    @apply px-3.5 py-1.5 rounded-full text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out min-h-[36px] flex items-center gap-1.5 cursor-pointer select-none;
     background: white;
-    border: 1px solid hsl(0 0% 0% / 0.08);
-    color: hsl(0 0% 35%);
+    border: 1px solid hsl(0 0% 0% / 0.06);
+    color: hsl(0 0% 40%);
+    box-shadow: 0 1px 2px hsl(0 0% 0% / 0.04);
   }
 
   .filter-pill:hover {
-    background: hsl(0 0% 97%);
-    border-color: hsl(0 0% 0% / 0.15);
-    color: hsl(0 0% 15%);
+    background: white;
+    border-color: hsl(0 0% 0% / 0.12);
+    color: hsl(0 0% 12%);
+    box-shadow: 0 1px 4px hsl(0 0% 0% / 0.08);
   }
 
   .filter-pill:active {
-    transform: scale(0.97);
+    transform: scale(0.96);
+    box-shadow: 0 0 0 hsl(0 0% 0% / 0);
   }
 
   .filter-pill-active {
-    background: hsl(220 10% 18%);
+    background: hsl(0 0% 10%);
     color: white;
     border-color: transparent;
+    box-shadow: 0 2px 8px hsl(0 0% 0% / 0.15);
+  }
+
+  .filter-pill-active:hover {
+    background: hsl(0 0% 18%);
   }
 
   /* ─── Map Markers ──────────────────────────────── */
