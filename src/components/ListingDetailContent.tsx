@@ -445,14 +445,25 @@ export function ListingDetailContent({
                 </div>
               ))}
 
-              {/* Show all photos button */}
-              <button
-                onClick={(e) => { e.stopPropagation(); setScrollToFloorPlan(false); setShowGallery(true); }}
-                className="absolute bottom-4 right-4 z-10 flex items-center gap-2 bg-white px-4 py-2 rounded-lg text-[13px] font-semibold text-gray-900 border border-gray-300 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <LayoutGrid className="h-3.5 w-3.5" />
-                Show all photos
-              </button>
+              {/* Photo & Floor plan buttons */}
+              <div className="absolute bottom-4 right-4 z-10 flex items-center gap-2">
+                {(listing.floor_plan_urls?.length > 0 || listing.floor_plan_url) && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setScrollToFloorPlan(true); setShowGallery(true); }}
+                    className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg text-[13px] font-semibold text-gray-900 border border-gray-300 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <LayoutGrid className="h-3.5 w-3.5" />
+                    {t('listing.floorPlan')}
+                  </button>
+                )}
+                <button
+                  onClick={(e) => { e.stopPropagation(); setScrollToFloorPlan(false); setShowGallery(true); }}
+                  className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg text-[13px] font-semibold text-gray-900 border border-gray-300 shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                  Show all photos
+                </button>
+              </div>
 
               {/* Status badge - desktop */}
               {isCompleted && (
@@ -508,23 +519,13 @@ export function ListingDetailContent({
               {highlights.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-4">
                   {highlights.map((h) => (
-                    <span key={h} className="inline-flex items-center rounded-full bg-gray-50 px-3 py-1.5 text-[13px] font-medium text-gray-700 ring-1 ring-inset ring-black/[0.06]">
+                    <span key={h} className="inline-flex items-center rounded-full bg-gray-50 px-3 py-1.5 text-[13px] font-bold text-foreground/80 ring-1 ring-inset ring-black/[0.06]">
                       {h}
                     </span>
                   ))}
                 </div>
               )}
 
-              {/* Floor Plan link — prominent */}
-              {(listing.floor_plan_urls?.length > 0 || listing.floor_plan_url) && (
-                <button
-                  onClick={() => { setScrollToFloorPlan(true); setShowGallery(true); }}
-                  className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-gray-900 underline underline-offset-4 decoration-gray-300 hover:decoration-gray-900 transition-colors"
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                  {t('listing.floorPlan')}
-                </button>
-              )}
             </div>
 
             {/* Mobile price + CTA card */}

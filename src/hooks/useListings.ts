@@ -182,6 +182,11 @@ export function useListings(filters?: ListingFilters, userId?: string) {
         query = query.eq('has_gated_community', true);
       }
 
+      // Floor plan filter (check floor_plan_url is not null)
+      if (filters?.has_floor_plan === true) {
+        query = query.not('floor_plan_url', 'is', null);
+      }
+
       // Amenities filters
       if (filters?.has_storage === true) {
         query = query.eq('has_storage', true);

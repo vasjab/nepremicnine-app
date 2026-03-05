@@ -77,12 +77,12 @@ function FeatureItem({
   detail?: string | null;
 }) {
   return (
-    <li className="flex items-start gap-4 py-3 border-b border-gray-100 last:border-b-0">
-      <Icon className="h-6 w-6 shrink-0 text-gray-500" strokeWidth={1.5} />
+    <li className="flex items-center gap-4 py-2.5">
+      <Icon className="h-6 w-6 shrink-0 text-gray-600" strokeWidth={1.5} />
       <div className="min-w-0">
         <span className="text-[15px] text-gray-600">{label}</span>
         {detail && (
-          <span className="block text-[13px] text-gray-400 mt-0.5">{detail}</span>
+          <span className="text-[13px] text-gray-400 ml-1.5">{detail}</span>
         )}
       </div>
     </li>
@@ -102,7 +102,7 @@ function CategorySection({
       <h3 className="text-sm font-semibold text-gray-900 pt-2 pb-1">
         {categoryLabels[categoryKey] || categoryKey}
       </h3>
-      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-12">
         {features.map((feature) => (
           <FeatureItem
             key={feature.id}
@@ -300,7 +300,7 @@ export function PropertyFeatures({ listing, maxItems }: PropertyFeaturesProps) {
     const allFeatures = categories.flatMap(cat => cat.features);
     const displayed = allFeatures.slice(0, maxItems);
     return (
-      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-12">
         {displayed.map((feature) => (
           <FeatureItem
             key={feature.id}

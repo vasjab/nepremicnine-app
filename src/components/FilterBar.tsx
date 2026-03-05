@@ -1,6 +1,6 @@
-import { 
-  Search, SlidersHorizontal, X, ArrowUpDown, Building2, Home, DoorOpen, Square, Castle, 
-  Key, Banknote, ChevronDown, User, Users, 
+import {
+  Search, SlidersHorizontal, X, ArrowUpDown, Building2, Home, DoorOpen, Square, Castle,
+  Key, Banknote, ChevronDown, User, Users, LayoutGrid,
   // Outdoor icons
   Flower2, Waves, Eye, Mountain,
   // Parking icons
@@ -389,10 +389,16 @@ function FilterContent({
             checked={filters.is_furnished || false} 
             onChange={(v) => handleBooleanFilter('is_furnished', v)} 
           />
-          <ToggleFilter 
-            label={t('filters.petsAllowed')} 
-            checked={filters.allows_pets || false} 
-            onChange={(v) => handleBooleanFilter('allows_pets', v)} 
+          <ToggleFilter
+            label={t('filters.petsAllowed')}
+            checked={filters.allows_pets || false}
+            onChange={(v) => handleBooleanFilter('allows_pets', v)}
+          />
+          <ToggleFilter
+            label={t('listing.floorPlan')}
+            icon={LayoutGrid}
+            checked={filters.has_floor_plan || false}
+            onChange={(v) => handleBooleanFilter('has_floor_plan', v)}
           />
         </FilterSection>
 
@@ -876,7 +882,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   const hasActiveFilters = Object.values(filters).some(v => v !== null && v !== undefined && (Array.isArray(v) ? v.length > 0 : true));
 
   // Count active filters per section
-  const activeFeaturesCount = [filters.is_furnished, filters.allows_pets].filter(Boolean).length;
+  const activeFeaturesCount = [filters.is_furnished, filters.allows_pets, filters.has_floor_plan].filter(Boolean).length;
   const activeOutdoorCount = [filters.has_balcony, filters.has_terrace, filters.has_garden, filters.has_rooftop_terrace, filters.has_waterfront, filters.has_view].filter(Boolean).length;
   const activeParkingCount = [filters.has_parking, filters.has_garage, filters.has_ev_charging, filters.has_bicycle_storage, filters.has_storage, filters.has_basement].filter(Boolean).length;
   const activeBuildingAmenitiesCount = [filters.has_elevator, filters.has_pool, filters.has_gym, filters.has_sauna, filters.has_concierge, filters.has_security, filters.has_shared_laundry].filter(Boolean).length;
@@ -967,6 +973,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     // Feature chips
     if (filters.is_furnished) chips.push({ label: t('filters.furnished'), onRemove: () => handleBooleanFilter('is_furnished', false) });
     if (filters.allows_pets) chips.push({ label: t('filters.petsAllowed'), onRemove: () => handleBooleanFilter('allows_pets', false) });
+    if (filters.has_floor_plan) chips.push({ label: t('listing.floorPlan'), onRemove: () => handleBooleanFilter('has_floor_plan', false) });
     if (filters.has_elevator) chips.push({ label: t('filters.hasElevator'), onRemove: () => handleBooleanFilter('has_elevator', false) });
     if (filters.has_balcony) chips.push({ label: t('filters.hasBalcony'), onRemove: () => handleBooleanFilter('has_balcony', false) });
     if (filters.has_terrace) chips.push({ label: t('filters.hasTerrace'), onRemove: () => handleBooleanFilter('has_terrace', false) });

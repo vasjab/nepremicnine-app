@@ -245,6 +245,9 @@ export interface ListingFilters {
   has_step_free_access?: boolean | null;
   has_wheelchair_accessible?: boolean | null;
   
+  // Media filters
+  has_floor_plan?: boolean | null;
+
   // Safety filters
   has_secure_entrance?: boolean | null;
   has_gated_community?: boolean | null;
