@@ -27,7 +27,7 @@ export function ListingLocationMap({ latitude, longitude, address }: ListingLoca
   const marker = useRef<mapboxgl.Marker | null>(null);
   
   const [mapboxToken, setMapboxToken] = useState(() => {
-    return localStorage.getItem(MAPBOX_TOKEN_KEY) || import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || '';
+    return localStorage.getItem(MAPBOX_TOKEN_KEY) || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
   });
   const [tokenInput, setTokenInput] = useState('');
   const [mapError, setMapError] = useState(false);
