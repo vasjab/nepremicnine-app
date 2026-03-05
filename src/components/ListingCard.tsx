@@ -86,43 +86,43 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
   const hasMultipleImages = listing.images && listing.images.length > 1;
 
   // Build feature badges — prioritized list, show up to 4
-  const featureBadges: { icon: React.ComponentType<{ className?: string }>; label: string }[] = [];
+  const featureBadges: { icon: React.ComponentType<{ className?: string }>; label: string; bg: string; text: string }[] = [];
 
   if (listing.has_air_conditioning) {
-    featureBadges.push({ icon: Snowflake, label: t('listing.airConditioning') });
+    featureBadges.push({ icon: Snowflake, label: t('listing.airConditioning'), bg: 'bg-sky-50 dark:bg-sky-950/30', text: 'text-sky-600 dark:text-sky-400' });
   }
   if (listing.has_parking || listing.has_garage) {
-    featureBadges.push({ icon: Car, label: listing.has_garage ? t('listing.garage') : t('listing.parking') });
+    featureBadges.push({ icon: Car, label: listing.has_garage ? t('listing.garage') : t('listing.parking'), bg: 'bg-slate-100 dark:bg-slate-800/40', text: 'text-slate-600 dark:text-slate-400' });
   }
   if (listing.has_elevator) {
-    featureBadges.push({ icon: Building2, label: t('listing.elevator') });
+    featureBadges.push({ icon: Building2, label: t('listing.elevator'), bg: 'bg-indigo-50 dark:bg-indigo-950/30', text: 'text-indigo-600 dark:text-indigo-400' });
   }
   if (listing.has_garden) {
-    featureBadges.push({ icon: TreePine, label: t('listing.garden') });
+    featureBadges.push({ icon: TreePine, label: t('listing.garden'), bg: 'bg-green-50 dark:bg-green-950/30', text: 'text-green-600 dark:text-green-400' });
   }
   if (listing.has_balcony) {
-    featureBadges.push({ icon: Sun, label: t('listing.balcony') });
+    featureBadges.push({ icon: Sun, label: t('listing.balcony'), bg: 'bg-amber-50 dark:bg-amber-950/30', text: 'text-amber-600 dark:text-amber-400' });
   }
   if (listing.has_terrace) {
-    featureBadges.push({ icon: Sun, label: t('listing.terrace') });
+    featureBadges.push({ icon: Sun, label: t('listing.terrace'), bg: 'bg-orange-50 dark:bg-orange-950/30', text: 'text-orange-600 dark:text-orange-400' });
   }
   if (listing.has_pool) {
-    featureBadges.push({ icon: Waves, label: t('listing.pool') });
+    featureBadges.push({ icon: Waves, label: t('listing.pool'), bg: 'bg-cyan-50 dark:bg-cyan-950/30', text: 'text-cyan-600 dark:text-cyan-400' });
   }
   if (listing.has_gym) {
-    featureBadges.push({ icon: Dumbbell, label: t('listing.gym') });
+    featureBadges.push({ icon: Dumbbell, label: t('listing.gym'), bg: 'bg-violet-50 dark:bg-violet-950/30', text: 'text-violet-600 dark:text-violet-400' });
   }
   if (listing.has_fireplace) {
-    featureBadges.push({ icon: Flame, label: t('listing.fireplace') });
+    featureBadges.push({ icon: Flame, label: t('listing.fireplace'), bg: 'bg-red-50 dark:bg-red-950/30', text: 'text-red-500 dark:text-red-400' });
   }
   if (listing.has_solar_panels) {
-    featureBadges.push({ icon: Zap, label: t('listing.solarPanels') });
+    featureBadges.push({ icon: Zap, label: t('listing.solarPanels'), bg: 'bg-yellow-50 dark:bg-yellow-950/30', text: 'text-yellow-600 dark:text-yellow-400' });
   }
   if (listing.has_view) {
-    featureBadges.push({ icon: Eye, label: t('listing.view') });
+    featureBadges.push({ icon: Eye, label: t('listing.view'), bg: 'bg-blue-50 dark:bg-blue-950/30', text: 'text-blue-600 dark:text-blue-400' });
   }
   if (listing.has_security || listing.has_secure_entrance) {
-    featureBadges.push({ icon: ShieldCheck, label: t('listing.security') });
+    featureBadges.push({ icon: ShieldCheck, label: t('listing.security'), bg: 'bg-emerald-50 dark:bg-emerald-950/30', text: 'text-emerald-600 dark:text-emerald-400' });
   }
 
   // Show up to 4 feature badges
@@ -322,12 +322,12 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
       <div className="px-4 pt-3 pb-4">
         {/* Header: Location + type */}
         <div className="flex items-center gap-1.5 mb-1">
-          <MapPin className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
-          <span className="text-[13px] font-medium text-muted-foreground truncate">
+          <MapPin className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <span className="text-[13px] font-semibold text-foreground/70 truncate">
             {listing.city}
           </span>
-          <span className="text-muted-foreground/40 mx-0.5">·</span>
-          <span className="text-[11px] text-muted-foreground/60 uppercase tracking-wider font-semibold shrink-0">
+          <span className="text-muted-foreground/50 mx-0.5">·</span>
+          <span className="text-[11px] text-muted-foreground/70 uppercase tracking-wider font-semibold shrink-0">
             {propertyTypeLabel}
           </span>
         </div>
@@ -340,19 +340,19 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
         {/* Key specs row — pill-style chips */}
         <div className="flex items-center gap-1.5 mb-3">
           {listing.bedrooms != null && (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/50">
-              <Bed className="h-4 w-4 text-muted-foreground/70" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/80 dark:bg-muted/50">
+              <Bed className="h-4 w-4 text-foreground/50" />
               <span className="text-[13px] font-semibold text-foreground">{listing.bedrooms}</span>
             </div>
           )}
           {listing.bathrooms != null && (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/50">
-              <Bath className="h-4 w-4 text-muted-foreground/70" />
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/80 dark:bg-muted/50">
+              <Bath className="h-4 w-4 text-foreground/50" />
               <span className="text-[13px] font-semibold text-foreground">{listing.bathrooms}</span>
             </div>
           )}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/50">
-            <Maximize2 className="h-4 w-4 text-muted-foreground/70" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/80 dark:bg-muted/50">
+            <Maximize2 className="h-4 w-4 text-foreground/50" />
             <span className="text-[13px] font-semibold text-foreground">{formatArea(listing.area_sqm)}</span>
           </div>
         </div>
@@ -365,7 +365,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               return (
                 <Tooltip key={index}>
                   <TooltipTrigger asChild>
-                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/40 text-muted-foreground hover:bg-muted/70 transition-colors">
+                    <div className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-md transition-colors", badge.bg, badge.text)}>
                       <Icon className="h-3.5 w-3.5" />
                       <span className="text-[11px] font-medium">{badge.label}</span>
                     </div>
@@ -375,13 +375,13 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               );
             })}
             {isRental && listing.is_furnished && (
-              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/40 text-muted-foreground">
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400">
                 <Sofa className="h-3.5 w-3.5" />
                 <span className="text-[11px] font-medium">{t('listing.furnished')}</span>
               </div>
             )}
             {isRental && listing.allows_pets && (
-              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/40 text-muted-foreground">
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-pink-50 dark:bg-pink-950/30 text-pink-600 dark:text-pink-400">
                 <PawPrint className="h-3.5 w-3.5" />
                 <span className="text-[11px] font-medium">{t('listing.petsAllowed')}</span>
               </div>
@@ -395,7 +395,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
         )}
 
         {/* Divider */}
-        <div className="border-t border-border/50 pt-3">
+        <div className="border-t border-border/70 pt-3">
           {/* Price section */}
           <div className="flex items-end justify-between">
             <div>
