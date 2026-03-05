@@ -83,7 +83,7 @@ export function InternationalSettings({ trigger = 'icon', onOpenChange }: Intern
                   className={cn(
                     "flex items-center gap-3 px-3.5 py-3 rounded-[12px] text-left transition-all duration-150 active:scale-[0.97]",
                     language === lang.code
-                      ? "bg-gray-900 text-white shadow-sm"
+                      ? "bg-gray-100 text-gray-900 ring-[1.5px] ring-gray-900 shadow-sm"
                       : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                   )}
                 >
@@ -107,13 +107,13 @@ export function InternationalSettings({ trigger = 'icon', onOpenChange }: Intern
                   className={cn(
                     "flex items-center gap-3 px-3.5 py-3 rounded-[12px] text-left transition-all duration-150 active:scale-[0.97]",
                     currency === curr
-                      ? "bg-gray-900 text-white shadow-sm"
+                      ? "bg-gray-100 text-gray-900 ring-[1.5px] ring-gray-900 shadow-sm"
                       : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                   )}
                 >
                   <span className={cn(
                     "w-7 text-base font-semibold",
-                    currency === curr ? "text-gray-300" : "text-gray-400"
+                    currency === curr ? "text-gray-500" : "text-gray-400"
                   )}>{CURRENCY_SYMBOLS[curr]}</span>
                   <span className="text-sm font-medium">{curr}</span>
                 </button>
@@ -137,10 +137,7 @@ export function InternationalSettings({ trigger = 'icon', onOpenChange }: Intern
                 )}
               >
                 <span className="text-xl font-semibold">m²</span>
-                <span className={cn(
-                  "text-xs mt-1",
-                  areaUnit === 'sqm' ? "text-gray-400" : "text-gray-400"
-                )}>{t('international.squareMeters')}</span>
+                <span className="text-xs mt-1 text-gray-500">{t('international.squareMeters')}</span>
               </button>
               <button
                 onClick={() => setAreaUnit('sqft')}
@@ -152,10 +149,7 @@ export function InternationalSettings({ trigger = 'icon', onOpenChange }: Intern
                 )}
               >
                 <span className="text-xl font-semibold">ft²</span>
-                <span className={cn(
-                  "text-xs mt-1",
-                  areaUnit === 'sqft' ? "text-gray-400" : "text-gray-400"
-                )}>Square feet</span>
+                <span className="text-xs mt-1 text-gray-500">Square feet</span>
               </button>
             </div>
           </div>

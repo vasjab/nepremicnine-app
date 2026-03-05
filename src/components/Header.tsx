@@ -51,10 +51,10 @@ export function Header() {
               <Link
                 href="/"
                 className={cn(
-                  'flex items-center justify-center gap-1.5 rounded-[10px] px-4 py-2 text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.97]',
+                  'flex items-center justify-center gap-1.5 rounded-[10px] px-4 py-2.5 text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.97]',
                   isActive('/')
                     ? 'bg-white text-gray-900 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)]'
-                    : 'text-gray-500 hover:text-gray-800'
+                    : 'text-gray-500 hover:text-gray-900 hover:bg-white/60'
                 )}
               >
                 <Search className="h-3.5 w-3.5" />
@@ -63,10 +63,10 @@ export function Header() {
               <Link
                 href="/sold-rented"
                 className={cn(
-                  'flex items-center justify-center gap-1.5 rounded-[10px] px-4 py-2 text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.97]',
+                  'flex items-center justify-center gap-1.5 rounded-[10px] px-4 py-2.5 text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.97]',
                   isActive('/sold-rented')
                     ? 'bg-white text-gray-900 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)]'
-                    : 'text-gray-500 hover:text-gray-800'
+                    : 'text-gray-500 hover:text-gray-900 hover:bg-white/60'
                 )}
               >
                 <History className="h-3.5 w-3.5" />
@@ -77,10 +77,10 @@ export function Header() {
                   <Link
                     href="/saved"
                     className={cn(
-                      'flex items-center justify-center gap-1.5 rounded-[10px] px-4 py-2 text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.97]',
+                      'flex items-center justify-center gap-1.5 rounded-[10px] px-4 py-2.5 text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.97]',
                       isActive('/saved')
                         ? 'bg-white text-gray-900 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)]'
-                        : 'text-gray-500 hover:text-gray-800'
+                        : 'text-gray-500 hover:text-gray-900 hover:bg-white/60'
                     )}
                   >
                     <Heart className="h-3.5 w-3.5" />
@@ -132,7 +132,7 @@ export function Header() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-full h-10 w-10"
+                    className="rounded-full h-11 w-11"
                   >
                     <MessageCircle className="h-5 w-5" />
                     {unreadCount > 0 && (
@@ -145,8 +145,7 @@ export function Header() {
                 <Link href="/create-listing" className="hidden sm:block">
                   <Button
                     variant="gradient"
-                    size="sm"
-                    className="gap-2 rounded-xl"
+                    className="gap-2 rounded-xl h-11 px-5 text-sm font-semibold"
                   >
                     <PlusCircle className="h-4 w-4" />
                     {t('common.createListing')}
@@ -159,7 +158,7 @@ export function Header() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="relative rounded-full h-10 w-10 border border-black/[0.08]"
+                        className="relative rounded-full h-11 w-11 border border-black/[0.08]"
                       >
                         <User className="h-5 w-5" />
                         {unreadCount > 0 && (

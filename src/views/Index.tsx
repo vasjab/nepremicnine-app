@@ -211,9 +211,10 @@ const Index = () => {
               onMouseLeave={() => handleCardHover(null)}
               className={cn(
                 "transition-all duration-200 relative",
-                showAnimations && isMobileLayout && index < 4 && "animate-fade-in",
+                showAnimations && index < 8 && `animate-slide-up stagger-${Math.min(index + 1, 6)}`,
                 highlightedFromMap === listing.id && "ring-2 ring-accent ring-offset-2 ring-offset-background rounded-xl animate-pulse-highlight"
               )}
+              style={showAnimations && index < 8 ? { opacity: 0, animationFillMode: 'forwards' } : undefined}
             >
               <MemoizedListingCard
                 listing={listing}

@@ -124,15 +124,15 @@ function FilterSection({
   
   return (
     <div ref={sectionRef}>
-      <Collapsible open={isOpen} onOpenChange={handleOpenChange} className="border-b border-border/50">
-        <CollapsibleTrigger className="flex w-full items-center justify-between py-5 text-sm font-medium transition-colors hover:text-foreground group">
+      <Collapsible open={isOpen} onOpenChange={handleOpenChange} className="border-b border-gray-100">
+        <CollapsibleTrigger className="flex w-full items-center justify-between py-5 text-sm font-medium transition-colors hover:text-gray-900 group">
           <span className="flex items-center gap-3">
-            {Icon && <Icon className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />}
-            {title}
+            {Icon && <Icon className="h-[18px] w-[18px] text-gray-400 group-hover:text-gray-600 transition-colors" />}
+            <span className="text-gray-700 group-hover:text-gray-900">{title}</span>
             {activeCount > 0 && (
-              <Badge variant="secondary" className="h-5 min-w-5 px-1.5 text-xs font-semibold bg-accent text-accent-foreground">
+              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gray-900 px-1.5 text-[10px] font-bold text-white">
                 {activeCount}
-              </Badge>
+              </span>
             )}
           </span>
           <ChevronDown className={cn(
@@ -170,21 +170,20 @@ function ToggleFilter({
   return (
     <div 
       className={cn(
-        "flex items-center justify-between min-h-[56px] px-4 py-3 rounded-xl transition-all cursor-pointer",
-        checked ? "bg-accent/10 border border-accent/20" : "hover:bg-secondary/50"
+        "flex items-center justify-between min-h-[52px] px-4 py-3 rounded-xl transition-all cursor-pointer",
+        checked ? "bg-gray-50 ring-1 ring-gray-200" : "hover:bg-gray-50"
       )}
       onClick={() => handleChange(!checked)}
     >
       <div className="flex items-center gap-3">
-        {Icon && <Icon className={cn("h-5 w-5", checked ? "text-accent" : "text-muted-foreground")} />}
-        <Label className={cn("text-sm font-normal cursor-pointer", checked && "text-foreground")}>
+        {Icon && <Icon className={cn("h-[18px] w-[18px]", checked ? "text-gray-900" : "text-gray-400")} />}
+        <Label className={cn("text-sm font-normal cursor-pointer text-gray-600", checked && "text-gray-900 font-medium")}>
           {label}
         </Label>
       </div>
-      <Switch 
-        checked={checked} 
+      <Switch
+        checked={checked}
         onCheckedChange={handleChange}
-        className="data-[state=checked]:bg-accent"
         onClick={(e) => e.stopPropagation()}
       />
     </div>
@@ -233,8 +232,8 @@ function FilterContent({
   return (
     <div className="space-y-6 px-1 pb-4">
       {/* Listing Type */}
-      <div className="space-y-4 pt-4 pb-2 border-b border-border/50">
-        <Label className="text-base font-medium">{t('filters.listingType')}</Label>
+      <div className="space-y-4 pt-4 pb-5 border-b border-gray-100">
+        <Label className="text-[13px] font-semibold text-gray-900 tracking-tight">{t('filters.listingType')}</Label>
         <div className="flex flex-wrap gap-3">
           {LISTING_TYPES.map((type: any) => {
             const isSelected = filters.listing_type === type.value;
@@ -246,9 +245,9 @@ function FilterContent({
                 onClick={() => handleListingTypeChange(isSelected ? 'all' : type.value)}
                 className={cn(
                   "flex items-center gap-2.5 px-5 py-4 rounded-xl text-sm font-medium transition-all duration-200 border cursor-pointer min-h-[56px] press-effect",
-                  isSelected 
-                    ? 'bg-foreground text-background border-foreground' 
-                    : 'bg-background text-foreground border-border hover:border-foreground/50'
+                  isSelected
+                    ? 'bg-gray-100 text-gray-900 border-gray-900 ring-[1.5px] ring-gray-900'
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400 hover:bg-gray-50'
                 )}
               >
                 <Icon className="h-5 w-5" />
@@ -260,8 +259,8 @@ function FilterContent({
       </div>
 
       {/* Property Type */}
-      <div className="space-y-4 pb-2 border-b border-border/50">
-        <Label className="text-base font-medium">{t('filters.propertyType')}</Label>
+      <div className="space-y-4 pb-5 border-b border-gray-100">
+        <Label className="text-[13px] font-semibold text-gray-900 tracking-tight">{t('filters.propertyType')}</Label>
         <div className="flex flex-wrap gap-3">
           {PROPERTY_TYPES.map((type: any) => {
             const isSelected = filters.property_types?.includes(type.value) || false;
@@ -273,9 +272,9 @@ function FilterContent({
                 onClick={() => handlePropertyTypeToggle(type.value)}
                 className={cn(
                   "flex items-center gap-2.5 px-5 py-4 rounded-xl text-sm font-medium transition-all duration-200 border cursor-pointer min-h-[56px] press-effect",
-                  isSelected 
-                    ? 'bg-foreground text-background border-foreground' 
-                    : 'bg-background text-foreground border-border hover:border-foreground/50'
+                  isSelected
+                    ? 'bg-gray-100 text-gray-900 border-gray-900 ring-[1.5px] ring-gray-900'
+                    : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400 hover:bg-gray-50'
                 )}
               >
                 <Icon className="h-5 w-5" />
@@ -287,13 +286,13 @@ function FilterContent({
       </div>
 
       {/* Bedrooms */}
-      <div className="space-y-3 py-2 border-b border-border/50">
-        <Label className="text-base font-medium">{t('filters.minimumRooms')}</Label>
+      <div className="space-y-3 py-5 border-b border-gray-100">
+        <Label className="text-[13px] font-semibold text-gray-900 tracking-tight">{t('filters.minimumRooms')}</Label>
         <Select
           value={filters.min_bedrooms?.toString() || 'all'}
           onValueChange={handleBedroomChange}
         >
-          <SelectTrigger className="bg-background h-14 rounded-xl text-base">
+          <SelectTrigger className="bg-white h-12 rounded-xl text-sm border-gray-200 hover:border-gray-300 focus:ring-gray-400">
             <SelectValue placeholder={t('filters.any')} />
           </SelectTrigger>
           <SelectContent className="bg-popover">
@@ -307,8 +306,8 @@ function FilterContent({
       </div>
 
       {/* Price Range Slider */}
-      <div className="space-y-4 py-4 border-b border-border/50">
-        <Label className="text-base font-medium">
+      <div className="space-y-4 py-5 border-b border-gray-100">
+        <Label className="text-[13px] font-semibold text-gray-900 tracking-tight">
           {filters.listing_type === 'rent' ? t('filters.monthlyCost') : filters.listing_type === 'sale' ? t('filters.totalPrice') : t('filters.price')}
         </Label>
         <div className="flex justify-between text-sm text-muted-foreground px-1">
@@ -359,8 +358,8 @@ function FilterContent({
       </div>
 
       {/* Price per sqm/sqft Slider */}
-      <div className="space-y-4 py-4 border-b border-border/50">
-        <Label className="text-base font-medium">
+      <div className="space-y-4 py-5 border-b border-gray-100">
+        <Label className="text-[13px] font-semibold text-gray-900 tracking-tight">
           {t('filters.pricePerArea') || 'Price per'} {areaUnit === 'sqft' ? 'ft²' : 'm²'}
         </Label>
         <div className="flex justify-between text-sm text-muted-foreground px-1">

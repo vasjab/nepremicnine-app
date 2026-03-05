@@ -304,7 +304,7 @@ export function ListingDetailContent({
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 h-10 w-10 rounded-[10px] bg-white/92 backdrop-blur-md shadow-[0_1px_4px_rgba(0,0,0,0.08)] hover:bg-white transition-all duration-150 active:scale-95 touch-target"
+          className="fixed top-4 left-4 z-50 h-10 w-10 rounded-[10px] bg-white/90 backdrop-blur-md border border-black/[0.06] shadow-[0_2px_8px_rgba(0,0,0,0.12)] hover:bg-white transition-all duration-150 active:scale-95 touch-target"
           onClick={onClose}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -317,7 +317,7 @@ export function ListingDetailContent({
           variant="ghost"
           size="icon"
           className={cn(
-            "fixed top-4 right-4 z-50 h-10 w-10 rounded-[10px] bg-white/92 backdrop-blur-md shadow-[0_1px_4px_rgba(0,0,0,0.08)] hover:bg-white transition-all duration-150 active:scale-95 touch-target",
+            "fixed top-4 right-4 z-50 h-10 w-10 rounded-[10px] bg-white/90 backdrop-blur-md border border-black/[0.06] shadow-[0_2px_8px_rgba(0,0,0,0.12)] hover:bg-white transition-all duration-150 active:scale-95 touch-target",
             isSaved && "text-rose-500"
           )}
           onClick={handleSaveClick}
@@ -372,7 +372,7 @@ export function ListingDetailContent({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-[10px] bg-white/92 backdrop-blur-md text-gray-700 hover:bg-white shadow-[0_1px_4px_rgba(0,0,0,0.08)] z-10 opacity-0 group-hover:opacity-100 sm:opacity-80 transition-all duration-150 active:scale-95"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-[10px] bg-white/90 backdrop-blur-md border border-black/[0.06] text-gray-700 hover:bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] z-10 opacity-0 group-hover:opacity-100 sm:opacity-90 transition-all duration-150 active:scale-95"
                   onClick={(e) => { e.stopPropagation(); goToPrevImage(); }}
                 >
                   <ChevronLeft className="h-5 w-5" />
@@ -380,7 +380,7 @@ export function ListingDetailContent({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-[10px] bg-white/92 backdrop-blur-md text-gray-700 hover:bg-white shadow-[0_1px_4px_rgba(0,0,0,0.08)] z-10 opacity-0 group-hover:opacity-100 sm:opacity-80 transition-all duration-150 active:scale-95"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-[10px] bg-white/90 backdrop-blur-md border border-black/[0.06] text-gray-700 hover:bg-white shadow-[0_2px_8px_rgba(0,0,0,0.12)] z-10 opacity-0 group-hover:opacity-100 sm:opacity-90 transition-all duration-150 active:scale-95"
                   onClick={(e) => { e.stopPropagation(); goToNextImage(); }}
                 >
                   <ChevronRight className="h-5 w-5" />

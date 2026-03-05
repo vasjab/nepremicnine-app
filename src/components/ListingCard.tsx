@@ -139,7 +139,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
   return (
     <article
-      className="listing-card cursor-pointer group relative overflow-hidden transition-transform duration-150 active:scale-[0.98]"
+      className="listing-card cursor-pointer group relative overflow-hidden"
       onClick={onClick}
     >
       {/* Image container */}
@@ -202,14 +202,14 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           <>
             <button
               type="button"
-              className="absolute left-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full glass flex items-center justify-center shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 active:scale-95 z-10"
+              className="absolute left-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-white/90 backdrop-blur-md border border-black/[0.06] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.12)] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 active:scale-95 z-10"
               onClick={handlePrevImage}
             >
               <ChevronLeft className="h-5 w-5 text-foreground" />
             </button>
             <button
               type="button"
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full glass flex items-center justify-center shadow-md opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 active:scale-95 z-10"
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-white/90 backdrop-blur-md border border-black/[0.06] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.12)] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 active:scale-95 z-10"
               onClick={handleNextImage}
             >
               <ChevronRight className="h-5 w-5 text-foreground" />
@@ -254,7 +254,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               <button
                 type="button"
                 className={cn(
-                  'absolute top-3 right-3 h-10 w-10 rounded-full glass flex items-center justify-center shadow-md z-10 transition-all duration-200 active:scale-90 hover:bg-card/95',
+                  'absolute top-3 right-3 h-10 w-10 rounded-full bg-white/90 backdrop-blur-md border border-black/[0.06] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.12)] z-10 transition-all duration-200 active:scale-90 hover:bg-white',
                   isSaved && 'text-accent',
                   isSoldOrRented && showStatusOverlay && 'opacity-60'
                 )}
