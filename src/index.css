@@ -167,21 +167,11 @@
     box-shadow:
       0 1px 3px hsl(var(--glass-shadow)),
       0 4px 16px -4px hsl(var(--glass-shadow));
-    transition: transform 0.3s var(--ease-out-expo),
-                box-shadow 0.3s var(--ease-out-expo),
-                border-color 0.3s ease;
+    transition: border-color 0.3s ease;
   }
 
   .listing-card:hover {
-    transform: translateY(-2px);
     border-color: hsl(var(--ring) / 0.2);
-    box-shadow:
-      0 2px 8px hsl(var(--glass-shadow)),
-      0 12px 32px -8px hsl(var(--glass-shadow));
-  }
-
-  .listing-card:active {
-    transform: translateY(0);
   }
 
   /* ─── Touch Targets ────────────────────────────── */
