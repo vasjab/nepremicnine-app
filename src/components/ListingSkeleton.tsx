@@ -64,7 +64,7 @@ interface ListingSkeletonGridProps {
 
 export function ListingSkeletonGrid({ count = 4, className }: ListingSkeletonGridProps) {
   return (
-    <div className={cn("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4", className)}>
+    <div className={cn("grid grid-cols-1 @[600px]:grid-cols-2 @[900px]:grid-cols-3 gap-3 sm:gap-4", className)}>
       {[...Array(count)].map((_, i) => (
         <ListingSkeleton 
           key={i} 

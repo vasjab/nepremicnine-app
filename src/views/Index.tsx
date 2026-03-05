@@ -200,7 +200,7 @@ const Index = () => {
       {isLoading ? (
         <ListingSkeletonGrid count={4} />
       ) : visibleListings.length > 0 ? (
-        <div className="grid grid-cols-1 @[600px]:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 @[600px]:grid-cols-2 @[900px]:grid-cols-3 gap-3 sm:gap-4">
           {visibleListings.map((listing, index) => (
             <div
               key={listing.id}

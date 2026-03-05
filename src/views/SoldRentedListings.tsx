@@ -224,7 +224,7 @@ export default function SoldRentedListings() {
   const ListingsGrid = ({ showAnimations = true }: { showAnimations?: boolean }) => {
     if (isLoading) {
       return (
-        <div className="grid grid-cols-1 @[600px]:grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 @[600px]:grid-cols-2 @[900px]:grid-cols-3 gap-3 sm:gap-4">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="space-y-3">
               <Skeleton className="aspect-[4/3] rounded-xl" />
@@ -253,7 +253,7 @@ export default function SoldRentedListings() {
     }
 
     return (
-      <div className="grid grid-cols-1 @[600px]:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 @[600px]:grid-cols-2 @[900px]:grid-cols-3 gap-3 sm:gap-4">
         {filteredListings.map((listing, index) => (
           <div
             key={listing.id}

@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
-import { Heart, ChevronLeft, ChevronRight, Building2, Car, TreePine, Snowflake, TrendingUp, TrendingDown, Camera, Bed, Bath, Maximize2, MapPin } from 'lucide-react';
+import { Heart, ChevronLeft, ChevronRight, Building2, Car, TreePine, Snowflake, TrendingUp, TrendingDown, Camera, Bed, Bath, Maximize2, MapPin, CalendarDays, Sofa, PawPrint } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -136,6 +136,12 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
   // NEW badge: listing is less than 3 days old
   const isNew = listingDate ? differenceInDays(new Date(), listingDate) < 3 : false;
+
+  // Availability for rentals
+  const availableFrom = listing.available_from ? new Date(listing.available_from) : null;
+  const availableUntil = listing.available_until ? new Date(listing.available_until) : null;
+  const formattedAvailFrom = availableFrom ? format(availableFrom, 'MMM d, yyyy') : null;
+  const formattedAvailUntil = availableUntil ? format(availableUntil, 'MMM d, yyyy') : null;
 
   return (
     <article
@@ -288,10 +294,10 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
       </div>
 
       {/* Content */}
-      <div className="px-4 pt-3.5 pb-4">
-        {/* Top row: property type + location */}
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">
+      <div className="px-4 pt-3 pb-3.5">
+        {/* Row 1: Type label + city */}
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">
             {propertyTypeLabel}
           </span>
           <span className="text-[11px] text-muted-foreground font-medium inline-flex items-center gap-1">
@@ -300,90 +306,127 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           </span>
         </div>
 
-        <h3 className="font-bold text-foreground line-clamp-1 text-[15px] tracking-tight mb-2">
+        {/* Row 2: Address title */}
+        <h3 className="font-bold text-foreground line-clamp-1 text-[15px] tracking-tight mb-2.5">
           {listing.address}
         </h3>
 
-        {/* Stats row */}
-        <div className="flex items-center gap-1 mb-3">
-          <span className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground bg-gray-50 rounded-lg px-2.5 py-1">
-            <Bed className="h-3.5 w-3.5" />
-            {listing.bedrooms}
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground bg-gray-50 rounded-lg px-2.5 py-1">
-            <Bath className="h-3.5 w-3.5" />
-            {listing.bathrooms}
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground bg-gray-50 rounded-lg px-2.5 py-1">
-            <Maximize2 className="h-3.5 w-3.5" />
-            {formatArea(listing.area_sqm)}
-          </span>
+        {/* Row 3: Key specs - larger, clearer icons */}
+        <div className="flex items-center gap-4 mb-3">
+          {listing.bedrooms != null && (
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Bed className="h-[18px] w-[18px] text-gray-400" />
+              <span className="text-sm font-medium text-foreground">{listing.bedrooms}</span>
+            </div>
+          )}
+          {listing.bathrooms != null && (
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <Bath className="h-[18px] w-[18px] text-gray-400" />
+              <span className="text-sm font-medium text-foreground">{listing.bathrooms}</span>
+            </div>
+          )}
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <Maximize2 className="h-[18px] w-[18px] text-gray-400" />
+            <span className="text-sm font-medium text-foreground">{formatArea(listing.area_sqm)}</span>
+          </div>
         </div>
 
-        {/* Feature badges */}
+        {/* Row 4: Quick feature indicators - subtle inline icons */}
         {displayBadges.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
+          <div className="flex items-center gap-3 mb-3">
             {displayBadges.map((badge, index) => {
               const Icon = badge.icon;
-              const colorMap: Record<string, string> = {
-                blue: 'bg-blue-50 text-blue-700',
-                indigo: 'bg-indigo-50 text-indigo-700',
-                green: 'bg-emerald-50 text-emerald-700',
-                sky: 'bg-sky-50 text-sky-700',
-              };
               return (
-                <span
-                  key={index}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold tracking-wide",
-                    colorMap[badge.color] || 'bg-gray-50 text-gray-600'
-                  )}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {badge.label}
-                </span>
+                <Tooltip key={index}>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 text-gray-400">
+                      <Icon className="h-4 w-4" />
+                      <span className="text-xs text-muted-foreground">{badge.label}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent><p>{badge.label}</p></TooltipContent>
+                </Tooltip>
               );
             })}
+            {isRental && listing.is_furnished && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1 text-gray-400">
+                    <Sofa className="h-4 w-4" />
+                    <span className="text-xs text-muted-foreground">{t('listing.furnished')}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent><p>{t('listing.furnished')}</p></TooltipContent>
+              </Tooltip>
+            )}
+            {isRental && listing.allows_pets && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1 text-gray-400">
+                    <PawPrint className="h-4 w-4" />
+                    <span className="text-xs text-muted-foreground">{t('listing.petsAllowed')}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent><p>{t('listing.petsAllowed')}</p></TooltipContent>
+              </Tooltip>
+            )}
           </div>
         )}
 
-        {/* Price section */}
-        <div className="flex items-end justify-between pt-1.5 border-t border-gray-100">
-          <div className="flex flex-col">
-            {/* For sold/rented listings with final price */}
-            {isSoldOrRented && showStatusOverlay && hasFinalPrice ? (
-              <>
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-extrabold text-foreground tracking-tight">
-                    {formatPrice(listing.final_price!, listing.currency, { isRental, showPeriod: isRental })}
+        {/* Divider */}
+        <div className="border-t border-gray-100 pt-2.5">
+          {/* Price row */}
+          <div className="flex items-end justify-between">
+            <div className="flex flex-col">
+              {isSoldOrRented && showStatusOverlay && hasFinalPrice ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[17px] font-extrabold text-foreground tracking-tight leading-tight">
+                      {formatPrice(listing.final_price!, listing.currency, { isRental, showPeriod: isRental })}
+                    </span>
+                    <span className={cn(
+                      "text-xs font-medium flex items-center gap-0.5",
+                      priceDiff < 0 ? "text-red-500" : priceDiff > 0 ? "text-emerald-500" : "text-muted-foreground"
+                    )}>
+                      {priceDiff < 0 ? <TrendingDown className="h-3 w-3" /> : priceDiff > 0 ? <TrendingUp className="h-3 w-3" /> : null}
+                      {priceDiff !== 0 && `${priceDiff > 0 ? '+' : ''}${priceDiffPercent}%`}
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground line-through">
+                    {formatPrice(listing.price, listing.currency, { isRental, showPeriod: false })}
                   </span>
-                  <span className={cn(
-                    "text-xs font-medium flex items-center gap-0.5",
-                    priceDiff < 0 ? "text-red-500" : priceDiff > 0 ? "text-emerald-500" : "text-muted-foreground"
-                  )}>
-                    {priceDiff < 0 ? <TrendingDown className="h-3 w-3" /> : priceDiff > 0 ? <TrendingUp className="h-3 w-3" /> : null}
-                    {priceDiff !== 0 && `${priceDiff > 0 ? '+' : ''}${priceDiffPercent}%`}
-                  </span>
-                </div>
-                <span className="text-xs text-muted-foreground line-through">
-                  {formatPrice(listing.price, listing.currency, { isRental, showPeriod: false })}
+                </>
+              ) : (
+                <span className="text-[17px] font-extrabold text-foreground tracking-tight leading-tight">
+                  {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
                 </span>
-              </>
-            ) : (
-              <span className="text-lg font-extrabold text-foreground tracking-tight">
-                {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
-              </span>
-            )}
-            {listing.area_sqm && listing.area_sqm > 0 && (
-              <span className="text-[11px] text-muted-foreground">
-                {formatPrice((hasFinalPrice && isSoldOrRented && showStatusOverlay ? listing.final_price! : listing.price) / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
-              </span>
-            )}
+              )}
+              {listing.area_sqm && listing.area_sqm > 0 && (
+                <span className="text-[11px] text-muted-foreground mt-0.5">
+                  {formatPrice((hasFinalPrice && isSoldOrRented && showStatusOverlay ? listing.final_price! : listing.price) / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
+                </span>
+              )}
+            </div>
+            <div className="text-right">
+              {formattedDate && (
+                <span className="text-[11px] text-muted-foreground leading-tight block">
+                  {formattedDate}
+                </span>
+              )}
+            </div>
           </div>
-          {formattedDate && (
-            <span className="text-[11px] text-muted-foreground">
-              {formattedDate}
-            </span>
+
+          {/* Rental availability row */}
+          {isRental && !isSoldOrRented && (formattedAvailFrom || listing.move_in_immediately) && (
+            <div className="flex items-center gap-1.5 mt-2 text-[11px] text-muted-foreground">
+              <CalendarDays className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+              <span>
+                {listing.move_in_immediately
+                  ? t('listing.availableNow')
+                  : formattedAvailFrom && `${t('listing.from')} ${formattedAvailFrom}`}
+                {formattedAvailUntil && ` — ${t('listing.until')} ${formattedAvailUntil}`}
+              </span>
+            </div>
           )}
         </div>
       </div>
