@@ -811,7 +811,7 @@ export function PropertyFeatures({ listing }: PropertyFeaturesProps) {
   return (
     <div className="space-y-6">
       {/* Section Header */}
-      <h2 className="text-xl font-semibold text-foreground pb-4 border-b border-border/50">
+      <h2 className="text-lg font-bold text-foreground tracking-tight">
         {t('listing.features')}
       </h2>
 

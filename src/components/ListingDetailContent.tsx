@@ -164,9 +164,9 @@ export function ListingDetailContent({
           variant="ghost"
           size="icon"
           className={cn(
-            "fixed top-4 left-4 z-50 h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm",
-            "hover:bg-card hover:scale-105 active:scale-95",
-            "shadow-lg transition-all duration-200",
+            "fixed top-4 left-4 z-50 h-11 w-11 rounded-full glass-strong",
+            "hover:scale-105 active:scale-95",
+            "shadow-float transition-all duration-200",
             "touch-target"
           )}
           onClick={onClose}
@@ -175,10 +175,28 @@ export function ListingDetailContent({
         </Button>
       )}
 
+      {/* Save button - fixed top right */}
+      {!isModal && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "fixed top-4 right-4 z-50 h-11 w-11 rounded-full glass-strong",
+            "hover:scale-105 active:scale-95",
+            "shadow-float transition-all duration-200",
+            "touch-target",
+            isSaved && "text-accent"
+          )}
+          onClick={handleSaveClick}
+        >
+          <Heart className={cn("h-5 w-5", isSaved && "fill-current")} />
+        </Button>
+      )}
+
       {/* Image gallery preview */}
-      <div 
+      <div
         className={cn(
-          "relative h-[40vh] sm:h-[50vh] bg-muted group select-none overflow-hidden",
+          "relative h-[45vh] sm:h-[55vh] lg:h-[60vh] bg-muted group select-none overflow-hidden",
           "transition-transform duration-500",
           isAnimating && !isClosing ? "translate-y-0" : "translate-y-4",
           listing.images && listing.images.length > 0 && "cursor-pointer"
@@ -199,16 +217,16 @@ export function ListingDetailContent({
                 <link rel="prefetch" href={listing.images[(currentImageIndex - 1 + listing.images.length) % listing.images.length]} />
               </>
             )}
-            
+
             <div className="relative w-full h-full overflow-hidden">
               {/* Sliding images container */}
-              <div 
+              <div
                 className="flex h-full transition-transform duration-300 ease-out"
                 style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
               >
                 {listing.images.map((image, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="relative h-full flex-shrink-0"
                     style={{ minWidth: '100%' }}
                   >
@@ -217,14 +235,14 @@ export function ListingDetailContent({
                       alt={`${listing.title} - Photo ${index + 1}`}
                       className={cn(
                         "w-full h-full object-cover",
-                        "group-hover:scale-[1.02] transition-transform duration-500"
+                        "group-hover:scale-[1.02] transition-transform duration-700"
                       )}
                     />
                   </div>
                 ))}
               </div>
-              {/* Gradient overlay for better text visibility */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+              {/* Gradient overlays */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-black/10 pointer-events-none" />
             </div>
 
             {/* Navigation arrows */}
@@ -234,86 +252,110 @@ export function ListingDetailContent({
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    "absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full",
-                    "bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg z-10",
-                    "opacity-0 group-hover:opacity-100 transition-all duration-200",
-                    "hover:scale-110 active:scale-95",
-                    "sm:opacity-100"
+                    "absolute left-4 top-1/2 -translate-y-1/2 h-11 w-11 rounded-full",
+                    "bg-white/20 backdrop-blur-md text-white hover:bg-white/30 shadow-lg z-10",
+                    "opacity-0 group-hover:opacity-100 sm:opacity-80 transition-all duration-200",
+                    "hover:scale-110 active:scale-95"
                   )}
                   onClick={(e) => {
                     e.stopPropagation();
                     goToPrevImage();
                   }}
                 >
-                  <ChevronLeft className="h-6 w-6" />
+                  <ChevronLeft className="h-5 w-5" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   className={cn(
-                    "absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full",
-                    "bg-card/90 backdrop-blur-sm hover:bg-card shadow-lg z-10",
-                    "opacity-0 group-hover:opacity-100 transition-all duration-200",
-                    "hover:scale-110 active:scale-95",
-                    "sm:opacity-100"
+                    "absolute right-4 top-1/2 -translate-y-1/2 h-11 w-11 rounded-full",
+                    "bg-white/20 backdrop-blur-md text-white hover:bg-white/30 shadow-lg z-10",
+                    "opacity-0 group-hover:opacity-100 sm:opacity-80 transition-all duration-200",
+                    "hover:scale-110 active:scale-95"
                   )}
                   onClick={(e) => {
                     e.stopPropagation();
                     goToNextImage();
                   }}
                 >
-                  <ChevronRight className="h-6 w-6" />
+                  <ChevronRight className="h-5 w-5" />
                 </Button>
               </>
             )}
 
-            {/* Image count overlay */}
-            <div className={cn(
-              "absolute bottom-4 right-4 bg-card/90 backdrop-blur-sm px-4 py-2 rounded-xl",
-              "flex items-center gap-2 text-sm font-medium shadow-lg",
-              "transition-transform duration-200 hover:scale-105"
-            )}>
-              <Images className="h-4 w-4" />
-              <span>
-                {currentImageIndex + 1} / {listing.images.length}
-                {listing.floor_plan_url && ` • ${t('listing.floorPlan')}`}
-              </span>
+            {/* Bottom overlay with image counter and dots */}
+            <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 pt-12 bg-gradient-to-t from-black/50 to-transparent pointer-events-none z-10">
+              <div className="flex items-end justify-between pointer-events-auto">
+                {/* Type badge */}
+                <div>
+                  {listing.status === 'sold' || listing.status === 'rented' ? (
+                    <span className={cn(
+                      "px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider",
+                      listing.status === 'sold' ? "bg-amber-500 text-white" : "bg-emerald-500 text-white"
+                    )}>
+                      {listing.status === 'sold' ? t('listing.sold') : t('listing.rented')}
+                    </span>
+                  ) : (
+                    <span className="px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider">
+                      {listing.listing_type === 'rent' ? t('listingTypes.rent') : t('listingTypes.sale')}
+                    </span>
+                  )}
+                </div>
+
+                {/* Image counter pill */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setScrollToFloorPlan(false);
+                    setShowGallery(true);
+                  }}
+                  className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs font-medium hover:bg-white/30 transition-colors"
+                >
+                  <Images className="h-3.5 w-3.5" />
+                  {currentImageIndex + 1}/{listing.images.length}
+                </button>
+              </div>
             </div>
+
+            {/* Dot indicators */}
+            {listing.images.length > 1 && listing.images.length <= 8 && (
+              <div className="absolute bottom-14 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                {listing.images.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCurrentImageIndex(index);
+                    }}
+                    className={cn(
+                      "h-1.5 rounded-full transition-all duration-300",
+                      index === currentImageIndex
+                        ? "bg-white w-5"
+                        : "bg-white/50 w-1.5 hover:bg-white/70"
+                    )}
+                  />
+                ))}
+              </div>
+            )}
           </>
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-secondary">
-            <span className="text-muted-foreground">{t('listing.noImagesAvailable')}</span>
+            <div className="text-center">
+              <Images className="h-12 w-12 text-muted-foreground/40 mx-auto mb-3" />
+              <span className="text-muted-foreground text-sm">{t('listing.noImagesAvailable')}</span>
+            </div>
           </div>
         )}
-
-        {/* Type badge - show SOLD/RENTED for completed listings, otherwise For Sale/For Rent */}
-        <div className="absolute bottom-4 left-4">
-          {listing.status === 'sold' || listing.status === 'rented' ? (
-            <span className={cn(
-              "px-4 py-2 rounded-xl text-sm font-bold shadow-lg uppercase tracking-wide",
-              "bg-green-500 text-white",
-              "transition-transform duration-200 hover:scale-105"
-            )}>
-              {listing.status === 'sold' ? t('listing.sold') : t('listing.rented')}
-            </span>
-          ) : (
-            <span className={cn(
-              "px-4 py-2 rounded-xl bg-card/90 backdrop-blur-sm text-sm font-medium shadow-lg",
-              "transition-transform duration-200 hover:scale-105"
-            )}>
-              {listing.listing_type === 'rent' ? t('listingTypes.rent') : t('listingTypes.sale')}
-            </span>
-          )}
-        </div>
       </div>
 
-      {/* Quick action buttons - Floor plan & All images */}
-      {listing.images && listing.images.length > 0 && (
-        <div className={cn(
-          "container mx-auto px-4 py-4 transition-all duration-500 delay-100",
-          isAnimating && !isClosing ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-        )}>
-          <div className="flex flex-row gap-3">
+      {/* Content */}
+      <div className={cn(
+        "container mx-auto px-4 sm:px-6 transition-all duration-500 delay-100",
+        isAnimating && !isClosing ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+      )}>
+        {/* Quick action buttons - Floor plan & All images */}
+        {listing.images && listing.images.length > 0 && (
+          <div className="flex flex-row gap-2 py-4 border-b border-border/30">
             {(listing.floor_plan_urls?.length > 0 || listing.floor_plan_url) && (
               <button
                 onClick={() => {
@@ -321,13 +363,13 @@ export function ListingDetailContent({
                   setShowGallery(true);
                 }}
                 className={cn(
-                  "flex items-center gap-2 px-5 py-3 bg-card border border-border rounded-xl",
-                  "text-sm font-medium text-foreground shadow-sm",
-                  "hover:bg-muted hover:scale-105 active:scale-95",
-                  "transition-all duration-200 touch-target"
+                  "flex items-center gap-2 px-4 py-2.5 rounded-full",
+                  "text-sm font-medium text-foreground",
+                  "bg-secondary/70 hover:bg-secondary border border-border/40",
+                  "active:scale-95 transition-all duration-200 touch-target"
                 )}
               >
-                <LayoutGrid className="h-4 w-4" />
+                <LayoutGrid className="h-4 w-4 text-muted-foreground" />
                 {t('listing.floorPlan')}
               </button>
             )}
@@ -338,67 +380,71 @@ export function ListingDetailContent({
                   setShowGallery(true);
                 }}
                 className={cn(
-                  "flex items-center gap-2 px-5 py-3 bg-secondary border border-border rounded-xl",
-                  "text-sm font-medium text-foreground shadow-sm",
-                  "hover:bg-muted hover:scale-105 active:scale-95",
-                  "transition-all duration-200 touch-target"
+                  "flex items-center gap-2 px-4 py-2.5 rounded-full",
+                  "text-sm font-medium text-foreground",
+                  "bg-secondary/70 hover:bg-secondary border border-border/40",
+                  "active:scale-95 transition-all duration-200 touch-target"
                 )}
               >
-                {listing.images.length} {t('listing.images')}
-                <ExternalLink className="h-4 w-4" />
+                <Images className="h-4 w-4 text-muted-foreground" />
+                {t('listing.allPhotos') || `All ${listing.images.length} photos`}
               </button>
             )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Content */}
-      <div className={cn(
-        "container mx-auto px-4 py-6 sm:py-8 transition-all duration-500 delay-150",
-        isAnimating && !isClosing ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-      )}>
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-10 py-6 sm:py-8">
           {/* Main content */}
-          <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+          <div className="lg:col-span-2 space-y-8 sm:space-y-10">
             {/* Header */}
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mb-2 tracking-tight">
-                {listing.title}
-              </h1>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="h-4 w-4" />
+              <div className="flex items-center gap-2 text-muted-foreground text-sm mb-2">
+                <MapPin className="h-3.5 w-3.5" />
                 <span>{listing.address}, {listing.city}</span>
               </div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight">
+                {listing.title}
+              </h1>
             </div>
 
-            {/* Quick stats */}
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-              <div className="bg-secondary rounded-xl p-4 hover:bg-secondary/80 transition-colors">
-                <Bed className="h-5 w-5 text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">{t('listing.bedrooms')}</p>
-                <p className="text-lg font-semibold text-foreground">{listing.bedrooms}</p>
+            {/* Quick stats - pill style */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-3">
+              <div className="bg-secondary/60 rounded-2xl p-4 text-center hover:bg-secondary transition-colors">
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-accent/10 mb-2">
+                  <Bed className="h-5 w-5 text-accent" />
+                </div>
+                <p className="text-lg font-bold text-foreground">{listing.bedrooms}</p>
+                <p className="text-xs text-muted-foreground">{t('listing.bedrooms')}</p>
               </div>
-              <div className="bg-secondary rounded-xl p-4 hover:bg-secondary/80 transition-colors">
-                <Bath className="h-5 w-5 text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">{t('listing.bathrooms')}</p>
-                <p className="text-lg font-semibold text-foreground">{listing.bathrooms}</p>
+              <div className="bg-secondary/60 rounded-2xl p-4 text-center hover:bg-secondary transition-colors">
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-blue-500/10 mb-2">
+                  <Bath className="h-5 w-5 text-blue-500" />
+                </div>
+                <p className="text-lg font-bold text-foreground">{listing.bathrooms}</p>
+                <p className="text-xs text-muted-foreground">{t('listing.bathrooms')}</p>
               </div>
-              <div className="bg-secondary rounded-xl p-4 hover:bg-secondary/80 transition-colors">
-                <Square className="h-5 w-5 text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">{t('listing.area')}</p>
-                <p className="text-lg font-semibold text-foreground">{formatArea(listing.area_sqm)}</p>
+              <div className="bg-secondary/60 rounded-2xl p-4 text-center hover:bg-secondary transition-colors">
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-500/10 mb-2">
+                  <Square className="h-5 w-5 text-emerald-500" />
+                </div>
+                <p className="text-lg font-bold text-foreground">{formatArea(listing.area_sqm)}</p>
+                <p className="text-xs text-muted-foreground">{t('listing.area')}</p>
               </div>
               {isCompleted && formattedCompletedDate ? (
-                <div className="bg-secondary rounded-xl p-4 hover:bg-secondary/80 transition-colors">
-                  <CheckCircle className="h-5 w-5 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">{statusLabel}</p>
-                  <p className="text-lg font-semibold text-foreground">{formattedCompletedDate}</p>
+                <div className="bg-secondary/60 rounded-2xl p-4 text-center hover:bg-secondary transition-colors">
+                  <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-amber-500/10 mb-2">
+                    <CheckCircle className="h-5 w-5 text-amber-500" />
+                  </div>
+                  <p className="text-sm font-bold text-foreground">{formattedCompletedDate}</p>
+                  <p className="text-xs text-muted-foreground">{statusLabel}</p>
                 </div>
               ) : (
-                <div className="bg-secondary rounded-xl p-4 hover:bg-secondary/80 transition-colors">
-                  <Calendar className="h-5 w-5 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground">{t('listing.available')}</p>
-                  <p className="text-lg font-semibold text-foreground">{formatDate(listing.available_from)}</p>
+                <div className="bg-secondary/60 rounded-2xl p-4 text-center hover:bg-secondary transition-colors">
+                  <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-violet-500/10 mb-2">
+                    <Calendar className="h-5 w-5 text-violet-500" />
+                  </div>
+                  <p className="text-sm font-bold text-foreground">{formatDate(listing.available_from)}</p>
+                  <p className="text-xs text-muted-foreground">{t('listing.available')}</p>
                 </div>
               )}
             </div>
@@ -409,113 +455,64 @@ export function ListingDetailContent({
             {/* Description */}
             {listing.description && (
               <div>
-                <h2 className="text-xl font-bold text-foreground mb-3 tracking-tight">{t('listing.description')}</h2>
+                <h2 className="text-lg font-bold text-foreground mb-3 tracking-tight">{t('listing.description')}</h2>
                 {listing.description.length > 500 ? (
                   <>
-                    <p className="text-muted-foreground whitespace-pre-line leading-relaxed">
+                    <p className="text-muted-foreground whitespace-pre-line leading-relaxed text-[15px]">
                       {listing.description.slice(0, 500)}...
                     </p>
-                    <Button 
-                      variant="link" 
-                      className="p-0 h-auto mt-2 text-primary"
+                    <button
+                      className="mt-3 text-sm font-semibold text-accent hover:underline underline-offset-4 transition-colors"
                       onClick={() => setShowFullDescription(true)}
                     >
                       {t('listing.readMore') || 'Read more'}
-                    </Button>
+                    </button>
                   </>
                 ) : (
-                  <p className="text-muted-foreground whitespace-pre-line leading-relaxed">{listing.description}</p>
+                  <p className="text-muted-foreground whitespace-pre-line leading-relaxed text-[15px]">{listing.description}</p>
                 )}
               </div>
             )}
 
+            {/* Divider */}
+            <div className="border-t border-border/30" />
+
             {/* Property Features */}
             <PropertyFeatures listing={listing} />
 
+            {/* Divider */}
+            <div className="border-t border-border/30" />
+
             {/* Location Map */}
             <div>
-              <h2 className="text-xl font-semibold text-foreground mb-3">{t('listing.location')}</h2>
-              <ListingLocationMap
-                latitude={listing.latitude}
-                longitude={listing.longitude}
-                address={listing.address}
-              />
-              <p className="text-sm text-muted-foreground mt-2">
+              <h2 className="text-lg font-bold text-foreground mb-4 tracking-tight">{t('listing.location')}</h2>
+              <div className="rounded-2xl overflow-hidden border border-border/30">
+                <ListingLocationMap
+                  latitude={listing.latitude}
+                  longitude={listing.longitude}
+                  address={listing.address}
+                />
+              </div>
+              <div className="flex items-center gap-2 mt-3 text-sm text-muted-foreground">
+                <MapPin className="h-3.5 w-3.5" />
                 {listing.address}, {listing.city}
-              </p>
+              </div>
             </div>
           </div>
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
             <div className={cn(
-              "sticky top-24 bg-card rounded-2xl p-6 border border-border/60 shadow-card",
+              "sticky top-6 bg-card rounded-2xl border border-border/40 shadow-card overflow-hidden",
               "transition-all duration-300"
             )}>
-              {/* Transaction Complete Section for Sold/Rented */}
-              {isCompleted && (
-                <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl p-4 mb-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
-                    <span className="font-semibold text-green-700 dark:text-green-300 uppercase text-sm tracking-wide">
-                      {statusLabel}
-                    </span>
-                  </div>
-                  {formattedCompletedDate && (
-                    <p className="text-sm text-green-600 dark:text-green-400 mb-3">
-                      {formattedCompletedDate}
-                    </p>
-                  )}
-                  
-                  {listing.final_price ? (
-                    <>
-                      <p className="text-2xl font-bold text-green-700 dark:text-green-300">
-                        {formatPrice(listing.final_price, listing.currency, { 
-                          isRental: listing.listing_type === 'rent', 
-                          showPeriod: listing.listing_type === 'rent' 
-                        })}
-                      </p>
-                      <p className="text-sm text-muted-foreground line-through mt-1">
-                        {t('markCompleted.askingPrice')}: {formatPrice(listing.price, listing.currency, { 
-                          isRental: listing.listing_type === 'rent', 
-                          showPeriod: listing.listing_type === 'rent' 
-                        })}
-                      </p>
-                      {priceDifferencePercent !== null && (
-                        <span className={cn(
-                          "inline-block mt-2 px-2 py-1 rounded-md text-xs font-medium",
-                          priceDifferencePercent > 0.5 
-                            ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                            : priceDifferencePercent < -0.5 
-                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                              : "bg-muted text-muted-foreground"
-                        )}>
-                          {priceDifferencePercent > 0.5 
-                            ? `+${priceDifferencePercent.toFixed(1)}% ${t('markCompleted.aboveAsking')}`
-                            : priceDifferencePercent < -0.5 
-                              ? `${priceDifferencePercent.toFixed(1)}% ${t('markCompleted.belowAsking')}`
-                              : t('markCompleted.atAsking')}
-                        </span>
-                      )}
-                    </>
-                  ) : (
-                    <p className="text-lg font-semibold text-green-700 dark:text-green-300">
-                      {formatPrice(listing.price, listing.currency, { 
-                        isRental: listing.listing_type === 'rent', 
-                        showPeriod: listing.listing_type === 'rent' 
-                      })}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* Regular Price Section (only for active listings) */}
-              {!isCompleted && (
-                <div className="mb-6">
-                  <p className="text-sm text-muted-foreground mb-1">
-                    {propertyTypeLabels[listing.property_type]}
+              {/* Price header with accent gradient */}
+              {!isCompleted ? (
+                <div className="bg-gradient-to-br from-accent/5 via-accent/3 to-transparent p-6 border-b border-border/30">
+                  <p className="text-xs font-semibold text-accent uppercase tracking-wider mb-1">
+                    {propertyTypeLabels[listing.property_type]} · {listing.listing_type === 'rent' ? t('listingTypes.rent') : t('listingTypes.sale')}
                   </p>
-                  <p className="text-3xl lg:text-4xl font-bold text-foreground">
+                  <p className="text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight">
                     {formatPrice(listing.price, listing.currency, { isRental: listing.listing_type === 'rent', showPeriod: listing.listing_type === 'rent' })}
                   </p>
                   {listing.area_sqm && listing.area_sqm > 0 && (
@@ -524,94 +521,146 @@ export function ListingDetailContent({
                     </p>
                   )}
                 </div>
+              ) : (
+                <div className="bg-gradient-to-br from-emerald-50 to-emerald-50/30 dark:from-emerald-950/30 dark:to-emerald-950/10 p-6 border-b border-emerald-200/50 dark:border-emerald-800/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                      <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <span className="font-bold text-emerald-700 dark:text-emerald-300 uppercase text-xs tracking-wider">
+                      {statusLabel}
+                    </span>
+                  </div>
+                  {formattedCompletedDate && (
+                    <p className="text-xs text-emerald-600/80 dark:text-emerald-400/80 mb-2">
+                      {formattedCompletedDate}
+                    </p>
+                  )}
+                  {listing.final_price ? (
+                    <>
+                      <p className="text-2xl font-extrabold text-emerald-700 dark:text-emerald-300 tracking-tight">
+                        {formatPrice(listing.final_price, listing.currency, {
+                          isRental: listing.listing_type === 'rent',
+                          showPeriod: listing.listing_type === 'rent'
+                        })}
+                      </p>
+                      <p className="text-sm text-muted-foreground line-through mt-1">
+                        {t('markCompleted.askingPrice')}: {formatPrice(listing.price, listing.currency, {
+                          isRental: listing.listing_type === 'rent',
+                          showPeriod: listing.listing_type === 'rent'
+                        })}
+                      </p>
+                      {priceDifferencePercent !== null && (
+                        <span className={cn(
+                          "inline-block mt-2 px-2.5 py-1 rounded-full text-xs font-semibold",
+                          priceDifferencePercent > 0.5
+                            ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                            : priceDifferencePercent < -0.5
+                              ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                              : "bg-muted text-muted-foreground"
+                        )}>
+                          {priceDifferencePercent > 0.5
+                            ? `+${priceDifferencePercent.toFixed(1)}% ${t('markCompleted.aboveAsking')}`
+                            : priceDifferencePercent < -0.5
+                              ? `${priceDifferencePercent.toFixed(1)}% ${t('markCompleted.belowAsking')}`
+                              : t('markCompleted.atAsking')}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
+                      {formatPrice(listing.price, listing.currency, {
+                        isRental: listing.listing_type === 'rent',
+                        showPeriod: listing.listing_type === 'rent'
+                      })}
+                    </p>
+                  )}
+                </div>
               )}
 
-              {/* Listing Stats */}
-              <div className="grid grid-cols-3 gap-2 mb-6">
-                <div className="text-center bg-secondary/50 rounded-lg p-2 sm:p-3">
-                  <div className="flex items-center justify-center gap-1 mb-0.5 sm:mb-1">
-                    <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                    <span className="font-bold text-base sm:text-lg">{listingStats?.viewCount ?? 0}</span>
+              <div className="p-6 space-y-5">
+                {/* Listing Stats */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="text-center p-2.5 rounded-xl bg-secondary/40">
+                    <span className="font-bold text-lg text-foreground block">{listingStats?.viewCount ?? 0}</span>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">{t('listing.views')}</p>
                   </div>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('listing.views')}</p>
-                </div>
-                <div className="text-center bg-secondary/50 rounded-lg p-2 sm:p-3">
-                  <div className="flex items-center justify-center gap-1 mb-0.5 sm:mb-1">
-                    <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                    <span className="font-bold text-base sm:text-lg">{listingStats?.daysListed ?? 0}</span>
+                  <div className="text-center p-2.5 rounded-xl bg-secondary/40">
+                    <span className="font-bold text-lg text-foreground block">{listingStats?.daysListed ?? 0}</span>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">{t('listing.daysListed')}</p>
                   </div>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('listing.daysListed')}</p>
-                </div>
-                <div className="text-center bg-secondary/50 rounded-lg p-2 sm:p-3">
-                  <div className="flex items-center justify-center gap-1 mb-0.5 sm:mb-1">
-                    <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
-                    <span className="font-bold text-base sm:text-lg">{listingStats?.contactCount ?? 0}</span>
+                  <div className="text-center p-2.5 rounded-xl bg-secondary/40">
+                    <span className="font-bold text-lg text-foreground block">{listingStats?.contactCount ?? 0}</span>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide font-medium">{t('listing.inquiries')}</p>
                   </div>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{t('listing.inquiries')}</p>
                 </div>
+
+                {/* Hot listing badge */}
+                {listingStats?.isHotListing && (
+                  <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 text-orange-600 dark:text-orange-400 rounded-xl px-4 py-2.5 border border-orange-200/50 dark:border-orange-800/30">
+                    <Flame className="h-4 w-4" />
+                    <span className="text-sm font-semibold">{t('listing.hotListing')}</span>
+                  </div>
+                )}
+
+                {/* CTA Buttons */}
+                <div className="space-y-2.5">
+                  <Button
+                    variant="accent"
+                    className={cn(
+                      "w-full h-12 text-[15px] font-semibold rounded-xl",
+                      "hover:scale-[1.01] active:scale-[0.99]",
+                      "transition-all duration-200 touch-target shadow-sm shadow-accent/20"
+                    )}
+                    disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
+                    onClick={handleContactLandlord}
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    {getOrCreateConversation.isPending ? 'Starting chat...' : t('listing.contactLandlord')}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full h-12 text-[15px] font-semibold rounded-xl",
+                      "hover:scale-[1.01] active:scale-[0.99]",
+                      "transition-all duration-200 touch-target"
+                    )}
+                    onClick={handleSaveClick}
+                  >
+                    <Heart className={cn(
+                      'h-4 w-4 mr-2 transition-all duration-200',
+                      isSaved && 'fill-current text-accent scale-110'
+                    )} />
+                    {user ? (isSaved ? t('common.saved') : t('listing.saveListing')) : t('listing.signInToSave')}
+                  </Button>
+                </div>
+
+                {/* Landlord link */}
+                {listing.user_id && (
+                  <button
+                    className="w-full flex items-center justify-center gap-2 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    onClick={() => router.push(`/landlord/${listing.user_id}`)}
+                  >
+                    <User className="h-4 w-4" />
+                    <span className="font-medium">View landlord profile</span>
+                  </button>
+                )}
               </div>
-
-              {/* Hot listing badge */}
-              {listingStats?.isHotListing && (
-                <div className="flex items-center justify-center gap-2 bg-orange-100 dark:bg-orange-950 text-orange-700 dark:text-orange-300 rounded-xl px-4 py-2.5 mb-6">
-                  <Flame className="h-4 w-4" />
-                  <span className="text-sm font-medium">{t('listing.hotListing')}</span>
-                </div>
-              )}
-
-              <Button
-                variant="accent"
-                className={cn(
-                  "w-full mb-3 h-12",
-                  "hover:scale-[1.02] active:scale-[0.98]",
-                  "transition-all duration-200 touch-target"
-                )}
-                disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
-                onClick={handleContactLandlord}
-              >
-                {getOrCreateConversation.isPending ? 'Starting chat...' : t('listing.contactLandlord')}
-              </Button>
-
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full h-12 mb-3",
-                  "hover:scale-[1.02] active:scale-[0.98]",
-                  "transition-all duration-200 touch-target"
-                )}
-                onClick={handleSaveClick}
-              >
-                <Heart className={cn(
-                  'h-4 w-4 mr-2 transition-transform duration-200',
-                  isSaved && 'fill-current text-accent'
-                )} />
-                {user ? (isSaved ? t('common.saved') : t('listing.saveListing')) : t('listing.signInToSave')}
-              </Button>
-
-              {listing.user_id && (
-                <Button
-                  variant="ghost"
-                  className="w-full text-muted-foreground hover:text-foreground"
-                  onClick={() => router.push(`/landlord/${listing.user_id}`)}
-                >
-                  <User className="h-4 w-4 mr-2" />
-                  View landlord profile
-                </Button>
-              )}
             </div>
           </div>
         </div>
 
         {/* Similar Listings */}
         {showSimilar && (
-          <div className="mt-8 pt-8 border-t border-border">
+          <div className="mt-10 pt-8 border-t border-border/30">
             <SimilarListings listing={listing} />
           </div>
         )}
 
         {/* Recently Viewed */}
         {showRecentlyViewed && (
-          <div className="mt-8 pt-8 border-t border-border">
+          <div className="mt-8 pt-8 border-t border-border/30 pb-8">
             <RecentlyViewedListings excludeListingId={listing.id} limit={6} />
           </div>
         )}
