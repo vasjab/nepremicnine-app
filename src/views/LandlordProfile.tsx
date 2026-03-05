@@ -229,7 +229,7 @@ const LandlordProfile = () => {
             )
           ) : (
             <div className="text-center py-12 text-muted-foreground">
-              <Home className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <span className="text-4xl mb-3 block">🏡</span>
               <p>No active listings at the moment.</p>
             </div>
           )}

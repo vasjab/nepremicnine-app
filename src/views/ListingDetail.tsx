@@ -50,7 +50,8 @@ export default function ListingDetail() {
   if (!listing) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md">
+          <span className="text-5xl mb-4 block">🔍</span>
           <h1 className="text-2xl font-semibold text-foreground mb-2">{t('listing.listingNotFound')}</h1>
           <p className="text-muted-foreground mb-4">{t('listing.listingNotFoundDesc')}</p>
           <Button onClick={() => router.push('/')}>{t('listing.backToListings')}</Button>

@@ -139,9 +139,7 @@ export default function MyListings() {
         <Header />
         <main className="pt-16 flex items-center justify-center h-[80vh]">
           <div className="text-center max-w-md">
-            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
-              <Plus className="h-8 w-8 text-muted-foreground" />
-            </div>
+            <span className="text-5xl mb-4 block">🏠</span>
             <h1 className="text-2xl font-semibold text-foreground mb-2">{t('myListings.listYourProperty')}</h1>
             <p className="text-muted-foreground mb-6">
               {t('myListings.signInToManage')}
@@ -388,7 +386,7 @@ export default function MyListings() {
           <div className="flex items-center justify-between mb-6 sm:mb-8">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1 tracking-tight">
-                {t('myListings.title')}
+                📋 {t('myListings.title')}
               </h1>
               <p className="text-muted-foreground text-sm sm:text-base">
                 {t('myListings.subtitle')}
@@ -447,9 +445,7 @@ export default function MyListings() {
             </Tabs>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
-                <Plus className="h-8 w-8 text-muted-foreground" />
-              </div>
+              <span className="text-5xl mb-4">📝</span>
               <h2 className="text-xl font-semibold text-foreground mb-2">{t('myListings.noListingsYet')}</h2>
               <p className="text-muted-foreground mb-6 max-w-sm">
                 {t('myListings.noListingsYetDesc')}

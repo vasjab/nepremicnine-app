@@ -113,7 +113,7 @@ export default function ProfilePage() {
         <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="max-w-xl mx-auto animate-fade-in">
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-6 sm:mb-8 tracking-tight">
-              My Profile
+              👤 My Profile
             </h1>
 
             {loading ? (

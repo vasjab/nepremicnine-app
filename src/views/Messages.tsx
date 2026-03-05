@@ -119,10 +119,8 @@ export default function Messages() {
         <Header />
         <main className="pt-16 flex items-center justify-center h-[80vh]">
           <div className="text-center max-w-md">
-            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
-              <MessageCircle className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h1 className="text-2xl font-semibold text-foreground mb-2">Messages</h1>
+            <span className="text-5xl mb-4 block">✉️</span>
+            <h1 className="text-2xl font-semibold text-foreground mb-2">💬 Messages</h1>
             <p className="text-muted-foreground mb-6">
               Sign in to view your messages and contact landlords
             </p>
@@ -186,7 +184,7 @@ export default function Messages() {
           "flex flex-col bg-card overflow-hidden"
         )}>
           <div className="p-4 border-b border-border/50 space-y-3 flex-shrink-0">
-            <h1 className="text-xl font-bold text-foreground tracking-tight">Messages</h1>
+            <h1 className="text-xl font-bold text-foreground tracking-tight">💬 Messages</h1>
             <MessageSearch 
               onResultClick={handleSearchResultClick}
               className="w-full"
@@ -214,9 +212,7 @@ export default function Messages() {
           ) : (
             <div className="h-full flex items-center justify-center text-center p-8">
               <div>
-                <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
-                  <MessageCircle className="h-8 w-8 text-muted-foreground" />
-                </div>
+                <span className="text-4xl mb-4 block">💬</span>
                 <h2 className="text-lg font-semibold text-foreground mb-2">
                   Select a conversation
                 </h2>

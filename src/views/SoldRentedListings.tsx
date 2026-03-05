@@ -199,7 +199,7 @@ export default function SoldRentedListings() {
   const TabsHeader = () => (
     <div className="shrink-0 px-4 pt-4 pb-2">
       <h1 className="text-xl font-bold text-foreground mb-1 tracking-tight">
-        {t('soldRented.title')}
+        🏆 {t('soldRented.title')}
       </h1>
       <TabsList className="w-full justify-start">
         <TabsTrigger value="sold" className="gap-2">

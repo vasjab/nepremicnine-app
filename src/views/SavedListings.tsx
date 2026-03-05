@@ -23,9 +23,7 @@ export default function SavedListings() {
         <Header />
         <main className="pt-16 flex items-center justify-center h-[80vh]">
           <div className="text-center max-w-md">
-            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
-              <Heart className="h-8 w-8 text-muted-foreground" />
-            </div>
+            <span className="text-5xl mb-4 block">💝</span>
             <h1 className="text-2xl font-semibold text-foreground mb-2">{t('saved.saveYourFavorites')}</h1>
             <p className="text-muted-foreground mb-6">
               {t('saved.signInToSave')}
@@ -48,7 +46,7 @@ export default function SavedListings() {
       <main className="pt-16">
         <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-fade-in">
           <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 tracking-tight">
-            {t('saved.title')}
+            ❤️ {t('saved.title')}
           </h1>
           <p className="text-muted-foreground text-sm sm:text-base mb-6 sm:mb-8">
             {t('saved.subtitle')}
@@ -77,9 +75,7 @@ export default function SavedListings() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
-                <Heart className="h-8 w-8 text-muted-foreground" />
-              </div>
+              <span className="text-5xl mb-4">🏡</span>
               <h2 className="text-xl font-semibold text-foreground mb-2">{t('saved.noSavedYet')}</h2>
               <p className="text-muted-foreground mb-6 max-w-sm">
                 {t('saved.noSavedYetDesc')}
