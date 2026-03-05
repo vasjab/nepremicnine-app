@@ -66,6 +66,8 @@ interface FilterBarProps {
   onSortChange: (sort: SortOption) => void;
   totalCount?: number;
   userId?: string;
+  listingType?: 'rent' | 'sale';
+  onListingTypeChange?: (type: 'rent' | 'sale') => void;
 }
 
 // Price ranges by listing type
@@ -639,11 +641,17 @@ function FilterContent({
         {/* Availability Section - only for rentals */}
         {isRentalSelected && (
           <FilterSection title="Availability & Terms" icon={Calendar} activeCount={activeAvailabilityCount}>
-            <ToggleFilter 
-              label="Move-in Immediately" 
+            <ToggleFilter
+              label="Move-in Immediately"
               icon={Calendar}
-              checked={filters.move_in_immediately || false} 
-              onChange={(v) => handleBooleanFilter('move_in_immediately', v)} 
+              checked={filters.move_in_immediately || false}
+              onChange={(v) => handleBooleanFilter('move_in_immediately', v)}
+            />
+            <ToggleFilter
+              label="Rent Indefinitely"
+              icon={Calendar}
+              checked={filters.rent_indefinitely || false}
+              onChange={(v) => handleBooleanFilter('rent_indefinitely', v)}
             />
             <div className="space-y-2 px-3 py-2">
               <Label className="text-[12px] font-medium text-gray-500">{t('filters.internetIncluded')}</Label>
@@ -677,6 +685,25 @@ function FilterContent({
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2 px-3 py-2">
+              <Label className="text-[12px] font-medium text-gray-500">Utility Costs (€/mo)</Label>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Min"
+                  value={filters.min_utility_cost ?? ''}
+                  onChange={(e) => onFiltersChange({ ...filters, min_utility_cost: e.target.value ? Number(e.target.value) : null })}
+                  className="bg-white h-10 rounded-xl text-[13px] border-gray-200 hover:border-gray-300"
+                />
+                <Input
+                  type="number"
+                  placeholder="Max"
+                  value={filters.max_utility_cost ?? ''}
+                  onChange={(e) => onFiltersChange({ ...filters, max_utility_cost: e.target.value ? Number(e.target.value) : null })}
+                  className="bg-white h-10 rounded-xl text-[13px] border-gray-200 hover:border-gray-300"
+                />
+              </div>
+            </div>
           </FilterSection>
         )}
     </div>
@@ -685,7 +712,7 @@ function FilterContent({
   );
 }
 
-export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount, userId }: FilterBarProps) {
+export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount, userId, listingType, onListingTypeChange }: FilterBarProps) {
   const { trigger: haptic } = useHapticFeedback();
   const { t } = useTranslation();
   const { formatPriceLabel, currencySymbol } = useFormattedPrice();
@@ -890,7 +917,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   const activeEquipmentCount = [filters.has_dishwasher, filters.has_washing_machine, filters.has_dryer].filter(Boolean).length;
   const activeAccessibilityCount = [filters.has_step_free_access, filters.has_wheelchair_accessible].filter(Boolean).length;
   const activeSafetyCount = [filters.has_secure_entrance, filters.has_gated_community].filter(Boolean).length;
-  const activeAvailabilityCount = [filters.move_in_immediately, filters.internet_included, filters.utilities_included].filter(v => v != null && v !== false).length;
+  const activeAvailabilityCount = [filters.move_in_immediately, filters.rent_indefinitely, filters.internet_included, filters.utilities_included, filters.min_utility_cost, filters.max_utility_cost].filter(v => v != null && v !== false).length;
 
   // Format price for display
   const formatPriceLabelLocal = (value: number): string => {
@@ -996,6 +1023,20 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     if (filters.has_step_free_access) chips.push({ label: 'Step-free Access', onRemove: () => handleBooleanFilter('has_step_free_access', false) });
     if (filters.has_secure_entrance) chips.push({ label: 'Secure Entrance', onRemove: () => handleBooleanFilter('has_secure_entrance', false) });
     if (filters.move_in_immediately) chips.push({ label: 'Move-in Immediately', onRemove: () => handleBooleanFilter('move_in_immediately', false) });
+    if (filters.rent_indefinitely) chips.push({ label: 'Rent Indefinitely', onRemove: () => handleBooleanFilter('rent_indefinitely', false) });
+    if (filters.internet_included) chips.push({ label: `Internet: ${filters.internet_included}`, onRemove: () => onFiltersChange({ ...filters, internet_included: null }) });
+    if (filters.utilities_included) chips.push({ label: `Utilities: ${filters.utilities_included}`, onRemove: () => onFiltersChange({ ...filters, utilities_included: null }) });
+    if (filters.min_utility_cost || filters.max_utility_cost) {
+      let costLabel = 'Utility Cost: ';
+      if (filters.min_utility_cost && filters.max_utility_cost) {
+        costLabel += `€${filters.min_utility_cost} - €${filters.max_utility_cost}`;
+      } else if (filters.min_utility_cost) {
+        costLabel += `Min €${filters.min_utility_cost}`;
+      } else if (filters.max_utility_cost) {
+        costLabel += `Max €${filters.max_utility_cost}`;
+      }
+      chips.push({ label: costLabel, onRemove: () => onFiltersChange({ ...filters, min_utility_cost: null, max_utility_cost: null }) });
+    }
 
     return chips;
   };
@@ -1065,46 +1106,78 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
   return (
     <div className="bg-white border-b border-gray-100">
-      <div className="px-4 py-3 space-y-2">
-        {/* Single row: Search + Sort + Filters + Count */}
-        <div className="flex items-center gap-2">
+      <div className="px-4 py-2.5 space-y-2">
+        {/* Single row: Type Toggle + Search + Sort + Filters + Count */}
+        <div className="flex items-center gap-1.5">
+          {/* Rent / Sale segmented toggle — colorful Airbnb-style */}
+          {listingType && onListingTypeChange && (
+            <div className="inline-flex items-center shrink-0 rounded-xl bg-gray-100/80 p-0.5">
+              <button
+                type="button"
+                onClick={() => onListingTypeChange('rent')}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-[10px] px-3 py-2 text-xs font-semibold transition-all duration-200',
+                  listingType === 'rent'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600'
+                )}
+              >
+                <span className="text-sm leading-none" role="img" aria-label="rent">🔑</span>
+                <span className="hidden sm:inline">{t('listingTypes.rent')}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onListingTypeChange('sale')}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-[10px] px-3 py-2 text-xs font-semibold transition-all duration-200',
+                  listingType === 'sale'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-400 hover:text-gray-600'
+                )}
+              >
+                <span className="text-sm leading-none" role="img" aria-label="sale">🏷️</span>
+                <span className="hidden sm:inline">{t('listingTypes.sale')}</span>
+              </button>
+            </div>
+          )}
+
           {/* Compact search */}
           <form onSubmit={handleSearch} className="relative flex-1 min-w-0">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none z-10" />
             <Input
               placeholder="Search..."
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              className="w-full pl-9 pr-9 h-10 text-sm bg-secondary border-0 rounded-xl"
+              className="w-full pl-8 pr-8 h-9 text-xs bg-secondary border-0 rounded-xl"
             />
             <button
               type="button"
               onClick={clearSearch}
-              className={`absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full transition-opacity ${
+              className={`absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 flex items-center justify-center text-muted-foreground hover:text-foreground rounded-full transition-opacity ${
                 searchValue ? 'opacity-100' : 'opacity-0 pointer-events-none'
               }`}
             >
-              <X className="h-3.5 w-3.5" />
+              <X className="h-3 w-3" />
             </button>
           </form>
           
           {/* Sort dropdown */}
           <Select value={sortBy} onValueChange={(value) => onSortChange(value as SortOption)}>
-            <SelectTrigger className="shrink-0 w-10 md:w-auto md:max-w-[120px] h-10 px-3 text-sm bg-secondary border-0 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 hover:border-0 transition-colors">
-              <ArrowUpDown className="h-4 w-4 md:mr-2 text-muted-foreground shrink-0" />
+            <SelectTrigger className="shrink-0 w-9 md:w-auto md:max-w-[120px] h-9 px-2.5 text-sm bg-secondary border-0 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 hover:border-0 transition-colors">
+              <ArrowUpDown className="h-3.5 w-3.5 md:mr-1.5 text-muted-foreground shrink-0" />
               <span className="hidden md:inline truncate">
                 <SelectValue placeholder={t('filters.sortBy')} />
               </span>
             </SelectTrigger>
             <SelectContent className="bg-popover rounded-xl shadow-lg">
-              <SelectItem value="newest">{t('filters.newest')}</SelectItem>
-              <SelectItem value="oldest">{t('filters.oldest')}</SelectItem>
-              <SelectItem value="price_asc">{t('filters.priceAsc')}</SelectItem>
-              <SelectItem value="price_desc">{t('filters.priceDesc')}</SelectItem>
-              <SelectItem value="size_asc">{t('filters.sizeAsc')}</SelectItem>
-              <SelectItem value="size_desc">{t('filters.sizeDesc')}</SelectItem>
-              <SelectItem value="price_per_sqm_asc">{t('filters.pricePerSqmAsc')}</SelectItem>
-              <SelectItem value="price_per_sqm_desc">{t('filters.pricePerSqmDesc')}</SelectItem>
+              <SelectItem value="newest">🆕 {t('filters.newest')}</SelectItem>
+              <SelectItem value="oldest">📅 {t('filters.oldest')}</SelectItem>
+              <SelectItem value="price_asc">💰 {t('filters.priceAsc')}</SelectItem>
+              <SelectItem value="price_desc">💎 {t('filters.priceDesc')}</SelectItem>
+              <SelectItem value="size_asc">📏 {t('filters.sizeAsc')}</SelectItem>
+              <SelectItem value="size_desc">📐 {t('filters.sizeDesc')}</SelectItem>
+              <SelectItem value="price_per_sqm_asc">📊 {t('filters.pricePerSqmAsc')}</SelectItem>
+              <SelectItem value="price_per_sqm_desc">📈 {t('filters.pricePerSqmDesc')}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -1113,8 +1186,8 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
             <Drawer open={isOpen} onOpenChange={setIsOpen}>
               <div className="relative shrink-0">
                 <DrawerTrigger asChild>
-                <button className={`flex items-center justify-center rounded-xl h-10 w-10 text-sm font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-foreground hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
-                    <SlidersHorizontal className="h-4 w-4" />
+                <button className={`flex items-center justify-center rounded-xl h-9 w-9 text-sm font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-foreground hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
+                    <span className="text-sm leading-none">⚙️</span>
                   </button>
                 </DrawerTrigger>
                 {totalActiveFilters > 0 && (
@@ -1159,8 +1232,8 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <div className="relative shrink-0">
                 <DialogTrigger asChild>
-                  <button className={`flex items-center gap-1.5 rounded-xl h-10 px-3 text-sm font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-foreground hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
-                    <SlidersHorizontal className="h-4 w-4" />
+                  <button className={`flex items-center gap-1.5 rounded-xl h-9 px-2.5 text-xs font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-foreground hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
+                    <span className="text-sm leading-none">⚙️</span>
                     <span>Filters</span>
                   </button>
                 </DialogTrigger>
@@ -1206,7 +1279,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
 
           {/* Listings count */}
           {totalCount !== undefined && (
-            <div className="shrink-0 px-2 text-xs text-muted-foreground whitespace-nowrap">
+            <div className="shrink-0 px-1 text-[11px] text-muted-foreground whitespace-nowrap tabular-nums">
               {totalCount.toLocaleString()}
             </div>
           )}

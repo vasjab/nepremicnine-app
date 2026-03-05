@@ -242,6 +242,7 @@ function formDataToListing(formData: FormData, uploadedImages: UploadedImage[], 
     year_built: formData.year_built ? parseInt(formData.year_built) : null,
     property_condition: (formData.property_condition || null) as 'new' | 'renovated' | 'good' | 'needs_work' | null,
     // Rental Terms
+    rent_indefinitely: formData.available_until ? false : true,
     deposit_amount: formData.deposit_amount ? parseFloat(formData.deposit_amount) : null,
     min_lease_months: formData.min_lease_months ? parseInt(formData.min_lease_months) : null,
     internet_included: (formData.internet_included || null) as 'yes' | 'no' | 'available' | null,

@@ -96,6 +96,7 @@ export default function CreateListing() {
     area_sqm: '',
     available_from: '',
     available_until: '',
+    rent_indefinitely: true,
     is_furnished: false,
     furnished_details: '',
     allows_pets: false,
@@ -295,6 +296,7 @@ export default function CreateListing() {
         area_sqm: draftListing.area_sqm?.toString() || '',
         available_from: draftListing.available_from || '',
         available_until: draftListing.available_until || '',
+        rent_indefinitely: (draftListing as any).rent_indefinitely ?? !draftListing.available_until,
         is_furnished: draftListing.is_furnished || false,
         furnished_details: (draftListing as any).furnished_details || '',
         allows_pets: draftListing.allows_pets || false,
@@ -517,7 +519,8 @@ export default function CreateListing() {
       living_rooms: parseInt(formData.living_rooms) || 1,
       area_sqm: parseFloat(formData.area_sqm) || null,
       available_from: formData.available_from || null,
-      available_until: formData.available_until || null,
+      available_until: formData.rent_indefinitely ? null : (formData.available_until || null),
+      rent_indefinitely: formData.rent_indefinitely,
       is_furnished: formData.is_furnished,
       furnished_details: formData.furnished_details || null,
       allows_pets: formData.allows_pets,
@@ -896,6 +899,7 @@ export default function CreateListing() {
             areaSqm={formData.area_sqm}
             availableFrom={formData.available_from}
             availableUntil={formData.available_until}
+            rentIndefinitely={formData.rent_indefinitely}
             isFurnished={formData.is_furnished}
             furnishedDetails={formData.furnished_details}
             allowsPets={formData.allows_pets}
@@ -909,6 +913,7 @@ export default function CreateListing() {
             onAreaChange={(v) => handleChange('area_sqm', v)}
             onAvailableFromChange={(v) => handleChange('available_from', v)}
             onAvailableUntilChange={(v) => handleChange('available_until', v)}
+            onRentIndefinitelyChange={(v) => handleChange('rent_indefinitely', v)}
             onFurnishedChange={(v) => handleChange('is_furnished', v)}
             onFurnishedDetailsChange={(v) => handleChange('furnished_details', v)}
             onPetsChange={(v) => handleChange('allows_pets', v)}

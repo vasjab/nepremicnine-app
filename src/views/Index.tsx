@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo, memo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { List, MapIcon, X, Key, Banknote } from 'lucide-react';
+import { List, MapIcon, X } from 'lucide-react';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { Listing, ListingFilters, SortOption } from '@/types/listing';
 import { useListings } from '@/hooks/useListings';
@@ -205,46 +205,8 @@ const Index = () => {
   }, [activeListingId]);
 
 
-  // Rent / Sale toggle — always visible above filters
-  const ListingTypeToggle = () => {
-    const selected = filters.listing_type || 'rent';
-    return (
-      <div className="flex border-b border-gray-200 px-4 shrink-0">
-        <button
-          type="button"
-          onClick={() => handleListingTypeToggle('rent')}
-          className={cn(
-            'flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors relative',
-            selected === 'rent'
-              ? 'text-gray-900'
-              : 'text-gray-400 hover:text-gray-600'
-          )}
-        >
-          <Key className="h-4 w-4" />
-          {t('listingTypes.rent')}
-          {selected === 'rent' && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 rounded-full" />
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={() => handleListingTypeToggle('sale')}
-          className={cn(
-            'flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors relative',
-            selected === 'sale'
-              ? 'text-gray-900'
-              : 'text-gray-400 hover:text-gray-600'
-          )}
-        >
-          <Banknote className="h-4 w-4" />
-          {t('listingTypes.sale')}
-          {selected === 'sale' && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 rounded-full" />
-          )}
-        </button>
-      </div>
-    );
-  };
+  // Listing type for FilterBar (derived from filters)
+  const listingType = filters.listing_type || 'rent';
 
   // Shared listings grid component
   const ListingsGrid = ({ showAnimations = true }: { showAnimations?: boolean }) => (
@@ -262,7 +224,7 @@ const Index = () => {
               onMouseEnter={() => handleCardHover(listing.id)}
               onMouseLeave={() => handleCardHover(null)}
               className={cn(
-                "transition-all duration-200 relative",
+                "relative transition-[ring-color,ring-offset-color,opacity] duration-200",
                 showAnimations && index < 8 && `animate-slide-up stagger-${Math.min(index + 1, 6)}`,
                 highlightedFromMap === listing.id && "ring-2 ring-accent ring-offset-2 ring-offset-background rounded-xl animate-pulse-highlight"
               )}
@@ -305,15 +267,12 @@ const Index = () => {
             {/* Mobile: Keep both views mounted, toggle visibility with CSS */}
             <div className="w-full flex flex-col flex-1 min-h-0 overflow-hidden relative">
               {/* List View - always mounted */}
-              <div 
+              <div
                 className={cn(
                   "flex flex-col flex-1 min-h-0 overflow-hidden absolute inset-0 transition-opacity duration-150",
                   mobileView === 'list' ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
                 )}
               >
-
-                <ListingTypeToggle />
-
                 {landlordId && (
                   <div className="px-4 pt-3 pb-0">
                     <div className="flex items-center gap-2 bg-accent/10 text-accent-foreground rounded-lg px-3 py-2 text-sm">
@@ -342,6 +301,8 @@ const Index = () => {
                   onSortChange={setSortBy}
                   totalCount={visibleListings.length}
                   userId={user?.id}
+                  listingType={listingType}
+                  onListingTypeChange={handleListingTypeToggle}
                 />
 
                 <div ref={listContainerRef} className="flex-1 rubber-band-scroll p-3 sm:p-4">
@@ -386,7 +347,7 @@ const Index = () => {
                   }}
                   style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
-                  <List className="h-4 w-4 mr-1.5" />
+                  <span className="text-sm mr-1" role="img" aria-label="list">📋</span>
                   {t('map.list')}
                 </button>
                 <button
@@ -403,7 +364,7 @@ const Index = () => {
                   }}
                   style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
-                  <MapIcon className="h-4 w-4 mr-1.5" />
+                  <span className="text-sm mr-1" role="img" aria-label="map">🗺️</span>
                   {t('map.map')}
                 </button>
               </div>
@@ -414,9 +375,6 @@ const Index = () => {
           <div className="flex-1 flex min-h-0 h-full">
             {/* Left panel - Listings (50%) */}
             <div className="w-1/2 flex flex-col h-full min-h-0 border-r border-border overflow-hidden">
-
-              <ListingTypeToggle />
-
               {landlordId && (
                 <div className="px-4 pt-3 pb-0">
                   <div className="flex items-center gap-2 bg-accent/10 text-accent-foreground rounded-lg px-3 py-2 text-sm">
@@ -445,6 +403,8 @@ const Index = () => {
                 onSortChange={setSortBy}
                 totalCount={visibleListings.length}
                 userId={user?.id}
+                listingType={listingType}
+                onListingTypeChange={handleListingTypeToggle}
               />
 
               <div ref={!isMobileLayout ? listContainerRef : undefined} className="flex-1 min-h-0 rubber-band-scroll p-3 sm:p-4 @container">

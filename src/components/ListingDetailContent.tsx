@@ -6,7 +6,7 @@ import {
   ArrowLeft, Heart, MapPin, Images, ChevronLeft, ChevronRight, CheckCircle,
   MessageCircle, User, ChevronDown, ChevronUp, LayoutGrid, Home, Calendar,
   Ruler, BedDouble, Bath, Building2, Flame, Zap, Clock, FileText, Sparkles,
-  Info, X
+  Info, X, Receipt, Shield, Wrench, Banknote, Droplets
 } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
@@ -302,7 +302,7 @@ export function ListingDetailContent({
       {/* Header bar */}
       {!isModal && (
         <div className={cn(
-          "container mx-auto px-4 sm:px-6 lg:px-8 transition-opacity duration-500",
+          "max-w-6xl mx-auto px-4 sm:px-6 transition-opacity duration-500",
           isAnimating && !isClosing ? "opacity-100" : "opacity-0"
         )}>
           <div className="flex items-center justify-between py-3">
@@ -335,7 +335,7 @@ export function ListingDetailContent({
 
       {/* Image Gallery */}
       <div className={cn(
-        "container mx-auto px-4 sm:px-6 lg:px-8 mb-8 transition-transform duration-500",
+        "max-w-6xl mx-auto px-4 sm:px-6 mb-8 transition-transform duration-500",
         isAnimating && !isClosing ? "translate-y-0" : "translate-y-4"
       )}>
         {listing.images && listing.images.length > 0 ? (
@@ -493,14 +493,14 @@ export function ListingDetailContent({
 
       {/* Content */}
       <div className={cn(
-        "container mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-500 delay-100",
+        "max-w-6xl mx-auto px-4 sm:px-6 transition-all duration-500 delay-100",
         isAnimating && !isClosing ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       )}>
         <div className="grid lg:grid-cols-3 gap-6 lg:gap-10">
           {/* Main content */}
           <div className="lg:col-span-2">
             {/* Header */}
-            <div className="pb-6 border-b border-gray-200">
+            <div className="pb-8">
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight mb-1.5">
                 {listing.title}
               </h1>
@@ -570,7 +570,7 @@ export function ListingDetailContent({
 
             {/* Description */}
             {listing.description && (
-              <div className="py-6 border-b border-gray-200">
+              <div className="pt-8">
                 <h2 className="text-lg font-semibold text-gray-900 mb-3">{t('listing.description')}</h2>
                 <div className="text-gray-600 whitespace-pre-line leading-relaxed text-[15px]">
                   {showFullDescription || listing.description.length <= 400 ? (
@@ -602,14 +602,14 @@ export function ListingDetailContent({
 
             {/* Property Details */}
             {detailRows.length > 0 && (
-              <div className="py-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3">Property Details</h2>
+              <div className="mt-8 bg-gray-50/80 rounded-2xl p-5 sm:p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Property Details</h2>
                 <dl className="grid grid-cols-2 sm:grid-cols-3 gap-5">
                   {detailRows.map((row) => {
                     const Icon = row.icon;
                     return (
                       <div key={row.label} className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm">
                           <Icon className="h-4.5 w-4.5 text-gray-600" />
                         </div>
                         <div className="min-w-0">
@@ -623,10 +623,112 @@ export function ListingDetailContent({
               </div>
             )}
 
+            {/* Costs Breakdown */}
+            {listing.expense_breakdown_enabled && (
+              listing.monthly_expenses || listing.utility_cost_estimate ||
+              listing.expense_hoa_fees || listing.expense_insurance ||
+              listing.expense_maintenance || listing.expense_property_tax ||
+              listing.expense_utilities || listing.expense_other
+            ) && (
+              <div className="mt-6 bg-gray-50/80 rounded-2xl p-5 sm:p-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Monthly Costs</h2>
+                <div className="space-y-2.5">
+                  {listing.monthly_expenses != null && listing.monthly_expenses > 0 && (
+                    <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-white shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <Receipt className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                        <span className="text-sm text-gray-700">Total Monthly Expenses</span>
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {formatPrice(listing.monthly_expenses, listing.currency)}
+                      </span>
+                    </div>
+                  )}
+                  {listing.utility_cost_estimate != null && listing.utility_cost_estimate > 0 && (
+                    <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-white shadow-sm">
+                      <div className="flex items-center gap-3">
+                        <Droplets className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                        <span className="text-sm text-gray-700">Utilities Estimate</span>
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {formatPrice(listing.utility_cost_estimate, listing.currency)}
+                      </span>
+                    </div>
+                  )}
+                  {listing.expense_hoa_fees != null && listing.expense_hoa_fees > 0 && (
+                    <div className="flex items-center justify-between py-2 px-3 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <Building2 className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                        <span className="text-sm text-gray-700">HOA / Reserve Fund</span>
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {formatPrice(listing.expense_hoa_fees, listing.currency)}
+                      </span>
+                    </div>
+                  )}
+                  {listing.expense_property_tax != null && listing.expense_property_tax > 0 && (
+                    <div className="flex items-center justify-between py-2 px-3 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <Banknote className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                        <span className="text-sm text-gray-700">Property Tax</span>
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {formatPrice(listing.expense_property_tax, listing.currency)}
+                      </span>
+                    </div>
+                  )}
+                  {listing.expense_insurance != null && listing.expense_insurance > 0 && (
+                    <div className="flex items-center justify-between py-2 px-3 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <Shield className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                        <span className="text-sm text-gray-700">Insurance</span>
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {formatPrice(listing.expense_insurance, listing.currency)}
+                      </span>
+                    </div>
+                  )}
+                  {listing.expense_maintenance != null && listing.expense_maintenance > 0 && (
+                    <div className="flex items-center justify-between py-2 px-3 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <Wrench className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                        <span className="text-sm text-gray-700">Maintenance</span>
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {formatPrice(listing.expense_maintenance, listing.currency)}
+                      </span>
+                    </div>
+                  )}
+                  {listing.expense_utilities != null && listing.expense_utilities > 0 && (
+                    <div className="flex items-center justify-between py-2 px-3 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <Zap className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                        <span className="text-sm text-gray-700">Utilities</span>
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {formatPrice(listing.expense_utilities, listing.currency)}
+                      </span>
+                    </div>
+                  )}
+                  {listing.expense_other != null && listing.expense_other > 0 && (
+                    <div className="flex items-center justify-between py-2 px-3 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <Info className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                        <span className="text-sm text-gray-700">Other Costs</span>
+                      </div>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {formatPrice(listing.expense_other, listing.currency)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Features & Amenities */}
             {featureCount > 0 && (
-              <div className="py-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3">
+              <div className="mt-8">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">
                   {t('listing.features')}
                 </h2>
                 <PropertyFeatures listing={listing} maxItems={10} />
@@ -642,9 +744,9 @@ export function ListingDetailContent({
             )}
 
             {/* Location */}
-            <div className="py-6">
+            <div className="mt-8 bg-gray-50/80 rounded-2xl p-5 sm:p-6">
               <h2 className="text-lg font-semibold text-gray-900 mb-1">{t('listing.location')}</h2>
-              <p className="text-sm text-gray-500 mb-3">{listing.address}, {listing.city}</p>
+              <p className="text-sm text-gray-500 mb-4">{listing.address}, {listing.city}</p>
               <div className="h-[280px] sm:h-[340px] rounded-xl overflow-hidden">
                 <ListingLocationMap
                   latitude={listing.latitude}
@@ -768,14 +870,14 @@ export function ListingDetailContent({
 
         {/* Similar Listings */}
         {showSimilar && (
-          <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="mt-12">
             <SimilarListings listing={listing} />
           </div>
         )}
 
         {/* Recently Viewed */}
         {showRecentlyViewed && (
-          <div className="mt-8 pt-6 border-t border-gray-200 pb-8">
+          <div className="mt-12 pb-8">
             <RecentlyViewedListings excludeListingId={listing.id} limit={6} />
           </div>
         )}

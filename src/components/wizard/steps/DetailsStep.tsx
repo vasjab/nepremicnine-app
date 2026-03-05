@@ -14,6 +14,7 @@ interface DetailsStepProps {
   areaSqm: string;
   availableFrom: string;
   availableUntil: string;
+  rentIndefinitely: boolean;
   isFurnished: boolean;
   furnishedDetails: string;
   allowsPets: boolean;
@@ -27,6 +28,7 @@ interface DetailsStepProps {
   onAreaChange: (value: string) => void;
   onAvailableFromChange: (value: string) => void;
   onAvailableUntilChange: (value: string) => void;
+  onRentIndefinitelyChange: (value: boolean) => void;
   onFurnishedChange: (value: boolean) => void;
   onFurnishedDetailsChange: (value: string) => void;
   onPetsChange: (value: boolean) => void;
@@ -150,6 +152,7 @@ export function DetailsStep({
   areaSqm,
   availableFrom,
   availableUntil,
+  rentIndefinitely,
   isFurnished,
   furnishedDetails,
   allowsPets,
@@ -163,6 +166,7 @@ export function DetailsStep({
   onAreaChange,
   onAvailableFromChange,
   onAvailableUntilChange,
+  onRentIndefinitelyChange,
   onFurnishedChange,
   onFurnishedDetailsChange,
   onPetsChange,
@@ -312,14 +316,32 @@ export function DetailsStep({
                 </div>
               )}
               <div className={cn("space-y-2", moveInImmediately && "sm:col-span-2 max-w-xs")}>
-                <Label className="text-sm font-medium text-muted-foreground">End Date (optional)</Label>
-                <DatePicker
-                  value={availableUntilDate}
-                  onChange={handleAvailableUntilChange}
-                  placeholder="Open ended"
-                  minDate={availableFromDate || new Date()}
-                />
-                <p className="text-xs text-muted-foreground">Leave empty for ongoing rental</p>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm font-medium text-muted-foreground">End Date</Label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">Indefinite</span>
+                    <Switch
+                      checked={rentIndefinitely}
+                      onCheckedChange={(checked) => {
+                        onRentIndefinitelyChange(checked);
+                        if (checked) {
+                          onAvailableUntilChange('');
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+                {!rentIndefinitely && (
+                  <DatePicker
+                    value={availableUntilDate}
+                    onChange={handleAvailableUntilChange}
+                    placeholder="Select end date"
+                    minDate={availableFromDate || new Date()}
+                  />
+                )}
+                {rentIndefinitely && (
+                  <p className="text-xs text-emerald-600 font-medium">No end date — rent indefinitely</p>
+                )}
               </div>
             </div>
 

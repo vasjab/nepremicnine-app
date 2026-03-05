@@ -169,21 +169,25 @@
 @layer components {
   /* ─── Listing Card ─────────────────────────────── */
   .listing-card {
-    @apply bg-card rounded-[20px] overflow-hidden;
-    border: 1px solid hsl(var(--border) / 0.6);
+    @apply bg-card/95 backdrop-blur-xl rounded-[20px] overflow-hidden;
+    border: 1px solid hsl(var(--border) / 0.5);
     box-shadow:
-      0 0 0 0.5px hsl(var(--border) / 0.3),
-      0 1px 2px hsl(var(--glass-shadow) / 0.5),
-      0 4px 20px -6px hsl(var(--glass-shadow));
-    transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+      0 0 0 0.5px hsl(var(--border) / 0.2),
+      0 1px 3px hsl(var(--glass-shadow) / 0.4),
+      0 4px 20px -6px hsl(var(--glass-shadow) / 0.8);
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    will-change: border-color, box-shadow;
   }
 
-  .listing-card:hover {
-    border-color: hsl(220 20% 82%);
-    box-shadow:
-      0 0 0 0.5px hsl(220 25% 10% / 0.04),
-      0 4px 12px hsl(220 25% 10% / 0.06),
-      0 12px 36px -8px hsl(220 25% 10% / 0.1);
+  /* Only apply hover effects on devices that truly support hover (not touch) */
+  @media (hover: hover) and (pointer: fine) {
+    .listing-card:hover {
+      border-color: hsl(220 20% 82%);
+      box-shadow:
+        0 0 0 0.5px hsl(220 25% 10% / 0.04),
+        0 4px 12px hsl(220 25% 10% / 0.06),
+        0 12px 36px -8px hsl(220 25% 10% / 0.1);
+    }
   }
 
   /* ─── Touch Targets ────────────────────────────── */

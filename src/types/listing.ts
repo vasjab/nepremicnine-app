@@ -131,6 +131,7 @@ export interface Listing {
   property_condition: 'new' | 'renovated' | 'good' | 'needs_work' | null;
 
   // Rental-specific
+  rent_indefinitely: boolean;
   deposit_amount: number | null;
   min_lease_months: number | null;
   internet_included: 'yes' | 'no' | 'available' | null;
@@ -260,11 +261,14 @@ export interface ListingFilters {
   property_condition?: string[] | null;
   
   // Rental filters
+  rent_indefinitely?: boolean | null;
   max_deposit?: number | null;
   max_lease_months?: number | null;
   internet_included?: string | null;
   utilities_included?: string | null;
-  
+  min_utility_cost?: number | null;
+  max_utility_cost?: number | null;
+
   // Price per area filters
   min_price_per_sqm?: number | null;
   max_price_per_sqm?: number | null;

@@ -234,6 +234,15 @@ export function useListings(filters?: ListingFilters, userId?: string) {
       if (filters?.utilities_included) {
         query = query.eq('utilities_included', filters.utilities_included);
       }
+      if (filters?.rent_indefinitely === true) {
+        query = query.is('available_until', null);
+      }
+      if (filters?.min_utility_cost) {
+        query = query.gte('utility_cost_estimate', filters.min_utility_cost);
+      }
+      if (filters?.max_utility_cost) {
+        query = query.lte('utility_cost_estimate', filters.max_utility_cost);
+      }
 
       const { data, error } = await query;
       if (error) throw error;
