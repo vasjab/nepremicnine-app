@@ -358,7 +358,7 @@ export default function AdminPage() {
                           )}
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">{listing.title || 'Untitled'}</p>
-                            <p className="text-xs text-muted-foreground">{listing.city}{listing.country ? `, ${listing.country}` : ''}</p>
+                            <p className="text-xs text-muted-foreground">{listing.city}{listing.country ? `, ${listing.country}` : ''} <span className="text-gray-300 font-mono text-[10px] ml-1">{listing.id.slice(0, 8)}</span></p>
                           </div>
                           <div className="text-right shrink-0">
                             <p className="text-sm font-semibold text-foreground tabular-nums">{listing.view_count.toLocaleString()}</p>
@@ -510,6 +510,7 @@ export default function AdminPage() {
                                       <span className="text-[10px] text-muted-foreground">
                                         {listing.view_count} views &middot; {listing.inquiry_count} inquiries
                                       </span>
+                                      <span className="text-gray-300 font-mono text-[10px]">{listing.id.slice(0, 8)}</span>
                                     </div>
                                   </div>
                                   <span className="text-xs font-medium text-foreground shrink-0 hidden sm:block">
@@ -598,7 +599,7 @@ export default function AdminPage() {
                                 <div className="flex items-center gap-1.5">
                                   <StatusBadge listing={listing} />
                                   <span className="text-[10px] text-muted-foreground truncate">
-                                    {owner?.full_name || 'Unknown'} &middot; {listing.city || ''}
+                                    {owner?.full_name || 'Unknown'} &middot; {listing.city || ''} <span className="text-gray-300 font-mono">{listing.id.slice(0, 8)}</span>
                                   </span>
                                 </div>
                               </div>
@@ -651,6 +652,7 @@ export default function AdminPage() {
                                   <span>{listing.view_count} views</span>
                                   <span>{listing.inquiry_count} msgs</span>
                                   <span>{new Date(listing.created_at).toLocaleDateString()}</span>
+                                  <span className="text-gray-300 font-mono">{listing.id.slice(0, 8)}</span>
                                 </div>
                               </div>
                             </div>
