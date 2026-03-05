@@ -552,9 +552,8 @@ export function ListingDetailContent({
                   </div>
                   {!isCompleted && (
                     <Button
-                      variant="gradient"
                       size="sm"
-                      className="shrink-0 rounded-xl h-11 px-5"
+                      className="shrink-0 rounded-xl h-11 px-5 bg-rose-500 hover:bg-rose-600 text-white border-0"
                       disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
                       onClick={handleContactLandlord}
                     >
@@ -602,13 +601,21 @@ export function ListingDetailContent({
             {detailRows.length > 0 && (
               <div className="py-6 border-b border-gray-200">
                 <h2 className="text-lg font-semibold text-gray-900 mb-3">Property Details</h2>
-                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
-                  {detailRows.map((row) => (
-                    <div key={row.label} className="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0">
-                      <dt className="text-sm text-gray-500">{row.label}</dt>
-                      <dd className="text-sm font-medium text-gray-900 text-right">{row.value}</dd>
-                    </div>
-                  ))}
+                <dl className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+                  {detailRows.map((row) => {
+                    const Icon = row.icon;
+                    return (
+                      <div key={row.label} className="flex items-start gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gray-100">
+                          <Icon className="h-4.5 w-4.5 text-gray-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <dt className="text-xs text-gray-500 leading-tight">{row.label}</dt>
+                          <dd className="text-sm font-semibold text-gray-900 truncate">{row.value}</dd>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </dl>
               </div>
             )}
@@ -622,7 +629,7 @@ export function ListingDetailContent({
                 <PropertyFeatures listing={listing} maxItems={showFeatures ? undefined : 10} />
                 {featureCount > 10 && (
                   <button
-                    className="mt-4 text-sm font-semibold text-gray-900 underline underline-offset-4"
+                    className="mt-5 inline-flex items-center justify-center h-12 px-6 text-base font-semibold text-gray-900 rounded-lg border border-gray-900 hover:bg-gray-50 transition-colors"
                     onClick={() => setShowFeatures(!showFeatures)}
                   >
                     {showFeatures ? 'Show less' : `Show all ${featureCount} amenities`}
@@ -649,10 +656,10 @@ export function ListingDetailContent({
           <div className="hidden lg:block lg:col-span-1">
             <div className="sticky top-24 space-y-4">
               {/* Price card */}
-              <div className="rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
                 {!isCompleted ? (
-                  <div className="p-5">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-1.5">
+                  <div className="p-6">
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-2">
                       {propertyTypeLabels[listing.property_type]} · {listing.listing_type === 'rent' ? t('listingTypes.rent') : t('listingTypes.sale')}
                     </p>
                     <p className="text-3xl font-extrabold text-foreground tracking-tight">
@@ -669,9 +676,10 @@ export function ListingDetailContent({
                         {listingStats.daysListed > 0 ? `Listed ${listingStats.daysListed} days ago` : 'Listed today'} &middot; {listingStats.viewCount} views
                       </p>
                     )}
+                    <div className="border-t border-gray-100 mt-5" />
                   </div>
                 ) : (
-                  <div className="p-5 bg-emerald-50/50">
+                  <div className="p-6 bg-emerald-50/50">
                     <div className="flex items-center gap-2 mb-3">
                       <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] bg-emerald-100/80 text-emerald-800 border border-emerald-200/60">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
@@ -719,25 +727,21 @@ export function ListingDetailContent({
                   </div>
                 )}
 
-                <div className="p-5 pt-0 space-y-2.5 mt-0">
+                <div className="px-6 pb-6 space-y-3">
                   {!isCompleted && (
-                    <>
-                      <div className="pt-4" />
-                      <Button
-                        variant="gradient"
-                        className="w-full h-10 text-sm font-semibold rounded-xl"
-                        disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
-                        onClick={handleContactLandlord}
-                      >
-                        <MessageCircle className="h-4 w-4 mr-2" />
-                        {getOrCreateConversation.isPending ? 'Starting chat...' : t('listing.contactLandlord')}
-                      </Button>
-                    </>
+                    <Button
+                      className="w-full h-12 text-sm font-semibold rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white border-0 shadow-md shadow-rose-200/50"
+                      disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
+                      onClick={handleContactLandlord}
+                    >
+                      <MessageCircle className="h-4 w-4 mr-2" />
+                      {getOrCreateConversation.isPending ? 'Starting chat...' : t('listing.contactLandlord')}
+                    </Button>
                   )}
 
                   <Button
                     variant="outline"
-                    className="w-full h-10 text-sm font-semibold rounded-xl border-gray-200 hover:border-gray-300"
+                    className="w-full h-12 text-sm font-semibold rounded-xl border-gray-900 hover:bg-gray-50"
                     onClick={handleSaveClick}
                   >
                     <Heart className={cn('h-4 w-4 mr-2', isSaved && 'fill-current text-rose-500')} />

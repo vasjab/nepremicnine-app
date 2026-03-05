@@ -84,11 +84,11 @@ function FeatureItem({
 }) {
   const theme = categoryThemes[category];
   return (
-    <li className="flex items-center gap-3 py-2">
-      <div className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px]", theme.iconBg)}>
-        <Icon className={cn("h-3.5 w-3.5", theme.iconColor)} />
+    <li className="flex items-center gap-3 py-2.5">
+      <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", theme.iconBg)}>
+        <Icon className={cn("h-4 w-4", theme.iconColor)} />
       </div>
-      <span className="text-sm text-gray-800 font-medium">
+      <span className="text-[14px] text-gray-800 font-medium">
         {label}
         {detail && <span className="text-gray-400 font-normal ml-1">· {detail}</span>}
       </span>
@@ -315,7 +315,7 @@ export function PropertyFeatures({ listing, maxItems }: PropertyFeaturesProps) {
     const allFeatures = categories.flatMap(cat => cat.features);
     const displayed = allFeatures.slice(0, maxItems);
     return (
-      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
+      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-0.5">
         {displayed.map((feature) => (
           <FeatureItem
             key={feature.id}
