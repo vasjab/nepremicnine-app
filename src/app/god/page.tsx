@@ -5,7 +5,7 @@ import {
   Users, Home, Eye, MessageSquare, FileText, CheckCircle, Clock,
   LogOut, Lock, Search, ChevronDown, ChevronUp, ExternalLink,
   TrendingUp, Flame, BarChart3, ArrowUpDown, Power, Trash2, Ban,
-  ShieldOff, Pencil, Loader2
+  ShieldOff, Pencil, Loader2, Database
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -77,6 +77,7 @@ export default function AdminPage() {
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<{ type: string; id: string; label: string } | null>(null);
+  const [seeding, setSeeding] = useState(false);
 
   useEffect(() => {
     fetch('/api/admin/auth')
@@ -127,6 +128,22 @@ export default function AdminPage() {
     await fetch('/api/admin/auth', { method: 'DELETE' });
     setIsAuthenticated(false);
     setData(null);
+  };
+
+  const handleSeed = async () => {
+    if (!confirm('This will create ~110 mock listings. Continue?')) return;
+    setSeeding(true);
+    try {
+      const res = await fetch('/api/admin/seed', { method: 'POST' });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error);
+      alert(`Seeded ${d.inserted} listings`);
+      refreshData();
+    } catch (e: any) {
+      alert('Seed failed: ' + e.message);
+    } finally {
+      setSeeding(false);
+    }
   };
 
   const refreshData = () => {
@@ -281,13 +298,23 @@ export default function AdminPage() {
               <span className="text-sm font-bold text-foreground tracking-tight">hemma <span className="text-muted-foreground font-medium">admin</span></span>
             </div>
 
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleSeed}
+                disabled={seeding}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              >
+                {seeding ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Database className="h-3.5 w-3.5" />}
+                <span className="hidden sm:inline">{seeding ? 'Seeding...' : 'Seed Data'}</span>
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+            </div>
           </div>
 
           {/* Tabs */}
