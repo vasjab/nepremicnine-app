@@ -1,4 +1,6 @@
-import { useNavigate } from 'react-router-dom';
+'use client';
+
+import { useRouter } from 'next/navigation';
 import { Listing } from '@/types/listing';
 import { useSimilarListings } from '@/hooks/useListings';
 import { ListingCard } from '@/components/ListingCard';
@@ -9,7 +11,7 @@ interface SimilarListingsProps {
 }
 
 export function SimilarListings({ listing }: SimilarListingsProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { data: similarListings, isLoading } = useSimilarListings(listing, 6);
 
   if (isLoading) {
@@ -41,7 +43,7 @@ export function SimilarListings({ listing }: SimilarListingsProps) {
           <ListingCard
             key={similar.id}
             listing={similar}
-            onClick={() => navigate(`/listing/${similar.id}`)}
+            onClick={() => router.push(`/listing/${similar.id}`)}
           />
         ))}
       </div>

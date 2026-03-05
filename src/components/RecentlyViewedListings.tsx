@@ -1,4 +1,6 @@
-import { useNavigate } from 'react-router-dom';
+'use client';
+
+import { useRouter } from 'next/navigation';
 import { Clock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRecentlyViewedListings, useLocalRecentlyViewedListings } from '@/hooks/useRecentlyViewed';
@@ -16,7 +18,7 @@ export function RecentlyViewedListings({
   limit = 6,
   showTitle = true 
 }: RecentlyViewedListingsProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { user } = useAuth();
   
   // Use database for logged-in users, localStorage for guests
@@ -79,7 +81,7 @@ export function RecentlyViewedListings({
           <ListingCard
             key={item.id}
             listing={item.listing}
-            onClick={() => navigate(`/listing/${item.listing.id}`)}
+            onClick={() => router.push(`/listing/${item.listing.id}`)}
           />
         ))}
       </div>

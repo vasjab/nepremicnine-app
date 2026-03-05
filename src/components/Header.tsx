@@ -1,4 +1,7 @@
-import { Link, useLocation } from 'react-router-dom';
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Home, Heart, PlusCircle, User, Menu, X, MessageCircle, BarChart3, History, Globe } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,11 +21,11 @@ import { cn } from '@/lib/utils';
 export function Header() {
   const { user, signOut } = useAuth();
   const { t } = useTranslation();
-  const location = useLocation();
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: unreadCount = 0 } = useUnreadCount(user?.id);
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => pathname === path;
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border/50">
@@ -30,7 +33,7 @@ export function Header() {
         <div className="flex items-center justify-between h-14">
           {/* Logo */}
           <Link 
-            to="/" 
+            href="/" 
             className="flex items-center gap-2 transition-opacity hover:opacity-80"
           >
             <span className="font-display text-2xl font-bold text-foreground">
@@ -41,7 +44,7 @@ export function Header() {
           {/* Mobile: Always visible nav icons - Find Home & Saved */}
           <div className="flex md:hidden items-center gap-1 flex-1 justify-center">
             <Link
-              to="/"
+              href="/"
               className={cn(
                 'flex items-center justify-center w-10 h-10 rounded-full transition-colors touch-safe-button',
                 isActive('/') 
@@ -54,7 +57,7 @@ export function Header() {
             </Link>
             {user && (
               <Link
-                to="/saved"
+                href="/saved"
                 className={cn(
                   'flex items-center justify-center w-10 h-10 rounded-full transition-colors touch-safe-button',
                   isActive('/saved') 
@@ -71,7 +74,7 @@ export function Header() {
           {/* Desktop Navigation - Simplified */}
           <nav className="hidden md:flex items-center gap-1">
             <Link
-              to="/"
+              href="/"
               className={cn(
                 'relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
                 isActive('/') 
@@ -85,7 +88,7 @@ export function Header() {
               )}
             </Link>
             <Link
-              to="/sold-rented"
+              href="/sold-rented"
               className={cn(
                 'relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-200',
                 isActive('/sold-rented') 
@@ -105,7 +108,7 @@ export function Header() {
             {user ? (
               <>
                 {/* Messages button with badge */}
-                <Link to="/messages" className="relative">
+                <Link href="/messages" className="relative">
                   <Button 
                     variant="ghost" 
                     size="icon" 
@@ -120,7 +123,7 @@ export function Header() {
                     )}
                   </Button>
                 </Link>
-                <Link to="/create-listing" className="hidden sm:block">
+                <Link href="/create-listing" className="hidden sm:block">
                   <Button 
                     variant="outline" 
                     size="sm" 
@@ -144,13 +147,13 @@ export function Header() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-64 py-2 rounded-xl shadow-xl shadow-black/10">
                       <DropdownMenuItem asChild className="px-4 py-3.5 text-base focus:bg-secondary/50 rounded-none">
-                        <Link to="/profile" className="cursor-pointer">
+                        <Link href="/profile" className="cursor-pointer">
                           <User className="mr-4 h-5 w-5" />
                           {t('common.profile')}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild className="px-4 py-3.5 text-base focus:bg-secondary/50 rounded-none">
-                        <Link to="/messages" className="cursor-pointer">
+                        <Link href="/messages" className="cursor-pointer">
                           <MessageCircle className="mr-4 h-5 w-5" />
                           Messages
                           {unreadCount > 0 && (
@@ -162,19 +165,19 @@ export function Header() {
                       </DropdownMenuItem>
                       <DropdownMenuSeparator className="my-2" />
                       <DropdownMenuItem asChild className="px-4 py-3.5 text-base focus:bg-secondary/50 rounded-none">
-                        <Link to="/saved" className="cursor-pointer">
+                        <Link href="/saved" className="cursor-pointer">
                           <Heart className="mr-4 h-5 w-5" />
                           {t('common.savedListings')}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild className="px-4 py-3.5 text-base focus:bg-secondary/50 rounded-none">
-                        <Link to="/my-listings" className="cursor-pointer">
+                        <Link href="/my-listings" className="cursor-pointer">
                           <Home className="mr-4 h-5 w-5" />
                           {t('common.myListings')}
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild className="px-4 py-3.5 text-base focus:bg-secondary/50 rounded-none">
-                        <Link to="/dashboard" className="cursor-pointer">
+                        <Link href="/dashboard" className="cursor-pointer">
                           <BarChart3 className="mr-4 h-5 w-5" />
                           {t('nav.dashboard')}
                         </Link>
@@ -196,12 +199,12 @@ export function Header() {
               <div className="hidden md:flex items-center gap-2">
                 {/* Language & Region for non-logged in users */}
                 <InternationalSettings trigger="icon" />
-                <Link to="/auth">
+                <Link href="/auth">
                   <Button variant="ghost" size="sm" className="rounded-full">
                     {t('common.logIn')}
                   </Button>
                 </Link>
-                <Link to="/auth?mode=signup">
+                <Link href="/auth?mode=signup">
                   <Button 
                     variant="accent"
                     size="sm" 
@@ -232,7 +235,7 @@ export function Header() {
             <div className="flex flex-col">
               {/* Sold/Rented */}
               <Link
-                to="/sold-rented"
+                href="/sold-rented"
                 className={cn(
                   'flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors touch-safe-button border-b border-border/20',
                   isActive('/sold-rented') 
@@ -249,7 +252,7 @@ export function Header() {
               {user ? (
                 <>
                   <Link
-                    to="/saved"
+                    href="/saved"
                     className={cn(
                       'flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors touch-safe-button border-b border-border/20',
                       isActive('/saved') 
@@ -263,7 +266,7 @@ export function Header() {
                     {t('common.savedListings')}
                   </Link>
                   <Link
-                    to="/my-listings"
+                    href="/my-listings"
                     className={cn(
                       'flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors touch-safe-button border-b border-border/20',
                       isActive('/my-listings') 
@@ -277,7 +280,7 @@ export function Header() {
                     {t('nav.myListings')}
                   </Link>
                   <Link
-                    to="/profile"
+                    href="/profile"
                     className={cn(
                       'flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors touch-safe-button border-b border-border/20',
                       isActive('/profile') 
@@ -291,7 +294,7 @@ export function Header() {
                     {t('common.profile')}
                   </Link>
                   <Link
-                    to="/dashboard"
+                    href="/dashboard"
                     className={cn(
                       'flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors touch-safe-button border-b border-border/20',
                       isActive('/dashboard') 
@@ -317,7 +320,7 @@ export function Header() {
                   <div className="h-2 bg-muted/30" />
                   
                   <Link
-                    to="/create-listing"
+                    href="/create-listing"
                     className="flex items-center gap-4 px-6 py-4 text-base font-semibold text-accent touch-safe-button border-b border-border/20"
                     onClick={() => setMobileMenuOpen(false)}
                     style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -351,7 +354,7 @@ export function Header() {
                   <div className="h-2 bg-muted/30" />
                   
                   <Link
-                    to="/auth"
+                    href="/auth"
                     className="flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors touch-safe-button border-b border-border/20 text-foreground hover:bg-secondary/30"
                     onClick={() => setMobileMenuOpen(false)}
                     style={{ WebkitTapHighlightColor: 'transparent' }}
@@ -360,7 +363,7 @@ export function Header() {
                     {t('common.logIn')}
                   </Link>
                   <Link
-                    to="/auth?mode=signup"
+                    href="/auth?mode=signup"
                     className="flex items-center gap-4 px-6 py-4 text-base font-semibold text-accent touch-safe-button"
                     onClick={() => setMobileMenuOpen(false)}
                     style={{ WebkitTapHighlightColor: 'transparent' }}

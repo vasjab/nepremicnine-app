@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useCallback } from 'react';
 import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
 import { ArrowLeft, Heart, MapPin, Bed, Bath, Square, Calendar, Images, ChevronLeft, ChevronRight, LayoutGrid, ExternalLink, CheckCircle, Eye, Clock, MessageCircle, Flame, User } from 'lucide-react';
@@ -15,7 +17,7 @@ import { FeatureHighlightBadges } from '@/components/FeatureHighlightBadges';
 import { SimilarListings } from '@/components/SimilarListings';
 import { RecentlyViewedListings } from '@/components/RecentlyViewedListings';
 import { cn } from '@/lib/utils';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { useToast } from '@/hooks/use-toast';
@@ -45,7 +47,7 @@ export function ListingDetailContent({
   isAnimating = true,
   isClosing = false,
 }: ListingDetailContentProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { user } = useAuth();
   const { t, language } = useTranslation();
   const { formatPrice, formatArea, areaUnit } = useFormattedPrice();
@@ -85,7 +87,7 @@ export function ListingDetailContent({
 
   const handleSaveClick = () => {
     if (!user) {
-      navigate('/auth');
+      router.push('/auth');
       return;
     }
 
@@ -98,7 +100,7 @@ export function ListingDetailContent({
 
   const handleContactLandlord = async () => {
     if (!user) {
-      navigate('/auth');
+      router.push('/auth');
       return;
     }
     if (!listing.user_id) {
@@ -114,7 +116,7 @@ export function ListingDetailContent({
       if (isModal) {
         onClose();
       }
-      navigate('/messages', { state: { conversationId: data.id } });
+      router.push(`/messages?conversation=${data.id}`);
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to start conversation' });
     }
@@ -591,7 +593,7 @@ export function ListingDetailContent({
                 <Button
                   variant="ghost"
                   className="w-full text-muted-foreground hover:text-foreground"
-                  onClick={() => navigate(`/landlord/${listing.user_id}`)}
+                  onClick={() => router.push(`/landlord/${listing.user_id}`)}
                 >
                   <User className="h-4 w-4 mr-2" />
                   View landlord profile

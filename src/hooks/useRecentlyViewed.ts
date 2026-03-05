@@ -21,6 +21,7 @@ interface LocalStorageViewedItem {
 
 // Get viewed listing IDs from localStorage
 function getLocalStorageViewed(): LocalStorageViewedItem[] {
+  if (typeof window === 'undefined') return [];
   try {
     const stored = localStorage.getItem(LOCALSTORAGE_KEY);
     return stored ? JSON.parse(stored) : [];

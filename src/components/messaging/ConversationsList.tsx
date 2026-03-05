@@ -1,7 +1,9 @@
+'use client';
+
 import { useState, useRef, useLayoutEffect } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { MessageCircle, Trash2, Loader2, Home, MoreVertical, Pin, Mail, MailOpen } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Conversation, usePinConversation, useMarkConversationUnread } from '@/hooks/useMessaging';
 import { useDeleteConversation } from '@/hooks/useDeleteConversation';
 import { cn } from '@/lib/utils';
@@ -348,7 +350,7 @@ export function ConversationsList({
                     {isPinned ? 'Unpin' : 'Pin'}
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link to={`/listing/${conversation.listing?.id}`}>
+                    <Link href={`/listing/${conversation.listing?.id}`}>
                       <Home className="h-4 w-4 mr-2" />
                       View Listing
                     </Link>
@@ -440,7 +442,7 @@ export function ConversationsList({
               asChild
               onClick={() => setActionSheetOpen(false)}
             >
-              <Link to={`/listing/${longPressConversation?.listing?.id}`}>
+              <Link href={`/listing/${longPressConversation?.listing?.id}`}>
                 <Home className="h-5 w-5 mr-3" />
                 View Listing
               </Link>

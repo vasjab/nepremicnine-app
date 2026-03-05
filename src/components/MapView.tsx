@@ -66,7 +66,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
   const listingsRef = useRef<Listing[]>([]);
   
   const [mapboxToken, setMapboxToken] = useState(() => {
-    return localStorage.getItem(MAPBOX_TOKEN_KEY) || import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || '';
+    return localStorage.getItem(MAPBOX_TOKEN_KEY) || process.env.NEXT_PUBLIC_MAPBOX_PUBLIC_TOKEN || '';
   });
   const [tokenInput, setTokenInput] = useState('');
   const [mapError, setMapError] = useState(false);

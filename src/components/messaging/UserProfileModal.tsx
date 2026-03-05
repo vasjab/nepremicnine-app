@@ -1,5 +1,7 @@
+'use client';
+
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { Home, Calendar, Phone, ExternalLink } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -27,7 +29,7 @@ interface UserProfileModalProps {
 }
 
 export function UserProfileModal({ isOpen, onClose, userId, userName, userAvatar }: UserProfileModalProps) {
-  const navigate = useNavigate();
+  const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [listingsCount, setListingsCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -146,7 +148,7 @@ export function UserProfileModal({ isOpen, onClose, userId, userName, userAvatar
             <Button
               onClick={() => {
                 onClose();
-                navigate(`/landlord/${userId}`);
+                router.push(`/landlord/${userId}`);
               }}
               className="w-full"
             >

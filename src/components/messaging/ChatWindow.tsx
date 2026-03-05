@@ -1,7 +1,9 @@
+'use client';
+
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { format, isToday, isYesterday, differenceInMinutes } from 'date-fns';
 import { ArrowLeft, Send, Loader2, MoreVertical, User, Trash2, Reply, Home, ExternalLink, Pencil, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Message, Conversation, useMessages, useSendMessage, useMarkMessagesRead, useEditMessage, useDeleteMessage } from '@/hooks/useMessaging';
 import { useMessageReactions, useToggleReaction } from '@/hooks/useMessageReactions';
 import { useAuth } from '@/contexts/AuthContext';
@@ -396,7 +398,7 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
               {otherUser?.full_name || (isRenter ? 'Landlord' : 'Renter')}
             </h2>
             <Link 
-              to={`/listing/${conversation.listing?.id}`}
+              href={`/listing/${conversation.listing?.id}`}
               className="text-xs text-muted-foreground truncate hover:text-accent hover:underline flex items-center gap-1"
               onClick={(e) => e.stopPropagation()}
             >
@@ -420,7 +422,7 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
               View Profile
             </DropdownMenuItem>
             <DropdownMenuItem asChild className="px-4 py-3 text-base cursor-pointer">
-              <Link to={`/listing/${conversation.listing?.id}`}>
+              <Link href={`/listing/${conversation.listing?.id}`}>
                 <Home className="h-5 w-5 mr-3" />
                 View Listing
               </Link>
