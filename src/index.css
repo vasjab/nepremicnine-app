@@ -299,6 +299,150 @@
     border: 1px solid hsl(0 0% 100% / 0.08);
   }
 
+  /* ─── Segmented Control (Apple-style) ────────── */
+  .segmented-control {
+    display: flex;
+    gap: 1px;
+    padding: 3px;
+    border-radius: 14px;
+    background: hsl(0 0% 0% / 0.055);
+    box-shadow:
+      inset 0 0.5px 1.5px hsl(0 0% 0% / 0.08),
+      inset 0 0 0 0.5px hsl(0 0% 0% / 0.04);
+  }
+
+  .segmented-control-floating {
+    background: hsl(0 0% 100% / 0.88);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow:
+      0 2px 12px -2px hsl(0 0% 0% / 0.12),
+      0 0 0 0.5px hsl(0 0% 0% / 0.06),
+      inset 0 0.5px 0 hsl(0 0% 100% / 0.5);
+  }
+
+  .segmented-item {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 16px;
+    border-radius: 11px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: hsl(0 0% 42%);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition:
+      color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .segmented-item:hover:not(.is-active) {
+    color: hsl(0 0% 20%);
+    background: hsl(0 0% 0% / 0.04);
+  }
+
+  .segmented-item:active {
+    transform: scale(0.97);
+  }
+
+  .segmented-item.is-active {
+    color: hsl(0 0% 9%);
+  }
+
+  /* The sliding pill background */
+  .segmented-item-bg {
+    position: absolute;
+    inset: 0;
+    border-radius: 11px;
+    background: white;
+    box-shadow:
+      0 1px 3px hsl(0 0% 0% / 0.08),
+      0 1px 2px hsl(0 0% 0% / 0.04),
+      0 0 0 0.5px hsl(0 0% 0% / 0.04),
+      inset 0 0.5px 0 hsl(0 0% 100% / 1);
+    animation: segmented-pill-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .segmented-control-floating .segmented-item-bg {
+    background: white;
+    box-shadow:
+      0 1px 4px hsl(0 0% 0% / 0.1),
+      0 1px 2px hsl(0 0% 0% / 0.06),
+      0 0 0 0.5px hsl(0 0% 0% / 0.05);
+  }
+
+  @keyframes segmented-pill-in {
+    from {
+      opacity: 0;
+      transform: scale(0.94);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Divider lines between inactive items */
+  .segmented-item:not(.is-active) + .segmented-item:not(.is-active)::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 6px;
+    bottom: 6px;
+    width: 1px;
+    background: hsl(0 0% 0% / 0.09);
+    border-radius: 0.5px;
+    transition: opacity 0.2s;
+  }
+
+  .segmented-item:hover::before,
+  .segmented-item.is-active + .segmented-item::before {
+    opacity: 0 !important;
+  }
+
+  /* ─── Segmented Tabs (shadcn TabsList override) ─── */
+  .segmented-control-tabs {
+    display: flex;
+    gap: 1px;
+    border-radius: 14px;
+    background: hsl(0 0% 0% / 0.055);
+    box-shadow:
+      inset 0 0.5px 1.5px hsl(0 0% 0% / 0.08),
+      inset 0 0 0 0.5px hsl(0 0% 0% / 0.04);
+    height: auto;
+  }
+
+  .segmented-tab-trigger {
+    position: relative;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 7px 16px;
+    border-radius: 11px;
+    color: hsl(0 0% 40%);
+    background: transparent;
+    transition: color 0.2s, background 0.15s;
+    gap: 6px;
+  }
+
+  .segmented-tab-trigger:hover {
+    color: hsl(0 0% 25%);
+  }
+
+  .segmented-tab-trigger[data-state="active"] {
+    color: hsl(0 0% 10%);
+    background: white;
+    font-weight: 600;
+    box-shadow:
+      0 1px 3px hsl(0 0% 0% / 0.08),
+      0 0.5px 1px hsl(0 0% 0% / 0.06),
+      0 0 0 0.5px hsl(0 0% 0% / 0.04);
+  }
+
   /* ─── Glass Card (DESIGN.md) ─────────────────── */
   .glass-card {
     background: hsl(var(--card));
@@ -572,7 +716,7 @@
   padding: 0 !important;
   border-radius: 16px !important;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06) !important;
-  overflow: hidden !important;
+  overflow: visible !important;
   max-height: none !important;
   border: 1px solid rgba(0, 0, 0, 0.06) !important;
 }
@@ -583,7 +727,7 @@
 
 .listing-popup .mapboxgl-popup-content {
   background: white;
-  overflow: hidden !important;
+  overflow: visible !important;
   border-radius: 16px !important;
 }
 
@@ -591,6 +735,11 @@
   overflow: hidden;
   border-radius: 16px;
   background: white;
+}
+
+/* Allow the inner content area (with padding) to show the button fully */
+.listing-popup .mapboxgl-popup-content > div > div:last-child {
+  overflow: visible;
 }
 
 /* Unified close button — matches dialog/sheet close buttons */

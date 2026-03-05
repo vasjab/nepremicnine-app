@@ -392,7 +392,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
               opacity: 1 !important;
             }
           </style>
-          <div class="popup-content-${listing.id}" style="width: 260px; font-family: system-ui, -apple-system, sans-serif; cursor: pointer; overflow: hidden; background: white; border-radius: 16px;">
+          <div class="popup-content-${listing.id}" style="width: 260px; font-family: system-ui, -apple-system, sans-serif; cursor: pointer; background: white; border-radius: 16px;">
             <div class="popup-img-container-${listing.id}" style="position: relative; width: 100%; height: 170px; overflow: hidden;">
               <img class="popup-img-${listing.id}" src="${images[0]}" alt="${listing.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s ease;" />
               ${arrowsHtml}
@@ -403,7 +403,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
                 </div>
               ` : ''}
             </div>
-            <div style="padding: 14px 14px 12px; background: white;">
+            <div style="padding: 14px 14px 14px; background: white; border-radius: 0 0 16px 16px;">
               <div style="font-size: 10px; color: #999; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">
                 ${propertyTypeLabels[listing.property_type] || t('propertyTypes.other')}${!isCompleted ? ` · ${listing.listing_type === 'rent' ? t('map.forRent') : t('map.forSale')}` : ''}
               </div>
@@ -686,24 +686,23 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
       <div ref={mapContainer} className="w-full h-full" />
       
       {/* Map Style Switcher */}
-      <div className="absolute top-3 left-3 z-10 flex gap-1 bg-background/95 backdrop-blur-sm rounded-lg p-1 shadow-md border border-border/50">
+      <div className="segmented-control segmented-control-floating absolute top-3 left-3 z-10">
         {(Object.keys(MAP_STYLES) as MapStyle[]).map((style) => {
           const { icon: Icon } = MAP_STYLES[style];
           const label = t(`map.${style}`);
-          const isActive = mapStyle === style;
+          const active = mapStyle === style;
           return (
             <button
               key={style}
               onClick={() => handleStyleChange(style)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
-                isActive
-                  ? 'bg-accent text-accent-foreground'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
+              className={`segmented-item group ${active ? 'is-active' : ''}`}
               title={label}
             >
-              <Icon className="h-4 w-4" />
-              <span className="hidden sm:inline">{label}</span>
+              {active && <span className="segmented-item-bg" />}
+              <Icon className={`relative z-10 h-[14px] w-[14px] transition-colors duration-200 ${
+                active ? 'text-gray-700' : 'text-gray-400 group-hover:text-gray-500'
+              }`} />
+              <span className="relative z-10 hidden sm:inline">{label}</span>
             </button>
           );
         })}
@@ -712,10 +711,10 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
       {/* Reset View Button */}
       <button
         onClick={handleResetView}
-        className="absolute top-3 right-14 z-10 flex items-center gap-1.5 px-3 py-1.5 bg-background/95 backdrop-blur-sm rounded-lg shadow-md border border-border/50 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+        className="absolute top-3 right-14 z-10 flex items-center gap-1.5 px-3 py-[7px] bg-white/88 backdrop-blur-[20px] rounded-[11px] shadow-[0_2px_12px_-2px_hsl(0_0%_0%/0.12),0_0_0_0.5px_hsl(0_0%_0%/0.06),inset_0_0.5px_0_hsl(0_0%_100%/0.5)] text-[13px] font-medium text-gray-500 hover:text-gray-900 active:scale-[0.97] transition-all duration-200"
         title={t('map.resetView')}
       >
-        <Maximize2 className="h-4 w-4" />
+        <Maximize2 className="h-[14px] w-[14px]" />
         <span className="hidden sm:inline">{t('map.resetView')}</span>
       </button>
     </div>

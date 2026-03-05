@@ -125,22 +125,22 @@ function FilterSection({
   return (
     <div ref={sectionRef}>
       <Collapsible open={isOpen} onOpenChange={handleOpenChange} className="border-b border-gray-100">
-        <CollapsibleTrigger className="flex w-full items-center justify-between py-5 text-sm font-medium transition-colors hover:text-gray-900 group">
-          <span className="flex items-center gap-3">
-            {Icon && <Icon className="h-[18px] w-[18px] text-gray-400 group-hover:text-gray-600 transition-colors" />}
-            <span className="text-gray-700 group-hover:text-gray-900">{title}</span>
+        <CollapsibleTrigger className="flex w-full items-center justify-between py-4 text-sm font-medium transition-colors hover:text-gray-900 group">
+          <span className="flex items-center gap-2.5">
+            {Icon && <Icon className="h-[17px] w-[17px] text-gray-400 group-hover:text-gray-500 transition-colors" />}
+            <span className="text-[13px] font-medium text-gray-600 group-hover:text-gray-900 transition-colors">{title}</span>
             {activeCount > 0 && (
-              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gray-900 px-1.5 text-[10px] font-bold text-white">
+              <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gray-900 px-1 text-[10px] font-bold text-white leading-none">
                 {activeCount}
               </span>
             )}
           </span>
           <ChevronDown className={cn(
-            "h-4 w-4 text-muted-foreground transition-transform duration-200",
+            "h-3.5 w-3.5 text-gray-400 transition-transform duration-200",
             isOpen && "rotate-180"
           )} />
         </CollapsibleTrigger>
-        <CollapsibleContent className="space-y-3 pt-2 pb-6 animate-accordion-down">
+        <CollapsibleContent className="space-y-1.5 pt-1 pb-5 animate-accordion-down">
           {children}
         </CollapsibleContent>
       </Collapsible>
@@ -168,16 +168,16 @@ function ToggleFilter({
   };
 
   return (
-    <div 
+    <div
       className={cn(
-        "flex items-center justify-between min-h-[52px] px-4 py-3 rounded-xl transition-all cursor-pointer",
-        checked ? "bg-gray-50 ring-1 ring-gray-200" : "hover:bg-gray-50"
+        "flex items-center justify-between min-h-[44px] px-3.5 py-2.5 rounded-xl transition-all cursor-pointer",
+        checked ? "bg-gray-50 ring-1 ring-gray-150" : "hover:bg-gray-50/60"
       )}
       onClick={() => handleChange(!checked)}
     >
-      <div className="flex items-center gap-3">
-        {Icon && <Icon className={cn("h-[18px] w-[18px]", checked ? "text-gray-900" : "text-gray-400")} />}
-        <Label className={cn("text-sm font-normal cursor-pointer text-gray-600", checked && "text-gray-900 font-medium")}>
+      <div className="flex items-center gap-2.5">
+        {Icon && <Icon className={cn("h-[16px] w-[16px]", checked ? "text-gray-700" : "text-gray-400")} />}
+        <Label className={cn("text-[13px] font-normal cursor-pointer text-gray-500", checked && "text-gray-900 font-medium")}>
           {label}
         </Label>
       </div>
@@ -230,11 +230,11 @@ function FilterContent({
   activeFeaturesCount,
 }: any) {
   return (
-    <div className="space-y-6 px-1 pb-4">
+    <div className="space-y-0 px-1 pb-4">
       {/* Listing Type */}
-      <div className="space-y-4 pt-4 pb-5 border-b border-gray-100">
+      <div className="space-y-3.5 pt-4 pb-5 border-b border-gray-100">
         <Label className="text-[13px] font-semibold text-gray-900 tracking-tight">{t('filters.listingType')}</Label>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2.5">
           {LISTING_TYPES.map((type: any) => {
             const isSelected = filters.listing_type === type.value;
             const Icon = type.icon;
@@ -244,13 +244,13 @@ function FilterContent({
                 type="button"
                 onClick={() => handleListingTypeChange(isSelected ? 'all' : type.value)}
                 className={cn(
-                  "flex items-center gap-2.5 px-5 py-4 rounded-xl text-sm font-medium transition-all duration-200 border cursor-pointer min-h-[56px] press-effect",
+                  "flex items-center gap-2 px-4 py-3 rounded-xl text-[13px] font-medium transition-all duration-200 border cursor-pointer active:scale-[0.97]",
                   isSelected
-                    ? 'bg-gray-100 text-gray-900 border-gray-900 ring-[1.5px] ring-gray-900'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400 hover:bg-gray-50'
+                    ? 'bg-gray-900 text-white border-gray-900 shadow-sm'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className={cn("h-4 w-4", isSelected ? "text-white/80" : "text-gray-400")} />
                 {type.label}
               </button>
             );
@@ -259,9 +259,9 @@ function FilterContent({
       </div>
 
       {/* Property Type */}
-      <div className="space-y-4 pb-5 border-b border-gray-100">
+      <div className="space-y-3.5 py-5 border-b border-gray-100">
         <Label className="text-[13px] font-semibold text-gray-900 tracking-tight">{t('filters.propertyType')}</Label>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2.5">
           {PROPERTY_TYPES.map((type: any) => {
             const isSelected = filters.property_types?.includes(type.value) || false;
             const Icon = type.icon;
@@ -271,13 +271,13 @@ function FilterContent({
                 type="button"
                 onClick={() => handlePropertyTypeToggle(type.value)}
                 className={cn(
-                  "flex items-center gap-2.5 px-5 py-4 rounded-xl text-sm font-medium transition-all duration-200 border cursor-pointer min-h-[56px] press-effect",
+                  "flex items-center gap-2 px-4 py-3 rounded-xl text-[13px] font-medium transition-all duration-200 border cursor-pointer active:scale-[0.97]",
                   isSelected
-                    ? 'bg-gray-100 text-gray-900 border-gray-900 ring-[1.5px] ring-gray-900'
-                    : 'bg-white text-gray-700 border-gray-200 hover:border-gray-400 hover:bg-gray-50'
+                    ? 'bg-gray-900 text-white border-gray-900 shadow-sm'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                 )}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className={cn("h-4 w-4", isSelected ? "text-white/80" : "text-gray-400")} />
                 {type.label}
               </button>
             );
@@ -292,10 +292,10 @@ function FilterContent({
           value={filters.min_bedrooms?.toString() || 'all'}
           onValueChange={handleBedroomChange}
         >
-          <SelectTrigger className="bg-white h-12 rounded-xl text-sm border-gray-200 hover:border-gray-300 focus:ring-gray-400">
+          <SelectTrigger className="bg-white h-11 rounded-xl text-[13px] border-gray-200 hover:border-gray-300 focus:ring-gray-400">
             <SelectValue placeholder={t('filters.any')} />
           </SelectTrigger>
-          <SelectContent className="bg-popover">
+          <SelectContent className="bg-popover rounded-xl">
             <SelectItem value="all">{t('filters.any')}</SelectItem>
             <SelectItem value="1">1+ {t('filters.room')}</SelectItem>
             <SelectItem value="2">2+ {t('filters.rooms')}</SelectItem>
@@ -328,16 +328,16 @@ function FilterContent({
       </div>
 
       {/* Size Range Slider */}
-      <div className="space-y-4 py-4 border-b border-border/50">
+      <div className="space-y-4 py-5 border-b border-gray-100">
         <div className="flex items-center justify-between">
-          <Label className="text-base font-medium">{t('filters.size')}</Label>
+          <Label className="text-[13px] font-semibold text-gray-900 tracking-tight">{t('filters.size')}</Label>
           <div className="flex items-center gap-2">
-            <span className={cn("text-sm transition-colors", areaUnit === 'sqm' ? 'text-foreground font-medium' : 'text-muted-foreground')}>m²</span>
+            <span className={cn("text-[12px] transition-colors", areaUnit === 'sqm' ? 'text-gray-900 font-medium' : 'text-gray-400')}>m²</span>
             <Switch
               checked={areaUnit === 'sqft'}
               onCheckedChange={handleUnitToggle}
             />
-            <span className={cn("text-sm transition-colors", areaUnit === 'sqft' ? 'text-foreground font-medium' : 'text-muted-foreground')}>ft²</span>
+            <span className={cn("text-[12px] transition-colors", areaUnit === 'sqft' ? 'text-gray-900 font-medium' : 'text-gray-400')}>ft²</span>
           </div>
         </div>
         <div className="flex justify-between text-sm text-muted-foreground px-1">
@@ -380,7 +380,7 @@ function FilterContent({
       </div>
 
       {/* Collapsible Sections */}
-      <div className="space-y-0 pt-2">
+      <div className="space-y-0 pt-1">
         {/* Features Section */}
         <FilterSection title={t('filters.features')} icon={Home} activeCount={activeFeaturesCount}>
           <ToggleFilter 
@@ -436,15 +436,15 @@ function FilterContent({
           />
           {filters.has_view && (
             <div className="pl-3 space-y-2">
-              <Label className="text-sm font-normal text-muted-foreground">View Type</Label>
+              <Label className="text-[12px] font-medium text-gray-500">View Type</Label>
               <Select
                 value={filters.view_type || 'any'}
                 onValueChange={(v) => onFiltersChange({ ...filters, view_type: v === 'any' ? null : v })}
               >
-                <SelectTrigger className="bg-background h-10 rounded-lg">
+                <SelectTrigger className="bg-white h-10 rounded-xl text-[13px] border-gray-200 hover:border-gray-300">
                   <SelectValue placeholder="Any" />
                 </SelectTrigger>
-                <SelectContent className="bg-popover">
+                <SelectContent className="bg-popover rounded-xl">
                   <SelectItem value="any">Any</SelectItem>
                   <SelectItem value="city">City View</SelectItem>
                   <SelectItem value="sea">Sea View</SelectItem>
@@ -640,15 +640,15 @@ function FilterContent({
               onChange={(v) => handleBooleanFilter('move_in_immediately', v)} 
             />
             <div className="space-y-2 px-3 py-2">
-              <Label className="text-sm font-normal">{t('filters.internetIncluded')}</Label>
+              <Label className="text-[12px] font-medium text-gray-500">{t('filters.internetIncluded')}</Label>
               <Select
                 value={filters.internet_included || 'any'}
                 onValueChange={(v) => onFiltersChange({ ...filters, internet_included: v === 'any' ? null : v })}
               >
-                <SelectTrigger className="bg-background h-10 rounded-lg">
+                <SelectTrigger className="bg-white h-10 rounded-xl text-[13px] border-gray-200 hover:border-gray-300">
                   <SelectValue placeholder={t('filters.any')} />
                 </SelectTrigger>
-                <SelectContent className="bg-popover">
+                <SelectContent className="bg-popover rounded-xl">
                   <SelectItem value="any">{t('filters.any')}</SelectItem>
                   <SelectItem value="yes">{t('filters.internetOptions.yes')}</SelectItem>
                   <SelectItem value="available">{t('filters.internetOptions.available')}</SelectItem>
@@ -656,15 +656,15 @@ function FilterContent({
               </Select>
             </div>
             <div className="space-y-2 px-3 py-2">
-              <Label className="text-sm font-normal">{t('filters.utilitiesIncluded')}</Label>
+              <Label className="text-[12px] font-medium text-gray-500">{t('filters.utilitiesIncluded')}</Label>
               <Select
                 value={filters.utilities_included || 'any'}
                 onValueChange={(v) => onFiltersChange({ ...filters, utilities_included: v === 'any' ? null : v })}
               >
-                <SelectTrigger className="bg-background h-10 rounded-lg">
+                <SelectTrigger className="bg-white h-10 rounded-xl text-[13px] border-gray-200 hover:border-gray-300">
                   <SelectValue placeholder={t('filters.any')} />
                 </SelectTrigger>
-                <SelectContent className="bg-popover">
+                <SelectContent className="bg-popover rounded-xl">
                   <SelectItem value="any">{t('filters.any')}</SelectItem>
                   <SelectItem value="yes">{t('filters.utilitiesOptions.yes')}</SelectItem>
                   <SelectItem value="partial">{t('filters.utilitiesOptions.partial')}</SelectItem>
@@ -1057,7 +1057,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
     activeFeaturesCount;
 
   return (
-    <div className="bg-background border-b border-border/50">
+    <div className="bg-white border-b border-gray-100">
       <div className="px-4 py-3 space-y-2">
         {/* Single row: Search + Sort + Filters + Count */}
         <div className="flex items-center gap-2">
@@ -1117,18 +1117,18 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                 )}
               </div>
               <DrawerContent className="max-h-[85vh] flex flex-col overflow-hidden">
-                <DrawerHeader className="pb-4 border-b border-border shrink-0">
-                  <DrawerTitle className="text-xl">{t('filters.filters')}</DrawerTitle>
+                <DrawerHeader className="pb-4 border-b border-gray-100 shrink-0">
+                  <DrawerTitle className="text-[17px] font-semibold tracking-tight">{t('filters.filters')}</DrawerTitle>
                 </DrawerHeader>
                 <div className="flex-1 min-h-0 overflow-y-auto px-4">
                   <FilterContent {...filterContentProps} />
                 </div>
-                {/* Airbnb-style footer */}
-                <div className="sticky bottom-0 left-0 right-0 px-6 py-4 bg-background border-t border-border flex items-center justify-between gap-4">
+                {/* Footer */}
+                <div className="sticky bottom-0 left-0 right-0 px-6 py-4 bg-white border-t border-gray-100 flex items-center justify-between gap-4">
                   {hasActiveFilters ? (
                     <button
                       onClick={clearFilters}
-                      className="text-sm font-medium text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
+                      className="text-[13px] font-medium text-gray-500 hover:text-gray-900 underline underline-offset-4 decoration-gray-300 hover:decoration-gray-500 transition-colors"
                     >
                       {t('filters.clearAll') || 'Clear all'}
                     </button>
@@ -1138,9 +1138,9 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   <Button
                     variant="accent"
                     onClick={() => setIsOpen(false)}
-                    className="rounded-xl px-6 py-3 h-12 text-sm font-semibold min-w-[140px]"
+                    className="rounded-xl px-6 h-11 text-[13px] font-semibold min-w-[140px]"
                   >
-                    {totalCount !== undefined 
+                    {totalCount !== undefined
                       ? `${t('filters.show')} ${totalCount.toLocaleString()} ${totalCount === 1 ? t('filters.listing') : t('filters.listings')}`
                       : t('filters.applyFilters')
                     }
@@ -1163,19 +1163,19 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   </span>
                 )}
               </div>
-              <DialogContent className="sm:max-w-lg max-h-[85vh] p-0 rounded-2xl flex flex-col overflow-hidden">
-                <DialogHeader className="p-6 pb-4 border-b border-border shrink-0">
-                  <DialogTitle className="text-xl">{t('filters.filters')}</DialogTitle>
+              <DialogContent className="sm:max-w-[480px] max-h-[85vh] p-0 rounded-2xl flex flex-col overflow-hidden">
+                <DialogHeader className="px-6 py-5 border-b border-gray-100 shrink-0">
+                  <DialogTitle className="text-[17px] font-semibold tracking-tight">{t('filters.filters')}</DialogTitle>
                 </DialogHeader>
                 <div className="flex-1 min-h-0 overflow-y-auto px-6">
                   <FilterContent {...filterContentProps} />
                 </div>
-                {/* Airbnb-style footer */}
-                <div className="px-6 py-5 bg-background border-t border-border flex items-center justify-between gap-4">
+                {/* Footer */}
+                <div className="px-6 py-4 bg-white border-t border-gray-100 flex items-center justify-between gap-4">
                   {hasActiveFilters ? (
                     <button
                       onClick={clearFilters}
-                      className="text-sm font-medium text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
+                      className="text-[13px] font-medium text-gray-500 hover:text-gray-900 underline underline-offset-4 decoration-gray-300 hover:decoration-gray-500 transition-colors"
                     >
                       {t('filters.clearAll') || 'Clear all'}
                     </button>
@@ -1185,9 +1185,9 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                   <Button
                     variant="accent"
                     onClick={() => setIsOpen(false)}
-                    className="rounded-xl px-6 py-3 h-12 text-sm font-semibold min-w-[160px]"
+                    className="rounded-xl px-6 h-11 text-[13px] font-semibold min-w-[160px]"
                   >
-                    {totalCount !== undefined 
+                    {totalCount !== undefined
                       ? `${t('filters.show')} ${totalCount.toLocaleString()} ${totalCount === 1 ? t('filters.listing') : t('filters.listings')}`
                       : t('filters.applyFilters')
                     }

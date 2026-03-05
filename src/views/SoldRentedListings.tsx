@@ -208,14 +208,14 @@ export default function SoldRentedListings() {
           {t('soldRented.title')}
         </h1>
       </div>
-      <TabsList className="w-full justify-start">
-        <TabsTrigger value="sold" className="gap-2">
+      <TabsList className="segmented-control segmented-control-tabs w-full p-[3px]">
+        <TabsTrigger value="sold" className="segmented-tab-trigger flex-1">
           {t('soldRented.recentlySold')}
-          {soldListings && <span className="text-xs opacity-70">({soldListings.length})</span>}
+          {soldListings && <span className="text-xs opacity-60">({soldListings.length})</span>}
         </TabsTrigger>
-        <TabsTrigger value="rented" className="gap-2">
+        <TabsTrigger value="rented" className="segmented-tab-trigger flex-1">
           {t('soldRented.recentlyRented')}
-          {rentedListings && <span className="text-xs opacity-70">({rentedListings.length})</span>}
+          {rentedListings && <span className="text-xs opacity-60">({rentedListings.length})</span>}
         </TabsTrigger>
       </TabsList>
     </div>
