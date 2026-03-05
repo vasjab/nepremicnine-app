@@ -1,38 +1,31 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, ArrowLeft, Loader2, Home, Heart, FileText, Shield } from 'lucide-react';
 import { z } from 'zod';
 import { HoneypotField, isHoneypotTriggered } from '@/components/HoneypotField';
 import { useRateLimit, AUTH_RATE_LIMIT } from '@/hooks/useRateLimit';
 import { useTranslation } from '@/hooks/useTranslation';
-import { cn } from '@/lib/utils';
 
 const emailSchema = z.string().email('Please enter a valid email address');
 
 export default function Auth() {
   const router = useRouter();
-  const { user, sendOtp, verifyOtp } = useAuth();
+  const { user, sendMagicLink } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
 
-  const [step, setStep] = useState<'email' | 'otp'>('email');
+  const [step, setStep] = useState<'email' | 'sent'>('email');
   const [email, setEmail] = useState('');
-  const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
-  const [otpError, setOtpError] = useState('');
-  const [otpValues, setOtpValues] = useState(['', '', '', '', '', '']);
   const [resendCooldown, setResendCooldown] = useState(0);
 
-  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const isVerifyingRef = useRef(false);
   const [honeypot, setHoneypot] = useState('');
   const { checkRateLimit, isLimited, remainingTime } = useRateLimit(AUTH_RATE_LIMIT);
 
@@ -47,7 +40,7 @@ export default function Auth() {
     return () => clearTimeout(timer);
   }, [resendCooldown]);
 
-  const handleSendOtp = async (e?: React.FormEvent) => {
+  const handleSendLink = async (e?: React.FormEvent) => {
     e?.preventDefault();
 
     if (isHoneypotTriggered(honeypot)) {
@@ -78,106 +71,29 @@ export default function Auth() {
 
     setIsLoading(true);
     try {
-      const { error } = await sendOtp(email);
+      const { error } = await sendMagicLink(email);
       if (error) {
         toast({
           variant: 'destructive',
-          title: 'Could not send code',
+          title: 'Could not send link',
           description: error.message,
         });
       } else {
-        setStep('otp');
+        setStep('sent');
         setResendCooldown(60);
-        setTimeout(() => otpRefs.current[0]?.focus(), 150);
       }
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async (code: string) => {
-    if (isVerifyingRef.current) return;
-    isVerifyingRef.current = true;
-    setOtpError('');
-    setIsLoading(true);
-    try {
-      const { error } = await verifyOtp(email, code);
-      if (error) {
-        setOtpError('Invalid or expired code. Please try again.');
-        setOtpValues(['', '', '', '', '', '']);
-        setTimeout(() => otpRefs.current[0]?.focus(), 50);
-      } else {
-        // Set remember me flags
-        if (rememberMe) {
-          localStorage.setItem('hemma_remember_me', 'true');
-          sessionStorage.removeItem('hemma_session_active');
-        } else {
-          localStorage.removeItem('hemma_remember_me');
-          sessionStorage.setItem('hemma_session_active', 'true');
-        }
-        router.push('/');
-      }
-    } finally {
-      setIsLoading(false);
-      isVerifyingRef.current = false;
-    }
-  };
-
-  const handleOtpChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
-    if (value.length > 1) value = value.slice(-1);
-
-    const newValues = [...otpValues];
-    newValues[index] = value;
-    setOtpValues(newValues);
-    setOtpError('');
-
-    if (value && index < 5) {
-      otpRefs.current[index + 1]?.focus();
-    }
-
-    // Auto-submit when all 6 digits entered
-    if (newValues.every(v => v !== '')) {
-      handleVerifyOtp(newValues.join(''));
-    }
-  };
-
-  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !otpValues[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus();
-      const newValues = [...otpValues];
-      newValues[index - 1] = '';
-      setOtpValues(newValues);
-    }
-  };
-
-  const handleOtpPaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
-    if (!pasted) return;
-    const newValues = ['', '', '', '', '', ''];
-    for (let i = 0; i < pasted.length; i++) {
-      newValues[i] = pasted[i];
-    }
-    setOtpValues(newValues);
-
-    if (newValues.every(v => v !== '')) {
-      handleVerifyOtp(newValues.join(''));
-    } else {
-      const nextEmpty = newValues.findIndex(v => !v);
-      otpRefs.current[nextEmpty]?.focus();
     }
   };
 
   const handleResend = () => {
     if (resendCooldown > 0) return;
-    handleSendOtp();
+    handleSendLink();
   };
 
   const handleBackToEmail = () => {
     setStep('email');
-    setOtpValues(['', '', '', '', '', '']);
-    setOtpError('');
   };
 
   return (
@@ -208,7 +124,7 @@ export default function Auth() {
                 </p>
               </div>
 
-              <form onSubmit={handleSendOtp} className="space-y-5">
+              <form onSubmit={handleSendLink} className="space-y-5">
                 <HoneypotField value={honeypot} onChange={setHoneypot} />
 
                 <div className="space-y-2">
@@ -229,17 +145,6 @@ export default function Auth() {
                   )}
                 </div>
 
-                <div className="flex items-center justify-between py-1">
-                  <label htmlFor="remember-me" className="text-sm text-gray-500 cursor-pointer select-none">
-                    Remember me for 30 days
-                  </label>
-                  <Switch
-                    id="remember-me"
-                    checked={rememberMe}
-                    onCheckedChange={setRememberMe}
-                  />
-                </div>
-
                 <Button
                   type="submit"
                   variant="gradient"
@@ -247,7 +152,7 @@ export default function Auth() {
                   disabled={isLoading || isLimited}
                 >
                   {isLoading ? (
-                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending code...</>
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending link...</>
                   ) : (
                     'Continue with email'
                   )}
@@ -272,62 +177,29 @@ export default function Auth() {
               </div>
             </div>
           ) : (
-            <div className="animate-fade-in" key="otp-step">
+            <div className="animate-fade-in" key="sent-step">
               <div className="text-center mb-8">
                 <span className="text-5xl mb-4 block">✉️</span>
                 <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 tracking-tight">
                   Check your email
                 </h1>
                 <p className="text-muted-foreground text-sm sm:text-base">
-                  We sent a 6-digit code to{' '}
+                  We sent a sign-in link to{' '}
                   <span className="font-medium text-foreground">{email}</span>
                 </p>
               </div>
 
               <div className="space-y-6">
-                {/* OTP inputs */}
-                <div className="flex justify-center gap-2 sm:gap-3">
-                  {otpValues.map((value, index) => (
-                    <input
-                      key={index}
-                      ref={(el) => { otpRefs.current[index] = el; }}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={value}
-                      onChange={(e) => handleOtpChange(index, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                      onPaste={index === 0 ? handleOtpPaste : undefined}
-                      className={cn(
-                        "w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-bold rounded-xl",
-                        "border-2 bg-background text-foreground",
-                        "focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent",
-                        "transition-all duration-200",
-                        otpError
-                          ? "border-destructive"
-                          : value
-                            ? "border-accent"
-                            : "border-border"
-                      )}
-                      autoComplete={index === 0 ? "one-time-code" : "off"}
-                    />
-                  ))}
+                <div className="rounded-xl bg-blue-50/60 border border-blue-200/40 p-5 text-center">
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    Click the link in your email to sign in. The link will expire in 10 minutes.
+                  </p>
                 </div>
-
-                {otpError && (
-                  <p className="text-sm text-destructive text-center">{otpError}</p>
-                )}
-
-                {isLoading && (
-                  <div className="flex justify-center">
-                    <Loader2 className="h-5 w-5 animate-spin text-accent" />
-                  </div>
-                )}
 
                 {/* Resend */}
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground">
-                    Didn&apos;t receive the code?{' '}
+                    Didn&apos;t receive the email?{' '}
                     {resendCooldown > 0 ? (
                       <span className="text-muted-foreground/60">
                         Resend in {resendCooldown}s
@@ -339,7 +211,7 @@ export default function Auth() {
                         className="text-accent font-medium hover:underline underline-offset-4"
                         disabled={isLoading}
                       >
-                        Resend code
+                        Resend link
                       </button>
                     )}
                   </p>
