@@ -60,6 +60,7 @@ export default function SoldRentedListings() {
   const [highlightedFromMap, setHighlightedFromMap] = useState<string | null>(null);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
   const [modalListing, setModalListing] = useState<Listing | null>(null);
+  const [navigatingId, setNavigatingId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useMobileViewPreference();
   const [filters, setFilters] = useState<ListingFilters>({});
   const [sortBy, setSortBy] = useState<SortOption>('newest');
@@ -151,6 +152,7 @@ export default function SoldRentedListings() {
   }, [allListings, mapBounds, sortBy, filters]);
 
   const handleListingClick = (listing: Listing) => {
+    setNavigatingId(listing.id);
     router.push(`/listing/${listing.id}`);
   };
 
@@ -198,8 +200,8 @@ export default function SoldRentedListings() {
 
   const TabsHeader = () => (
     <div className="shrink-0 px-4 pt-4 pb-2">
-      <h1 className="text-xl font-bold text-foreground mb-1 tracking-tight">
-        🏆 {t('soldRented.title')}
+      <h1 className="text-lg font-semibold text-gray-900 mb-3 tracking-tight">
+        {t('soldRented.title')}
       </h1>
       <TabsList className="w-full justify-start">
         <TabsTrigger value="sold" className="gap-2">
@@ -256,7 +258,7 @@ export default function SoldRentedListings() {
             onMouseEnter={() => handleCardHover(listing.id)}
             onMouseLeave={() => handleCardHover(null)}
             className={cn(
-              "transition-all duration-200",
+              "transition-all duration-200 relative",
               showAnimations && isMobileLayout && index < 4 && "animate-fade-in",
               highlightedFromMap === listing.id && "ring-2 ring-accent ring-offset-2 ring-offset-background rounded-xl animate-pulse-highlight"
             )}
@@ -266,6 +268,11 @@ export default function SoldRentedListings() {
               onClick={() => handleListingClick(listing)}
               showStatusOverlay={true}
             />
+            {navigatingId === listing.id && (
+              <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-xl flex items-center justify-center z-10 animate-fade-in">
+                <div className="h-5 w-5 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -337,14 +344,14 @@ export default function SoldRentedListings() {
 
               {/* Mobile view toggle */}
               <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
-                <div className="flex glass-strong rounded-full shadow-float p-1">
+                <div className="flex rounded-full bg-gray-900/90 backdrop-blur-xl p-1 shadow-[0_8px_32px_rgba(0,0,0,0.2)]">
                   <button
                     type="button"
                     className={cn(
-                      'flex items-center justify-center rounded-full px-5 py-2.5 min-h-[44px] min-w-[80px] text-sm font-semibold transition-all duration-200 touch-safe-button',
+                      'flex items-center justify-center rounded-full px-5 py-2.5 min-h-[44px] min-w-[80px] text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.95] touch-safe-button',
                       mobileView === 'list'
-                        ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/25'
-                        : 'text-muted-foreground hover:text-foreground',
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-400 hover:text-white',
                     )}
                     onClick={() => {
                       haptic('medium');
@@ -352,16 +359,16 @@ export default function SoldRentedListings() {
                     }}
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
-                    <List className="h-4 w-4 mr-2" />
+                    <List className="h-4 w-4 mr-1.5" />
                     {t('map.list')}
                   </button>
                   <button
                     type="button"
                     className={cn(
-                      'flex items-center justify-center rounded-full px-5 py-2.5 min-h-[44px] min-w-[80px] text-sm font-semibold transition-all duration-200 touch-safe-button',
+                      'flex items-center justify-center rounded-full px-5 py-2.5 min-h-[44px] min-w-[80px] text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.95] touch-safe-button',
                       mobileView === 'map'
-                        ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/25'
-                        : 'text-muted-foreground hover:text-foreground',
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-400 hover:text-white',
                     )}
                     onClick={() => {
                       haptic('medium');
@@ -369,7 +376,7 @@ export default function SoldRentedListings() {
                     }}
                     style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
-                    <MapIcon className="h-4 w-4 mr-2" />
+                    <MapIcon className="h-4 w-4 mr-1.5" />
                     {t('map.map')}
                   </button>
                 </div>

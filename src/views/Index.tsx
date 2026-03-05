@@ -47,6 +47,7 @@ const Index = () => {
   const [highlightedFromMap, setHighlightedFromMap] = useState<string | null>(null);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
   const [modalListing, setModalListing] = useState<Listing | null>(null);
+  const [navigatingId, setNavigatingId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useMobileViewPreference();
   const isMobileLayout = useIsMobile();
   const listingRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
@@ -138,6 +139,7 @@ const Index = () => {
   const visibleListings = filteredListings;
 
   const handleListingClick = (listing: Listing) => {
+    setNavigatingId(listing.id);
     router.push(`/listing/${listing.id}`);
   };
 
@@ -208,7 +210,7 @@ const Index = () => {
               onMouseEnter={() => handleCardHover(listing.id)}
               onMouseLeave={() => handleCardHover(null)}
               className={cn(
-                "transition-all duration-200",
+                "transition-all duration-200 relative",
                 showAnimations && isMobileLayout && index < 4 && "animate-fade-in",
                 highlightedFromMap === listing.id && "ring-2 ring-accent ring-offset-2 ring-offset-background rounded-xl animate-pulse-highlight"
               )}
@@ -217,6 +219,11 @@ const Index = () => {
                 listing={listing}
                 onClick={() => handleListingClick(listing)}
               />
+              {navigatingId === listing.id && (
+                <div className="absolute inset-0 bg-white/60 backdrop-blur-[1px] rounded-xl flex items-center justify-center z-10 animate-fade-in">
+                  <div className="h-5 w-5 border-2 border-gray-300 border-t-gray-900 rounded-full animate-spin" />
+                </div>
+              )}
             </div>
           ))}
         </div>

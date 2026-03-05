@@ -370,47 +370,50 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
         const popupContent = `
           <style>
             .popup-btn-${listing.id} {
-              margin-top: 4px;
-              padding: 8px 8px;
-              background: ${isCompleted ? 'hsl(142, 76%, 36%)' : 'hsl(350, 70%, 72%)'};
-              border-radius: 6px;
+              margin-top: 8px;
+              padding: 9px 12px;
+              background: hsl(0 0% 9%);
+              border-radius: 10px;
               text-align: center;
-              font-size: 13px;
+              font-size: 12px;
               font-weight: 600;
               color: white;
+              letter-spacing: 0.01em;
               transition: background 0.15s ease, transform 0.15s ease;
             }
             .popup-btn-${listing.id}:hover {
-              background: ${isCompleted ? 'hsl(142, 76%, 30%)' : 'hsl(350, 70%, 62%)'};
-              transform: scale(1.02);
+              background: hsl(0 0% 18%);
+            }
+            .popup-btn-${listing.id}:active {
+              transform: scale(0.97);
             }
             .popup-img-container-${listing.id}:hover .popup-prev-${listing.id},
             .popup-img-container-${listing.id}:hover .popup-next-${listing.id} {
               opacity: 1 !important;
             }
           </style>
-          <div class="popup-content-${listing.id}" style="width: 240px; font-family: 'DM Sans', system-ui, sans-serif; cursor: pointer; overflow: visible; background: white; border-radius: 16px;">
-            <div class="popup-img-container-${listing.id}" style="position: relative; width: 100%; height: 160px; overflow: hidden; border-radius: 16px 16px 0 0;">
+          <div class="popup-content-${listing.id}" style="width: 260px; font-family: system-ui, -apple-system, sans-serif; cursor: pointer; overflow: hidden; background: white; border-radius: 16px;">
+            <div class="popup-img-container-${listing.id}" style="position: relative; width: 100%; height: 170px; overflow: hidden;">
               <img class="popup-img-${listing.id}" src="${images[0]}" alt="${listing.title}" style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s ease;" />
               ${arrowsHtml}
               ${dotsHtml}
               ${isCompleted ? `
-                <div style="position: absolute; top: 8px; left: 8px; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                <div style="position: absolute; top: 10px; left: 10px; background: hsl(0 0% 100% / 0.95); backdrop-filter: blur(8px); color: hsl(152 60% 30%); padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
                   ${statusLabel}
                 </div>
               ` : ''}
             </div>
-            <div style="padding: 12px; background: white; border-radius: 0 0 16px 16px;">
-              <div style="font-size: 11px; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px;">
-                ${propertyTypeLabels[listing.property_type] || t('propertyTypes.other')}${!isCompleted ? ` • ${listing.listing_type === 'rent' ? t('map.forRent') : t('map.forSale')}` : ''}
+            <div style="padding: 14px 14px 12px; background: white;">
+              <div style="font-size: 10px; color: #999; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">
+                ${propertyTypeLabels[listing.property_type] || t('propertyTypes.other')}${!isCompleted ? ` · ${listing.listing_type === 'rent' ? t('map.forRent') : t('map.forSale')}` : ''}
               </div>
-              ${!isCompleted && popupFormattedDate ? `<div style="font-size: 10px; color: #999; margin-bottom: 6px;">${popupFormattedDate}</div>` : ''}
+              ${!isCompleted && popupFormattedDate ? `<div style="font-size: 10px; color: #bbb; margin-bottom: 6px;">${popupFormattedDate}</div>` : ''}
               ${isCompleted ? soldRentedSectionHtml : ''}
-              <div style="font-size: 15px; font-weight: 600; color: #2d2319; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              <div style="font-size: 15px; font-weight: 700; color: hsl(0 0% 10%); margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.01em;">
                 ${listing.address}
               </div>
-              <div style="font-size: 13px; color: #666; margin-bottom: 6px;">
-                ${listing.bedrooms} ${listing.bedrooms !== 1 ? t('map.rooms') : t('map.room')} • ${formatArea(listing.area_sqm)}
+              <div style="font-size: 12px; color: #888; margin-bottom: 2px;">
+                ${listing.bedrooms} ${listing.bedrooms !== 1 ? t('map.rooms') : t('map.room')} · ${formatArea(listing.area_sqm)}
               </div>
               ${soldRentedPriceHtml}
               <div class="popup-btn-${listing.id}">

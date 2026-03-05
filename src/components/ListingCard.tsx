@@ -139,7 +139,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
   return (
     <article
-      className="listing-card cursor-pointer group relative overflow-hidden"
+      className="listing-card cursor-pointer group relative overflow-hidden transition-transform duration-150 active:scale-[0.98]"
       onClick={onClick}
     >
       {/* Image container */}

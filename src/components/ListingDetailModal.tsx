@@ -55,9 +55,9 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
         variant="ghost"
         size="icon"
         className={cn(
-          "fixed top-4 left-4 z-[60] h-12 w-12 rounded-full bg-card/90 backdrop-blur-sm",
-          "hover:bg-card hover:scale-105 active:scale-95",
-          "shadow-lg transition-all duration-200",
+          "fixed top-4 left-4 z-[60] h-10 w-10 rounded-[10px] bg-white/92 backdrop-blur-md",
+          "hover:bg-white active:scale-95",
+          "shadow-[0_1px_4px_rgba(0,0,0,0.08)] transition-all duration-150",
           "touch-target"
         )}
         onClick={handleClose}

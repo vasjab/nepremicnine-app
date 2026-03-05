@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Heart, PlusCircle, User, Menu, X, MessageCircle, BarChart3, History, Globe, Search } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useUnreadCount } from '@/hooks/useMessaging';
@@ -93,17 +93,21 @@ export function Header() {
 
           {/* Mobile: Center nav icons */}
           <div className="flex md:hidden items-center gap-1 flex-1 justify-center">
-            <Link
-              href="/"
-              className={cn(
-                'flex items-center justify-center w-10 h-10 rounded-full transition-colors',
-                isActive('/')
-                  ? 'bg-slate-100 text-slate-700'
-                  : 'text-gray-400 hover:text-gray-600'
-              )}
-            >
-              <Search className="h-5 w-5" />
-            </Link>
+            {isActive('/') ? (
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                className="flex items-center justify-center w-10 h-10 rounded-full transition-colors bg-slate-100 text-slate-700"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+            ) : (
+              <Link
+                href="/"
+                className="flex items-center justify-center w-10 h-10 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+              >
+                <Search className="h-5 w-5" />
+              </Link>
+            )}
             {user && (
               <Link
                 href="/saved"
@@ -164,7 +168,7 @@ export function Header() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-64 py-1.5 rounded-2xl border-gray-200/60 bg-white">
-                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-50 rounded-xl mx-1 cursor-pointer">
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-100 rounded-xl mx-1 cursor-pointer">
                         <Link href="/profile">
                           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-600 mr-3">
                             <User className="h-4 w-4" />
@@ -172,7 +176,7 @@ export function Header() {
                           {t('common.profile')}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-50 rounded-xl mx-1 cursor-pointer">
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-100 rounded-xl mx-1 cursor-pointer">
                         <Link href="/messages">
                           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-500 mr-3">
                             <MessageCircle className="h-4 w-4" />
@@ -186,7 +190,7 @@ export function Header() {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator className="my-1" />
-                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-50 rounded-xl mx-1 cursor-pointer">
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-100 rounded-xl mx-1 cursor-pointer">
                         <Link href="/saved">
                           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-500 mr-3">
                             <Heart className="h-4 w-4" />
@@ -194,7 +198,7 @@ export function Header() {
                           {t('common.savedListings')}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-50 rounded-xl mx-1 cursor-pointer">
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-100 rounded-xl mx-1 cursor-pointer">
                         <Link href="/my-listings">
                           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-500 mr-3">
                             <Home className="h-4 w-4" />
@@ -202,7 +206,7 @@ export function Header() {
                           {t('common.myListings')}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-50 rounded-xl mx-1 cursor-pointer">
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-100 rounded-xl mx-1 cursor-pointer">
                         <Link href="/dashboard">
                           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-500 mr-3">
                             <BarChart3 className="h-4 w-4" />
@@ -264,10 +268,10 @@ export function Header() {
               <Link
                 href="/sold-rented"
                 className={cn(
-                  'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium transition-colors',
+                  'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-[15px] font-medium transition-colors',
                   isActive('/sold-rented')
-                    ? 'bg-slate-50 text-slate-800'
-                    : 'text-gray-700 hover:bg-gray-50'
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-700 hover:bg-gray-100'
                 )}
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -283,12 +287,35 @@ export function Header() {
               {user ? (
                 <>
                   <Link
+                    href="/messages"
+                    className={cn(
+                      'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-[15px] font-medium transition-colors',
+                      isActive('/messages')
+                        ? 'bg-gray-100 text-gray-900'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    )}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <div className={cn(
+                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]',
+                      isActive('/messages') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
+                    )}>
+                      <MessageCircle className="h-4 w-4" />
+                    </div>
+                    Messages
+                    {unreadCount > 0 && (
+                      <span className="ml-auto min-w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] flex items-center justify-center font-bold px-1">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                  <Link
                     href="/saved"
                     className={cn(
-                      'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium transition-colors',
+                      'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-[15px] font-medium transition-colors',
                       isActive('/saved')
-                        ? 'bg-slate-50 text-slate-800'
-                        : 'text-gray-700 hover:bg-gray-50'
+                        ? 'bg-gray-100 text-gray-900'
+                        : 'text-gray-700 hover:bg-gray-100'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -303,10 +330,10 @@ export function Header() {
                   <Link
                     href="/my-listings"
                     className={cn(
-                      'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium transition-colors',
+                      'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-[15px] font-medium transition-colors',
                       isActive('/my-listings')
-                        ? 'bg-slate-50 text-slate-800'
-                        : 'text-gray-700 hover:bg-gray-50'
+                        ? 'bg-gray-100 text-gray-900'
+                        : 'text-gray-700 hover:bg-gray-100'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -321,10 +348,10 @@ export function Header() {
                   <Link
                     href="/profile"
                     className={cn(
-                      'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium transition-colors',
+                      'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-[15px] font-medium transition-colors',
                       isActive('/profile')
-                        ? 'bg-slate-50 text-slate-800'
-                        : 'text-gray-700 hover:bg-gray-50'
+                        ? 'bg-gray-100 text-gray-900'
+                        : 'text-gray-700 hover:bg-gray-100'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -339,10 +366,10 @@ export function Header() {
                   <Link
                     href="/dashboard"
                     className={cn(
-                      'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium transition-colors',
+                      'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-[15px] font-medium transition-colors',
                       isActive('/dashboard')
-                        ? 'bg-slate-50 text-slate-800'
-                        : 'text-gray-700 hover:bg-gray-50'
+                        ? 'bg-gray-100 text-gray-900'
+                        : 'text-gray-700 hover:bg-gray-100'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
@@ -360,7 +387,7 @@ export function Header() {
 
                   {/* Language & Region */}
                   <div className="mx-2">
-                    <InternationalSettings trigger="menu-item" onOpenChange={() => setMobileMenuOpen(false)} />
+                    <InternationalSettings trigger="menu-item" onOpenChange={(open) => { if (!open) setMobileMenuOpen(false); }} />
                   </div>
 
                   {/* Divider */}
@@ -394,7 +421,7 @@ export function Header() {
 
                   {/* Language & Region for non-logged in users */}
                   <div className="mx-2">
-                    <InternationalSettings trigger="menu-item" onOpenChange={() => setMobileMenuOpen(false)} />
+                    <InternationalSettings trigger="menu-item" onOpenChange={(open) => { if (!open) setMobileMenuOpen(false); }} />
                   </div>
 
                   {/* Divider */}
@@ -402,10 +429,10 @@ export function Header() {
 
                   <Link
                     href="/auth"
-                    className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-[15px] font-medium text-gray-700 hover:bg-gray-100"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-500">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-500">
                       <User className="h-4 w-4" />
                     </div>
                     {t('common.logIn')}

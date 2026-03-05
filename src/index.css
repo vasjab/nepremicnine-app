@@ -301,9 +301,9 @@
   /* ─── Glass Card (DESIGN.md) ─────────────────── */
   .glass-card {
     background: hsl(var(--card));
-    border: 1px solid hsl(var(--border));
-    border-radius: var(--radius);
-    box-shadow: 0 1px 3px hsl(var(--glass-shadow)), 0 1px 2px hsl(var(--glass-shadow));
+    border: 1px solid hsl(0 0% 0% / 0.06);
+    border-radius: 16px;
+    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.04);
   }
 
   /* ─── Gradient text ──────────────────────────── */
@@ -569,10 +569,11 @@
 /* ─── Mapbox Overrides ───────────────────────────── */
 .mapboxgl-popup-content {
   padding: 0 !important;
-  border-radius: 20px !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12) !important;
-  overflow: visible !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+  overflow: hidden !important;
   max-height: none !important;
+  border: 1px solid rgba(0, 0, 0, 0.06) !important;
 }
 
 .mapboxgl-popup-tip {
@@ -581,52 +582,57 @@
 
 .listing-popup .mapboxgl-popup-content {
   background: white;
-  overflow: visible !important;
-  border-radius: 20px !important;
+  overflow: hidden !important;
+  border-radius: 16px !important;
 }
 
 .listing-popup .mapboxgl-popup-content > div {
-  overflow: visible;
-  border-radius: 20px;
+  overflow: hidden;
+  border-radius: 16px;
   background: white;
 }
 
+/* Unified close button — matches dialog/sheet close buttons */
 .mapboxgl-popup-close-button {
   position: absolute;
   top: 8px;
   right: 8px;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: hsl(0 0% 100% / 0.9);
-  backdrop-filter: blur(12px);
-  border-radius: 50%;
-  font-size: 18px;
-  line-height: 32px;
+  background: hsl(0 0% 100% / 0.92);
+  backdrop-filter: blur(8px);
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 28px;
   padding: 0;
-  font-family: 'Inter', system-ui, sans-serif;
-  color: hsl(220 25% 20%);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  font-family: system-ui, sans-serif;
+  color: hsl(0 0% 45%);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   cursor: pointer;
   z-index: 20;
-  border: 1px solid hsl(0 0% 100% / 0.5);
-  transition: background 0.15s ease, transform 0.15s ease;
+  border: none;
+  transition: all 0.15s ease;
 }
 
 .mapboxgl-popup-close-button:hover {
-  background: hsl(0 0% 96%);
-  transform: scale(1.05);
+  background: hsl(0 0% 94%);
+  color: hsl(0 0% 20%);
+}
+
+.mapboxgl-popup-close-button:active {
+  transform: scale(0.95);
 }
 
 .mapboxgl-popup .mapboxgl-popup-close-button {
   top: 8px !important;
   right: 8px !important;
-  width: 32px !important;
-  height: 32px !important;
+  width: 28px !important;
+  height: 28px !important;
   padding: 0 !important;
-  line-height: 32px !important;
+  line-height: 28px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
