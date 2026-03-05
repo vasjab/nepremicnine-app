@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
-import { Heart, ChevronLeft, ChevronRight, Building2, Car, TreePine, Snowflake, TrendingUp, TrendingDown, Camera, Bed, Bath, Maximize2, MapPin, CalendarDays, Sofa, PawPrint } from 'lucide-react';
+import { Heart, ChevronLeft, ChevronRight, Building2, Car, TreePine, Snowflake, TrendingUp, TrendingDown, Camera, Bed, Bath, Maximize2, MapPin, CalendarDays, Sofa, PawPrint, Waves, Dumbbell, Flame, Sun, ShieldCheck, Zap, Eye } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -85,24 +85,49 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
   const hasMultipleImages = listing.images && listing.images.length > 1;
 
-  // Build feature badges
-  const featureBadges: { icon: React.ComponentType<{ className?: string }>; label: string; color: string }[] = [];
+  // Build feature badges — prioritized list, show up to 4
+  const featureBadges: { icon: React.ComponentType<{ className?: string }>; label: string }[] = [];
 
-  if (listing.has_elevator) {
-    featureBadges.push({ icon: Building2, label: t('listing.elevator'), color: 'blue' });
+  if (listing.has_air_conditioning) {
+    featureBadges.push({ icon: Snowflake, label: t('listing.airConditioning') });
   }
   if (listing.has_parking || listing.has_garage) {
-    featureBadges.push({ icon: Car, label: listing.has_garage ? t('listing.garage') : t('listing.parking'), color: 'indigo' });
+    featureBadges.push({ icon: Car, label: listing.has_garage ? t('listing.garage') : t('listing.parking') });
+  }
+  if (listing.has_elevator) {
+    featureBadges.push({ icon: Building2, label: t('listing.elevator') });
   }
   if (listing.has_garden) {
-    featureBadges.push({ icon: TreePine, label: t('listing.garden'), color: 'green' });
+    featureBadges.push({ icon: TreePine, label: t('listing.garden') });
   }
-  if (listing.has_air_conditioning) {
-    featureBadges.push({ icon: Snowflake, label: t('listing.airConditioning'), color: 'sky' });
+  if (listing.has_balcony) {
+    featureBadges.push({ icon: Sun, label: t('listing.balcony') });
+  }
+  if (listing.has_terrace) {
+    featureBadges.push({ icon: Sun, label: t('listing.terrace') });
+  }
+  if (listing.has_pool) {
+    featureBadges.push({ icon: Waves, label: t('listing.pool') });
+  }
+  if (listing.has_gym) {
+    featureBadges.push({ icon: Dumbbell, label: t('listing.gym') });
+  }
+  if (listing.has_fireplace) {
+    featureBadges.push({ icon: Flame, label: t('listing.fireplace') });
+  }
+  if (listing.has_solar_panels) {
+    featureBadges.push({ icon: Zap, label: t('listing.solarPanels') });
+  }
+  if (listing.has_view) {
+    featureBadges.push({ icon: Eye, label: t('listing.view') });
+  }
+  if (listing.has_security || listing.has_secure_entrance) {
+    featureBadges.push({ icon: ShieldCheck, label: t('listing.security') });
   }
 
-  // Limit to 3 badges max
-  const displayBadges = featureBadges.slice(0, 3);
+  // Show up to 4 feature badges
+  const displayBadges = featureBadges.slice(0, 4);
+  const extraBadgeCount = featureBadges.length - displayBadges.length;
 
   // Price comparison for sold/rented
   const hasFinalPrice = listing.final_price && listing.final_price > 0;
@@ -294,54 +319,55 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
       </div>
 
       {/* Content */}
-      <div className="px-4 pt-3 pb-3.5">
-        {/* Row 1: Type label + city */}
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-semibold">
-            {propertyTypeLabel}
-          </span>
-          <span className="text-[11px] text-muted-foreground font-medium inline-flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
+      <div className="px-4 pt-3 pb-4">
+        {/* Header: Location + type */}
+        <div className="flex items-center gap-1.5 mb-1">
+          <MapPin className="h-3.5 w-3.5 text-muted-foreground/70 shrink-0" />
+          <span className="text-[13px] font-medium text-muted-foreground truncate">
             {listing.city}
+          </span>
+          <span className="text-muted-foreground/40 mx-0.5">·</span>
+          <span className="text-[11px] text-muted-foreground/60 uppercase tracking-wider font-semibold shrink-0">
+            {propertyTypeLabel}
           </span>
         </div>
 
-        {/* Row 2: Address title */}
-        <h3 className="font-bold text-foreground line-clamp-1 text-[15px] tracking-tight mb-2.5">
+        {/* Address */}
+        <h3 className="font-bold text-foreground line-clamp-1 text-[15px] tracking-tight mb-3">
           {listing.address}
         </h3>
 
-        {/* Row 3: Key specs - larger, clearer icons */}
-        <div className="flex items-center gap-4 mb-3">
+        {/* Key specs row — pill-style chips */}
+        <div className="flex items-center gap-1.5 mb-3">
           {listing.bedrooms != null && (
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Bed className="h-[18px] w-[18px] text-gray-400" />
-              <span className="text-sm font-medium text-foreground">{listing.bedrooms}</span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/50">
+              <Bed className="h-4 w-4 text-muted-foreground/70" />
+              <span className="text-[13px] font-semibold text-foreground">{listing.bedrooms}</span>
             </div>
           )}
           {listing.bathrooms != null && (
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <Bath className="h-[18px] w-[18px] text-gray-400" />
-              <span className="text-sm font-medium text-foreground">{listing.bathrooms}</span>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/50">
+              <Bath className="h-4 w-4 text-muted-foreground/70" />
+              <span className="text-[13px] font-semibold text-foreground">{listing.bathrooms}</span>
             </div>
           )}
-          <div className="flex items-center gap-1.5 text-muted-foreground">
-            <Maximize2 className="h-[18px] w-[18px] text-gray-400" />
-            <span className="text-sm font-medium text-foreground">{formatArea(listing.area_sqm)}</span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/50">
+            <Maximize2 className="h-4 w-4 text-muted-foreground/70" />
+            <span className="text-[13px] font-semibold text-foreground">{formatArea(listing.area_sqm)}</span>
           </div>
         </div>
 
-        {/* Row 4: Quick feature indicators - subtle inline icons */}
-        {displayBadges.length > 0 && (
-          <div className="flex items-center gap-3 mb-3">
+        {/* Features row — icon chips with labels */}
+        {(displayBadges.length > 0 || (isRental && listing.is_furnished) || (isRental && listing.allows_pets)) && (
+          <div className="flex flex-wrap items-center gap-1.5 mb-3">
             {displayBadges.map((badge, index) => {
               const Icon = badge.icon;
               return (
                 <Tooltip key={index}>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1 text-gray-400">
-                      <Icon className="h-4 w-4" />
-                      <span className="text-xs text-muted-foreground">{badge.label}</span>
+                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/40 text-muted-foreground hover:bg-muted/70 transition-colors">
+                      <Icon className="h-3.5 w-3.5" />
+                      <span className="text-[11px] font-medium">{badge.label}</span>
                     </div>
                   </TooltipTrigger>
                   <TooltipContent><p>{badge.label}</p></TooltipContent>
@@ -349,78 +375,73 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               );
             })}
             {isRental && listing.is_furnished && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-1 text-gray-400">
-                    <Sofa className="h-4 w-4" />
-                    <span className="text-xs text-muted-foreground">{t('listing.furnished')}</span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent><p>{t('listing.furnished')}</p></TooltipContent>
-              </Tooltip>
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/40 text-muted-foreground">
+                <Sofa className="h-3.5 w-3.5" />
+                <span className="text-[11px] font-medium">{t('listing.furnished')}</span>
+              </div>
             )}
             {isRental && listing.allows_pets && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-1 text-gray-400">
-                    <PawPrint className="h-4 w-4" />
-                    <span className="text-xs text-muted-foreground">{t('listing.petsAllowed')}</span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent><p>{t('listing.petsAllowed')}</p></TooltipContent>
-              </Tooltip>
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted/40 text-muted-foreground">
+                <PawPrint className="h-3.5 w-3.5" />
+                <span className="text-[11px] font-medium">{t('listing.petsAllowed')}</span>
+              </div>
+            )}
+            {extraBadgeCount > 0 && (
+              <span className="text-[11px] text-muted-foreground/60 font-medium pl-0.5">
+                +{extraBadgeCount}
+              </span>
             )}
           </div>
         )}
 
         {/* Divider */}
-        <div className="border-t border-gray-100 pt-2.5">
-          {/* Price row */}
+        <div className="border-t border-border/50 pt-3">
+          {/* Price section */}
           <div className="flex items-end justify-between">
-            <div className="flex flex-col">
+            <div>
               {isSoldOrRented && showStatusOverlay && hasFinalPrice ? (
                 <>
                   <div className="flex items-center gap-2">
-                    <span className="text-[17px] font-extrabold text-foreground tracking-tight leading-tight">
+                    <span className="text-lg font-extrabold text-foreground tracking-tight leading-none">
                       {formatPrice(listing.final_price!, listing.currency, { isRental, showPeriod: isRental })}
                     </span>
                     <span className={cn(
-                      "text-xs font-medium flex items-center gap-0.5",
-                      priceDiff < 0 ? "text-red-500" : priceDiff > 0 ? "text-emerald-500" : "text-muted-foreground"
+                      "text-xs font-semibold flex items-center gap-0.5 px-1.5 py-0.5 rounded-full",
+                      priceDiff < 0 ? "text-red-600 bg-red-50" : priceDiff > 0 ? "text-emerald-600 bg-emerald-50" : "text-muted-foreground"
                     )}>
                       {priceDiff < 0 ? <TrendingDown className="h-3 w-3" /> : priceDiff > 0 ? <TrendingUp className="h-3 w-3" /> : null}
                       {priceDiff !== 0 && `${priceDiff > 0 ? '+' : ''}${priceDiffPercent}%`}
                     </span>
                   </div>
-                  <span className="text-xs text-muted-foreground line-through">
+                  <span className="text-xs text-muted-foreground line-through mt-0.5 block">
                     {formatPrice(listing.price, listing.currency, { isRental, showPeriod: false })}
                   </span>
                 </>
               ) : (
-                <span className="text-[17px] font-extrabold text-foreground tracking-tight leading-tight">
+                <span className="text-lg font-extrabold text-foreground tracking-tight leading-none">
                   {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
                 </span>
               )}
               {listing.area_sqm && listing.area_sqm > 0 && (
-                <span className="text-[11px] text-muted-foreground mt-0.5">
+                <span className="text-[12px] font-medium text-muted-foreground mt-1 block">
                   {formatPrice((hasFinalPrice && isSoldOrRented && showStatusOverlay ? listing.final_price! : listing.price) / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
                 </span>
               )}
             </div>
-            <div className="text-right">
+            <div className="text-right flex flex-col items-end gap-1">
               {formattedDate && (
-                <span className="text-[11px] text-muted-foreground leading-tight block">
+                <span className="text-[11px] text-muted-foreground/70 leading-tight">
                   {formattedDate}
                 </span>
               )}
             </div>
           </div>
 
-          {/* Rental availability row */}
+          {/* Rental availability */}
           {isRental && !isSoldOrRented && (formattedAvailFrom || listing.move_in_immediately) && (
-            <div className="flex items-center gap-1.5 mt-2 text-[11px] text-muted-foreground">
-              <CalendarDays className="h-3.5 w-3.5 text-gray-400 shrink-0" />
-              <span>
+            <div className="flex items-center gap-1.5 mt-2.5 px-2.5 py-1.5 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/20 border border-emerald-100/80 dark:border-emerald-900/30">
+              <CalendarDays className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span className="text-[11px] font-medium text-emerald-700 dark:text-emerald-300">
                 {listing.move_in_immediately
                   ? t('listing.availableNow')
                   : formattedAvailFrom && `${t('listing.from')} ${formattedAvailFrom}`}
