@@ -207,12 +207,12 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
         {/* Sold/Rented status badge */}
         {isSoldOrRented && showStatusOverlay && (
-          <div className="absolute top-3 left-3 z-20">
+          <div className="absolute top-3.5 left-3.5 z-20">
             <span className={cn(
-              "px-3 py-1.5 rounded-xl text-xs font-semibold uppercase tracking-wide",
+              "inline-flex items-center px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider backdrop-blur-sm",
               isSold
-                ? "bg-slate-200/90 text-slate-700 backdrop-blur-sm"
-                : "bg-slate-200/90 text-slate-700 backdrop-blur-sm"
+                ? "bg-slate-200/90 text-slate-700"
+                : "bg-slate-200/90 text-slate-700"
             )}>
               {isSold ? t('listing.sold') : t('listing.rented')}
             </span>
@@ -221,9 +221,9 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
         {/* NEW badge for listings less than 3 days old */}
         {isNew && !isSoldOrRented && (
-          <div className="absolute top-3 left-3 z-20">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider shadow-[0_2px_8px_rgba(16,185,129,0.3)]">
-              New
+          <div className="absolute top-3.5 left-3.5 z-20">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-emerald-500 text-white text-[11px] font-bold uppercase tracking-wider shadow-[0_2px_8px_rgba(16,185,129,0.25)]">
+              NEW
             </span>
           </div>
         )}
@@ -233,21 +233,21 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           <>
             <button
               type="button"
-              className="absolute left-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-white/90 backdrop-blur-md border border-black/[0.06] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.12)] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 active:scale-95 z-10"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-white/85 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.1)] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 active:scale-95 z-10"
               onClick={handlePrevImage}
             >
               <ChevronLeft className="h-5 w-5 text-foreground" />
             </button>
             <button
               type="button"
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-white/90 backdrop-blur-md border border-black/[0.06] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.12)] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 active:scale-95 z-10"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full bg-white/85 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.1)] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 active:scale-95 z-10"
               onClick={handleNextImage}
             >
               <ChevronRight className="h-5 w-5 text-foreground" />
             </button>
 
             {/* Airbnb-style pill dots */}
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+            <div className="absolute bottom-[46px] left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
               {listing.images.slice(0, 5).map((_, index) => (
                 <button
                   key={index}
@@ -256,24 +256,27 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
                     setCurrentImageIndex(index);
                   }}
                   className={cn(
-                    "h-1.5 rounded-full transition-all duration-300",
+                    "h-[6px] rounded-full transition-all duration-300",
                     index === currentImageIndex
-                      ? "bg-white w-6 shadow-sm"
-                      : "bg-white/60 w-1.5 hover:bg-white/80"
+                      ? "bg-white w-6 shadow-[0_1px_3px_rgba(0,0,0,0.3)]"
+                      : "bg-white/50 w-[6px] hover:bg-white/70"
                   )}
                 />
               ))}
               {listing.images.length > 5 && (
-                <span className="text-white/80 text-xs ml-1">+{listing.images.length - 5}</span>
+                <span className="text-white/70 text-[10px] font-medium ml-0.5">+{listing.images.length - 5}</span>
               )}
             </div>
           </>
         )}
 
+        {/* Bottom gradient for readability */}
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/25 to-transparent pointer-events-none z-[1]" />
+
         {/* Image count indicator */}
         {hasMultipleImages && (
-          <div className="absolute bottom-3 right-3 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-black/40 text-white text-[11px] font-medium backdrop-blur-sm">
-            <Camera className="h-3 w-3" />
+          <div className="absolute bottom-3.5 right-3.5 z-10 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-black/45 text-white text-[11.5px] font-semibold backdrop-blur-sm">
+            <Camera className="h-3.5 w-3.5" />
             {listing.images.length}
           </div>
         )}
@@ -285,7 +288,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               <button
                 type="button"
                 className={cn(
-                  'absolute top-3 right-3 h-10 w-10 rounded-full bg-white/90 backdrop-blur-md border border-black/[0.06] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.12)] z-10 transition-all duration-200 active:scale-90 hover:bg-white',
+                  'absolute top-3.5 right-3.5 h-10 w-10 rounded-full bg-white/90 backdrop-blur-md border border-black/[0.06] flex items-center justify-center shadow-[0_2px_8px_rgba(0,0,0,0.1)] z-10 transition-all duration-200 active:scale-90 hover:bg-white',
                   isSaved && 'text-accent',
                   isSoldOrRented && showStatusOverlay && 'opacity-60'
                 )}
@@ -310,8 +313,8 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
         {/* Type badge */}
         {(!isSoldOrRented || !showStatusOverlay) && (
-          <div className="absolute bottom-3 left-3 z-10">
-            <span className="px-3.5 py-1.5 rounded-full text-[12px] font-bold tracking-wide bg-white/95 backdrop-blur-sm text-gray-700 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+          <div className="absolute bottom-3.5 left-3.5 z-10">
+            <span className="inline-flex items-center px-3.5 py-1.5 rounded-full text-[12px] font-bold tracking-wide bg-white/95 backdrop-blur-sm text-gray-800 shadow-[0_1px_4px_rgba(0,0,0,0.1)]">
               {t(`listingTypes.${listing.listing_type}`)}
             </span>
           </div>
