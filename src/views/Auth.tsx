@@ -1,330 +1,355 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react';
+import { Mail, ArrowLeft, Loader2 } from 'lucide-react';
 import { z } from 'zod';
 import { HoneypotField, isHoneypotTriggered } from '@/components/HoneypotField';
 import { useRateLimit, AUTH_RATE_LIMIT } from '@/hooks/useRateLimit';
-import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from '@/hooks/useTranslation';
+import { cn } from '@/lib/utils';
 
 const emailSchema = z.string().email('Please enter a valid email address');
-const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
-
-// Generate a simple fingerprint for rate limiting
-function getClientFingerprint(): string {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  ctx?.fillText('fingerprint', 10, 10);
-  const canvasData = canvas.toDataURL();
-  
-  const data = [
-    navigator.userAgent,
-    navigator.language,
-    screen.width,
-    screen.height,
-    new Date().getTimezoneOffset(),
-    canvasData.slice(0, 50),
-  ].join('|');
-  
-  // Simple hash
-  let hash = 0;
-  for (let i = 0; i < data.length; i++) {
-    const char = data.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash;
-  }
-  return Math.abs(hash).toString(36);
-}
 
 export default function Auth() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const { user, signIn, signUp } = useAuth();
+  const { user, sendOtp, verifyOtp } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
 
-  const [isSignUp, setIsSignUp] = useState(searchParams.get('mode') === 'signup');
+  const [step, setStep] = useState<'email' | 'otp'>('email');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; fullName?: string }>({});
-  
-  // Bot protection
+  const [emailError, setEmailError] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [otpValues, setOtpValues] = useState(['', '', '', '', '', '']);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const isVerifyingRef = useRef(false);
   const [honeypot, setHoneypot] = useState('');
   const { checkRateLimit, isLimited, remainingTime } = useRateLimit(AUTH_RATE_LIMIT);
 
   useEffect(() => {
-    if (user) {
-      router.push('/');
-    }
+    if (user) router.push('/');
   }, [user, router]);
 
-  const validateForm = () => {
-    const newErrors: typeof errors = {};
+  // Resend cooldown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown(prev => prev - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
-    try {
-      emailSchema.parse(email);
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        newErrors.email = e.errors[0].message;
-      }
-    }
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    e?.preventDefault();
 
-    try {
-      passwordSchema.parse(password);
-    } catch (e) {
-      if (e instanceof z.ZodError) {
-        newErrors.password = e.errors[0].message;
-      }
-    }
-
-    if (isSignUp && !fullName.trim()) {
-      newErrors.fullName = 'Please enter your name';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const checkServerRateLimit = async (action: 'signup' | 'login'): Promise<boolean> => {
-    try {
-      const fingerprint = getClientFingerprint();
-      const { data, error } = await supabase.functions.invoke('check-rate-limit', {
-        body: { identifier: fingerprint, action },
-      });
-      
-      if (error) {
-        // Fail closed if rate limit check fails — safer default
-        console.warn('Rate limit check failed:', error.message);
-        return false;
-      }
-
-      return data?.allowed !== false;
-    } catch {
-      // Fail closed on network errors — prevent abuse
-      console.warn('Rate limit check network error');
-      return false;
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Check honeypot
     if (isHoneypotTriggered(honeypot)) {
-      // Silently fail for bots
       setIsLoading(true);
       await new Promise(resolve => setTimeout(resolve, 2000));
       setIsLoading(false);
       return;
     }
-    
-    // Check client-side rate limit first
+
     if (!checkRateLimit()) {
       toast({
         variant: 'destructive',
-        title: t('auth.tooManyAttempts'),
-        description: t('auth.pleaseWaitSeconds').replace('{seconds}', remainingTime.toString()),
+        title: 'Too many attempts',
+        description: `Please wait ${remainingTime} seconds`,
       });
       return;
     }
-    
-    if (!validateForm()) return;
 
-    setIsLoading(true);
-
+    setEmailError('');
     try {
-      // Check server-side rate limit
-      const action = isSignUp ? 'signup' : 'login';
-      const serverAllowed = await checkServerRateLimit(action);
-      
-      if (!serverAllowed) {
-        toast({
-          variant: 'destructive',
-          title: t('auth.tooManyAttempts'),
-          description: t('auth.pleaseWaitSeconds').replace('{seconds}', '60'),
-        });
-        setIsLoading(false);
+      emailSchema.parse(email);
+    } catch (e) {
+      if (e instanceof z.ZodError) {
+        setEmailError(e.errors[0].message);
         return;
       }
+    }
 
-      if (isSignUp) {
-        const { error } = await signUp(email, password, fullName);
-        if (error) {
-          if (error.message.includes('already registered')) {
-            toast({
-              variant: 'destructive',
-              title: t('auth.accountExists'),
-              description: t('auth.accountExistsDesc'),
-            });
-          } else {
-            toast({
-              variant: 'destructive',
-              title: t('auth.signUpFailed'),
-              description: error.message,
-            });
-          }
-        } else {
-          toast({
-            title: t('auth.welcome'),
-            description: t('auth.accountCreated'),
-          });
-          router.push('/');
-        }
+    setIsLoading(true);
+    try {
+      const { error } = await sendOtp(email);
+      if (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Could not send code',
+          description: error.message,
+        });
       } else {
-        const { error } = await signIn(email, password);
-        if (error) {
-          toast({
-            variant: 'destructive',
-            title: t('auth.loginFailed'),
-            description: t('auth.invalidCredentials'),
-          });
-        } else {
-          router.push('/');
-        }
+        setStep('otp');
+        setResendCooldown(60);
+        setTimeout(() => otpRefs.current[0]?.focus(), 150);
       }
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleVerifyOtp = async (code: string) => {
+    if (isVerifyingRef.current) return;
+    isVerifyingRef.current = true;
+    setOtpError('');
+    setIsLoading(true);
+    try {
+      const { error } = await verifyOtp(email, code);
+      if (error) {
+        setOtpError('Invalid or expired code. Please try again.');
+        setOtpValues(['', '', '', '', '', '']);
+        setTimeout(() => otpRefs.current[0]?.focus(), 50);
+      } else {
+        // Set remember me flags
+        if (rememberMe) {
+          localStorage.setItem('hemma_remember_me', 'true');
+          sessionStorage.removeItem('hemma_session_active');
+        } else {
+          localStorage.removeItem('hemma_remember_me');
+          sessionStorage.setItem('hemma_session_active', 'true');
+        }
+        router.push('/');
+      }
+    } finally {
+      setIsLoading(false);
+      isVerifyingRef.current = false;
+    }
+  };
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    if (value.length > 1) value = value.slice(-1);
+
+    const newValues = [...otpValues];
+    newValues[index] = value;
+    setOtpValues(newValues);
+    setOtpError('');
+
+    if (value && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
+
+    // Auto-submit when all 6 digits entered
+    if (newValues.every(v => v !== '')) {
+      handleVerifyOtp(newValues.join(''));
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !otpValues[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+      const newValues = [...otpValues];
+      newValues[index - 1] = '';
+      setOtpValues(newValues);
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!pasted) return;
+    const newValues = ['', '', '', '', '', ''];
+    for (let i = 0; i < pasted.length; i++) {
+      newValues[i] = pasted[i];
+    }
+    setOtpValues(newValues);
+
+    if (newValues.every(v => v !== '')) {
+      handleVerifyOtp(newValues.join(''));
+    } else {
+      const nextEmpty = newValues.findIndex(v => !v);
+      otpRefs.current[nextEmpty]?.focus();
+    }
+  };
+
+  const handleResend = () => {
+    if (resendCooldown > 0) return;
+    handleSendOtp();
+  };
+
+  const handleBackToEmail = () => {
+    setStep('email');
+    setOtpValues(['', '', '', '', '', '']);
+    setOtpError('');
+  };
+
   return (
     <div className="min-h-screen bg-background flex">
       {/* Left side - Form */}
       <div className="flex-1 flex items-center justify-center p-6 sm:p-8">
-        <div className="w-full max-w-md animate-fade-in">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-accent/10 mb-5">
-              <span className="text-xl font-black text-accent">h</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 tracking-tight">
-              {isSignUp ? t('auth.createAccount') : t('auth.welcomeBack')}
-            </h1>
-            <p className="text-muted-foreground text-sm sm:text-base">
-              {isSignUp
-                ? t('auth.joinToFind')
-                : t('auth.signInToContinue')}
-            </p>
-          </div>
+        <div className="w-full max-w-md">
+          {step === 'email' ? (
+            <div className="animate-fade-in" key="email-step">
+              <div className="text-center mb-8">
+                <span className="text-5xl mb-4 block">🏠</span>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 tracking-tight">
+                  Welcome to hemma
+                </h1>
+                <p className="text-muted-foreground text-sm sm:text-base">
+                  Enter your email to sign in or create an account
+                </p>
+              </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Honeypot field for bot detection */}
-            <HoneypotField value={honeypot} onChange={setHoneypot} />
-            
-            {isSignUp && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName">{t('auth.fullName')}</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="John Doe"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    className="pl-10"
+              <form onSubmit={handleSendOtp} className="space-y-5">
+                <HoneypotField value={honeypot} onChange={setHoneypot} />
+
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email}
+                      onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
+                      className="pl-10 h-12 text-base"
+                      autoFocus
+                      autoComplete="email"
+                    />
+                  </div>
+                  {emailError && (
+                    <p className="text-sm text-destructive">{emailError}</p>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between py-1">
+                  <label htmlFor="remember-me" className="text-sm text-muted-foreground cursor-pointer select-none">
+                    Remember me for 30 days
+                  </label>
+                  <Switch
+                    id="remember-me"
+                    checked={rememberMe}
+                    onCheckedChange={setRememberMe}
                   />
                 </div>
-                {errors.fullName && (
-                  <p className="text-sm text-destructive">{errors.fullName}</p>
-                )}
-              </div>
-            )}
 
-            <div className="space-y-2">
-              <Label htmlFor="email">{t('auth.email')}</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">{t('auth.password')}</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                <Button
+                  type="submit"
+                  variant="accent"
+                  className="w-full h-12 text-base font-semibold rounded-xl"
+                  disabled={isLoading || isLimited}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+                  {isLoading ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending code...</>
+                  ) : (
+                    'Continue with email'
+                  )}
+                </Button>
+
+                {isLimited && (
+                  <p className="text-sm text-destructive text-center">
+                    Too many attempts. Please wait {remainingTime}s
+                  </p>
+                )}
+              </form>
+
+              <div className="mt-8">
+                <Button
+                  variant="ghost"
+                  className="w-full text-muted-foreground"
+                  onClick={() => router.push('/')}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Home
+                </Button>
               </div>
-              {errors.password && (
-                <p className="text-sm text-destructive">{errors.password}</p>
-              )}
             </div>
+          ) : (
+            <div className="animate-fade-in" key="otp-step">
+              <div className="text-center mb-8">
+                <span className="text-5xl mb-4 block">✉️</span>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 tracking-tight">
+                  Check your email
+                </h1>
+                <p className="text-muted-foreground text-sm sm:text-base">
+                  We sent a 6-digit code to{' '}
+                  <span className="font-medium text-foreground">{email}</span>
+                </p>
+              </div>
 
-            <Button 
-              type="submit" 
-              variant="accent"
-              className="w-full"
-              disabled={isLoading || isLimited}
-            >
-              {isLoading ? t('common.pleaseWait') : (isSignUp ? t('auth.createAccountBtn') : t('common.signIn'))}
-            </Button>
-            
-            {isLimited && (
-              <p className="text-sm text-destructive text-center">
-                {t('auth.tooManyAttempts')}. {t('auth.pleaseWaitSeconds').replace('{seconds}', remainingTime.toString())}
-              </p>
-            )}
-          </form>
+              <div className="space-y-6">
+                {/* OTP inputs */}
+                <div className="flex justify-center gap-2 sm:gap-3">
+                  {otpValues.map((value, index) => (
+                    <input
+                      key={index}
+                      ref={(el) => { otpRefs.current[index] = el; }}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={value}
+                      onChange={(e) => handleOtpChange(index, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                      onPaste={index === 0 ? handleOtpPaste : undefined}
+                      className={cn(
+                        "w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-bold rounded-xl",
+                        "border-2 bg-background text-foreground",
+                        "focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent",
+                        "transition-all duration-200",
+                        otpError
+                          ? "border-destructive"
+                          : value
+                            ? "border-accent"
+                            : "border-border"
+                      )}
+                      autoComplete={index === 0 ? "one-time-code" : "off"}
+                    />
+                  ))}
+                </div>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-muted-foreground">
-              {isSignUp ? t('auth.alreadyHaveAccount') : t('auth.dontHaveAccount')}{' '}
-              <button
-                type="button"
-                onClick={() => setIsSignUp(!isSignUp)}
-                className="text-accent hover:underline font-medium"
-              >
-                {isSignUp ? t('common.signIn') : t('common.signUp')}
-              </button>
-            </p>
-          </div>
+                {otpError && (
+                  <p className="text-sm text-destructive text-center">{otpError}</p>
+                )}
 
-          <div className="mt-8">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => router.push('/')}
-            >
-              ← {t('common.backToHome')}
-            </Button>
-          </div>
+                {isLoading && (
+                  <div className="flex justify-center">
+                    <Loader2 className="h-5 w-5 animate-spin text-accent" />
+                  </div>
+                )}
+
+                {/* Resend */}
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Didn&apos;t receive the code?{' '}
+                    {resendCooldown > 0 ? (
+                      <span className="text-muted-foreground/60">
+                        Resend in {resendCooldown}s
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleResend}
+                        className="text-accent font-medium hover:underline underline-offset-4"
+                        disabled={isLoading}
+                      >
+                        Resend code
+                      </button>
+                    )}
+                  </p>
+                </div>
+
+                {/* Back to email */}
+                <Button
+                  variant="ghost"
+                  className="w-full text-muted-foreground"
+                  onClick={handleBackToEmail}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Use a different email
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Right side - Image/Branding */}
+      {/* Right side - Branding */}
       <div className="hidden lg:flex flex-1 bg-secondary/50 items-center justify-center p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-accent/10" />
         <div className="max-w-md text-center relative z-10">
