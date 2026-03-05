@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Eye, MessageSquare, Mail, Home, TrendingUp, ArrowLeft, ExternalLink } from 'lucide-react';
+import { Eye, MessageSquare, Mail, Home, TrendingUp, ArrowLeft, ExternalLink, BarChart3 } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -84,8 +84,11 @@ export default function LandlordDashboard() {
         <div className="h-16" />
         <main className="container mx-auto px-4 py-16">
           <div className="text-center max-w-md mx-auto">
-            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
-              <TrendingUp className="h-8 w-8 text-muted-foreground" />
+            <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center">
+              <div className="absolute inset-0 rounded-2xl bg-slate-500/10 blur-xl" />
+              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 shadow-sm">
+                <BarChart3 className="h-6 w-6 text-white" />
+              </div>
             </div>
             <h1 className="text-2xl font-bold text-foreground mb-2">{t('dashboard.signInRequired')}</h1>
             <p className="text-muted-foreground mb-6">{t('dashboard.signInToView')}</p>
@@ -117,9 +120,14 @@ export default function LandlordDashboard() {
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">{t('dashboard.title')}</h1>
-            <p className="text-muted-foreground">{t('dashboard.subtitle')}</p>
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-600 to-slate-800 shadow-sm">
+              <BarChart3 className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-foreground tracking-tight">{t('dashboard.title')}</h1>
+              <p className="text-muted-foreground text-sm">{t('dashboard.subtitle')}</p>
+            </div>
           </div>
         </div>
 

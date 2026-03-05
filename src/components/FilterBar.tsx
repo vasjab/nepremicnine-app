@@ -72,7 +72,7 @@ interface FilterBarProps {
 const PRICE_CONFIG = {
   rent: { min: 0, max: 5000, step: 100 },
   sale: { min: 0, max: 2000000, step: 10000 },
-  default: { min: 0, max: 100000, step: 1000 },
+  default: { min: 0, max: 2000000, step: 10000 },
 } as const;
 
 // Size range config

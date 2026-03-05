@@ -45,48 +45,46 @@ export function Header() {
             </span>
           </Link>
 
-          {/* Desktop Navigation - DESIGN.md pill tab bar */}
+          {/* Desktop Navigation - Premium segmented control */}
           <nav className="hidden md:flex items-center">
-            <div className="flex gap-1 rounded-[14px] bg-gray-100/80 p-1">
+            <div className="flex gap-0.5 rounded-2xl bg-gray-950/[0.04] p-[3px] shadow-[inset_0_1px_2px_rgba(0,0,0,0.06),inset_0_0_0_1px_rgba(0,0,0,0.03)]">
               <Link
                 href="/"
                 className={cn(
-                  'flex items-center justify-center gap-1.5 rounded-[10px] px-4 py-2.5 text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.97]',
+                  'relative flex items-center justify-center gap-1.5 rounded-[13px] px-4 py-2.5 text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.97]',
                   isActive('/')
-                    ? 'bg-white text-gray-900 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)]'
-                    : 'text-gray-500 hover:text-gray-900 hover:bg-white/60'
+                    ? 'bg-white text-gray-900 shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06),0_0_0_0.5px_rgba(0,0,0,0.04)]'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-white/40'
                 )}
               >
-                <Search className="h-3.5 w-3.5" />
+                <Search className={cn("h-3.5 w-3.5", isActive('/') && "text-slate-600")} />
                 {t('nav.findHome')}
               </Link>
               <Link
                 href="/sold-rented"
                 className={cn(
-                  'flex items-center justify-center gap-1.5 rounded-[10px] px-4 py-2.5 text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.97]',
+                  'relative flex items-center justify-center gap-1.5 rounded-[13px] px-4 py-2.5 text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.97]',
                   isActive('/sold-rented')
-                    ? 'bg-white text-gray-900 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)]'
-                    : 'text-gray-500 hover:text-gray-900 hover:bg-white/60'
+                    ? 'bg-white text-gray-900 shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06),0_0_0_0.5px_rgba(0,0,0,0.04)]'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-white/40'
                 )}
               >
-                <History className="h-3.5 w-3.5" />
+                <History className={cn("h-3.5 w-3.5", isActive('/sold-rented') && "text-slate-600")} />
                 {t('soldRented.recentlySold')}
               </Link>
               {user && (
-                <>
-                  <Link
-                    href="/saved"
-                    className={cn(
-                      'flex items-center justify-center gap-1.5 rounded-[10px] px-4 py-2.5 text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.97]',
-                      isActive('/saved')
-                        ? 'bg-white text-gray-900 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)]'
-                        : 'text-gray-500 hover:text-gray-900 hover:bg-white/60'
-                    )}
-                  >
-                    <Heart className="h-3.5 w-3.5" />
-                    {t('common.savedListings')}
-                  </Link>
-                </>
+                <Link
+                  href="/saved"
+                  className={cn(
+                    'relative flex items-center justify-center gap-1.5 rounded-[13px] px-4 py-2.5 text-[13px] font-semibold tracking-[-0.01em] transition-all duration-200 ease-out active:scale-[0.97]',
+                    isActive('/saved')
+                      ? 'bg-white text-gray-900 shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06),0_0_0_0.5px_rgba(0,0,0,0.04)]'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-white/40'
+                  )}
+                >
+                  <Heart className={cn("h-3.5 w-3.5", isActive('/saved') && "text-rose-500")} />
+                  {t('common.savedListings')}
+                </Link>
               )}
             </div>
           </nav>

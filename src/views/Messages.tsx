@@ -119,8 +119,13 @@ export default function Messages() {
         <Header />
         <main className="pt-16 flex items-center justify-center h-[80vh]">
           <div className="text-center max-w-md">
-            <span className="text-5xl mb-4 block">✉️</span>
-            <h1 className="text-2xl font-semibold text-foreground mb-2">💬 Messages</h1>
+            <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center">
+              <div className="absolute inset-0 rounded-2xl bg-slate-500/10 blur-xl" />
+              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 shadow-sm">
+                <MessageCircle className="h-6 w-6 text-white" />
+              </div>
+            </div>
+            <h1 className="text-2xl font-semibold text-foreground mb-2">Messages</h1>
             <p className="text-muted-foreground mb-6">
               Sign in to view your messages and contact landlords
             </p>
@@ -184,7 +189,12 @@ export default function Messages() {
           "flex flex-col bg-card overflow-hidden"
         )}>
           <div className="p-4 border-b border-border/50 space-y-3 flex-shrink-0">
-            <h1 className="text-xl font-bold text-foreground tracking-tight">💬 Messages</h1>
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-gradient-to-br from-slate-600 to-slate-800 shadow-sm">
+                <MessageCircle className="h-4 w-4 text-white" />
+              </div>
+              <h1 className="text-xl font-bold text-foreground tracking-tight">Messages</h1>
+            </div>
             <MessageSearch 
               onResultClick={handleSearchResultClick}
               className="w-full"
@@ -212,7 +222,12 @@ export default function Messages() {
           ) : (
             <div className="h-full flex items-center justify-center text-center p-8">
               <div>
-                <span className="text-4xl mb-4 block">💬</span>
+                <div className="relative mx-auto mb-4 flex h-12 w-12 items-center justify-center">
+                  <div className="absolute inset-0 rounded-2xl bg-slate-500/10 blur-xl" />
+                  <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 shadow-sm">
+                    <MessageCircle className="h-5 w-5 text-white" />
+                  </div>
+                </div>
                 <h2 className="text-lg font-semibold text-foreground mb-2">
                   Select a conversation
                 </h2>

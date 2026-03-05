@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo, memo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Home, List, MapIcon } from 'lucide-react';
+import { Home, List, MapIcon, History } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
 import { FilterBar } from '@/components/FilterBar';
@@ -200,9 +200,14 @@ export default function SoldRentedListings() {
 
   const TabsHeader = () => (
     <div className="shrink-0 px-4 pt-4 pb-2">
-      <h1 className="text-lg font-semibold text-gray-900 mb-3 tracking-tight">
-        {t('soldRented.title')}
-      </h1>
+      <div className="flex items-center gap-2.5 mb-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-gradient-to-br from-slate-600 to-slate-800 shadow-sm">
+          <History className="h-4 w-4 text-white" />
+        </div>
+        <h1 className="text-lg font-semibold text-gray-900 tracking-tight">
+          {t('soldRented.title')}
+        </h1>
+      </div>
       <TabsList className="w-full justify-start">
         <TabsTrigger value="sold" className="gap-2">
           {t('soldRented.recentlySold')}
