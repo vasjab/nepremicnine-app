@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
-import { Heart, ChevronLeft, ChevronRight, Building2, Car, TreePine, Snowflake, TrendingUp, TrendingDown, Sparkles, Camera, Bed, Bath, Maximize2, MapPin } from 'lucide-react';
+import { Heart, ChevronLeft, ChevronRight, Building2, Car, TreePine, Snowflake, TrendingUp, TrendingDown, Camera, Bed, Bath, Maximize2, MapPin } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -137,42 +137,11 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
   // NEW badge: listing is less than 3 days old
   const isNew = listingDate ? differenceInDays(new Date(), listingDate) < 3 : false;
 
-  // Feature badge color mappings
-  const badgeColorClasses: Record<string, string> = {
-    green: 'bg-emerald-50 text-emerald-700 ring-emerald-200/60',
-    blue: 'bg-blue-50 text-blue-700 ring-blue-200/60',
-    indigo: 'bg-indigo-50 text-indigo-700 ring-indigo-200/60',
-    sky: 'bg-sky-50 text-sky-700 ring-sky-200/60',
-  };
-
-  // Dot color mappings for inline feature indicators
-  const dotColorClasses: Record<string, string> = {
-    green: 'bg-emerald-400',
-    blue: 'bg-blue-400',
-    indigo: 'bg-indigo-400',
-    sky: 'bg-sky-400',
-  };
-
-  // Property type icon mapping
-  const propertyTypeIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-    apartment: Building2,
-    house: Building2,
-    room: Bed,
-    studio: Maximize2,
-    villa: Building2,
-    summer_house: Building2,
-    other: Building2,
-  };
-  const PropertyTypeIcon = propertyTypeIconMap[listing.property_type] || Building2;
-
   return (
     <article
       className="listing-card cursor-pointer group relative overflow-hidden"
       onClick={onClick}
     >
-      {/* Hover shine overlay */}
-      <div className="absolute inset-0 z-30 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-white/10 via-white/5 to-transparent" />
-
       {/* Image container */}
       <div
         className={cn(
@@ -205,17 +174,14 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           </div>
         )}
 
-        {/* Gradient overlay at bottom of image for text readability */}
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/50 via-black/20 to-transparent pointer-events-none z-[5]" />
-
         {/* Sold/Rented status badge */}
         {isSoldOrRented && showStatusOverlay && (
           <div className="absolute top-3 left-3 z-20">
             <span className={cn(
-              "px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wide",
+              "px-3 py-1.5 rounded-xl text-xs font-semibold uppercase tracking-wide",
               isSold
-                ? "bg-amber-500/90 text-white"
-                : "bg-emerald-500/90 text-white"
+                ? "bg-slate-200/90 text-slate-700 backdrop-blur-sm"
+                : "bg-slate-200/90 text-slate-700 backdrop-blur-sm"
             )}>
               {isSold ? t('listing.sold') : t('listing.rented')}
             </span>
@@ -225,9 +191,8 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
         {/* NEW badge for listings less than 3 days old */}
         {isNew && !isSoldOrRented && (
           <div className="absolute top-3 left-3 z-20">
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[11px] font-bold uppercase tracking-wide shadow-lg shadow-orange-500/25">
-              <Sparkles className="h-3 w-3" />
-              NEW
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-[11px] font-semibold uppercase tracking-wide">
+              New
             </span>
           </div>
         )}
@@ -251,7 +216,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
             </button>
 
             {/* Airbnb-style pill dots */}
-            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
               {listing.images.slice(0, 5).map((_, index) => (
                 <button
                   key={index}
@@ -276,7 +241,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
         {/* Image count indicator */}
         {hasMultipleImages && (
-          <div className="absolute bottom-3 right-3 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-black/60 text-white text-[11px] font-medium backdrop-blur-sm">
+          <div className="absolute bottom-3 right-3 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-black/40 text-white text-[11px] font-medium backdrop-blur-sm">
             <Camera className="h-3 w-3" />
             {listing.images.length}
           </div>
@@ -312,15 +277,10 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           </Tooltip>
         )}
 
-        {/* Type badge - gradient pills */}
+        {/* Type badge */}
         {(!isSoldOrRented || !showStatusOverlay) && (
           <div className="absolute bottom-3 left-3 z-10">
-            <span className={cn(
-              "px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-lg",
-              isRental
-                ? "bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-500/25"
-                : "bg-gradient-to-r from-blue-500 to-blue-600 shadow-blue-500/25"
-            )}>
+            <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/90 text-slate-700 backdrop-blur-sm">
               {t(`listingTypes.${listing.listing_type}`)}
             </span>
           </div>
@@ -329,15 +289,9 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
       {/* Content */}
       <div className="p-4">
-        {/* Property type icon chip */}
+        {/* Property type label */}
         <div className="flex items-center gap-1.5 mb-2">
-          <span className={cn(
-            "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider",
-            isRental
-              ? "bg-emerald-50 text-emerald-600"
-              : "bg-blue-50 text-blue-600"
-          )}>
-            <PropertyTypeIcon className="h-3 w-3" />
+          <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">
             {propertyTypeLabel}
           </span>
         </div>
@@ -363,7 +317,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           </span>
         </div>
 
-        {/* Feature badges with colored backgrounds and dot indicators */}
+        {/* Feature badges */}
         {displayBadges.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
             {displayBadges.map((badge, index) => {
@@ -371,12 +325,8 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               return (
                 <span
                   key={index}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ring-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]",
-                    badgeColorClasses[badge.color] || 'bg-gray-50 text-gray-600 ring-gray-200/60'
-                  )}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-gray-50 text-gray-500 ring-1 ring-gray-100"
                 >
-                  <span className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", dotColorClasses[badge.color] || 'bg-gray-400')} />
                   <Icon className="h-3 w-3" />
                   {badge.label}
                 </span>
@@ -385,16 +335,9 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           </div>
         )}
 
-        {/* Price section with colored accent bar */}
+        {/* Price section */}
         <div className="flex items-center justify-between pt-1">
-          <div className="flex items-stretch gap-2.5">
-            {/* Accent bar */}
-            <div className={cn(
-              "w-1 rounded-full flex-shrink-0",
-              isRental
-                ? "bg-gradient-to-b from-emerald-400 to-emerald-600"
-                : "bg-gradient-to-b from-blue-400 to-blue-600"
-            )} />
+          <div className="flex items-stretch">
             <div className="flex flex-col">
               {/* For sold/rented listings with final price */}
               {isSoldOrRented && showStatusOverlay && hasFinalPrice ? (

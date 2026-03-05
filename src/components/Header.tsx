@@ -37,7 +37,7 @@ export function Header() {
             href="/"
             className="flex items-center gap-2.5 transition-opacity hover:opacity-80"
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md shadow-blue-500/30">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 shadow-sm">
               <Home className="h-4 w-4 text-white" />
             </div>
             <span className="text-lg font-bold text-foreground tracking-tight">
@@ -98,7 +98,7 @@ export function Header() {
               className={cn(
                 'flex items-center justify-center w-10 h-10 rounded-full transition-colors',
                 isActive('/')
-                  ? 'bg-blue-50 text-blue-600'
+                  ? 'bg-slate-100 text-slate-700'
                   : 'text-gray-400 hover:text-gray-600'
               )}
             >
@@ -110,7 +110,7 @@ export function Header() {
                 className={cn(
                   'flex items-center justify-center w-10 h-10 rounded-full transition-colors',
                   isActive('/saved')
-                    ? 'bg-rose-50 text-rose-500'
+                    ? 'bg-slate-100 text-slate-700'
                     : 'text-gray-400 hover:text-gray-600'
                 )}
               >
@@ -132,7 +132,7 @@ export function Header() {
                   >
                     <MessageCircle className="h-5 w-5" />
                     {unreadCount > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 min-w-5 h-5 rounded-full bg-gradient-to-r from-rose-500 to-pink-600 text-white text-[10px] flex items-center justify-center font-bold px-1 shadow-sm shadow-rose-500/30">
+                      <span className="absolute -top-0.5 -right-0.5 min-w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] flex items-center justify-center font-bold px-1 shadow-sm">
                         {unreadCount > 9 ? '9+' : unreadCount}
                       </span>
                     )}
@@ -159,14 +159,14 @@ export function Header() {
                       >
                         <User className="h-5 w-5" />
                         {unreadCount > 0 && (
-                          <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-gradient-to-br from-rose-400 to-pink-600 ring-2 ring-white" />
+                          <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white" />
                         )}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-64 py-2 rounded-2xl shadow-2xl border-gray-200/60 bg-white">
                       <DropdownMenuItem asChild className="px-4 py-3 text-sm focus:bg-gray-50 rounded-none cursor-pointer">
                         <Link href="/profile">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-blue-100 text-blue-600 mr-3">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-slate-100 text-slate-600 mr-3">
                             <User className="h-3.5 w-3.5" />
                           </div>
                           {t('common.profile')}
@@ -174,12 +174,12 @@ export function Header() {
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild className="px-4 py-3 text-sm focus:bg-gray-50 rounded-none cursor-pointer">
                         <Link href="/messages">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-violet-100 text-violet-600 mr-3">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-gray-100 text-gray-500 mr-3">
                             <MessageCircle className="h-3.5 w-3.5" />
                           </div>
                           Messages
                           {unreadCount > 0 && (
-                            <span className="ml-auto min-w-5 h-5 rounded-full bg-gradient-to-r from-rose-500 to-pink-600 text-white text-[10px] flex items-center justify-center font-bold px-1">
+                            <span className="ml-auto min-w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] flex items-center justify-center font-bold px-1">
                               {unreadCount > 9 ? '9+' : unreadCount}
                             </span>
                           )}
@@ -188,7 +188,7 @@ export function Header() {
                       <DropdownMenuSeparator className="my-1.5" />
                       <DropdownMenuItem asChild className="px-4 py-3 text-sm focus:bg-gray-50 rounded-none cursor-pointer">
                         <Link href="/saved">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-rose-100 text-rose-600 mr-3">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-gray-100 text-gray-500 mr-3">
                             <Heart className="h-3.5 w-3.5" />
                           </div>
                           {t('common.savedListings')}
@@ -196,7 +196,7 @@ export function Header() {
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild className="px-4 py-3 text-sm focus:bg-gray-50 rounded-none cursor-pointer">
                         <Link href="/my-listings">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-emerald-100 text-emerald-600 mr-3">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-gray-100 text-gray-500 mr-3">
                             <Home className="h-3.5 w-3.5" />
                           </div>
                           {t('common.myListings')}
@@ -204,7 +204,7 @@ export function Header() {
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild className="px-4 py-3 text-sm focus:bg-gray-50 rounded-none cursor-pointer">
                         <Link href="/dashboard">
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-amber-100 text-amber-600 mr-3">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-gray-100 text-gray-500 mr-3">
                             <BarChart3 className="h-3.5 w-3.5" />
                           </div>
                           {t('nav.dashboard')}
@@ -266,14 +266,14 @@ export function Header() {
                 className={cn(
                   'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium transition-colors',
                   isActive('/sold-rented')
-                    ? 'bg-blue-50 text-blue-700'
+                    ? 'bg-slate-50 text-slate-800'
                     : 'text-gray-700 hover:bg-gray-50'
                 )}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <div className={cn(
                   'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
-                  isActive('/sold-rented') ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
+                  isActive('/sold-rented') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
                 )}>
                   <History className="h-4 w-4" />
                 </div>
@@ -287,14 +287,14 @@ export function Header() {
                     className={cn(
                       'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium transition-colors',
                       isActive('/saved')
-                        ? 'bg-rose-50 text-rose-700'
+                        ? 'bg-slate-50 text-slate-800'
                         : 'text-gray-700 hover:bg-gray-50'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className={cn(
                       'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
-                      isActive('/saved') ? 'bg-rose-100 text-rose-600' : 'bg-gray-100 text-gray-500'
+                      isActive('/saved') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
                     )}>
                       <Heart className="h-4 w-4" />
                     </div>
@@ -305,14 +305,14 @@ export function Header() {
                     className={cn(
                       'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium transition-colors',
                       isActive('/my-listings')
-                        ? 'bg-emerald-50 text-emerald-700'
+                        ? 'bg-slate-50 text-slate-800'
                         : 'text-gray-700 hover:bg-gray-50'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className={cn(
                       'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
-                      isActive('/my-listings') ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-500'
+                      isActive('/my-listings') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
                     )}>
                       <Home className="h-4 w-4" />
                     </div>
@@ -323,14 +323,14 @@ export function Header() {
                     className={cn(
                       'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium transition-colors',
                       isActive('/profile')
-                        ? 'bg-blue-50 text-blue-700'
+                        ? 'bg-slate-50 text-slate-800'
                         : 'text-gray-700 hover:bg-gray-50'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className={cn(
                       'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
-                      isActive('/profile') ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
+                      isActive('/profile') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
                     )}>
                       <User className="h-4 w-4" />
                     </div>
@@ -341,14 +341,14 @@ export function Header() {
                     className={cn(
                       'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium transition-colors',
                       isActive('/dashboard')
-                        ? 'bg-amber-50 text-amber-700'
+                        ? 'bg-slate-50 text-slate-800'
                         : 'text-gray-700 hover:bg-gray-50'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className={cn(
                       'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
-                      isActive('/dashboard') ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-500'
+                      isActive('/dashboard') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
                     )}>
                       <BarChart3 className="h-4 w-4" />
                     </div>
@@ -368,7 +368,7 @@ export function Header() {
 
                   <Link
                     href="/create-listing"
-                    className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-sm shadow-blue-500/25"
+                    className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-semibold text-white bg-gradient-to-r from-slate-700 to-slate-900 shadow-sm"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/20">
@@ -412,7 +412,7 @@ export function Header() {
                   </Link>
                   <Link
                     href="/auth?mode=signup"
-                    className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-sm shadow-blue-500/25"
+                    className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-semibold text-white bg-gradient-to-r from-slate-700 to-slate-900 shadow-sm"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/20">
@@ -426,8 +426,6 @@ export function Header() {
           </nav>
         )}
       </div>
-      {/* Subtle animated gradient line */}
-      <div className="header-gradient-line" />
     </header>
   );
 }

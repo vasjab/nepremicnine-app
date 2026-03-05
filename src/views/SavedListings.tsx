@@ -23,13 +23,13 @@ export default function SavedListings() {
         <Header />
         <main className="pt-16 flex items-center justify-center h-[80vh] relative overflow-hidden">
           {/* Decorative blobs */}
-          <div className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-rose-400/12 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-pink-400/10 blur-3xl" />
+          <div className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-gray-400/[0.03] blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-gray-400/[0.03] blur-3xl" />
 
           <div className="text-center max-w-md relative z-10">
             <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center">
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-rose-500/20 to-pink-500/20 blur-xl" />
-              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 shadow-lg shadow-rose-500/25">
+              <div className="absolute inset-0 rounded-2xl bg-slate-500/10 blur-xl" />
+              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 shadow-sm">
                 <Heart className="h-6 w-6 text-white" />
               </div>
             </div>
@@ -56,13 +56,13 @@ export default function SavedListings() {
 
       <main className="pt-16 relative overflow-hidden">
         {/* Decorative ambient blobs */}
-        <div className="pointer-events-none absolute -top-32 -right-32 h-80 w-80 rounded-full bg-rose-400/8 blur-3xl" />
-        <div className="pointer-events-none absolute top-40 -left-32 h-60 w-60 rounded-full bg-pink-400/6 blur-3xl" />
+        <div className="pointer-events-none absolute -top-32 -right-32 h-80 w-80 rounded-full bg-gray-400/[0.03] blur-3xl" />
+        <div className="pointer-events-none absolute top-40 -left-32 h-60 w-60 rounded-full bg-gray-400/[0.03] blur-3xl" />
 
         <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-fade-in relative z-10">
           {/* Page heading */}
           <div className="flex items-center gap-3 mb-2">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 shadow-md shadow-rose-500/30">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-slate-600 to-slate-800 shadow-sm">
               <Heart className="h-5 w-5 text-white" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
@@ -73,13 +73,13 @@ export default function SavedListings() {
             {t('saved.subtitle')}
           </p>
 
-          {/* Gradient accent divider */}
-          <div className="h-px bg-gradient-to-r from-rose-500/40 via-pink-400/20 to-transparent mb-6" />
+          {/* Divider */}
+          <div className="border-b border-gray-100 mb-6" />
 
           {/* Stats bar */}
           {!isLoading && savedCount > 0 && (
-            <div className="glass-card inline-flex items-center gap-2 px-4 py-2 mb-6">
-              <Heart className="h-4 w-4 text-rose-500" />
+            <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 bg-gray-50 border border-gray-100 rounded-xl">
+              <Heart className="h-4 w-4 text-gray-400" />
               <span className="text-sm font-medium text-foreground">
                 {savedCount} {savedCount === 1 ? 'saved listing' : 'saved listings'}
               </span>
@@ -110,8 +110,8 @@ export default function SavedListings() {
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center">
-                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-rose-500/20 to-pink-500/20 blur-xl" />
-                <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 shadow-lg shadow-rose-500/25">
+                <div className="absolute inset-0 rounded-2xl bg-slate-500/10 blur-xl" />
+                <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 shadow-sm">
                   <Home className="h-6 w-6 text-white" />
                 </div>
               </div>
