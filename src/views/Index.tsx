@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect, useMemo, memo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { List, MapIcon, X } from 'lucide-react';
+import { List, MapIcon, X, Key, Banknote } from 'lucide-react';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { Listing, ListingFilters, SortOption } from '@/types/listing';
 import { useListings } from '@/hooks/useListings';
@@ -41,7 +41,7 @@ const Index = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { trigger: haptic } = useHapticFeedback();
-  const [filters, setFilters] = useState<ListingFilters>({});
+  const [filters, setFilters] = useState<ListingFilters>({ listing_type: 'rent' });
   const [sortBy, setSortBy] = useState<SortOption>('newest');
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
   const [highlightedFromMap, setHighlightedFromMap] = useState<string | null>(null);
@@ -136,6 +136,17 @@ const Index = () => {
     router.replace(query ? `/?${query}` : '/');
   };
 
+  // Handle listing type (rent/sale) toggle — reset prices when switching
+  const handleListingTypeToggle = useCallback((type: 'rent' | 'sale') => {
+    haptic('light');
+    const isChanging = type !== filters.listing_type;
+    setFilters(prev => ({
+      ...prev,
+      listing_type: type,
+      ...(isChanging ? { min_price: null, max_price: null } : {}),
+    }));
+  }, [filters.listing_type, haptic]);
+
   const visibleListings = filteredListings;
 
   const handleListingClick = (listing: Listing) => {
@@ -193,6 +204,47 @@ const Index = () => {
     }
   }, [activeListingId]);
 
+
+  // Rent / Sale toggle — always visible above filters
+  const ListingTypeToggle = () => {
+    const selected = filters.listing_type || 'rent';
+    return (
+      <div className="flex border-b border-gray-200 px-4 shrink-0">
+        <button
+          type="button"
+          onClick={() => handleListingTypeToggle('rent')}
+          className={cn(
+            'flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors relative',
+            selected === 'rent'
+              ? 'text-gray-900'
+              : 'text-gray-400 hover:text-gray-600'
+          )}
+        >
+          <Key className="h-4 w-4" />
+          {t('listingTypes.rent')}
+          {selected === 'rent' && (
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 rounded-full" />
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={() => handleListingTypeToggle('sale')}
+          className={cn(
+            'flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors relative',
+            selected === 'sale'
+              ? 'text-gray-900'
+              : 'text-gray-400 hover:text-gray-600'
+          )}
+        >
+          <Banknote className="h-4 w-4" />
+          {t('listingTypes.sale')}
+          {selected === 'sale' && (
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900 rounded-full" />
+          )}
+        </button>
+      </div>
+    );
+  };
 
   // Shared listings grid component
   const ListingsGrid = ({ showAnimations = true }: { showAnimations?: boolean }) => (
@@ -259,6 +311,8 @@ const Index = () => {
                   mobileView === 'list' ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
                 )}
               >
+
+                <ListingTypeToggle />
 
                 {landlordId && (
                   <div className="px-4 pt-3 pb-0">
@@ -360,6 +414,8 @@ const Index = () => {
           <div className="flex-1 flex min-h-0 h-full">
             {/* Left panel - Listings (50%) */}
             <div className="w-1/2 flex flex-col h-full min-h-0 border-r border-border overflow-hidden">
+
+              <ListingTypeToggle />
 
               {landlordId && (
                 <div className="px-4 pt-3 pb-0">

@@ -6,7 +6,7 @@ import {
   ArrowLeft, Heart, MapPin, Images, ChevronLeft, ChevronRight, CheckCircle,
   MessageCircle, User, ChevronDown, ChevronUp, LayoutGrid, Home, Calendar,
   Ruler, BedDouble, Bath, Building2, Flame, Zap, Clock, FileText, Sparkles,
-  Info
+  Info, X
 } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
@@ -60,7 +60,7 @@ export function ListingDetailContent({
   const [scrollToFloorPlan, setScrollToFloorPlan] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const [showFeatures, setShowFeatures] = useState(false);
+  const [showFeaturesModal, setShowFeaturesModal] = useState(false);
 
   const goToPrevImage = useCallback(() => {
     if (listing.images && listing.images.length > 1) {
@@ -505,23 +505,25 @@ export function ListingDetailContent({
               </div>
 
               {/* Highlights */}
-              {(highlights.length > 0 || listing.floor_plan_urls?.length > 0 || listing.floor_plan_url) && (
+              {highlights.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-4">
                   {highlights.map((h) => (
-                    <span key={h} className="inline-flex items-center rounded-full border border-gray-200 bg-gray-50/50 px-2.5 py-0.5 text-xs font-medium text-gray-600">
+                    <span key={h} className="inline-flex items-center rounded-full bg-gray-50 px-3 py-1.5 text-[13px] font-medium text-gray-700 ring-1 ring-inset ring-black/[0.06]">
                       {h}
                     </span>
                   ))}
-                  {(listing.floor_plan_urls?.length > 0 || listing.floor_plan_url) && (
-                    <button
-                      onClick={() => { setScrollToFloorPlan(true); setShowGallery(true); }}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-gray-50/50 px-2.5 py-0.5 text-xs font-medium text-gray-600 hover:bg-gray-100 transition-colors"
-                    >
-                      <LayoutGrid className="h-3 w-3" />
-                      {t('listing.floorPlan')}
-                    </button>
-                  )}
                 </div>
+              )}
+
+              {/* Floor Plan link — prominent */}
+              {(listing.floor_plan_urls?.length > 0 || listing.floor_plan_url) && (
+                <button
+                  onClick={() => { setScrollToFloorPlan(true); setShowGallery(true); }}
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-gray-900 underline underline-offset-4 decoration-gray-300 hover:decoration-gray-900 transition-colors"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                  {t('listing.floorPlan')}
+                </button>
               )}
             </div>
 
@@ -626,13 +628,13 @@ export function ListingDetailContent({
                 <h2 className="text-lg font-semibold text-gray-900 mb-3">
                   {t('listing.features')}
                 </h2>
-                <PropertyFeatures listing={listing} maxItems={showFeatures ? undefined : 10} />
+                <PropertyFeatures listing={listing} maxItems={10} />
                 {featureCount > 10 && (
                   <button
                     className="mt-5 inline-flex items-center justify-center h-12 px-6 text-base font-semibold text-gray-900 rounded-lg border border-gray-900 hover:bg-gray-50 transition-colors"
-                    onClick={() => setShowFeatures(!showFeatures)}
+                    onClick={() => setShowFeaturesModal(true)}
                   >
-                    {showFeatures ? 'Show less' : `Show all ${featureCount} amenities`}
+                    {`Show all ${featureCount} amenities`}
                   </button>
                 )}
               </div>
@@ -777,6 +779,34 @@ export function ListingDetailContent({
           </div>
         )}
       </div>
+
+      {/* Features modal */}
+      {showFeaturesModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setShowFeaturesModal(false)}
+          />
+          {/* Modal panel */}
+          <div className="relative bg-white w-full sm:max-w-2xl sm:rounded-xl max-h-[90vh] flex flex-col rounded-t-xl">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 shrink-0">
+              <h2 className="text-lg font-semibold text-gray-900">{t('listing.features')}</h2>
+              <button
+                onClick={() => setShowFeaturesModal(false)}
+                className="h-8 w-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+              >
+                <X className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+            {/* Content */}
+            <div className="overflow-y-auto px-6 py-4">
+              <PropertyFeatures listing={listing} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Image gallery modal */}
       <ImageGalleryModal
