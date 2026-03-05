@@ -86,23 +86,6 @@ export function Header() {
                     <Heart className="h-3.5 w-3.5" />
                     {t('common.savedListings')}
                   </Link>
-                  <Link
-                    href="/messages"
-                    className={cn(
-                      'relative flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all border',
-                      isActive('/messages')
-                        ? 'bg-white shadow-sm text-gray-900 border-black/[0.06]'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                    )}
-                  >
-                    <MessageCircle className="h-3.5 w-3.5" />
-                    Messages
-                    {unreadCount > 0 && (
-                      <span className="min-w-[18px] h-[18px] rounded-full bg-gradient-to-r from-rose-500 to-pink-600 text-white text-[10px] flex items-center justify-center font-bold px-1 shadow-sm shadow-rose-500/30">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                      </span>
-                    )}
-                  </Link>
                 </>
               )}
             </div>
