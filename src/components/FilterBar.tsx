@@ -244,13 +244,13 @@ function FilterContent({
                 type="button"
                 onClick={() => handleListingTypeChange(isSelected ? 'all' : type.value)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-3 rounded-xl text-[13px] font-medium transition-all duration-200 border cursor-pointer",
+                  "flex items-center gap-2 px-4 py-3 rounded-xl text-[13px] font-semibold transition-all duration-200 border cursor-pointer",
                   isSelected
                     ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    : `${type.bg} ${type.text} ${type.border} ${type.hoverBorder} ${type.hoverBg}`
                 )}
               >
-                <Icon className={cn("h-4 w-4", isSelected ? "text-white" : "text-gray-400")} />
+                <Icon className={cn("h-4 w-4", isSelected ? "text-white" : type.iconColor)} />
                 {type.label}
               </button>
             );
@@ -271,13 +271,13 @@ function FilterContent({
                 type="button"
                 onClick={() => handlePropertyTypeToggle(type.value)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-3 rounded-xl text-[13px] font-medium transition-all duration-200 border cursor-pointer",
+                  "flex items-center gap-2 px-4 py-3 rounded-xl text-[13px] font-semibold transition-all duration-200 border cursor-pointer",
                   isSelected
                     ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    : `${type.bg} ${type.text} ${type.border} ${type.hoverBorder} ${type.hoverBg}`
                 )}
               >
-                <Icon className={cn("h-4 w-4", isSelected ? "text-white" : "text-gray-400")} />
+                <Icon className={cn("h-4 w-4", isSelected ? "text-white" : type.iconColor)} />
                 {type.label}
               </button>
             );
@@ -696,16 +696,16 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
   ];
 
   const LISTING_TYPES = [
-    { value: 'rent', label: t('listingTypes.rent'), icon: Key },
-    { value: 'sale', label: t('listingTypes.sale'), icon: Banknote },
+    { value: 'rent', label: t('listingTypes.rent'), icon: Key, bg: 'bg-amber-50', text: 'text-amber-700', iconColor: 'text-amber-500', border: 'border-amber-200', hoverBorder: 'hover:border-amber-300', hoverBg: 'hover:bg-amber-50/80' },
+    { value: 'sale', label: t('listingTypes.sale'), icon: Banknote, bg: 'bg-emerald-50', text: 'text-emerald-700', iconColor: 'text-emerald-500', border: 'border-emerald-200', hoverBorder: 'hover:border-emerald-300', hoverBg: 'hover:bg-emerald-50/80' },
   ] as const;
 
   const PROPERTY_TYPES = [
-    { value: 'apartment', label: t('propertyTypes.apartment'), icon: Building2 },
-    { value: 'house', label: t('propertyTypes.house'), icon: Home },
-    { value: 'room', label: t('propertyTypes.room'), icon: DoorOpen },
-    { value: 'studio', label: t('propertyTypes.studio'), icon: Square },
-    { value: 'villa', label: t('propertyTypes.villa'), icon: Castle },
+    { value: 'apartment', label: t('propertyTypes.apartment'), icon: Building2, bg: 'bg-sky-50', text: 'text-sky-700', iconColor: 'text-sky-500', border: 'border-sky-200', hoverBorder: 'hover:border-sky-300', hoverBg: 'hover:bg-sky-50/80' },
+    { value: 'house', label: t('propertyTypes.house'), icon: Home, bg: 'bg-orange-50', text: 'text-orange-700', iconColor: 'text-orange-500', border: 'border-orange-200', hoverBorder: 'hover:border-orange-300', hoverBg: 'hover:bg-orange-50/80' },
+    { value: 'room', label: t('propertyTypes.room'), icon: DoorOpen, bg: 'bg-violet-50', text: 'text-violet-700', iconColor: 'text-violet-500', border: 'border-violet-200', hoverBorder: 'hover:border-violet-300', hoverBg: 'hover:bg-violet-50/80' },
+    { value: 'studio', label: t('propertyTypes.studio'), icon: Square, bg: 'bg-pink-50', text: 'text-pink-700', iconColor: 'text-pink-500', border: 'border-pink-200', hoverBorder: 'hover:border-pink-300', hoverBg: 'hover:bg-pink-50/80' },
+    { value: 'villa', label: t('propertyTypes.villa'), icon: Castle, bg: 'bg-indigo-50', text: 'text-indigo-700', iconColor: 'text-indigo-500', border: 'border-indigo-200', hoverBorder: 'hover:border-indigo-300', hoverBg: 'hover:bg-indigo-50/80' },
   ] as const;
 
   // Check if apartment-type properties are selected
