@@ -29,7 +29,7 @@ interface LocationPreviewMapProps {
 const MAPBOX_TOKEN_KEY = 'hemma_mapbox_token';
 
 const getMapboxToken = (): string => {
-  return localStorage.getItem(MAPBOX_TOKEN_KEY) || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || '';
+  return localStorage.getItem(MAPBOX_TOKEN_KEY) || process.env.NEXT_PUBLIC_MAPBOX_PUBLIC_TOKEN || '';
 };
 
 export function LocationPreviewMap({
