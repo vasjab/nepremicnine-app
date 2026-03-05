@@ -1,4 +1,23 @@
-project_id = "tnfnshltkpdyhicvwmsg"
+project_id = "yyymdkfhdcrfcsoggsja"
+
+[auth]
+site_url = "https://nepremicnine-app.vercel.app"
+additional_redirect_urls = ["http://localhost:3000"]
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+otp_length = 6
+otp_expiry = 600
+
+[auth.email.template.magic_link]
+subject = "Your hemma login code"
+content_path = "supabase/templates/magic_link.html"
+
+[auth.email.template.confirmation]
+subject = "Confirm your hemma account"
+content_path = "supabase/templates/confirmation.html"
 
 [functions.check-rate-limit]
 verify_jwt = false
