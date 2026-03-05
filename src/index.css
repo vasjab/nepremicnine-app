@@ -338,12 +338,13 @@
     -webkit-user-select: none;
     transition:
       color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      background 0.2s cubic-bezier(0.4, 0, 0.2, 1),
       transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .segmented-item:hover:not(.is-active) {
-    color: hsl(0 0% 20%);
-    background: hsl(0 0% 0% / 0.04);
+    color: hsl(215 20% 25%);
+    background: hsl(215 40% 94%);
   }
 
   .segmented-item:active {
@@ -351,7 +352,7 @@
   }
 
   .segmented-item.is-active {
-    color: hsl(0 0% 9%);
+    color: hsl(215 25% 15%);
   }
 
   /* The sliding pill background */
@@ -359,11 +360,11 @@
     position: absolute;
     inset: 0;
     border-radius: 11px;
-    background: white;
+    background: linear-gradient(to bottom, hsl(0 0% 100%), hsl(210 20% 98%));
     box-shadow:
-      0 1px 3px hsl(0 0% 0% / 0.08),
-      0 1px 2px hsl(0 0% 0% / 0.04),
-      0 0 0 0.5px hsl(0 0% 0% / 0.04),
+      0 1px 3px hsl(215 30% 50% / 0.1),
+      0 2px 8px hsl(215 30% 50% / 0.06),
+      0 0 0 0.5px hsl(215 20% 80% / 0.5),
       inset 0 0.5px 0 hsl(0 0% 100% / 1);
     animation: segmented-pill-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }

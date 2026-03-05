@@ -58,7 +58,7 @@ export function Header() {
                 {isActive('/') && <span className="segmented-item-bg" />}
                 <Search className={cn(
                   "relative z-10 h-[14px] w-[14px] transition-colors duration-200",
-                  isActive('/') ? "text-gray-700" : "text-gray-400 group-hover:text-gray-500"
+                  isActive('/') ? "text-blue-600" : "text-gray-400 group-hover:text-blue-500"
                 )} />
                 <span className="relative z-10">{t('nav.findHome')}</span>
               </Link>
@@ -72,7 +72,7 @@ export function Header() {
                 {isActive('/sold-rented') && <span className="segmented-item-bg" />}
                 <History className={cn(
                   "relative z-10 h-[14px] w-[14px] transition-colors duration-200",
-                  isActive('/sold-rented') ? "text-gray-700" : "text-gray-400 group-hover:text-gray-500"
+                  isActive('/sold-rented') ? "text-amber-600" : "text-gray-400 group-hover:text-amber-500"
                 )} />
                 <span className="relative z-10">{t('soldRented.recentlySold')}</span>
               </Link>
@@ -87,7 +87,7 @@ export function Header() {
                   {isActive('/saved') && <span className="segmented-item-bg" />}
                   <Heart className={cn(
                     "relative z-10 h-[14px] w-[14px] transition-colors duration-200",
-                    isActive('/saved') ? "text-rose-500" : "text-gray-400 group-hover:text-gray-500"
+                    isActive('/saved') ? "text-rose-500" : "text-gray-400 group-hover:text-rose-400"
                   )} />
                   <span className="relative z-10">{t('common.savedListings')}</span>
                 </Link>
@@ -100,14 +100,14 @@ export function Header() {
             {isActive('/') ? (
               <button
                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                className="flex items-center justify-center w-10 h-10 rounded-full transition-colors bg-slate-100 text-slate-700"
+                className="flex items-center justify-center w-10 h-10 rounded-full transition-colors bg-blue-50 text-blue-600"
               >
                 <Search className="h-5 w-5" />
               </button>
             ) : (
               <Link
                 href="/"
-                className="flex items-center justify-center w-10 h-10 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+                className="flex items-center justify-center w-10 h-10 rounded-full transition-colors text-gray-400 hover:text-blue-500 hover:bg-blue-50/60"
               >
                 <Search className="h-5 w-5" />
               </Link>
@@ -118,8 +118,8 @@ export function Header() {
                 className={cn(
                   'flex items-center justify-center w-10 h-10 rounded-full transition-colors',
                   isActive('/saved')
-                    ? 'bg-slate-100 text-slate-700'
-                    : 'text-gray-400 hover:text-gray-600'
+                    ? 'bg-rose-50 text-rose-500'
+                    : 'text-gray-400 hover:text-rose-400 hover:bg-rose-50/60'
                 )}
               >
                 <Heart className="h-5 w-5" />
