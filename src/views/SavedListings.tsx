@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Heart, Plus } from 'lucide-react';
+import { Heart, Home, Search } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSavedListings } from '@/hooks/useSavedListings';
 import { Header } from '@/components/Header';
@@ -21,15 +21,24 @@ export default function SavedListings() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="pt-16 flex items-center justify-center h-[80vh]">
-          <div className="text-center max-w-md">
-            <span className="text-5xl mb-4 block">💝</span>
+        <main className="pt-16 flex items-center justify-center h-[80vh] relative overflow-hidden">
+          {/* Decorative blobs */}
+          <div className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-rose-400/12 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-pink-400/10 blur-3xl" />
+
+          <div className="text-center max-w-md relative z-10">
+            <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-rose-500/20 to-pink-500/20 blur-xl" />
+              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 shadow-lg shadow-rose-500/25">
+                <Heart className="h-6 w-6 text-white" />
+              </div>
+            </div>
             <h1 className="text-2xl font-semibold text-foreground mb-2">{t('saved.saveYourFavorites')}</h1>
             <p className="text-muted-foreground mb-6">
               {t('saved.signInToSave')}
             </p>
             <Link href="/auth">
-              <Button variant="accent">
+              <Button variant="gradient">
                 {t('common.signIn')}
               </Button>
             </Link>
@@ -39,18 +48,43 @@ export default function SavedListings() {
     );
   }
 
+  const savedCount = savedListings?.length ?? 0;
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
-      <main className="pt-16">
-        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-fade-in">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 tracking-tight">
-            ❤️ {t('saved.title')}
-          </h1>
-          <p className="text-muted-foreground text-sm sm:text-base mb-6 sm:mb-8">
+
+      <main className="pt-16 relative overflow-hidden">
+        {/* Decorative ambient blobs */}
+        <div className="pointer-events-none absolute -top-32 -right-32 h-80 w-80 rounded-full bg-rose-400/8 blur-3xl" />
+        <div className="pointer-events-none absolute top-40 -left-32 h-60 w-60 rounded-full bg-pink-400/6 blur-3xl" />
+
+        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-fade-in relative z-10">
+          {/* Page heading */}
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 shadow-md shadow-rose-500/30">
+              <Heart className="h-5 w-5 text-white" />
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+              {t('saved.title')}
+            </h1>
+          </div>
+          <p className="text-muted-foreground text-sm sm:text-base mb-5 ml-[52px]">
             {t('saved.subtitle')}
           </p>
+
+          {/* Gradient accent divider */}
+          <div className="h-px bg-gradient-to-r from-rose-500/40 via-pink-400/20 to-transparent mb-6" />
+
+          {/* Stats bar */}
+          {!isLoading && savedCount > 0 && (
+            <div className="glass-card inline-flex items-center gap-2 px-4 py-2 mb-6">
+              <Heart className="h-4 w-4 text-rose-500" />
+              <span className="text-sm font-medium text-foreground">
+                {savedCount} {savedCount === 1 ? 'saved listing' : 'saved listings'}
+              </span>
+            </div>
+          )}
 
           {isLoading ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -65,9 +99,9 @@ export default function SavedListings() {
           ) : savedListings && savedListings.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {savedListings.map((saved) => (
-                <ListingCard 
-                  key={saved.id} 
-                  listing={saved.listing} 
+                <ListingCard
+                  key={saved.id}
+                  listing={saved.listing}
                   onClick={() => router.push(`/listing/${saved.listing.id}`)}
                   showStatusOverlay={saved.listing.status === 'sold' || saved.listing.status === 'rented'}
                 />
@@ -75,13 +109,19 @@ export default function SavedListings() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <span className="text-5xl mb-4">🏡</span>
+              <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-rose-500/20 to-pink-500/20 blur-xl" />
+                <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 shadow-lg shadow-rose-500/25">
+                  <Home className="h-6 w-6 text-white" />
+                </div>
+              </div>
               <h2 className="text-xl font-semibold text-foreground mb-2">{t('saved.noSavedYet')}</h2>
               <p className="text-muted-foreground mb-6 max-w-sm">
                 {t('saved.noSavedYetDesc')}
               </p>
               <Link href="/">
-                <Button variant="accent">
+                <Button variant="gradient">
+                  <Search className="h-4 w-4 mr-2" />
                   {t('saved.browseListings')}
                 </Button>
               </Link>

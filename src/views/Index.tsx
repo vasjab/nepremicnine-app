@@ -315,7 +315,7 @@ const Index = () => {
                   className={cn(
                     'flex items-center justify-center rounded-full px-5 py-2.5 min-h-[44px] min-w-[80px] text-sm font-semibold transition-all duration-200 touch-safe-button',
                     mobileView === 'list'
-                      ? 'bg-foreground text-background shadow-sm'
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/25'
                       : 'text-muted-foreground hover:text-foreground',
                   )}
                   onClick={() => {
@@ -332,7 +332,7 @@ const Index = () => {
                   className={cn(
                     'flex items-center justify-center rounded-full px-5 py-2.5 min-h-[44px] min-w-[80px] text-sm font-semibold transition-all duration-200 touch-safe-button',
                     mobileView === 'map'
-                      ? 'bg-foreground text-background shadow-sm'
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/25'
                       : 'text-muted-foreground hover:text-foreground',
                   )}
                   onClick={() => {

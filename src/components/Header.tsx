@@ -31,6 +31,7 @@ export function Header() {
     <header className="fixed top-0 left-0 right-0 z-50 glass-strong">
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
+
           {/* Logo */}
           <Link
             href="/"
@@ -71,6 +72,39 @@ export function Header() {
                 <History className="h-3.5 w-3.5" />
                 {t('soldRented.recentlySold')}
               </Link>
+              {user && (
+                <>
+                  <Link
+                    href="/saved"
+                    className={cn(
+                      'flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all border',
+                      isActive('/saved')
+                        ? 'bg-white shadow-sm text-gray-900 border-black/[0.06]'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    )}
+                  >
+                    <Heart className="h-3.5 w-3.5" />
+                    {t('common.savedListings')}
+                  </Link>
+                  <Link
+                    href="/messages"
+                    className={cn(
+                      'relative flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all border',
+                      isActive('/messages')
+                        ? 'bg-white shadow-sm text-gray-900 border-black/[0.06]'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    )}
+                  >
+                    <MessageCircle className="h-3.5 w-3.5" />
+                    Messages
+                    {unreadCount > 0 && (
+                      <span className="min-w-[18px] h-[18px] rounded-full bg-gradient-to-r from-rose-500 to-pink-600 text-white text-[10px] flex items-center justify-center font-bold px-1 shadow-sm shadow-rose-500/30">
+                        {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
 
@@ -138,9 +172,12 @@ export function Header() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="rounded-full h-10 w-10 border border-black/[0.08]"
+                        className="relative rounded-full h-10 w-10 border border-black/[0.08]"
                       >
                         <User className="h-5 w-5" />
+                        {unreadCount > 0 && (
+                          <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-gradient-to-br from-rose-400 to-pink-600 ring-2 ring-white" />
+                        )}
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-64 py-2 rounded-2xl shadow-2xl border-gray-200/60 bg-white">
@@ -406,6 +443,8 @@ export function Header() {
           </nav>
         )}
       </div>
+      {/* Subtle animated gradient line */}
+      <div className="header-gradient-line" />
     </header>
   );
 }

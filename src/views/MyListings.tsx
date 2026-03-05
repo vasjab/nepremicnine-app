@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, Edit, Trash2, Eye, EyeOff, Check, RotateCcw, TrendingUp, TrendingDown, Minus, Calendar } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, Check, RotateCcw, TrendingUp, TrendingDown, Minus, Calendar, Home, FileText } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMyListings, useUpdateListing, useDeleteListing } from '@/hooks/useListings';
 import { Header } from '@/components/Header';
@@ -137,15 +137,24 @@ export default function MyListings() {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="pt-16 flex items-center justify-center h-[80vh]">
-          <div className="text-center max-w-md">
-            <span className="text-5xl mb-4 block">🏠</span>
+        <main className="pt-16 flex items-center justify-center h-[80vh] relative overflow-hidden">
+          {/* Decorative blobs */}
+          <div className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-emerald-400/12 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-teal-400/10 blur-3xl" />
+
+          <div className="text-center max-w-md relative z-10">
+            <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 blur-xl" />
+              <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/25">
+                <Home className="h-6 w-6 text-white" />
+              </div>
+            </div>
             <h1 className="text-2xl font-semibold text-foreground mb-2">{t('myListings.listYourProperty')}</h1>
             <p className="text-muted-foreground mb-6">
               {t('myListings.signInToManage')}
             </p>
             <Link href="/auth">
-              <Button variant="accent">
+              <Button variant="gradient">
                 {t('common.signIn')}
               </Button>
             </Link>
@@ -163,11 +172,13 @@ export default function MyListings() {
       <div
         key={listing.id}
         className={cn(
-          "bg-card rounded-xl p-4 flex flex-col sm:flex-row gap-4 shadow-card",
+          "glass-card rounded-xl p-4 flex flex-col sm:flex-row gap-4",
           "opacity-0 animate-slide-up-spring",
           "hover:shadow-elevated transition-all duration-300",
-          isDraft && "border-2 border-dashed border-amber-400/50",
-          isCompleted && "border border-success/20 bg-success/5"
+          "border-l-4",
+          isDraft && "border-l-amber-400 border-dashed",
+          isCompleted && "border-l-emerald-500 bg-success/5",
+          !isDraft && !isCompleted && "border-l-blue-500"
         )}
         style={{ 
           animationDelay: `${index * 0.08}s`,
@@ -380,25 +391,37 @@ export default function MyListings() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
-      <main className="pt-16">
-        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-fade-in">
+
+      <main className="pt-16 relative overflow-hidden">
+        {/* Decorative ambient blobs */}
+        <div className="pointer-events-none absolute -top-32 -right-32 h-80 w-80 rounded-full bg-emerald-400/8 blur-3xl" />
+        <div className="pointer-events-none absolute top-40 -left-32 h-60 w-60 rounded-full bg-teal-400/6 blur-3xl" />
+
+        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 animate-fade-in relative z-10">
           <div className="flex items-center justify-between mb-6 sm:mb-8">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1 tracking-tight">
-                📋 {t('myListings.title')}
-              </h1>
-              <p className="text-muted-foreground text-sm sm:text-base">
+              <div className="flex items-center gap-3 mb-1">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-md shadow-emerald-500/30">
+                  <Home className="h-5 w-5 text-white" />
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+                  {t('myListings.title')}
+                </h1>
+              </div>
+              <p className="text-muted-foreground text-sm sm:text-base ml-[52px]">
                 {t('myListings.subtitle')}
               </p>
             </div>
             <Link href="/create-listing">
-              <Button variant="accent">
+              <Button variant="gradient">
                 <Plus className="h-4 w-4 mr-2" />
                 {t('common.createListing')}
               </Button>
             </Link>
           </div>
+
+          {/* Gradient accent divider */}
+          <div className="h-px bg-gradient-to-r from-emerald-500/40 via-teal-400/20 to-transparent mb-6" />
 
           {isLoading ? (
             <MyListingSkeletonGrid count={3} />
@@ -406,17 +429,19 @@ export default function MyListings() {
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="mb-6">
                 <TabsTrigger value="active" className="gap-2">
+                  <span className="h-2 w-2 rounded-full bg-blue-500" />
                   {t('myListings.activeTab')}
                   {activeListings.length > 0 && (
-                    <span className="bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">
+                    <span className="bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs px-2 py-0.5 rounded-full font-semibold">
                       {activeListings.length}
                     </span>
                   )}
                 </TabsTrigger>
                 <TabsTrigger value="completed" className="gap-2">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
                   {t('myListings.completedTab')}
                   {completedListings.length > 0 && (
-                    <span className="bg-success/10 text-success text-xs px-2 py-0.5 rounded-full">
+                    <span className="bg-success/10 text-success text-xs px-2 py-0.5 rounded-full font-semibold">
                       {completedListings.length}
                     </span>
                   )}
@@ -445,13 +470,18 @@ export default function MyListings() {
             </Tabs>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">
-              <span className="text-5xl mb-4">📝</span>
+              <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 blur-xl" />
+                <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/25">
+                  <FileText className="h-6 w-6 text-white" />
+                </div>
+              </div>
               <h2 className="text-xl font-semibold text-foreground mb-2">{t('myListings.noListingsYet')}</h2>
               <p className="text-muted-foreground mb-6 max-w-sm">
                 {t('myListings.noListingsYetDesc')}
               </p>
               <Link href="/create-listing">
-                <Button variant="accent">
+                <Button variant="gradient">
                   <Plus className="h-4 w-4 mr-2" />
                   {t('myListings.createFirstListing')}
                 </Button>

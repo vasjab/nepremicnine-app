@@ -337,13 +337,13 @@ export default function SoldRentedListings() {
 
               {/* Mobile view toggle */}
               <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40">
-                <div className="flex bg-card rounded-full shadow-lg border border-border p-1">
+                <div className="flex glass-strong rounded-full shadow-float p-1">
                   <button
                     type="button"
                     className={cn(
-                      'flex items-center justify-center rounded-full px-4 py-2.5 min-h-[44px] min-w-[80px] text-sm font-medium transition-colors touch-safe-button',
-                      mobileView === 'list' 
-                        ? 'bg-accent text-accent-foreground' 
+                      'flex items-center justify-center rounded-full px-5 py-2.5 min-h-[44px] min-w-[80px] text-sm font-semibold transition-all duration-200 touch-safe-button',
+                      mobileView === 'list'
+                        ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/25'
                         : 'text-muted-foreground hover:text-foreground',
                     )}
                     onClick={() => {
@@ -358,9 +358,9 @@ export default function SoldRentedListings() {
                   <button
                     type="button"
                     className={cn(
-                      'flex items-center justify-center rounded-full px-4 py-2.5 min-h-[44px] min-w-[80px] text-sm font-medium transition-colors touch-safe-button',
-                      mobileView === 'map' 
-                        ? 'bg-accent text-accent-foreground' 
+                      'flex items-center justify-center rounded-full px-5 py-2.5 min-h-[44px] min-w-[80px] text-sm font-semibold transition-all duration-200 touch-safe-button',
+                      mobileView === 'map'
+                        ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md shadow-blue-500/25'
                         : 'text-muted-foreground hover:text-foreground',
                     )}
                     onClick={() => {

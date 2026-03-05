@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
-import { Heart, ChevronLeft, ChevronRight, Building2, Car, TreePine, Snowflake, TrendingUp, TrendingDown } from 'lucide-react';
+import { Heart, ChevronLeft, ChevronRight, Building2, Car, TreePine, Snowflake, TrendingUp, TrendingDown, Sparkles, Camera, Bed, Bath, Maximize2, MapPin } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -36,7 +36,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
   const goToPrevImage = useCallback(() => {
     if (listing.images && listing.images.length > 1) {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === 0 ? listing.images!.length - 1 : prev - 1
       );
     }
@@ -44,7 +44,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
   const goToNextImage = useCallback(() => {
     if (listing.images && listing.images.length > 1) {
-      setCurrentImageIndex((prev) => 
+      setCurrentImageIndex((prev) =>
         prev === listing.images!.length - 1 ? 0 : prev + 1
       );
     }
@@ -86,19 +86,19 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
   const hasMultipleImages = listing.images && listing.images.length > 1;
 
   // Build feature badges
-  const featureBadges: { icon: React.ComponentType<{ className?: string }>; label: string }[] = [];
-  
+  const featureBadges: { icon: React.ComponentType<{ className?: string }>; label: string; color: string }[] = [];
+
   if (listing.has_elevator) {
-    featureBadges.push({ icon: Building2, label: t('listing.elevator') });
+    featureBadges.push({ icon: Building2, label: t('listing.elevator'), color: 'blue' });
   }
   if (listing.has_parking || listing.has_garage) {
-    featureBadges.push({ icon: Car, label: listing.has_garage ? t('listing.garage') : t('listing.parking') });
+    featureBadges.push({ icon: Car, label: listing.has_garage ? t('listing.garage') : t('listing.parking'), color: 'indigo' });
   }
   if (listing.has_garden) {
-    featureBadges.push({ icon: TreePine, label: t('listing.garden') });
+    featureBadges.push({ icon: TreePine, label: t('listing.garden'), color: 'green' });
   }
   if (listing.has_air_conditioning) {
-    featureBadges.push({ icon: Snowflake, label: t('listing.airConditioning') });
+    featureBadges.push({ icon: Snowflake, label: t('listing.airConditioning'), color: 'sky' });
   }
 
   // Limit to 3 badges max
@@ -112,8 +112,8 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
   // Format listing date - show relative for recent, absolute for older
   const listingDate = listing.created_at ? new Date(listing.created_at) : null;
   const daysAgo = listingDate ? differenceInDays(new Date(), listingDate) : 0;
-  const formattedCreatedDate = listingDate 
-    ? daysAgo <= 30 
+  const formattedCreatedDate = listingDate
+    ? daysAgo <= 30
       ? formatDistanceToNow(listingDate, { addSuffix: true })
       : format(listingDate, 'MMM d, yyyy')
     : null;
@@ -123,24 +123,58 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
   const completedDate = listing.completed_at ? new Date(listing.completed_at) : null;
   const completedDaysAgo = completedDate ? differenceInDays(new Date(), completedDate) : 0;
   const statusLabel = listing.status === 'sold' ? t('listing.sold') : t('listing.rented');
-  const formattedCompletedDate = completedDate 
-    ? completedDaysAgo <= 30 
+  const formattedCompletedDate = completedDate
+    ? completedDaysAgo <= 30
       ? `${statusLabel} ${formatDistanceToNow(completedDate, { addSuffix: true }).replace('about ', '')}`
       : `${statusLabel} ${format(completedDate, 'MMM d, yyyy')}`
     : null;
 
   // Use completed date for sold/rented, otherwise use created date
-  const formattedDate = isCompleted && showStatusOverlay && formattedCompletedDate 
-    ? formattedCompletedDate 
+  const formattedDate = isCompleted && showStatusOverlay && formattedCompletedDate
+    ? formattedCompletedDate
     : formattedCreatedDate;
+
+  // NEW badge: listing is less than 3 days old
+  const isNew = listingDate ? differenceInDays(new Date(), listingDate) < 3 : false;
+
+  // Feature badge color mappings
+  const badgeColorClasses: Record<string, string> = {
+    green: 'bg-emerald-50 text-emerald-700 ring-emerald-200/60',
+    blue: 'bg-blue-50 text-blue-700 ring-blue-200/60',
+    indigo: 'bg-indigo-50 text-indigo-700 ring-indigo-200/60',
+    sky: 'bg-sky-50 text-sky-700 ring-sky-200/60',
+  };
+
+  // Dot color mappings for inline feature indicators
+  const dotColorClasses: Record<string, string> = {
+    green: 'bg-emerald-400',
+    blue: 'bg-blue-400',
+    indigo: 'bg-indigo-400',
+    sky: 'bg-sky-400',
+  };
+
+  // Property type icon mapping
+  const propertyTypeIconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    apartment: Building2,
+    house: Building2,
+    room: Bed,
+    studio: Maximize2,
+    villa: Building2,
+    summer_house: Building2,
+    other: Building2,
+  };
+  const PropertyTypeIcon = propertyTypeIconMap[listing.property_type] || Building2;
 
   return (
     <article
-      className="listing-card cursor-pointer group"
+      className="listing-card cursor-pointer group relative overflow-hidden"
       onClick={onClick}
     >
+      {/* Hover shine overlay */}
+      <div className="absolute inset-0 z-30 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-white/10 via-white/5 to-transparent" />
+
       {/* Image container */}
-      <div 
+      <div
         className={cn(
           "relative aspect-[4/3] overflow-hidden bg-muted",
           isSoldOrRented && showStatusOverlay && "after:absolute after:inset-0 after:bg-foreground/20 after:pointer-events-none"
@@ -148,7 +182,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
         {...swipeHandlers}
       >
         {listing.images && listing.images.length > 0 ? (
-          <div 
+          <div
             className="flex h-full transition-transform duration-300 ease-out"
             style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
           >
@@ -171,13 +205,16 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           </div>
         )}
 
+        {/* Gradient overlay at bottom of image for text readability */}
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/50 via-black/20 to-transparent pointer-events-none z-[5]" />
+
         {/* Sold/Rented status badge */}
         {isSoldOrRented && showStatusOverlay && (
           <div className="absolute top-3 left-3 z-20">
             <span className={cn(
               "px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wide",
-              isSold 
-                ? "bg-amber-500/90 text-white" 
+              isSold
+                ? "bg-amber-500/90 text-white"
                 : "bg-emerald-500/90 text-white"
             )}>
               {isSold ? t('listing.sold') : t('listing.rented')}
@@ -185,6 +222,15 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           </div>
         )}
 
+        {/* NEW badge for listings less than 3 days old */}
+        {isNew && !isSoldOrRented && (
+          <div className="absolute top-3 left-3 z-20">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[11px] font-bold uppercase tracking-wide shadow-lg shadow-orange-500/25">
+              <Sparkles className="h-3 w-3" />
+              NEW
+            </span>
+          </div>
+        )}
 
         {/* Navigation arrows - always visible on mobile, hover on desktop */}
         {hasMultipleImages && (
@@ -228,6 +274,14 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           </>
         )}
 
+        {/* Image count indicator */}
+        {hasMultipleImages && (
+          <div className="absolute bottom-3 right-3 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-black/60 text-white text-[11px] font-medium backdrop-blur-sm">
+            <Camera className="h-3 w-3" />
+            {listing.images.length}
+          </div>
+        )}
+
         {/* Save button - larger touch target */}
         {user && (
           <Tooltip>
@@ -241,12 +295,12 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
                 )}
                 onClick={handleSaveClick}
               >
-                <Heart 
+                <Heart
                   className={cn(
                     'h-5 w-5 transition-all duration-200',
                     isSaved && 'fill-current',
                     isHeartAnimating && 'animate-heart-beat'
-                  )} 
+                  )}
                 />
               </button>
             </TooltipTrigger>
@@ -258,10 +312,15 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           </Tooltip>
         )}
 
-        {/* Type badge - hide if showing status overlay */}
+        {/* Type badge - gradient pills */}
         {(!isSoldOrRented || !showStatusOverlay) && (
           <div className="absolute bottom-3 left-3 z-10">
-            <span className="px-3 py-1.5 rounded-full glass text-xs font-bold">
+            <span className={cn(
+              "px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-lg",
+              isRental
+                ? "bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-emerald-500/25"
+                : "bg-gradient-to-r from-blue-500 to-blue-600 shadow-blue-500/25"
+            )}>
               {t(`listingTypes.${listing.listing_type}`)}
             </span>
           </div>
@@ -270,17 +329,41 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
 
       {/* Content */}
       <div className="p-4">
+        {/* Property type icon chip */}
+        <div className="flex items-center gap-1.5 mb-2">
+          <span className={cn(
+            "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider",
+            isRental
+              ? "bg-emerald-50 text-emerald-600"
+              : "bg-blue-50 text-blue-600"
+          )}>
+            <PropertyTypeIcon className="h-3 w-3" />
+            {propertyTypeLabel}
+          </span>
+        </div>
+
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <h3 className="font-bold text-foreground line-clamp-1 text-[15px] tracking-tight">
             {listing.address}
           </h3>
         </div>
 
-        <p className="text-[13px] text-muted-foreground mb-2.5">
-          {propertyTypeLabel} · {listing.bedrooms} {listing.bedrooms !== 1 ? t('filters.rooms') : t('filters.room')} · {formatArea(listing.area_sqm)}
-        </p>
+        <div className="flex items-center gap-3 text-[13px] text-muted-foreground mb-2.5">
+          <span className="inline-flex items-center gap-1">
+            <Bed className="h-3.5 w-3.5" />
+            {listing.bedrooms}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <Bath className="h-3.5 w-3.5" />
+            {listing.bathrooms}
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <Maximize2 className="h-3.5 w-3.5" />
+            {formatArea(listing.area_sqm)}
+          </span>
+        </div>
 
-        {/* Feature badges */}
+        {/* Feature badges with colored backgrounds and dot indicators */}
         {displayBadges.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-3">
             {displayBadges.map((badge, index) => {
@@ -288,8 +371,12 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               return (
                 <span
                   key={index}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-50 text-[11px] text-gray-600 font-medium ring-1 ring-gray-200/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]"
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium ring-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]",
+                    badgeColorClasses[badge.color] || 'bg-gray-50 text-gray-600 ring-gray-200/60'
+                  )}
                 >
+                  <span className={cn("h-1.5 w-1.5 rounded-full flex-shrink-0", dotColorClasses[badge.color] || 'bg-gray-400')} />
                   <Icon className="h-3 w-3" />
                   {badge.label}
                 </span>
@@ -298,41 +385,51 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           </div>
         )}
 
+        {/* Price section with colored accent bar */}
         <div className="flex items-center justify-between pt-1">
-          <div className="flex flex-col">
-            {/* For sold/rented listings with final price */}
-            {isSoldOrRented && showStatusOverlay && hasFinalPrice ? (
-              <>
-                {/* Final price with percentage difference */}
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-extrabold text-foreground tracking-tight">
-                    {formatPrice(listing.final_price!, listing.currency, { isRental, showPeriod: isRental })}
+          <div className="flex items-stretch gap-2.5">
+            {/* Accent bar */}
+            <div className={cn(
+              "w-1 rounded-full flex-shrink-0",
+              isRental
+                ? "bg-gradient-to-b from-emerald-400 to-emerald-600"
+                : "bg-gradient-to-b from-blue-400 to-blue-600"
+            )} />
+            <div className="flex flex-col">
+              {/* For sold/rented listings with final price */}
+              {isSoldOrRented && showStatusOverlay && hasFinalPrice ? (
+                <>
+                  {/* Final price with percentage difference */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-extrabold text-foreground tracking-tight">
+                      {formatPrice(listing.final_price!, listing.currency, { isRental, showPeriod: isRental })}
+                    </span>
+                    <span className={cn(
+                      "text-xs font-medium flex items-center gap-0.5",
+                      priceDiff < 0 ? "text-red-500" : priceDiff > 0 ? "text-emerald-500" : "text-muted-foreground"
+                    )}>
+                      {priceDiff < 0 ? <TrendingDown className="h-3 w-3" /> : priceDiff > 0 ? <TrendingUp className="h-3 w-3" /> : null}
+                      {priceDiff !== 0 && `${priceDiff > 0 ? '+' : ''}${priceDiffPercent}%`}
+                    </span>
+                  </div>
+                  {/* Original listed price - strikethrough */}
+                  <span className="text-xs text-muted-foreground line-through">
+                    {formatPrice(listing.price, listing.currency, { isRental, showPeriod: false })}
                   </span>
-                  <span className={cn(
-                    "text-xs font-medium flex items-center gap-0.5",
-                    priceDiff < 0 ? "text-red-500" : priceDiff > 0 ? "text-emerald-500" : "text-muted-foreground"
-                  )}>
-                    {priceDiff < 0 ? <TrendingDown className="h-3 w-3" /> : priceDiff > 0 ? <TrendingUp className="h-3 w-3" /> : null}
-                    {priceDiff !== 0 && `${priceDiff > 0 ? '+' : ''}${priceDiffPercent}%`}
-                  </span>
-                </div>
-                {/* Original listed price - strikethrough */}
-                <span className="text-xs text-muted-foreground line-through">
-                  {formatPrice(listing.price, listing.currency, { isRental, showPeriod: false })}
+                </>
+              ) : (
+                /* Regular listing price */
+                <span className="text-lg font-extrabold text-foreground tracking-tight">
+                  {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
                 </span>
-              </>
-            ) : (
-              /* Regular listing price */
-              <span className="text-lg font-extrabold text-foreground tracking-tight">
-                {formatPrice(listing.price, listing.currency, { isRental, showPeriod: isRental })}
-              </span>
-            )}
-            {/* Price per sqm - always show */}
-            {listing.area_sqm && listing.area_sqm > 0 && (
-              <span className="text-xs text-muted-foreground">
-                {formatPrice((hasFinalPrice && isSoldOrRented && showStatusOverlay ? listing.final_price! : listing.price) / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
-              </span>
-            )}
+              )}
+              {/* Price per sqm - always show */}
+              {listing.area_sqm && listing.area_sqm > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  {formatPrice((hasFinalPrice && isSoldOrRented && showStatusOverlay ? listing.final_price! : listing.price) / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex flex-col items-end text-right">
             {formattedDate && (
@@ -340,7 +437,8 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
                 {formattedDate}
               </span>
             )}
-            <span className="text-xs text-muted-foreground font-medium">
+            <span className="text-xs text-muted-foreground font-medium inline-flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
               {listing.city}
             </span>
           </div>
