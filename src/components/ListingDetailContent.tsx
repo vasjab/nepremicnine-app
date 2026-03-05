@@ -2,7 +2,12 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { formatDistanceToNow, format, differenceInDays } from 'date-fns';
-import { ArrowLeft, Heart, MapPin, Images, ChevronLeft, ChevronRight, CheckCircle, MessageCircle, User, ChevronDown, ChevronUp, LayoutGrid } from 'lucide-react';
+import {
+  ArrowLeft, Heart, MapPin, Images, ChevronLeft, ChevronRight, CheckCircle,
+  MessageCircle, User, ChevronDown, ChevronUp, LayoutGrid, Home, Calendar,
+  Ruler, BedDouble, Bath, Building2, Flame, Zap, Clock, FileText, Sparkles,
+  Info
+} from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSaveListing, useUnsaveListing, useIsListingSaved } from '@/hooks/useSavedListings';
@@ -172,7 +177,7 @@ export function ListingDetailContent({
     partial: t('listing.partiallyIncluded'),
   };
 
-  // Quick highlights — key features shown as text under header
+  // Quick highlights
   const highlights = useMemo(() => {
     const items: string[] = [];
     if (listing.is_furnished) items.push(t('listing.furnished'));
@@ -188,7 +193,6 @@ export function ListingDetailContent({
     return items.slice(0, 6);
   }, [listing, t]);
 
-  // Count all boolean features for the collapsible section
   const featureCount = useMemo(() => {
     return [
       listing.is_furnished, listing.allows_pets,
@@ -209,50 +213,53 @@ export function ListingDetailContent({
     ].filter(Boolean).length;
   }, [listing]);
 
-  // Property detail rows — structured key:value table
+  // Property detail rows
   const detailRows = useMemo(() => {
-    const rows: { label: string; value: string }[] = [];
+    const rows: { label: string; value: string; icon: typeof Home }[] = [];
 
     rows.push({
       label: 'Type',
       value: propertyTypeLabels[listing.property_type] || listing.property_type,
+      icon: Building2,
     });
 
     if (listing.property_condition) {
       rows.push({
         label: t('listing.condition'),
         value: conditionLabels[listing.property_condition] || listing.property_condition,
+        icon: Sparkles,
       });
     }
 
     if (listing.year_built) {
-      rows.push({ label: t('listing.yearBuilt'), value: String(listing.year_built) });
+      rows.push({ label: t('listing.yearBuilt'), value: String(listing.year_built), icon: Calendar });
     }
 
     if (['apartment', 'room', 'studio'].includes(listing.property_type) && listing.floor_number != null) {
       const floorValue = listing.total_floors_building
         ? `${listing.floor_number} / ${listing.total_floors_building}`
         : String(listing.floor_number);
-      rows.push({ label: t('listing.floor'), value: floorValue });
+      rows.push({ label: t('listing.floor'), value: floorValue, icon: Building2 });
     }
 
     if (['house', 'villa'].includes(listing.property_type) && listing.property_floors != null) {
-      rows.push({ label: t('listing.floors'), value: String(listing.property_floors) });
+      rows.push({ label: t('listing.floors'), value: String(listing.property_floors), icon: Building2 });
     }
 
     if (listing.heating_type) {
       rows.push({
         label: t('listing.heating'),
         value: heatingTypeLabels[listing.heating_type] || listing.heating_type,
+        icon: Flame,
       });
     }
 
     if (listing.energy_rating) {
-      rows.push({ label: t('listing.energyRating'), value: listing.energy_rating });
+      rows.push({ label: t('listing.energyRating'), value: listing.energy_rating, icon: Zap });
     }
 
     if (!isCompleted) {
-      rows.push({ label: t('listing.availableFrom'), value: formatDate(listing.available_from) });
+      rows.push({ label: t('listing.availableFrom'), value: formatDate(listing.available_from), icon: Clock });
     }
 
     // Rental-specific details
@@ -261,24 +268,28 @@ export function ListingDetailContent({
         rows.push({
           label: t('listing.deposit'),
           value: formatPrice(listing.deposit_amount, listing.currency),
+          icon: Info,
         });
       }
       if (listing.min_lease_months) {
         rows.push({
           label: t('listing.minLease'),
           value: `${listing.min_lease_months} months`,
+          icon: Calendar,
         });
       }
       if (listing.internet_included) {
         rows.push({
           label: t('listing.internet'),
           value: internetLabels[listing.internet_included] || listing.internet_included,
+          icon: Info,
         });
       }
       if (listing.utilities_included) {
         rows.push({
           label: t('listing.utilities'),
           value: utilitiesLabels[listing.utilities_included] || listing.utilities_included,
+          icon: Info,
         });
       }
     }
@@ -293,7 +304,7 @@ export function ListingDetailContent({
         <Button
           variant="ghost"
           size="icon"
-          className="fixed top-4 left-4 z-50 h-11 w-11 rounded-full glass-strong shadow-float transition-all duration-200 touch-target"
+          className="fixed top-4 left-4 z-50 h-11 w-11 rounded-full bg-white/80 backdrop-blur-md shadow-lg border border-white/50 hover:bg-white/90 transition-all touch-target"
           onClick={onClose}
         >
           <ArrowLeft className="h-5 w-5" />
@@ -306,8 +317,8 @@ export function ListingDetailContent({
           variant="ghost"
           size="icon"
           className={cn(
-            "fixed top-4 right-4 z-50 h-11 w-11 rounded-full glass-strong shadow-float transition-all duration-200 touch-target",
-            isSaved && "text-accent"
+            "fixed top-4 right-4 z-50 h-11 w-11 rounded-full bg-white/80 backdrop-blur-md shadow-lg border border-white/50 hover:bg-white/90 transition-all touch-target",
+            isSaved && "text-rose-500"
           )}
           onClick={handleSaveClick}
         >
@@ -352,7 +363,7 @@ export function ListingDetailContent({
                   </div>
                 ))}
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-black/10 pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10 pointer-events-none" />
             </div>
 
             {/* Navigation arrows */}
@@ -377,26 +388,29 @@ export function ListingDetailContent({
               </>
             )}
 
-            {/* Bottom overlay */}
-            <div className="absolute bottom-0 left-0 right-0 px-4 pb-4 pt-12 bg-gradient-to-t from-black/50 to-transparent pointer-events-none z-10">
+            {/* Bottom overlay with type badge + image counter */}
+            <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-16 bg-gradient-to-t from-black/60 to-transparent pointer-events-none z-10">
               <div className="flex items-end justify-between pointer-events-auto">
                 <div>
                   {isCompleted ? (
                     <span className={cn(
-                      "px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider",
-                      listing.status === 'sold' ? "bg-amber-500 text-white" : "bg-emerald-500 text-white"
+                      "inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg",
+                      listing.status === 'sold'
+                        ? "bg-gradient-to-r from-amber-400 to-orange-500 text-white"
+                        : "bg-gradient-to-r from-emerald-400 to-green-600 text-white"
                     )}>
+                      <CheckCircle className="h-3.5 w-3.5" />
                       {statusLabel}
                     </span>
                   ) : (
-                    <span className="px-3.5 py-1.5 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider">
+                    <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/20 backdrop-blur-md text-white text-xs font-bold uppercase tracking-wider">
                       {listing.listing_type === 'rent' ? t('listingTypes.rent') : t('listingTypes.sale')}
                     </span>
                   )}
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); setScrollToFloorPlan(false); setShowGallery(true); }}
-                  className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white px-3 py-1.5 rounded-full text-xs font-medium hover:bg-white/30 transition-colors"
+                  className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md text-white px-3.5 py-2 rounded-full text-xs font-semibold hover:bg-white/30 transition-colors"
                 >
                   <Images className="h-3.5 w-3.5" />
                   {currentImageIndex + 1}/{listing.images.length}
@@ -406,7 +420,7 @@ export function ListingDetailContent({
 
             {/* Dot indicators */}
             {listing.images.length > 1 && listing.images.length <= 8 && (
-              <div className="absolute bottom-14 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+              <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
                 {listing.images.map((_, index) => (
                   <button
                     key={index}
@@ -432,35 +446,58 @@ export function ListingDetailContent({
 
       {/* Content */}
       <div className={cn(
-        "container mx-auto px-4 sm:px-6 transition-all duration-500 delay-100",
+        "container mx-auto px-4 sm:px-6 lg:px-8 transition-all duration-500 delay-100",
         isAnimating && !isClosing ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
       )}>
-        <div className="grid lg:grid-cols-3 gap-6 lg:gap-10 py-6 sm:py-8">
+        <div className="grid lg:grid-cols-3 gap-8 lg:gap-12 py-8 sm:py-10">
           {/* Main content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-8">
             {/* Header */}
             <div>
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-1.5">
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-2">
                 <MapPin className="h-3.5 w-3.5" />
                 <span>{listing.address}, {listing.city}</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight mb-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight mb-3">
                 {listing.title}
               </h1>
-              <p className="text-muted-foreground">
-                {listing.bedrooms} {t('listing.bedrooms')} · {listing.bathrooms} {t('listing.bathrooms')} · {formatArea(listing.area_sqm)}
-                {' · '}{propertyTypeLabels[listing.property_type] || listing.property_type}
-              </p>
+
+              {/* Key specs - colored pill badges */}
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 ring-1 ring-blue-200/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
+                  <BedDouble className="h-3.5 w-3.5" />
+                  {listing.bedrooms} {t('listing.bedrooms')}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700 ring-1 ring-violet-200/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
+                  <Bath className="h-3.5 w-3.5" />
+                  {listing.bathrooms} {t('listing.bathrooms')}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
+                  <Ruler className="h-3.5 w-3.5" />
+                  {formatArea(listing.area_sqm)}
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1.5 text-xs font-semibold text-amber-700 ring-1 ring-amber-200/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]">
+                  <Home className="h-3.5 w-3.5" />
+                  {propertyTypeLabels[listing.property_type] || listing.property_type}
+                </span>
+              </div>
+
+              {/* Highlights */}
               {highlights.length > 0 && (
-                <p className="text-sm text-accent font-medium mt-2">
-                  {highlights.join(' · ')}
-                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {highlights.map((h) => (
+                    <span key={h} className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-600">
+                      {h}
+                    </span>
+                  ))}
+                </div>
               )}
+
               {/* Floor plan link */}
               {(listing.floor_plan_urls?.length > 0 || listing.floor_plan_url) && (
                 <button
                   onClick={() => { setScrollToFloorPlan(true); setShowGallery(true); }}
-                  className="flex items-center gap-1.5 text-sm text-accent font-medium mt-2 hover:underline underline-offset-4"
+                  className="flex items-center gap-1.5 text-sm text-blue-600 font-medium mt-3 hover:underline underline-offset-4"
                 >
                   <LayoutGrid className="h-3.5 w-3.5" />
                   {t('listing.floorPlan')}
@@ -468,241 +505,271 @@ export function ListingDetailContent({
               )}
             </div>
 
-            {/* Mobile price + CTA */}
-            <div className="lg:hidden p-4 bg-card rounded-2xl border border-border/40">
-              <div className="flex items-center justify-between gap-4">
-                <div className="min-w-0">
-                  {!isCompleted ? (
-                    <>
-                      <p className="text-xl font-extrabold text-foreground tracking-tight truncate">
-                        {formatPrice(listing.price, listing.currency, { isRental: listing.listing_type === 'rent', showPeriod: listing.listing_type === 'rent' })}
-                      </p>
-                      {listing.area_sqm && listing.area_sqm > 0 && (
-                        <p className="text-xs text-muted-foreground">
-                          {formatPrice(listing.price / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
+            {/* Mobile price + CTA card */}
+            <div className="lg:hidden glass-card overflow-hidden">
+              <div className="p-5">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    {!isCompleted ? (
+                      <>
+                        <p className="text-2xl font-extrabold text-foreground tracking-tight">
+                          {formatPrice(listing.price, listing.currency, { isRental: listing.listing_type === 'rent', showPeriod: listing.listing_type === 'rent' })}
                         </p>
-                      )}
-                    </>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="h-4 w-4 text-emerald-500 shrink-0" />
-                      <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm uppercase tracking-wider">
-                        {statusLabel}
-                      </span>
-                    </div>
+                        {listing.area_sqm && listing.area_sqm > 0 && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {formatPrice(listing.price / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft\u00B2' : 'm\u00B2'}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-5 w-5 text-emerald-500 shrink-0" />
+                        <span className="font-bold text-emerald-600 text-sm uppercase tracking-wider">
+                          {statusLabel}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  {!isCompleted && (
+                    <Button
+                      variant="gradient"
+                      size="sm"
+                      className="shrink-0 rounded-xl h-11 px-5"
+                      disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
+                      onClick={handleContactLandlord}
+                    >
+                      <MessageCircle className="h-4 w-4 mr-1.5" />
+                      Contact
+                    </Button>
                   )}
                 </div>
-                {!isCompleted && (
-                  <Button
-                    variant="accent"
-                    size="sm"
-                    className="shrink-0 rounded-xl shadow-sm shadow-accent/20"
-                    disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
-                    onClick={handleContactLandlord}
-                  >
-                    <MessageCircle className="h-4 w-4 mr-1.5" />
-                    Contact
-                  </Button>
-                )}
               </div>
             </div>
 
-            {/* Description */}
+            {/* Description card */}
             {listing.description && (
-              <div>
-                <h2 className="text-base font-semibold text-foreground mb-2">{t('listing.description')}</h2>
-                <div className="text-muted-foreground whitespace-pre-line leading-relaxed text-[15px]">
-                  {showFullDescription || listing.description.length <= 400 ? (
-                    <>
-                      <p>{listing.description}</p>
-                      {listing.description.length > 400 && (
+              <div className="glass-card overflow-hidden">
+                <div className="flex items-center gap-2.5 border-b border-black/[0.06] px-5 py-4">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md shadow-blue-500/35">
+                    <FileText className="h-4 w-4 text-white" />
+                  </div>
+                  <h2 className="text-base font-semibold tracking-tight text-gray-900">{t('listing.description')}</h2>
+                </div>
+                <div className="px-5 py-5">
+                  <div className="text-gray-600 whitespace-pre-line leading-relaxed text-[15px]">
+                    {showFullDescription || listing.description.length <= 400 ? (
+                      <>
+                        <p>{listing.description}</p>
+                        {listing.description.length > 400 && (
+                          <button
+                            className="mt-3 text-sm font-semibold text-blue-600 hover:underline underline-offset-4"
+                            onClick={() => setShowFullDescription(false)}
+                          >
+                            Show less
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <p>{listing.description.slice(0, 400)}...</p>
                         <button
-                          className="mt-2 text-sm font-semibold text-accent hover:underline underline-offset-4"
-                          onClick={() => setShowFullDescription(false)}
+                          className="mt-3 text-sm font-semibold text-blue-600 hover:underline underline-offset-4"
+                          onClick={() => setShowFullDescription(true)}
                         >
-                          Show less
+                          Read more
                         </button>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <p>{listing.description.slice(0, 400)}...</p>
-                      <button
-                        className="mt-2 text-sm font-semibold text-accent hover:underline underline-offset-4"
-                        onClick={() => setShowFullDescription(true)}
-                      >
-                        Read more
-                      </button>
-                    </>
-                  )}
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
 
-            <div className="border-t border-border/30" />
-
-            {/* Property Details */}
+            {/* Property Details card */}
             {detailRows.length > 0 && (
-              <div>
-                <h2 className="text-base font-semibold text-foreground mb-3">Property Details</h2>
-                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
-                  {detailRows.map((row) => (
-                    <div key={row.label} className="flex justify-between py-2 border-b border-border/20">
-                      <dt className="text-sm text-muted-foreground">{row.label}</dt>
-                      <dd className="text-sm font-medium text-foreground text-right">{row.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-            )}
-
-            {/* Features & Amenities — collapsible */}
-            {featureCount > 0 && (
-              <>
-                <div className="border-t border-border/30" />
-                <div>
-                  <button
-                    className="flex items-center justify-between w-full text-left"
-                    onClick={() => setShowFeatures(!showFeatures)}
-                  >
-                    <h2 className="text-base font-semibold text-foreground">
-                      {t('listing.features')}
-                      <span className="text-muted-foreground font-normal ml-1.5 text-sm">({featureCount})</span>
-                    </h2>
-                    <span className="text-sm text-accent font-medium flex items-center gap-1">
-                      {showFeatures ? 'Hide' : 'Show all'}
-                      {showFeatures ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                    </span>
-                  </button>
-                  {showFeatures && (
-                    <div className="mt-4 animate-fade-in">
-                      <PropertyFeatures listing={listing} />
-                    </div>
-                  )}
+              <div className="glass-card overflow-hidden">
+                <div className="flex items-center gap-2.5 border-b border-black/[0.06] px-5 py-4">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-md shadow-violet-500/35">
+                    <Info className="h-4 w-4 text-white" />
+                  </div>
+                  <h2 className="text-base font-semibold tracking-tight text-gray-900">Property Details</h2>
                 </div>
-              </>
+                <div className="px-5 py-4">
+                  <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+                    {detailRows.map((row) => (
+                      <div key={row.label} className="flex items-center justify-between py-3 border-b border-black/[0.04] last:border-0">
+                        <dt className="text-sm text-gray-500">{row.label}</dt>
+                        <dd className="text-sm font-semibold text-gray-900 text-right">{row.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              </div>
             )}
 
-            <div className="border-t border-border/30" />
-
-            {/* Location */}
-            <div>
-              <h2 className="text-base font-semibold text-foreground mb-3">{t('listing.location')}</h2>
-              <div className="rounded-2xl overflow-hidden border border-border/30">
-                <ListingLocationMap
-                  latitude={listing.latitude}
-                  longitude={listing.longitude}
-                  address={listing.address}
-                />
+            {/* Features & Amenities card */}
+            {featureCount > 0 && (
+              <div className="glass-card overflow-hidden">
+                <button
+                  className="flex items-center justify-between w-full px-5 py-4 border-b border-black/[0.06]"
+                  onClick={() => setShowFeatures(!showFeatures)}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 to-green-600 shadow-md shadow-emerald-500/35">
+                      <Sparkles className="h-4 w-4 text-white" />
+                    </div>
+                    <div className="text-left">
+                      <h2 className="text-base font-semibold tracking-tight text-gray-900">
+                        {t('listing.features')}
+                      </h2>
+                      <p className="text-xs text-gray-400 mt-0.5">{featureCount} amenities available</p>
+                    </div>
+                  </div>
+                  <span className="flex items-center gap-1 text-sm text-blue-600 font-medium">
+                    {showFeatures ? 'Hide' : 'Show all'}
+                    {showFeatures ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  </span>
+                </button>
+                {showFeatures && (
+                  <div className="px-5 py-5 animate-fade-in">
+                    <PropertyFeatures listing={listing} />
+                  </div>
+                )}
               </div>
-              <p className="flex items-center gap-1.5 mt-2.5 text-sm text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5" />
-                {listing.address}, {listing.city}
-              </p>
+            )}
+
+            {/* Location card */}
+            <div className="glass-card overflow-hidden">
+              <div className="flex items-center gap-2.5 border-b border-black/[0.06] px-5 py-4">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-md shadow-amber-500/35">
+                  <MapPin className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-base font-semibold tracking-tight text-gray-900">{t('listing.location')}</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">{listing.address}, {listing.city}</p>
+                </div>
+              </div>
+              <div className="p-0">
+                <div className="h-[300px] sm:h-[360px]">
+                  <ListingLocationMap
+                    latitude={listing.latitude}
+                    longitude={listing.longitude}
+                    address={listing.address}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Sidebar — hidden on mobile (mobile CTA is inline above) */}
+          {/* Sidebar */}
           <div className="hidden lg:block lg:col-span-1">
-            <div className="sticky top-6 bg-card rounded-2xl border border-border/40 overflow-hidden">
-              {/* Price header */}
-              {!isCompleted ? (
-                <div className="p-6 border-b border-border/30">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">
-                    {propertyTypeLabels[listing.property_type]} · {listing.listing_type === 'rent' ? t('listingTypes.rent') : t('listingTypes.sale')}
-                  </p>
-                  <p className="text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight">
-                    {formatPrice(listing.price, listing.currency, { isRental: listing.listing_type === 'rent', showPeriod: listing.listing_type === 'rent' })}
-                  </p>
-                  {listing.area_sqm && listing.area_sqm > 0 && (
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      {formatPrice(listing.price / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
+            <div className="sticky top-24 space-y-4">
+              {/* Price card */}
+              <div className="glass-card overflow-hidden">
+                {!isCompleted ? (
+                  <div className="p-6">
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-2">
+                      {propertyTypeLabels[listing.property_type]} &middot; {listing.listing_type === 'rent' ? t('listingTypes.rent') : t('listingTypes.sale')}
                     </p>
-                  )}
-                  {listingStats && (
-                    <p className="text-xs text-muted-foreground mt-3">
-                      {listingStats.daysListed > 0 ? `Listed ${listingStats.daysListed} days ago` : 'Listed today'} · {listingStats.viewCount} views
+                    <p className="text-3xl lg:text-4xl font-extrabold text-foreground tracking-tight">
+                      {formatPrice(listing.price, listing.currency, { isRental: listing.listing_type === 'rent', showPeriod: listing.listing_type === 'rent' })}
                     </p>
-                  )}
-                </div>
-              ) : (
-                <div className="p-6 border-b border-border/30 bg-emerald-50/50 dark:bg-emerald-950/20">
-                  <div className="flex items-center gap-2 mb-2">
-                    <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                    <span className="font-bold text-emerald-700 dark:text-emerald-300 uppercase text-xs tracking-wider">
-                      {statusLabel}
-                    </span>
-                    {formattedCompletedDate && (
-                      <span className="text-xs text-emerald-600/70 dark:text-emerald-400/70">
-                        · {formattedCompletedDate}
-                      </span>
+                    {listing.area_sqm && listing.area_sqm > 0 && (
+                      <p className="text-sm text-gray-500 mt-1">
+                        {formatPrice(listing.price / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft\u00B2' : 'm\u00B2'}
+                      </p>
+                    )}
+                    {listingStats && (
+                      <p className="text-xs text-gray-400 mt-3 flex items-center gap-1.5">
+                        <Clock className="h-3 w-3" />
+                        {listingStats.daysListed > 0 ? `Listed ${listingStats.daysListed} days ago` : 'Listed today'} &middot; {listingStats.viewCount} views
+                      </p>
                     )}
                   </div>
-                  {listing.final_price ? (
-                    <>
-                      <p className="text-2xl font-extrabold text-emerald-700 dark:text-emerald-300 tracking-tight">
-                        {formatPrice(listing.final_price, listing.currency, {
-                          isRental: listing.listing_type === 'rent',
-                          showPeriod: listing.listing_type === 'rent'
-                        })}
-                      </p>
-                      <p className="text-sm text-muted-foreground line-through mt-1">
+                ) : (
+                  <div className="p-6 bg-emerald-50/50">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] bg-emerald-100/80 text-emerald-800 border border-emerald-200/60">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        {statusLabel}
+                      </span>
+                      {formattedCompletedDate && (
+                        <span className="text-xs text-emerald-600/70">
+                          {formattedCompletedDate}
+                        </span>
+                      )}
+                    </div>
+                    {listing.final_price ? (
+                      <>
+                        <p className="text-2xl font-extrabold text-emerald-700 tracking-tight">
+                          {formatPrice(listing.final_price, listing.currency, {
+                            isRental: listing.listing_type === 'rent',
+                            showPeriod: listing.listing_type === 'rent'
+                          })}
+                        </p>
+                        <p className="text-sm text-gray-400 line-through mt-1">
+                          {formatPrice(listing.price, listing.currency, {
+                            isRental: listing.listing_type === 'rent',
+                            showPeriod: listing.listing_type === 'rent'
+                          })}
+                        </p>
+                        {priceDifferencePercent !== null && Math.abs(priceDifferencePercent) > 0.5 && (
+                          <span className={cn(
+                            "inline-flex items-center gap-1 mt-2 px-2.5 py-1 rounded-full text-xs font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]",
+                            priceDifferencePercent > 0
+                              ? "bg-red-100/80 text-red-800 border border-red-200/60"
+                              : "bg-emerald-100/80 text-emerald-800 border border-emerald-200/60"
+                          )}>
+                            {priceDifferencePercent > 0 ? '+' : ''}{priceDifferencePercent.toFixed(1)}%
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-xl font-bold text-emerald-700">
                         {formatPrice(listing.price, listing.currency, {
                           isRental: listing.listing_type === 'rent',
                           showPeriod: listing.listing_type === 'rent'
                         })}
                       </p>
-                      {priceDifferencePercent !== null && Math.abs(priceDifferencePercent) > 0.5 && (
-                        <span className={cn(
-                          "inline-block mt-2 px-2 py-0.5 rounded-full text-xs font-semibold",
-                          priceDifferencePercent > 0
-                            ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                            : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                        )}>
-                          {priceDifferencePercent > 0 ? '+' : ''}{priceDifferencePercent.toFixed(1)}%
-                        </span>
-                      )}
+                    )}
+                  </div>
+                )}
+
+                <div className="p-6 pt-0 space-y-3 mt-0">
+                  {!isCompleted && (
+                    <>
+                      <div className="pt-4" />
+                      <Button
+                        variant="gradient"
+                        className="w-full h-12 text-[15px] font-semibold rounded-xl"
+                        disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
+                        onClick={handleContactLandlord}
+                      >
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        {getOrCreateConversation.isPending ? 'Starting chat...' : t('listing.contactLandlord')}
+                      </Button>
                     </>
-                  ) : (
-                    <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">
-                      {formatPrice(listing.price, listing.currency, {
-                        isRental: listing.listing_type === 'rent',
-                        showPeriod: listing.listing_type === 'rent'
-                      })}
-                    </p>
+                  )}
+
+                  <Button
+                    variant="outline"
+                    className="w-full h-12 text-[15px] font-semibold rounded-xl border-black/[0.08] hover:border-black/[0.12]"
+                    onClick={handleSaveClick}
+                  >
+                    <Heart className={cn('h-4 w-4 mr-2', isSaved && 'fill-current text-rose-500')} />
+                    {user ? (isSaved ? t('common.saved') : t('listing.saveListing')) : t('listing.signInToSave')}
+                  </Button>
+
+                  {listing.user_id && (
+                    <button
+                      className="w-full flex items-center justify-center gap-2 py-3 text-sm text-gray-500 hover:text-gray-700 transition-colors rounded-xl hover:bg-gray-50"
+                      onClick={() => router.push(`/landlord/${listing.user_id}`)}
+                    >
+                      <User className="h-4 w-4" />
+                      <span className="font-medium">View landlord profile</span>
+                    </button>
                   )}
                 </div>
-              )}
-
-              <div className="p-6 space-y-3">
-                <Button
-                  variant="accent"
-                  className="w-full h-12 text-[15px] font-semibold rounded-xl shadow-sm shadow-accent/20"
-                  disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
-                  onClick={handleContactLandlord}
-                >
-                  <MessageCircle className="h-4 w-4 mr-2" />
-                  {getOrCreateConversation.isPending ? 'Starting chat...' : t('listing.contactLandlord')}
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full h-12 text-[15px] font-semibold rounded-xl"
-                  onClick={handleSaveClick}
-                >
-                  <Heart className={cn('h-4 w-4 mr-2', isSaved && 'fill-current text-accent')} />
-                  {user ? (isSaved ? t('common.saved') : t('listing.saveListing')) : t('listing.signInToSave')}
-                </Button>
-
-                {listing.user_id && (
-                  <button
-                    className="w-full flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    onClick={() => router.push(`/landlord/${listing.user_id}`)}
-                  >
-                    <User className="h-4 w-4" />
-                    <span className="font-medium">View landlord profile</span>
-                  </button>
-                )}
               </div>
             </div>
           </div>
@@ -710,14 +777,14 @@ export function ListingDetailContent({
 
         {/* Similar Listings */}
         {showSimilar && (
-          <div className="mt-10 pt-8 border-t border-border/30">
+          <div className="mt-12 pt-8 border-t border-black/[0.06]">
             <SimilarListings listing={listing} />
           </div>
         )}
 
         {/* Recently Viewed */}
         {showRecentlyViewed && (
-          <div className="mt-8 pt-8 border-t border-border/30 pb-8">
+          <div className="mt-10 pt-8 border-t border-black/[0.06] pb-10">
             <RecentlyViewedListings excludeListingId={listing.id} limit={6} />
           </div>
         )}

@@ -1220,8 +1220,8 @@ export default function CreateListing() {
 
       <main className="pt-8">
         <div className="container mx-auto px-4">
-          {/* Sticky progress bar on desktop - matches Header h-14 */}
-          <div className="sticky top-14 z-30 bg-background border-b border-border py-4 -mx-4 px-4">
+          {/* Sticky progress bar on desktop - matches Header h-16 */}
+          <div className="sticky top-16 z-30 bg-background border-b border-border py-4 -mx-4 px-4">
             <WizardProgress steps={WIZARD_STEPS} currentStep={currentStep} onStepClick={handleStepClick} completedSteps={completedSteps} />
           </div>
 

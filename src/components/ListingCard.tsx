@@ -286,9 +286,9 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
             {displayBadges.map((badge, index) => {
               const Icon = badge.icon;
               return (
-                <span 
+                <span
                   key={index}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-secondary text-[11px] text-muted-foreground font-medium"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-50 text-[11px] text-gray-600 font-medium ring-1 ring-gray-200/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)]"
                 >
                   <Icon className="h-3 w-3" />
                   {badge.label}

@@ -237,7 +237,7 @@ const Index = () => {
       <Header />
       
       {/* Spacer for fixed header */}
-      <div className="h-14 shrink-0" />
+      <div className="h-16 shrink-0" />
       
       <main className="flex-1 flex flex-col overflow-hidden min-h-0">
         {isMobileLayout ? (

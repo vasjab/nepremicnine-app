@@ -106,7 +106,7 @@ serve(async (req: Request): Promise<Response> => {
                       <table width="100%" cellpadding="0" cellspacing="0">
                         <tr>
                           <td align="center">
-                            <a href="${supabaseUrl.replace('.supabase.co', '.lovable.app')}/messages" 
+                            <a href="https://nepremicnine-app.vercel.app/messages" 
                                style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
                               View Conversation
                             </a>

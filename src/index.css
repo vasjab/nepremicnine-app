@@ -138,6 +138,12 @@
     height: -webkit-fill-available;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Ambient background orbs — Apple glass style */
+    background-image:
+      radial-gradient(ellipse 140% 680px at 55% -80px, hsl(220 80% 55% / 0.08) 0%, transparent 65%),
+      radial-gradient(ellipse 80% 520px at 100% 50%, hsl(152 70% 42% / 0.05) 0%, transparent 55%),
+      radial-gradient(ellipse 65% 480px at 0% 72%, hsl(280 60% 55% / 0.04) 0%, transparent 55%);
+    background-attachment: fixed;
   }
 
   #root, #__next {
@@ -179,25 +185,29 @@
     @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
   }
 
-  /* ─── Filter Pills ─────────────────────────────── */
+  /* ─── Filter Pills (DESIGN.md pill/chip) ──────── */
   .filter-pill {
-    @apply px-4 py-2 rounded-full text-sm font-medium transition-all min-h-[40px] flex items-center gap-2;
-    background: hsl(var(--glass-bg));
-    backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid hsl(var(--glass-border));
+    @apply px-4 py-2 rounded-full text-sm font-semibold transition-all min-h-[40px] flex items-center gap-2;
+    background: hsl(0 0% 100% / 0.7);
+    border: 1px solid hsl(0 0% 0% / 0.06);
+    box-shadow: 0 1px 3px hsl(0 0% 0% / 0.06);
   }
 
   .filter-pill:hover {
-    background: hsl(var(--secondary));
-    border-color: hsl(var(--border));
+    background: hsl(0 0% 100%);
+    border-color: hsl(0 0% 0% / 0.1);
+    box-shadow: 0 1px 4px hsl(0 0% 0% / 0.08);
   }
 
   .filter-pill:active {
-    transform: scale(0.96);
+    transform: scale(0.98);
   }
 
   .filter-pill-active {
-    @apply bg-foreground text-background border-transparent;
+    background: hsl(var(--foreground));
+    color: hsl(var(--background));
+    border-color: transparent;
+    box-shadow: none;
   }
 
   /* ─── Map Markers ──────────────────────────────── */
@@ -275,6 +285,22 @@
     -webkit-backdrop-filter: blur(var(--glass-blur));
     color: white;
     border: 1px solid hsl(0 0% 100% / 0.08);
+  }
+
+  /* ─── Glass Card (DESIGN.md) ─────────────────── */
+  .glass-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    box-shadow: 0 1px 3px hsl(var(--glass-shadow)), 0 1px 2px hsl(var(--glass-shadow));
+  }
+
+  /* ─── Gradient text ──────────────────────────── */
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(220 80% 55%) 0%, hsl(280 60% 55%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   /* ─── Skeleton Shimmer ─────────────────────────── */

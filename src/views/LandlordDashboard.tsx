@@ -62,7 +62,7 @@ export default function LandlordDashboard() {
     return (
       <div className="min-h-dvh bg-background">
         <Header />
-        <div className="h-14" />
+        <div className="h-16" />
         <main className="container mx-auto px-4 py-8">
           <div className="space-y-6">
             <Skeleton className="h-10 w-48" />
@@ -81,7 +81,7 @@ export default function LandlordDashboard() {
     return (
       <div className="min-h-dvh bg-background">
         <Header />
-        <div className="h-14" />
+        <div className="h-16" />
         <main className="container mx-auto px-4 py-16">
           <div className="text-center max-w-md mx-auto">
             <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mx-auto mb-4">
@@ -107,7 +107,7 @@ export default function LandlordDashboard() {
   return (
     <div className="min-h-dvh bg-background">
       <Header />
-      <div className="h-14" />
+      <div className="h-16" />
       
       <main className="container mx-auto px-4 py-8">
         {/* Header */}

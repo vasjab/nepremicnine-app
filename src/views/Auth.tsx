@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { Mail, ArrowLeft, Loader2 } from 'lucide-react';
+import { Mail, ArrowLeft, Loader2, Home, Heart, FileText, Shield } from 'lucide-react';
 import { z } from 'zod';
 import { HoneypotField, isHoneypotTriggered } from '@/components/HoneypotField';
 import { useRateLimit, AUTH_RATE_LIMIT } from '@/hooks/useRateLimit';
@@ -181,18 +181,29 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="relative min-h-screen flex overflow-hidden">
+      {/* Decorative blobs */}
+      <div className="pointer-events-none absolute -top-32 -left-32 h-80 w-80 rounded-full bg-blue-400/12 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-32 h-80 w-80 rounded-full bg-indigo-400/10 blur-3xl" />
+      <div className="pointer-events-none absolute top-[15%] left-[12%] h-6 w-6 rotate-45 rounded-sm border-2 border-blue-300/20" />
+
       {/* Left side - Form */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8">
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-10">
         <div className="w-full max-w-md">
           {step === 'email' ? (
-            <div className="animate-fade-in" key="email-step">
-              <div className="text-center mb-8">
-                <span className="text-5xl mb-4 block">🏠</span>
+            <div className="animate-slide-up" key="email-step">
+              <div className="text-center mb-10">
+                {/* Logo icon */}
+                <div className="relative mx-auto mb-5 flex h-14 w-14 items-center justify-center">
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/20 to-indigo-500/20 blur-xl" />
+                  <div className="relative flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25">
+                    <Mail className="h-6 w-6 text-white" />
+                  </div>
+                </div>
                 <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 tracking-tight">
                   Welcome to hemma
                 </h1>
-                <p className="text-muted-foreground text-sm sm:text-base">
+                <p className="text-gray-500 text-sm sm:text-base">
                   Enter your email to sign in or create an account
                 </p>
               </div>
@@ -202,24 +213,24 @@ export default function Auth() {
 
                 <div className="space-y-2">
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-gray-400" />
                     <Input
                       type="email"
                       placeholder="you@example.com"
                       value={email}
                       onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
-                      className="pl-10 h-12 text-base"
+                      className="pl-10 h-12 text-base rounded-xl border-black/[0.08] bg-white/70 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                       autoFocus
                       autoComplete="email"
                     />
                   </div>
                   {emailError && (
-                    <p className="text-sm text-destructive">{emailError}</p>
+                    <p className="text-sm text-red-500">{emailError}</p>
                   )}
                 </div>
 
                 <div className="flex items-center justify-between py-1">
-                  <label htmlFor="remember-me" className="text-sm text-muted-foreground cursor-pointer select-none">
+                  <label htmlFor="remember-me" className="text-sm text-gray-500 cursor-pointer select-none">
                     Remember me for 30 days
                   </label>
                   <Switch
@@ -231,7 +242,7 @@ export default function Auth() {
 
                 <Button
                   type="submit"
-                  variant="accent"
+                  variant="gradient"
                   className="w-full h-12 text-base font-semibold rounded-xl"
                   disabled={isLoading || isLimited}
                 >
@@ -350,35 +361,44 @@ export default function Auth() {
       </div>
 
       {/* Right side - Branding */}
-      <div className="hidden lg:flex flex-1 bg-secondary/50 items-center justify-center p-12 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent to-accent/10" />
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-slate-50 via-blue-50/40 to-indigo-50/30 items-center justify-center p-12 relative overflow-hidden">
+        <div className="pointer-events-none absolute top-20 right-20 h-40 w-40 rounded-full bg-blue-400/10 blur-3xl" />
+        <div className="pointer-events-none absolute bottom-20 left-20 h-40 w-40 rounded-full bg-indigo-400/8 blur-3xl" />
         <div className="max-w-md text-center relative z-10">
           <h2 className="text-4xl font-bold text-foreground mb-4 tracking-tight">
             {t('auth.findPerfectHome')}
           </h2>
-          <p className="text-lg text-muted-foreground leading-relaxed">
+          <p className="text-lg text-gray-500 leading-relaxed">
             {t('auth.findPerfectHomeDesc')}
           </p>
           <div className="mt-12 grid grid-cols-2 gap-4 text-left">
-            <div className="glass p-5 rounded-2xl">
-              <span className="text-2xl mb-2 block">🏠</span>
-              <h3 className="font-bold text-foreground">{t('auth.browseListings')}</h3>
-              <p className="text-sm text-muted-foreground mt-1">{t('auth.browseListingsDesc')}</p>
+            <div className="rounded-2xl border border-blue-200/60 bg-blue-50/40 p-5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 mb-3">
+                <Home className="h-4 w-4 text-blue-600" />
+              </div>
+              <h3 className="font-bold text-gray-900 text-sm">{t('auth.browseListings')}</h3>
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{t('auth.browseListingsDesc')}</p>
             </div>
-            <div className="glass p-5 rounded-2xl">
-              <span className="text-2xl mb-2 block">❤️</span>
-              <h3 className="font-bold text-foreground">{t('auth.saveFavorites')}</h3>
-              <p className="text-sm text-muted-foreground mt-1">{t('auth.saveFavoritesDesc')}</p>
+            <div className="rounded-2xl border border-rose-200/60 bg-rose-50/40 p-5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-100 mb-3">
+                <Heart className="h-4 w-4 text-rose-600" />
+              </div>
+              <h3 className="font-bold text-gray-900 text-sm">{t('auth.saveFavorites')}</h3>
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{t('auth.saveFavoritesDesc')}</p>
             </div>
-            <div className="glass p-5 rounded-2xl">
-              <span className="text-2xl mb-2 block">📝</span>
-              <h3 className="font-bold text-foreground">{t('auth.listYourHome')}</h3>
-              <p className="text-sm text-muted-foreground mt-1">{t('auth.listYourHomeDesc')}</p>
+            <div className="rounded-2xl border border-violet-200/60 bg-violet-50/40 p-5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 mb-3">
+                <FileText className="h-4 w-4 text-violet-600" />
+              </div>
+              <h3 className="font-bold text-gray-900 text-sm">{t('auth.listYourHome')}</h3>
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{t('auth.listYourHomeDesc')}</p>
             </div>
-            <div className="glass p-5 rounded-2xl">
-              <span className="text-2xl mb-2 block">🔒</span>
-              <h3 className="font-bold text-foreground">{t('auth.secureAndTrusted')}</h3>
-              <p className="text-sm text-muted-foreground mt-1">{t('auth.secureAndTrustedDesc')}</p>
+            <div className="rounded-2xl border border-emerald-200/60 bg-emerald-50/40 p-5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 mb-3">
+                <Shield className="h-4 w-4 text-emerald-600" />
+              </div>
+              <h3 className="font-bold text-gray-900 text-sm">{t('auth.secureAndTrusted')}</h3>
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{t('auth.secureAndTrustedDesc')}</p>
             </div>
           </div>
         </div>

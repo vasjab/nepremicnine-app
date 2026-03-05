@@ -59,15 +59,15 @@ interface Feature {
 }
 
 const categoryThemes = {
-  outdoor: { iconColor: 'text-emerald-600 dark:text-emerald-400', headerColor: 'text-emerald-700 dark:text-emerald-400', label: 'Outdoor & Views' },
-  parking: { iconColor: 'text-blue-600 dark:text-blue-400', headerColor: 'text-blue-700 dark:text-blue-400', label: 'Parking & Storage' },
-  building: { iconColor: 'text-violet-600 dark:text-violet-400', headerColor: 'text-violet-700 dark:text-violet-400', label: 'Building Amenities' },
-  energy: { iconColor: 'text-amber-600 dark:text-amber-400', headerColor: 'text-amber-700 dark:text-amber-400', label: 'Energy & Climate' },
-  equipment: { iconColor: 'text-sky-600 dark:text-sky-400', headerColor: 'text-sky-700 dark:text-sky-400', label: 'Appliances' },
-  interior: { iconColor: 'text-rose-600 dark:text-rose-400', headerColor: 'text-rose-700 dark:text-rose-400', label: 'Interior Features' },
-  accessibility: { iconColor: 'text-teal-600 dark:text-teal-400', headerColor: 'text-teal-700 dark:text-teal-400', label: 'Accessibility' },
-  safety: { iconColor: 'text-slate-600 dark:text-slate-400', headerColor: 'text-slate-700 dark:text-slate-400', label: 'Safety & Security' },
-  basic: { iconColor: 'text-primary', headerColor: 'text-primary', label: 'Basics' },
+  outdoor: { iconColor: 'text-emerald-600', iconBg: 'bg-emerald-100', headerColor: 'text-emerald-600', label: 'Outdoor & Views' },
+  parking: { iconColor: 'text-blue-600', iconBg: 'bg-blue-100', headerColor: 'text-blue-600', label: 'Parking & Storage' },
+  building: { iconColor: 'text-violet-600', iconBg: 'bg-violet-100', headerColor: 'text-violet-600', label: 'Building Amenities' },
+  energy: { iconColor: 'text-amber-600', iconBg: 'bg-amber-100', headerColor: 'text-amber-600', label: 'Energy & Climate' },
+  equipment: { iconColor: 'text-sky-600', iconBg: 'bg-sky-100', headerColor: 'text-sky-600', label: 'Appliances' },
+  interior: { iconColor: 'text-rose-600', iconBg: 'bg-rose-100', headerColor: 'text-rose-600', label: 'Interior Features' },
+  accessibility: { iconColor: 'text-teal-600', iconBg: 'bg-teal-100', headerColor: 'text-teal-600', label: 'Accessibility' },
+  safety: { iconColor: 'text-slate-600', iconBg: 'bg-slate-100', headerColor: 'text-slate-600', label: 'Safety & Security' },
+  basic: { iconColor: 'text-gray-700', iconBg: 'bg-gray-100', headerColor: 'text-gray-700', label: 'Basics' },
 };
 
 function FeatureItem({
@@ -83,11 +83,13 @@ function FeatureItem({
 }) {
   const theme = categoryThemes[category];
   return (
-    <li className="flex items-center gap-2.5 py-1.5">
-      <Icon className={cn("h-4 w-4 shrink-0", theme.iconColor)} />
-      <span className="text-sm text-foreground">
+    <li className="flex items-center gap-3 py-2">
+      <div className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px]", theme.iconBg)}>
+        <Icon className={cn("h-3.5 w-3.5", theme.iconColor)} />
+      </div>
+      <span className="text-sm text-gray-800 font-medium">
         {label}
-        {detail && <span className="text-muted-foreground ml-1">· {detail}</span>}
+        {detail && <span className="text-gray-400 font-normal ml-1">· {detail}</span>}
       </span>
     </li>
   );
@@ -105,9 +107,14 @@ function CategorySection({
 
   return (
     <div>
-      <h3 className={cn("text-xs font-semibold uppercase tracking-wide mb-1.5", theme.headerColor)}>
-        {theme.label}
-      </h3>
+      <div className="flex items-center gap-2 mb-2">
+        <div className={cn("flex h-5 w-5 items-center justify-center rounded-md", theme.iconBg)}>
+          <span className={cn("h-2.5 w-2.5 rounded-full", theme.iconColor.replace('text-', 'bg-'))} />
+        </div>
+        <h3 className="text-[11px] font-bold uppercase tracking-widest text-gray-400">
+          {theme.label}
+        </h3>
+      </div>
       <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
         {features.map((feature) => (
           <FeatureItem

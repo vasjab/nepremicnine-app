@@ -79,7 +79,7 @@ export default function LandlordProfileClient({ userId }: { userId: string }) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <div className="h-14" />
+        <div className="h-16" />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center gap-4 mb-8">
             <Skeleton className="h-20 w-20 rounded-full" />
@@ -103,7 +103,7 @@ export default function LandlordProfileClient({ userId }: { userId: string }) {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="h-14" />
+      <div className="h-16" />
 
       <div className="container mx-auto px-4 py-6">
         <Button variant="ghost" size="sm" onClick={() => router.back()} className="mb-4">

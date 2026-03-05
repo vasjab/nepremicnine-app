@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Heart, PlusCircle, User, Menu, X, MessageCircle, BarChart3, History, Globe } from 'lucide-react';
+import { Home, Heart, PlusCircle, User, Menu, X, MessageCircle, BarChart3, History, Globe, Search } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -30,98 +30,102 @@ export function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 glass-strong">
       <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link 
-            href="/" 
-            className="flex items-center gap-2 transition-opacity hover:opacity-80"
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 transition-opacity hover:opacity-80"
           >
-            <span className="text-xl font-black text-foreground tracking-tight">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-md shadow-blue-500/30">
+              <Home className="h-4 w-4 text-white" />
+            </div>
+            <span className="text-lg font-bold text-foreground tracking-tight">
               hemma
             </span>
           </Link>
 
-          {/* Mobile: Always visible nav icons - Find Home & Saved */}
+          {/* Desktop Navigation - DESIGN.md pill tab bar */}
+          <nav className="hidden md:flex items-center">
+            <div className="flex gap-1 rounded-xl border border-black/[0.07] bg-black/[0.03] p-1">
+              <Link
+                href="/"
+                className={cn(
+                  'flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all border',
+                  isActive('/')
+                    ? 'bg-white shadow-sm text-gray-900 border-black/[0.06]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                )}
+              >
+                <Search className="h-3.5 w-3.5" />
+                {t('nav.findHome')}
+              </Link>
+              <Link
+                href="/sold-rented"
+                className={cn(
+                  'flex items-center justify-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all border',
+                  isActive('/sold-rented')
+                    ? 'bg-white shadow-sm text-gray-900 border-black/[0.06]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                )}
+              >
+                <History className="h-3.5 w-3.5" />
+                {t('soldRented.recentlySold')}
+              </Link>
+            </div>
+          </nav>
+
+          {/* Mobile: Center nav icons */}
           <div className="flex md:hidden items-center gap-1 flex-1 justify-center">
             <Link
               href="/"
               className={cn(
-                'flex items-center justify-center w-10 h-10 rounded-full transition-colors touch-safe-button',
-                isActive('/') 
-                  ? 'bg-secondary text-foreground' 
-                  : 'text-muted-foreground hover:text-foreground'
+                'flex items-center justify-center w-10 h-10 rounded-full transition-colors',
+                isActive('/')
+                  ? 'bg-blue-50 text-blue-600'
+                  : 'text-gray-400 hover:text-gray-600'
               )}
-              style={{ WebkitTapHighlightColor: 'transparent' }}
             >
-              <Home className="h-5 w-5" />
+              <Search className="h-5 w-5" />
             </Link>
             {user && (
               <Link
                 href="/saved"
                 className={cn(
-                  'flex items-center justify-center w-10 h-10 rounded-full transition-colors touch-safe-button',
-                  isActive('/saved') 
-                    ? 'bg-secondary text-foreground' 
-                    : 'text-muted-foreground hover:text-foreground'
+                  'flex items-center justify-center w-10 h-10 rounded-full transition-colors',
+                  isActive('/saved')
+                    ? 'bg-rose-50 text-rose-500'
+                    : 'text-gray-400 hover:text-gray-600'
                 )}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 <Heart className="h-5 w-5" />
               </Link>
             )}
           </div>
 
-          {/* Desktop Navigation - Simplified */}
-          <nav className="hidden md:flex items-center bg-secondary/50 rounded-full p-1">
-            <Link
-              href="/"
-              className={cn(
-                'px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200',
-                isActive('/')
-                  ? 'text-foreground bg-card shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {t('nav.findHome')}
-            </Link>
-            <Link
-              href="/sold-rented"
-              className={cn(
-                'px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200',
-                isActive('/sold-rented')
-                  ? 'text-foreground bg-card shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {t('soldRented.recentlySold')}
-            </Link>
-          </nav>
-
           {/* Right side */}
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-2">
             {user ? (
               <>
                 {/* Messages button with badge */}
                 <Link href="/messages" className="relative">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="rounded-full touch-safe-button"
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full h-10 w-10"
                   >
                     <MessageCircle className="h-5 w-5" />
                     {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 min-w-5 h-5 rounded-full bg-accent text-white text-[10px] flex items-center justify-center font-bold px-1">
+                      <span className="absolute -top-0.5 -right-0.5 min-w-5 h-5 rounded-full bg-gradient-to-r from-rose-500 to-pink-600 text-white text-[10px] flex items-center justify-center font-bold px-1 shadow-sm shadow-rose-500/30">
                         {unreadCount > 9 ? '9+' : unreadCount}
                       </span>
                     )}
                   </Button>
                 </Link>
                 <Link href="/create-listing" className="hidden sm:block">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="gap-2 rounded-full"
+                  <Button
+                    variant="gradient"
+                    size="sm"
+                    className="gap-2 rounded-xl"
                   >
                     <PlusCircle className="h-4 w-4" />
                     {t('common.createListing')}
@@ -131,58 +135,68 @@ export function Header() {
                 <div className="hidden md:block">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="rounded-full"
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="rounded-full h-10 w-10 border border-black/[0.08]"
                       >
                         <User className="h-5 w-5" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-64 py-2 rounded-2xl shadow-float border-border/50 bg-card/95 backdrop-blur-xl">
-                      <DropdownMenuItem asChild className="px-4 py-3.5 text-base focus:bg-secondary/50 rounded-none">
-                        <Link href="/profile" className="cursor-pointer">
-                          <User className="mr-4 h-5 w-5" />
+                    <DropdownMenuContent align="end" className="w-64 py-2 rounded-2xl shadow-2xl border-gray-200/60 bg-white">
+                      <DropdownMenuItem asChild className="px-4 py-3 text-sm focus:bg-gray-50 rounded-none cursor-pointer">
+                        <Link href="/profile">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-blue-100 text-blue-600 mr-3">
+                            <User className="h-3.5 w-3.5" />
+                          </div>
                           {t('common.profile')}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="px-4 py-3.5 text-base focus:bg-secondary/50 rounded-none">
-                        <Link href="/messages" className="cursor-pointer">
-                          <MessageCircle className="mr-4 h-5 w-5" />
+                      <DropdownMenuItem asChild className="px-4 py-3 text-sm focus:bg-gray-50 rounded-none cursor-pointer">
+                        <Link href="/messages">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-violet-100 text-violet-600 mr-3">
+                            <MessageCircle className="h-3.5 w-3.5" />
+                          </div>
                           Messages
                           {unreadCount > 0 && (
-                            <span className="ml-auto min-w-5 h-5 rounded-full bg-accent text-white text-[10px] flex items-center justify-center font-bold px-1">
+                            <span className="ml-auto min-w-5 h-5 rounded-full bg-gradient-to-r from-rose-500 to-pink-600 text-white text-[10px] flex items-center justify-center font-bold px-1">
                               {unreadCount > 9 ? '9+' : unreadCount}
                             </span>
                           )}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator className="my-2" />
-                      <DropdownMenuItem asChild className="px-4 py-3.5 text-base focus:bg-secondary/50 rounded-none">
-                        <Link href="/saved" className="cursor-pointer">
-                          <Heart className="mr-4 h-5 w-5" />
+                      <DropdownMenuSeparator className="my-1.5" />
+                      <DropdownMenuItem asChild className="px-4 py-3 text-sm focus:bg-gray-50 rounded-none cursor-pointer">
+                        <Link href="/saved">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-rose-100 text-rose-600 mr-3">
+                            <Heart className="h-3.5 w-3.5" />
+                          </div>
                           {t('common.savedListings')}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="px-4 py-3.5 text-base focus:bg-secondary/50 rounded-none">
-                        <Link href="/my-listings" className="cursor-pointer">
-                          <Home className="mr-4 h-5 w-5" />
+                      <DropdownMenuItem asChild className="px-4 py-3 text-sm focus:bg-gray-50 rounded-none cursor-pointer">
+                        <Link href="/my-listings">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-emerald-100 text-emerald-600 mr-3">
+                            <Home className="h-3.5 w-3.5" />
+                          </div>
                           {t('common.myListings')}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="px-4 py-3.5 text-base focus:bg-secondary/50 rounded-none">
-                        <Link href="/dashboard" className="cursor-pointer">
-                          <BarChart3 className="mr-4 h-5 w-5" />
+                      <DropdownMenuItem asChild className="px-4 py-3 text-sm focus:bg-gray-50 rounded-none cursor-pointer">
+                        <Link href="/dashboard">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-amber-100 text-amber-600 mr-3">
+                            <BarChart3 className="h-3.5 w-3.5" />
+                          </div>
                           {t('nav.dashboard')}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator className="my-2" />
-                      {/* Language & Region - opens dialog */}
+                      <DropdownMenuSeparator className="my-1.5" />
+                      {/* Language & Region */}
                       <div className="px-0 py-0">
                         <InternationalSettings trigger="menu-item" />
                       </div>
-                      <DropdownMenuSeparator className="my-2" />
-                      <DropdownMenuItem onClick={signOut} className="cursor-pointer px-4 py-3.5 text-base text-destructive focus:bg-destructive/10 focus:text-destructive rounded-none">
+                      <DropdownMenuSeparator className="my-1.5" />
+                      <DropdownMenuItem onClick={signOut} className="cursor-pointer px-4 py-3 text-sm text-red-600 focus:bg-red-50 focus:text-red-600 rounded-none">
                         {t('common.signOut')}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -194,15 +208,15 @@ export function Header() {
                 {/* Language & Region for non-logged in users */}
                 <InternationalSettings trigger="icon" />
                 <Link href="/auth">
-                  <Button variant="ghost" size="sm" className="rounded-full">
+                  <Button variant="ghost" size="sm" className="rounded-xl text-gray-600 hover:text-gray-900">
                     {t('common.logIn')}
                   </Button>
                 </Link>
                 <Link href="/auth?mode=signup">
-                  <Button 
-                    variant="accent"
-                    size="sm" 
-                    className="rounded-full px-4"
+                  <Button
+                    variant="gradient"
+                    size="sm"
+                    className="rounded-xl px-5"
                   >
                     {t('common.signUp')}
                   </Button>
@@ -214,155 +228,176 @@ export function Header() {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden rounded-full touch-safe-button min-w-[44px] min-h-[44px]"
+              className="md:hidden rounded-full h-10 w-10"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              style={{ WebkitTapHighlightColor: 'transparent' }}
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
 
-        {/* Mobile Navigation - Airbnb-style clean design */}
+        {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <nav className="md:hidden py-0 border-t border-border/20 animate-slide-down bg-card/98 backdrop-blur-xl">
-            <div className="flex flex-col">
+          <nav className="md:hidden py-2 border-t border-black/[0.06] animate-slide-down">
+            <div className="flex flex-col py-2">
               {/* Sold/Rented */}
               <Link
                 href="/sold-rented"
                 className={cn(
-                  'flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors touch-safe-button border-b border-border/20',
-                  isActive('/sold-rented') 
-                    ? 'text-foreground' 
-                    : 'text-foreground hover:bg-secondary/30'
+                  'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium transition-colors',
+                  isActive('/sold-rented')
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'text-gray-700 hover:bg-gray-50'
                 )}
                 onClick={() => setMobileMenuOpen(false)}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
-                <History className="h-6 w-6" />
+                <div className={cn(
+                  'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
+                  isActive('/sold-rented') ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
+                )}>
+                  <History className="h-4 w-4" />
+                </div>
                 {t('soldRented.recentlySold')}
               </Link>
-              
+
               {user ? (
                 <>
                   <Link
                     href="/saved"
                     className={cn(
-                      'flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors touch-safe-button border-b border-border/20',
-                      isActive('/saved') 
-                        ? 'text-foreground' 
-                        : 'text-foreground hover:bg-secondary/30'
+                      'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium transition-colors',
+                      isActive('/saved')
+                        ? 'bg-rose-50 text-rose-700'
+                        : 'text-gray-700 hover:bg-gray-50'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
-                    <Heart className="h-6 w-6" />
+                    <div className={cn(
+                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
+                      isActive('/saved') ? 'bg-rose-100 text-rose-600' : 'bg-gray-100 text-gray-500'
+                    )}>
+                      <Heart className="h-4 w-4" />
+                    </div>
                     {t('common.savedListings')}
                   </Link>
                   <Link
                     href="/my-listings"
                     className={cn(
-                      'flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors touch-safe-button border-b border-border/20',
-                      isActive('/my-listings') 
-                        ? 'text-foreground' 
-                        : 'text-foreground hover:bg-secondary/30'
+                      'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium transition-colors',
+                      isActive('/my-listings')
+                        ? 'bg-emerald-50 text-emerald-700'
+                        : 'text-gray-700 hover:bg-gray-50'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
-                    <Home className="h-6 w-6" />
+                    <div className={cn(
+                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
+                      isActive('/my-listings') ? 'bg-emerald-100 text-emerald-600' : 'bg-gray-100 text-gray-500'
+                    )}>
+                      <Home className="h-4 w-4" />
+                    </div>
                     {t('nav.myListings')}
                   </Link>
                   <Link
                     href="/profile"
                     className={cn(
-                      'flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors touch-safe-button border-b border-border/20',
-                      isActive('/profile') 
-                        ? 'text-foreground' 
-                        : 'text-foreground hover:bg-secondary/30'
+                      'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium transition-colors',
+                      isActive('/profile')
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-700 hover:bg-gray-50'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
-                    <User className="h-6 w-6" />
+                    <div className={cn(
+                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
+                      isActive('/profile') ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'
+                    )}>
+                      <User className="h-4 w-4" />
+                    </div>
                     {t('common.profile')}
                   </Link>
                   <Link
                     href="/dashboard"
                     className={cn(
-                      'flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors touch-safe-button border-b border-border/20',
-                      isActive('/dashboard') 
-                        ? 'text-foreground' 
-                        : 'text-foreground hover:bg-secondary/30'
+                      'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium transition-colors',
+                      isActive('/dashboard')
+                        ? 'bg-amber-50 text-amber-700'
+                        : 'text-gray-700 hover:bg-gray-50'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
-                    <BarChart3 className="h-6 w-6" />
+                    <div className={cn(
+                      'flex h-8 w-8 shrink-0 items-center justify-center rounded-xl',
+                      isActive('/dashboard') ? 'bg-amber-100 text-amber-600' : 'bg-gray-100 text-gray-500'
+                    )}>
+                      <BarChart3 className="h-4 w-4" />
+                    </div>
                     {t('nav.dashboard')}
                   </Link>
-                  
-                  {/* Section separator */}
-                  <div className="h-2 bg-muted/30" />
-                  
-                  {/* Language & Region - Opens dialog */}
-                  <div className="border-b border-border/20">
+
+                  {/* Divider */}
+                  <div className="mx-6 my-2 border-t border-black/[0.06]" />
+
+                  {/* Language & Region */}
+                  <div className="mx-2">
                     <InternationalSettings trigger="menu-item" onOpenChange={() => setMobileMenuOpen(false)} />
                   </div>
-                  
-                  {/* Section separator */}
-                  <div className="h-2 bg-muted/30" />
-                  
+
+                  {/* Divider */}
+                  <div className="mx-6 my-2 border-t border-black/[0.06]" />
+
                   <Link
                     href="/create-listing"
-                    className="flex items-center gap-4 px-6 py-4 text-base font-semibold text-accent touch-safe-button border-b border-border/20"
+                    className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-sm shadow-blue-500/25"
                     onClick={() => setMobileMenuOpen(false)}
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
-                    <PlusCircle className="h-6 w-6" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/20">
+                      <PlusCircle className="h-4 w-4" />
+                    </div>
                     {t('common.createListing')}
                   </Link>
-                  
+
                   <button
                     onClick={() => {
                       signOut();
                       setMobileMenuOpen(false);
                     }}
-                    className="flex items-center gap-4 px-6 py-4 text-base font-medium text-muted-foreground hover:bg-secondary/30 touch-safe-button w-full text-left"
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
+                    className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 mt-1 text-sm font-medium text-red-600 hover:bg-red-50 w-full text-left"
                   >
                     {t('common.signOut')}
                   </button>
                 </>
               ) : (
                 <>
-                  {/* Section separator */}
-                  <div className="h-2 bg-muted/30" />
-                  
+                  {/* Divider */}
+                  <div className="mx-6 my-2 border-t border-black/[0.06]" />
+
                   {/* Language & Region for non-logged in users */}
-                  <div className="border-b border-border/20">
+                  <div className="mx-2">
                     <InternationalSettings trigger="menu-item" onOpenChange={() => setMobileMenuOpen(false)} />
                   </div>
-                  
-                  {/* Section separator */}
-                  <div className="h-2 bg-muted/30" />
-                  
+
+                  {/* Divider */}
+                  <div className="mx-6 my-2 border-t border-black/[0.06]" />
+
                   <Link
                     href="/auth"
-                    className="flex items-center gap-4 px-6 py-4 text-base font-medium transition-colors touch-safe-button border-b border-border/20 text-foreground hover:bg-secondary/30"
+                    className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                     onClick={() => setMobileMenuOpen(false)}
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
-                    <User className="h-6 w-6" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gray-100 text-gray-500">
+                      <User className="h-4 w-4" />
+                    </div>
                     {t('common.logIn')}
                   </Link>
                   <Link
                     href="/auth?mode=signup"
-                    className="flex items-center gap-4 px-6 py-4 text-base font-semibold text-accent touch-safe-button"
+                    className="flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-500 to-indigo-600 shadow-sm shadow-blue-500/25"
                     onClick={() => setMobileMenuOpen(false)}
-                    style={{ WebkitTapHighlightColor: 'transparent' }}
                   >
-                    <PlusCircle className="h-6 w-6" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/20">
+                      <PlusCircle className="h-4 w-4" />
+                    </div>
                     {t('common.signUp')}
                   </Link>
                 </>
