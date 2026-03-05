@@ -464,20 +464,20 @@ export function ListingDetailContent({
 
               {/* Key specs */}
               <div className="flex flex-wrap items-center gap-2 mb-3">
-                <span className="inline-flex items-center gap-1.5 rounded-[10px] bg-gray-50 px-3 py-2 text-[13px] font-semibold text-gray-700">
-                  <BedDouble className="h-4 w-4 text-gray-400" />
+                <span className="inline-flex items-center gap-1.5 rounded-[10px] bg-blue-50 px-3 py-2 text-[13px] font-semibold text-blue-700">
+                  <BedDouble className="h-4 w-4 text-blue-400" />
                   {listing.bedrooms} {t('listing.bedrooms')}
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-[10px] bg-gray-50 px-3 py-2 text-[13px] font-semibold text-gray-700">
-                  <Bath className="h-4 w-4 text-gray-400" />
+                <span className="inline-flex items-center gap-1.5 rounded-[10px] bg-sky-50 px-3 py-2 text-[13px] font-semibold text-sky-700">
+                  <Bath className="h-4 w-4 text-sky-400" />
                   {listing.bathrooms} {t('listing.bathrooms')}
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-[10px] bg-gray-50 px-3 py-2 text-[13px] font-semibold text-gray-700">
-                  <Ruler className="h-4 w-4 text-gray-400" />
+                <span className="inline-flex items-center gap-1.5 rounded-[10px] bg-violet-50 px-3 py-2 text-[13px] font-semibold text-violet-700">
+                  <Ruler className="h-4 w-4 text-violet-400" />
                   {formatArea(listing.area_sqm)}
                 </span>
-                <span className="inline-flex items-center gap-1.5 rounded-[10px] bg-gray-50 px-3 py-2 text-[13px] font-semibold text-gray-700">
-                  <Home className="h-4 w-4 text-gray-400" />
+                <span className="inline-flex items-center gap-1.5 rounded-[10px] bg-amber-50 px-3 py-2 text-[13px] font-semibold text-amber-700">
+                  <Home className="h-4 w-4 text-amber-400" />
                   {propertyTypeLabels[listing.property_type] || listing.property_type}
                 </span>
               </div>
@@ -486,7 +486,7 @@ export function ListingDetailContent({
               {highlights.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                   {highlights.map((h) => (
-                    <span key={h} className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-500">
+                    <span key={h} className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
                       {h}
                     </span>
                   ))}
@@ -497,7 +497,7 @@ export function ListingDetailContent({
               {(listing.floor_plan_urls?.length > 0 || listing.floor_plan_url) && (
                 <button
                   onClick={() => { setScrollToFloorPlan(true); setShowGallery(true); }}
-                  className="flex items-center gap-1.5 text-sm text-gray-900 font-medium mt-3 hover:underline underline-offset-4"
+                  className="flex items-center gap-1.5 text-sm text-blue-600 font-medium mt-3 hover:underline underline-offset-4"
                 >
                   <LayoutGrid className="h-3.5 w-3.5" />
                   {t('listing.floorPlan')}
@@ -550,8 +550,8 @@ export function ListingDetailContent({
             {listing.description && (
               <div className="glass-card overflow-hidden">
                 <div className="flex items-center gap-2.5 border-b border-gray-100 px-5 py-4">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100">
-                    <FileText className="h-4 w-4 text-gray-500" />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-blue-50">
+                    <FileText className="h-4 w-4 text-blue-500" />
                   </div>
                   <h2 className="text-[15px] font-semibold tracking-tight text-gray-900">{t('listing.description')}</h2>
                 </div>
@@ -562,7 +562,7 @@ export function ListingDetailContent({
                         <p>{listing.description}</p>
                         {listing.description.length > 400 && (
                           <button
-                            className="mt-3 text-sm font-semibold text-gray-900 hover:underline underline-offset-4"
+                            className="mt-3 text-sm font-semibold text-blue-600 hover:underline underline-offset-4"
                             onClick={() => setShowFullDescription(false)}
                           >
                             Show less
@@ -573,7 +573,7 @@ export function ListingDetailContent({
                       <>
                         <p>{listing.description.slice(0, 400)}...</p>
                         <button
-                          className="mt-3 text-sm font-semibold text-gray-900 hover:underline underline-offset-4"
+                          className="mt-3 text-sm font-semibold text-blue-600 hover:underline underline-offset-4"
                           onClick={() => setShowFullDescription(true)}
                         >
                           Read more
@@ -589,8 +589,8 @@ export function ListingDetailContent({
             {detailRows.length > 0 && (
               <div className="glass-card overflow-hidden">
                 <div className="flex items-center gap-2.5 border-b border-gray-100 px-5 py-4">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100">
-                    <Info className="h-4 w-4 text-gray-500" />
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-violet-50">
+                    <Info className="h-4 w-4 text-violet-500" />
                   </div>
                   <h2 className="text-[15px] font-semibold tracking-tight text-gray-900">Property Details</h2>
                 </div>
@@ -615,8 +615,8 @@ export function ListingDetailContent({
                   onClick={() => setShowFeatures(!showFeatures)}
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100">
-                      <Sparkles className="h-4 w-4 text-gray-500" />
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-amber-50">
+                      <Sparkles className="h-4 w-4 text-amber-500" />
                     </div>
                     <div className="text-left">
                       <h2 className="text-[15px] font-semibold tracking-tight text-gray-900">
@@ -641,8 +641,8 @@ export function ListingDetailContent({
             {/* Location card */}
             <div className="glass-card overflow-hidden">
               <div className="flex items-center gap-2.5 border-b border-gray-100 px-5 py-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100">
-                  <MapPin className="h-4 w-4 text-gray-500" />
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-emerald-50">
+                  <MapPin className="h-4 w-4 text-emerald-500" />
                 </div>
                 <div>
                   <h2 className="text-[15px] font-semibold tracking-tight text-gray-900">{t('listing.location')}</h2>

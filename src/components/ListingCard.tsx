@@ -191,7 +191,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
         {/* NEW badge for listings less than 3 days old */}
         {isNew && !isSoldOrRented && (
           <div className="absolute top-3 left-3 z-20">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-sm text-gray-600 text-[10px] font-bold uppercase tracking-wider shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider shadow-[0_2px_8px_rgba(16,185,129,0.3)]">
               New
             </span>
           </div>
@@ -322,10 +322,19 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           <div className="flex flex-wrap gap-1.5 mb-3">
             {displayBadges.map((badge, index) => {
               const Icon = badge.icon;
+              const colorMap: Record<string, string> = {
+                blue: 'bg-blue-50 text-blue-600',
+                indigo: 'bg-indigo-50 text-indigo-600',
+                green: 'bg-emerald-50 text-emerald-600',
+                sky: 'bg-sky-50 text-sky-600',
+              };
               return (
                 <span
                   key={index}
-                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-gray-50 text-gray-500"
+                  className={cn(
+                    "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide",
+                    colorMap[badge.color] || 'bg-gray-50 text-gray-500'
+                  )}
                 >
                   <Icon className="h-3 w-3" />
                   {badge.label}

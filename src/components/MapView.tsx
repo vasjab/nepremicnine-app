@@ -711,7 +711,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
       {/* Reset View Button */}
       <button
         onClick={handleResetView}
-        className="absolute top-3 right-14 z-10 flex items-center gap-1.5 px-3 py-[7px] bg-white/88 backdrop-blur-[20px] rounded-[11px] shadow-[0_2px_12px_-2px_hsl(0_0%_0%/0.12),0_0_0_0.5px_hsl(0_0%_0%/0.06),inset_0_0.5px_0_hsl(0_0%_100%/0.5)] text-[13px] font-medium text-gray-500 hover:text-gray-900 active:scale-[0.97] transition-all duration-200"
+        className="absolute top-3 right-14 z-10 flex items-center gap-1.5 px-3 py-[7px] bg-white/88 backdrop-blur-[20px] rounded-[11px] shadow-[0_2px_12px_-2px_hsl(0_0%_0%/0.12),0_0_0_0.5px_hsl(0_0%_0%/0.06),inset_0_0.5px_0_hsl(0_0%_100%/0.5)] text-[13px] font-medium text-gray-500 hover:text-gray-700 transition-all duration-200"
         title={t('map.resetView')}
       >
         <Maximize2 className="h-[14px] w-[14px]" />

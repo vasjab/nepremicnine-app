@@ -81,9 +81,9 @@ export function InternationalSettings({ trigger = 'icon', onOpenChange }: Intern
                   key={lang.code}
                   onClick={() => setLanguage(lang.code as Language)}
                   className={cn(
-                    "flex items-center gap-3 px-3.5 py-3 rounded-[12px] text-left transition-all duration-150 active:scale-[0.97]",
+                    "flex items-center gap-3 px-3.5 py-3 rounded-[12px] text-left transition-all duration-150",
                     language === lang.code
-                      ? "bg-gray-100 text-gray-900 ring-[1.5px] ring-gray-900 shadow-sm"
+                      ? "bg-blue-50 text-blue-700 ring-[1.5px] ring-blue-500 shadow-sm"
                       : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                   )}
                 >
@@ -105,9 +105,9 @@ export function InternationalSettings({ trigger = 'icon', onOpenChange }: Intern
                   key={curr}
                   onClick={() => setCurrency(curr as Currency)}
                   className={cn(
-                    "flex items-center gap-3 px-3.5 py-3 rounded-[12px] text-left transition-all duration-150 active:scale-[0.97]",
+                    "flex items-center gap-3 px-3.5 py-3 rounded-[12px] text-left transition-all duration-150",
                     currency === curr
-                      ? "bg-gray-100 text-gray-900 ring-[1.5px] ring-gray-900 shadow-sm"
+                      ? "bg-blue-50 text-blue-700 ring-[1.5px] ring-blue-500 shadow-sm"
                       : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                   )}
                 >
@@ -130,9 +130,9 @@ export function InternationalSettings({ trigger = 'icon', onOpenChange }: Intern
               <button
                 onClick={() => setAreaUnit('sqm')}
                 className={cn(
-                  "flex flex-col items-center justify-center px-4 py-4 rounded-[12px] transition-all duration-150 active:scale-[0.97]",
+                  "flex flex-col items-center justify-center px-4 py-4 rounded-[12px] transition-all duration-150",
                   areaUnit === 'sqm'
-                    ? "bg-gray-900 text-white shadow-sm"
+                    ? "bg-blue-600 text-white shadow-sm"
                     : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                 )}
               >
@@ -142,9 +142,9 @@ export function InternationalSettings({ trigger = 'icon', onOpenChange }: Intern
               <button
                 onClick={() => setAreaUnit('sqft')}
                 className={cn(
-                  "flex flex-col items-center justify-center px-4 py-4 rounded-[12px] transition-all duration-150 active:scale-[0.97]",
+                  "flex flex-col items-center justify-center px-4 py-4 rounded-[12px] transition-all duration-150",
                   areaUnit === 'sqft'
-                    ? "bg-gray-900 text-white shadow-sm"
+                    ? "bg-blue-600 text-white shadow-sm"
                     : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                 )}
               >
@@ -163,9 +163,9 @@ export function InternationalSettings({ trigger = 'icon', onOpenChange }: Intern
               <button
                 onClick={() => setRentPeriod('month')}
                 className={cn(
-                  "flex flex-col items-center justify-center px-3 py-3 rounded-[12px] transition-all duration-150 active:scale-[0.97]",
+                  "flex flex-col items-center justify-center px-3 py-3 rounded-[12px] transition-all duration-150",
                   rentPeriod === 'month'
-                    ? "bg-gray-900 text-white shadow-sm"
+                    ? "bg-blue-600 text-white shadow-sm"
                     : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                 )}
               >
@@ -174,9 +174,9 @@ export function InternationalSettings({ trigger = 'icon', onOpenChange }: Intern
               <button
                 onClick={() => setRentPeriod('week')}
                 className={cn(
-                  "flex flex-col items-center justify-center px-3 py-3 rounded-[12px] transition-all duration-150 active:scale-[0.97]",
+                  "flex flex-col items-center justify-center px-3 py-3 rounded-[12px] transition-all duration-150",
                   rentPeriod === 'week'
-                    ? "bg-gray-900 text-white shadow-sm"
+                    ? "bg-blue-600 text-white shadow-sm"
                     : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                 )}
               >
@@ -185,9 +185,9 @@ export function InternationalSettings({ trigger = 'icon', onOpenChange }: Intern
               <button
                 onClick={() => setRentPeriod('year')}
                 className={cn(
-                  "flex flex-col items-center justify-center px-3 py-3 rounded-[12px] transition-all duration-150 active:scale-[0.97]",
+                  "flex flex-col items-center justify-center px-3 py-3 rounded-[12px] transition-all duration-150",
                   rentPeriod === 'year'
-                    ? "bg-gray-900 text-white shadow-sm"
+                    ? "bg-blue-600 text-white shadow-sm"
                     : "bg-gray-50 text-gray-700 hover:bg-gray-100"
                 )}
               >

@@ -130,7 +130,7 @@ function FilterSection({
             {Icon && <Icon className="h-[17px] w-[17px] text-gray-400 group-hover:text-gray-500 transition-colors" />}
             <span className="text-[13px] font-medium text-gray-600 group-hover:text-gray-900 transition-colors">{title}</span>
             {activeCount > 0 && (
-              <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gray-900 px-1 text-[10px] font-bold text-white leading-none">
+              <span className="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-blue-500 px-1 text-[10px] font-bold text-white leading-none">
                 {activeCount}
               </span>
             )}
@@ -171,7 +171,7 @@ function ToggleFilter({
     <div
       className={cn(
         "flex items-center justify-between min-h-[44px] px-3.5 py-2.5 rounded-xl transition-all cursor-pointer",
-        checked ? "bg-gray-50 ring-1 ring-gray-150" : "hover:bg-gray-50/60"
+        checked ? "bg-emerald-50/60 ring-1 ring-emerald-200/60" : "hover:bg-gray-50/60"
       )}
       onClick={() => handleChange(!checked)}
     >
@@ -244,13 +244,13 @@ function FilterContent({
                 type="button"
                 onClick={() => handleListingTypeChange(isSelected ? 'all' : type.value)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-3 rounded-xl text-[13px] font-medium transition-all duration-200 border cursor-pointer active:scale-[0.97]",
+                  "flex items-center gap-2 px-4 py-3 rounded-xl text-[13px] font-medium transition-all duration-200 border cursor-pointer",
                   isSelected
-                    ? 'bg-gray-900 text-white border-gray-900 shadow-sm'
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                     : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                 )}
               >
-                <Icon className={cn("h-4 w-4", isSelected ? "text-white/80" : "text-gray-400")} />
+                <Icon className={cn("h-4 w-4", isSelected ? "text-white" : "text-gray-400")} />
                 {type.label}
               </button>
             );
@@ -271,13 +271,13 @@ function FilterContent({
                 type="button"
                 onClick={() => handlePropertyTypeToggle(type.value)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-3 rounded-xl text-[13px] font-medium transition-all duration-200 border cursor-pointer active:scale-[0.97]",
+                  "flex items-center gap-2 px-4 py-3 rounded-xl text-[13px] font-medium transition-all duration-200 border cursor-pointer",
                   isSelected
-                    ? 'bg-gray-900 text-white border-gray-900 shadow-sm'
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
                     : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                 )}
               >
-                <Icon className={cn("h-4 w-4", isSelected ? "text-white/80" : "text-gray-400")} />
+                <Icon className={cn("h-4 w-4", isSelected ? "text-white" : "text-gray-400")} />
                 {type.label}
               </button>
             );

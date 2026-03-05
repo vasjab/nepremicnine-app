@@ -29,11 +29,12 @@ const TabsTrigger = React.forwardRef<
     className={cn(
       "inline-flex items-center justify-center whitespace-nowrap rounded-[10px] px-4 py-2.5 text-[13px] font-semibold tracking-[-0.01em]",
       "transition-all duration-200 ease-out",
-      "text-gray-500 hover:text-gray-900 hover:bg-white/60",
-      "data-[state=active]:bg-white data-[state=active]:text-gray-900 data-[state=active]:shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)]",
+      "text-gray-500 hover:text-blue-700 hover:bg-blue-50/50",
+      "data-[state=active]:bg-white data-[state=active]:text-gray-900",
+      "data-[state=active]:shadow-[0_1px_3px_rgba(0,0,0,0.08),0_2px_8px_hsl(215_50%_50%/0.06),0_0_0_0.5px_hsl(215_30%_70%/0.3)]",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-1",
       "disabled:pointer-events-none disabled:opacity-50",
-      "min-h-[38px] touch-action-manipulation cursor-pointer select-none active:scale-[0.97]",
+      "min-h-[38px] touch-action-manipulation cursor-pointer select-none",
       className,
     )}
     style={{ WebkitTapHighlightColor: 'transparent' }}

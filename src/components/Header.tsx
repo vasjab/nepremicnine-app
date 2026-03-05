@@ -45,54 +45,55 @@ export function Header() {
             </span>
           </Link>
 
-          {/* Desktop Navigation - Apple-style segmented control */}
-          <nav className="hidden md:flex items-center">
-            <div className="segmented-control">
-              <Link
-                href="/"
-                className={cn(
-                  'segmented-item group',
-                  isActive('/') && 'is-active'
-                )}
-              >
-                {isActive('/') && <span className="segmented-item-bg" />}
-                <Search className={cn(
-                  "relative z-10 h-[14px] w-[14px] transition-colors duration-200",
-                  isActive('/') ? "text-blue-600" : "text-gray-400 group-hover:text-blue-500"
-                )} />
-                <span className="relative z-10">{t('nav.findHome')}</span>
-              </Link>
-              <Link
-                href="/sold-rented"
-                className={cn(
-                  'segmented-item group',
-                  isActive('/sold-rented') && 'is-active'
-                )}
-              >
-                {isActive('/sold-rented') && <span className="segmented-item-bg" />}
-                <History className={cn(
-                  "relative z-10 h-[14px] w-[14px] transition-colors duration-200",
-                  isActive('/sold-rented') ? "text-amber-600" : "text-gray-400 group-hover:text-amber-500"
-                )} />
-                <span className="relative z-10">{t('soldRented.recentlySold')}</span>
-              </Link>
-              {user && (
-                <Link
-                  href="/saved"
-                  className={cn(
-                    'segmented-item group',
-                    isActive('/saved') && 'is-active'
-                  )}
-                >
-                  {isActive('/saved') && <span className="segmented-item-bg" />}
-                  <Heart className={cn(
-                    "relative z-10 h-[14px] w-[14px] transition-colors duration-200",
-                    isActive('/saved') ? "text-rose-500" : "text-gray-400 group-hover:text-rose-400"
-                  )} />
-                  <span className="relative z-10">{t('common.savedListings')}</span>
-                </Link>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-1">
+            <Link
+              href="/"
+              className={cn(
+                'nav-pill nav-blue group',
+                isActive('/') && 'is-active'
               )}
-            </div>
+            >
+              <span className={cn(
+                "flex h-6 w-6 items-center justify-center rounded-lg transition-colors duration-200",
+                isActive('/') ? "bg-blue-100 text-blue-600" : "text-gray-400 group-hover:text-blue-500"
+              )}>
+                <Search className="h-3.5 w-3.5" />
+              </span>
+              <span>{t('nav.findHome')}</span>
+            </Link>
+            <Link
+              href="/sold-rented"
+              className={cn(
+                'nav-pill nav-amber group',
+                isActive('/sold-rented') && 'is-active'
+              )}
+            >
+              <span className={cn(
+                "flex h-6 w-6 items-center justify-center rounded-lg transition-colors duration-200",
+                isActive('/sold-rented') ? "bg-amber-100 text-amber-600" : "text-gray-400 group-hover:text-amber-500"
+              )}>
+                <History className="h-3.5 w-3.5" />
+              </span>
+              <span>{t('soldRented.recentlySold')}</span>
+            </Link>
+            {user && (
+              <Link
+                href="/saved"
+                className={cn(
+                  'nav-pill nav-rose group',
+                  isActive('/saved') && 'is-active'
+                )}
+              >
+                <span className={cn(
+                  "flex h-6 w-6 items-center justify-center rounded-lg transition-colors duration-200",
+                  isActive('/saved') ? "bg-rose-100 text-rose-500" : "text-gray-400 group-hover:text-rose-400"
+                )}>
+                  <Heart className="h-3.5 w-3.5" />
+                </span>
+                <span>{t('common.savedListings')}</span>
+              </Link>
+            )}
           </nav>
 
           {/* Mobile: Center nav icons */}
@@ -149,7 +150,7 @@ export function Header() {
                 <Link href="/create-listing" className="hidden sm:block">
                   <Button
                     variant="gradient"
-                    className="gap-2 rounded-xl h-10 px-4.5 text-[13px] font-semibold ml-0.5"
+                    className="gap-2 rounded-xl h-10 px-5 text-[13px] font-semibold ml-0.5"
                   >
                     <PlusCircle className="h-4 w-4" />
                     {t('common.createListing')}
@@ -171,17 +172,17 @@ export function Header() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-64 py-1.5 rounded-2xl border-gray-200/60 bg-white">
-                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-100 rounded-xl mx-1 cursor-pointer">
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-sky-50 rounded-xl mx-1 cursor-pointer">
                         <Link href="/profile">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-600 mr-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-sky-50 text-sky-500 mr-3">
                             <User className="h-4 w-4" />
                           </div>
                           {t('common.profile')}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-100 rounded-xl mx-1 cursor-pointer">
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-violet-50 rounded-xl mx-1 cursor-pointer">
                         <Link href="/messages">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-500 mr-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-violet-50 text-violet-500 mr-3">
                             <MessageCircle className="h-4 w-4" />
                           </div>
                           Messages
@@ -193,25 +194,25 @@ export function Header() {
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator className="my-1" />
-                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-100 rounded-xl mx-1 cursor-pointer">
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-rose-50 rounded-xl mx-1 cursor-pointer">
                         <Link href="/saved">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-500 mr-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-rose-50 text-rose-400 mr-3">
                             <Heart className="h-4 w-4" />
                           </div>
                           {t('common.savedListings')}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-100 rounded-xl mx-1 cursor-pointer">
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-emerald-50 rounded-xl mx-1 cursor-pointer">
                         <Link href="/my-listings">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-500 mr-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-emerald-50 text-emerald-500 mr-3">
                             <Home className="h-4 w-4" />
                           </div>
                           {t('common.myListings')}
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-gray-100 rounded-xl mx-1 cursor-pointer">
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-indigo-50 rounded-xl mx-1 cursor-pointer">
                         <Link href="/dashboard">
-                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-500 mr-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-indigo-50 text-indigo-500 mr-3">
                             <BarChart3 className="h-4 w-4" />
                           </div>
                           {t('nav.dashboard')}
@@ -273,14 +274,14 @@ export function Header() {
                 className={cn(
                   'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-[15px] font-medium transition-colors',
                   isActive('/sold-rented')
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'text-gray-700 hover:bg-gray-100'
+                    ? 'bg-amber-50 text-amber-900'
+                    : 'text-gray-700 hover:bg-amber-50/60'
                 )}
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <div className={cn(
                   'flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]',
-                  isActive('/sold-rented') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
+                  isActive('/sold-rented') ? 'bg-amber-100 text-amber-600' : 'bg-amber-50 text-amber-500'
                 )}>
                   <History className="h-4 w-4" />
                 </div>
@@ -294,14 +295,14 @@ export function Header() {
                     className={cn(
                       'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-[15px] font-medium transition-colors',
                       isActive('/messages')
-                        ? 'bg-gray-100 text-gray-900'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-violet-50 text-violet-900'
+                        : 'text-gray-700 hover:bg-violet-50/60'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className={cn(
                       'flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]',
-                      isActive('/messages') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
+                      isActive('/messages') ? 'bg-violet-100 text-violet-600' : 'bg-violet-50 text-violet-500'
                     )}>
                       <MessageCircle className="h-4 w-4" />
                     </div>
@@ -317,14 +318,14 @@ export function Header() {
                     className={cn(
                       'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-[15px] font-medium transition-colors',
                       isActive('/saved')
-                        ? 'bg-gray-100 text-gray-900'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-rose-50 text-rose-900'
+                        : 'text-gray-700 hover:bg-rose-50/60'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className={cn(
                       'flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]',
-                      isActive('/saved') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
+                      isActive('/saved') ? 'bg-rose-100 text-rose-500' : 'bg-rose-50 text-rose-400'
                     )}>
                       <Heart className="h-4 w-4" />
                     </div>
@@ -335,14 +336,14 @@ export function Header() {
                     className={cn(
                       'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-[15px] font-medium transition-colors',
                       isActive('/my-listings')
-                        ? 'bg-gray-100 text-gray-900'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-emerald-50 text-emerald-900'
+                        : 'text-gray-700 hover:bg-emerald-50/60'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className={cn(
                       'flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]',
-                      isActive('/my-listings') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
+                      isActive('/my-listings') ? 'bg-emerald-100 text-emerald-600' : 'bg-emerald-50 text-emerald-500'
                     )}>
                       <Home className="h-4 w-4" />
                     </div>
@@ -353,14 +354,14 @@ export function Header() {
                     className={cn(
                       'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-[15px] font-medium transition-colors',
                       isActive('/profile')
-                        ? 'bg-gray-100 text-gray-900'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-sky-50 text-sky-900'
+                        : 'text-gray-700 hover:bg-sky-50/60'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className={cn(
                       'flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]',
-                      isActive('/profile') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
+                      isActive('/profile') ? 'bg-sky-100 text-sky-600' : 'bg-sky-50 text-sky-500'
                     )}>
                       <User className="h-4 w-4" />
                     </div>
@@ -371,14 +372,14 @@ export function Header() {
                     className={cn(
                       'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-[15px] font-medium transition-colors',
                       isActive('/dashboard')
-                        ? 'bg-gray-100 text-gray-900'
-                        : 'text-gray-700 hover:bg-gray-100'
+                        ? 'bg-indigo-50 text-indigo-900'
+                        : 'text-gray-700 hover:bg-indigo-50/60'
                     )}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     <div className={cn(
                       'flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]',
-                      isActive('/dashboard') ? 'bg-slate-100 text-slate-600' : 'bg-gray-100 text-gray-500'
+                      isActive('/dashboard') ? 'bg-indigo-100 text-indigo-600' : 'bg-indigo-50 text-indigo-500'
                     )}>
                       <BarChart3 className="h-4 w-4" />
                     </div>

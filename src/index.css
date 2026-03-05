@@ -178,11 +178,10 @@
   }
 
   .listing-card:hover {
-    border-color: hsl(var(--border));
-    transform: translateY(-1px);
+    border-color: hsl(220 20% 85%);
     box-shadow:
-      0 2px 8px hsl(var(--glass-shadow)),
-      0 6px 20px -6px hsl(var(--glass-shadow));
+      0 4px 12px hsl(220 25% 10% / 0.08),
+      0 8px 30px -8px hsl(220 25% 10% / 0.12);
   }
 
   /* ─── Touch Targets ────────────────────────────── */
@@ -207,7 +206,6 @@
   }
 
   .filter-pill:active {
-    transform: scale(0.96);
     box-shadow: 0 0 0 hsl(0 0% 0% / 0);
   }
 
@@ -299,6 +297,54 @@
     border: 1px solid hsl(0 0% 100% / 0.08);
   }
 
+  /* ─── Nav Pills ─────────────────────────────── */
+  .nav-pill {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: hsl(0 0% 45%);
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    text-decoration: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nav-pill.nav-blue:hover:not(.is-active) {
+    background: hsl(215 60% 55% / 0.07);
+    color: hsl(215 35% 25%);
+  }
+
+  .nav-pill.nav-blue.is-active {
+    background: hsl(215 80% 55% / 0.1);
+    color: hsl(215 50% 28%);
+  }
+
+  .nav-pill.nav-amber:hover:not(.is-active) {
+    background: hsl(38 70% 50% / 0.07);
+    color: hsl(38 45% 25%);
+  }
+
+  .nav-pill.nav-amber.is-active {
+    background: hsl(38 85% 50% / 0.1);
+    color: hsl(38 55% 25%);
+  }
+
+  .nav-pill.nav-rose:hover:not(.is-active) {
+    background: hsl(350 65% 55% / 0.07);
+    color: hsl(350 35% 28%);
+  }
+
+  .nav-pill.nav-rose.is-active {
+    background: hsl(350 80% 55% / 0.1);
+    color: hsl(350 50% 28%);
+  }
+
   /* ─── Segmented Control (Apple-style) ────────── */
   .segmented-control {
     display: flex;
@@ -348,7 +394,7 @@
   }
 
   .segmented-item:active {
-    transform: scale(0.97);
+    /* no transform — subtle scale feels buggy */
   }
 
   .segmented-item.is-active {
@@ -591,7 +637,7 @@
   .stagger-6 { animation-delay: 300ms; }
 
   .press-effect {
-    @apply transition-transform active:scale-[0.97];
+    @apply transition-transform;
     transition-duration: 150ms;
   }
 

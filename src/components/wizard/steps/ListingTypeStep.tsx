@@ -43,17 +43,16 @@ export function ListingTypeStep({
               onClick={() => onListingTypeChange(value)}
               className={cn(
                 "group relative flex flex-col items-center justify-center p-7 md:p-9 rounded-2xl border transition-all duration-200",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2",
-                "active:scale-[0.98]",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
                 isSelected
-                  ? "border-gray-900 bg-gray-50 shadow-[0_1px_4px_hsl(0_0%_0%/0.08),0_0_0_1px_hsl(0_0%_0%/0.12)]"
+                  ? "border-blue-500 bg-blue-50/50 shadow-[0_1px_4px_hsl(217_91%_60%/0.12),0_0_0_1px_hsl(217_91%_60%/0.2)]"
                   : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-[0_2px_8px_hsl(0_0%_0%/0.06)]"
               )}
             >
               <div className={cn(
                 "w-14 h-14 md:w-16 md:h-16 rounded-[14px] flex items-center justify-center mb-4 transition-all duration-200",
                 isSelected
-                  ? "bg-gray-900 text-white shadow-sm"
+                  ? "bg-blue-600 text-white shadow-sm"
                   : "bg-gray-100 text-gray-500 group-hover:bg-gray-150 group-hover:text-gray-600"
               )}>
                 <Icon className="h-6 w-6 md:h-7 md:w-7" strokeWidth={1.75} />
@@ -69,7 +68,7 @@ export function ListingTypeStep({
               </span>
 
               {isSelected && (
-                <div className="absolute top-3 right-3 w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center shadow-sm">
+                <div className="absolute top-3 right-3 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center shadow-sm">
                   <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
                 </div>
               )}
