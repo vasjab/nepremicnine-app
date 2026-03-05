@@ -1,21 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { getAdminToken } from '@/lib/admin-auth';
 
 const COOKIE_NAME = 'admin_session';
-
-function getAdminToken(): string {
-  const username = process.env.ADMIN_USERNAME;
-  const password = process.env.ADMIN_PASSWORD;
-  if (!username || !password) return '';
-  // Simple deterministic token from credentials
-  const encoder = new TextEncoder();
-  const data = encoder.encode(`${username}:${password}:hemma-admin-salt-2024`);
-  let hash = 0;
-  for (const byte of data) {
-    hash = ((hash << 5) - hash + byte) | 0;
-  }
-  return `admin_${Math.abs(hash).toString(36)}`;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,7 +26,7 @@ export async function POST(request: NextRequest) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       path: '/',
-      maxAge: 60 * 60 * 24, // 24 hours
+      maxAge: 60 * 60 * 24,
     });
 
     return NextResponse.json({ ok: true });

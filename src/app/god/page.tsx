@@ -4,7 +4,8 @@ import { useState, useEffect, useMemo } from 'react';
 import {
   Users, Home, Eye, MessageSquare, FileText, CheckCircle, Clock,
   LogOut, Lock, Search, ChevronDown, ChevronUp, ExternalLink,
-  TrendingUp, Flame, BarChart3, ArrowUpDown
+  TrendingUp, Flame, BarChart3, ArrowUpDown, Power, Trash2, Ban,
+  ShieldOff, Pencil, Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -15,9 +16,12 @@ interface Profile {
   avatar_url: string | null;
   phone: string | null;
   bio: string | null;
+  email: string | null;
   created_at: string;
   listing_count: number;
   active_listing_count: number;
+  is_banned: boolean;
+  last_sign_in: string | null;
 }
 
 interface AdminListing {
@@ -71,6 +75,8 @@ export default function AdminPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [listingSort, setListingSort] = useState<{ field: SortField; dir: SortDir }>({ field: 'created_at', dir: 'desc' });
   const [expandedUser, setExpandedUser] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{ type: string; id: string; label: string } | null>(null);
 
   useEffect(() => {
     fetch('/api/admin/auth')
@@ -121,6 +127,37 @@ export default function AdminPage() {
     await fetch('/api/admin/auth', { method: 'DELETE' });
     setIsAuthenticated(false);
     setData(null);
+  };
+
+  const refreshData = () => {
+    setDataLoading(true);
+    fetch('/api/admin/data')
+      .then((res) => res.json())
+      .then((d) => { setData(d); setDataLoading(false); })
+      .catch(() => setDataLoading(false));
+  };
+
+  const runAction = async (action: string, params: Record<string, any>) => {
+    const key = `${action}_${params.listing_id || params.user_id}`;
+    setActionLoading(key);
+    try {
+      const res = await fetch('/api/admin/actions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, ...params }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(`Error: ${err.error || 'Action failed'}`);
+      } else {
+        refreshData();
+      }
+    } catch {
+      alert('Network error');
+    } finally {
+      setActionLoading(null);
+      setConfirmAction(null);
+    }
   };
 
   const toggleListingSort = (field: SortField) => {
@@ -406,9 +443,14 @@ export default function AdminPage() {
                               {user.full_name?.charAt(0)?.toUpperCase() || '?'}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate">{user.full_name || 'No name'}</p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-sm font-medium text-foreground truncate">{user.full_name || 'No name'}</p>
+                                {user.is_banned && (
+                                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-medium bg-red-50 text-red-600 ring-1 ring-red-200/60">Banned</span>
+                                )}
+                              </div>
                               <p className="text-xs text-muted-foreground truncate">
-                                {user.phone || 'No phone'} &middot; Joined {new Date(user.created_at).toLocaleDateString()}
+                                {user.email || user.phone || 'No contact'} &middot; Joined {new Date(user.created_at).toLocaleDateString()}
                               </p>
                             </div>
                             <div className="flex items-center gap-3 shrink-0">
@@ -419,6 +461,36 @@ export default function AdminPage() {
                               {isExpanded ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
                             </div>
                           </button>
+
+                          {/* User action buttons */}
+                          {isExpanded && (
+                            <div className="flex items-center gap-2 px-4 sm:px-5 pl-8 sm:pl-[68px] py-2.5 border-t border-gray-100 bg-gray-50/30">
+                              {user.is_banned ? (
+                                <ActionBtn
+                                  icon={ShieldOff}
+                                  label="Unban"
+                                  loading={actionLoading === `unban_user_${user.user_id}`}
+                                  onClick={() => runAction('unban_user', { user_id: user.user_id })}
+                                  variant="green"
+                                />
+                              ) : (
+                                <ActionBtn
+                                  icon={Ban}
+                                  label="Ban"
+                                  loading={actionLoading === `ban_user_${user.user_id}`}
+                                  onClick={() => setConfirmAction({ type: 'ban_user', id: user.user_id, label: `Ban ${user.full_name || 'this user'}? Their listings will be deactivated.` })}
+                                  variant="amber"
+                                />
+                              )}
+                              <ActionBtn
+                                icon={Trash2}
+                                label="Delete"
+                                loading={actionLoading === `delete_user_${user.user_id}`}
+                                onClick={() => setConfirmAction({ type: 'delete_user', id: user.user_id, label: `Permanently delete ${user.full_name || 'this user'} and all their data? This cannot be undone.` })}
+                                variant="red"
+                              />
+                            </div>
+                          )}
 
                           {isExpanded && userListings.length > 0 && (
                             <div className="border-t border-gray-100 bg-gray-50/30">
@@ -480,13 +552,13 @@ export default function AdminPage() {
 
                 <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white">
                   {/* Desktop sort headers */}
-                  <div className="hidden sm:grid grid-cols-[1fr_90px_70px_70px_80px_24px] gap-2 px-5 py-2.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
+                  <div className="hidden sm:grid grid-cols-[1fr_90px_70px_70px_80px_110px] gap-2 px-5 py-2.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
                     <SortHeader label="Listing" field="title" current={listingSort} onSort={toggleListingSort} />
                     <SortHeader label="Price" field="price" current={listingSort} onSort={toggleListingSort} className="justify-end" />
                     <SortHeader label="Views" field="view_count" current={listingSort} onSort={toggleListingSort} className="justify-end" />
                     <SortHeader label="Msgs" field="inquiry_count" current={listingSort} onSort={toggleListingSort} className="justify-end" />
                     <SortHeader label="Date" field="created_at" current={listingSort} onSort={toggleListingSort} className="justify-end" />
-                    <div />
+                    <span className="text-right">Actions</span>
                   </div>
 
                   {/* Mobile sort */}
@@ -512,7 +584,7 @@ export default function AdminPage() {
                       return (
                         <div key={listing.id} className="px-4 sm:px-5 py-3 hover:bg-gray-50/50 transition-colors">
                           {/* Desktop */}
-                          <div className="hidden sm:grid grid-cols-[1fr_90px_70px_70px_80px_24px] gap-2 items-center">
+                          <div className="hidden sm:grid grid-cols-[1fr_90px_70px_70px_80px_110px] gap-2 items-center">
                             <div className="flex items-center gap-3 min-w-0">
                               {listing.images?.[0] ? (
                                 <img src={listing.images[0]} alt="" className="h-10 w-10 rounded-lg object-cover bg-gray-100 shrink-0" />
@@ -535,35 +607,77 @@ export default function AdminPage() {
                             <p className="text-sm text-muted-foreground text-right tabular-nums">{listing.view_count.toLocaleString()}</p>
                             <p className="text-sm text-muted-foreground text-right tabular-nums">{listing.inquiry_count}</p>
                             <p className="text-xs text-muted-foreground text-right">{new Date(listing.created_at).toLocaleDateString()}</p>
-                            <Link href={`/listing/${listing.id}`} target="_blank" className="text-gray-300 hover:text-gray-600 transition-colors">
-                              <ExternalLink className="h-3.5 w-3.5" />
-                            </Link>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={(e) => { e.stopPropagation(); runAction('toggle_listing', { listing_id: listing.id, is_active: !listing.is_active }); }}
+                                className={cn('p-1 rounded-md transition-colors', listing.is_active ? 'text-emerald-500 hover:bg-emerald-50' : 'text-gray-300 hover:bg-gray-100')}
+                                title={listing.is_active ? 'Deactivate' : 'Activate'}
+                              >
+                                {actionLoading === `toggle_listing_${listing.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Power className="h-3.5 w-3.5" />}
+                              </button>
+                              <Link href={`/edit-listing/${listing.id}`} target="_blank" className="p-1 rounded-md text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="Edit">
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Link>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setConfirmAction({ type: 'delete_listing', id: listing.id, label: `Delete "${listing.title || 'Untitled'}"? This cannot be undone.` }); }}
+                                className="p-1 rounded-md text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                              <Link href={`/listing/${listing.id}`} target="_blank" className="p-1 rounded-md text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="View">
+                                <ExternalLink className="h-3.5 w-3.5" />
+                              </Link>
+                            </div>
                           </div>
 
                           {/* Mobile */}
-                          <div className="sm:hidden flex items-center gap-3">
-                            {listing.images?.[0] ? (
-                              <img src={listing.images[0]} alt="" className="h-12 w-12 rounded-lg object-cover bg-gray-100 shrink-0" />
-                            ) : (
-                              <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
-                                <Home className="h-5 w-5 text-gray-300" />
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate">{listing.title || 'Untitled'}</p>
-                              <div className="flex items-center gap-1.5 mt-0.5">
-                                <StatusBadge listing={listing} />
-                                <span className="text-[10px] text-muted-foreground">{formatPrice(listing.price, listing.currency)}</span>
-                              </div>
-                              <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
-                                <span>{listing.view_count} views</span>
-                                <span>{listing.inquiry_count} msgs</span>
-                                <span>{new Date(listing.created_at).toLocaleDateString()}</span>
+                          <div className="sm:hidden">
+                            <div className="flex items-center gap-3">
+                              {listing.images?.[0] ? (
+                                <img src={listing.images[0]} alt="" className="h-12 w-12 rounded-lg object-cover bg-gray-100 shrink-0" />
+                              ) : (
+                                <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                                  <Home className="h-5 w-5 text-gray-300" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">{listing.title || 'Untitled'}</p>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <StatusBadge listing={listing} />
+                                  <span className="text-[10px] text-muted-foreground">{formatPrice(listing.price, listing.currency)}</span>
+                                </div>
+                                <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
+                                  <span>{listing.view_count} views</span>
+                                  <span>{listing.inquiry_count} msgs</span>
+                                  <span>{new Date(listing.created_at).toLocaleDateString()}</span>
+                                </div>
                               </div>
                             </div>
-                            <Link href={`/listing/${listing.id}`} target="_blank" className="text-gray-300 hover:text-gray-600 transition-colors shrink-0">
-                              <ExternalLink className="h-4 w-4" />
-                            </Link>
+                            <div className="flex items-center gap-2 mt-2 ml-[60px]">
+                              <ActionBtn
+                                icon={Power}
+                                label={listing.is_active ? 'Deactivate' : 'Activate'}
+                                loading={actionLoading === `toggle_listing_${listing.id}`}
+                                onClick={() => runAction('toggle_listing', { listing_id: listing.id, is_active: !listing.is_active })}
+                                variant={listing.is_active ? 'green' : 'default'}
+                                small
+                              />
+                              <Link href={`/edit-listing/${listing.id}`} target="_blank" className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-muted-foreground hover:bg-gray-100 transition-colors">
+                                <Pencil className="h-3 w-3" /> Edit
+                              </Link>
+                              <ActionBtn
+                                icon={Trash2}
+                                label="Delete"
+                                loading={actionLoading === `delete_listing_${listing.id}`}
+                                onClick={() => setConfirmAction({ type: 'delete_listing', id: listing.id, label: `Delete "${listing.title || 'Untitled'}"?` })}
+                                variant="red"
+                                small
+                              />
+                              <Link href={`/listing/${listing.id}`} target="_blank" className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-muted-foreground hover:bg-gray-100 transition-colors">
+                                <ExternalLink className="h-3 w-3" /> View
+                              </Link>
+                            </div>
                           </div>
                         </div>
                       );
@@ -575,6 +689,40 @@ export default function AdminPage() {
           </>
         )}
       </main>
+
+      {/* Confirmation modal */}
+      {confirmAction && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm" onClick={() => setConfirmAction(null)}>
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
+            <p className="text-sm text-foreground font-medium">{confirmAction.label}</p>
+            <div className="flex items-center gap-3 justify-end">
+              <button
+                onClick={() => setConfirmAction(null)}
+                className="px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:bg-gray-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => runAction(confirmAction.type, confirmAction.type.includes('user') ? { user_id: confirmAction.id } : { listing_id: confirmAction.id })}
+                disabled={!!actionLoading}
+                className={cn(
+                  'px-4 py-2 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50',
+                  confirmAction.type.includes('delete') ? 'bg-red-500 hover:bg-red-600' : 'bg-amber-500 hover:bg-amber-600'
+                )}
+              >
+                {actionLoading ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Processing...
+                  </span>
+                ) : (
+                  'Confirm'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -628,6 +776,32 @@ function SortHeader({ label, field, current, onSort, className }: {
     <button onClick={() => onSort(field)} className={cn('flex items-center gap-1 hover:text-foreground transition-colors', className, isActive && 'text-foreground')}>
       {label}
       {isActive && <ArrowUpDown className="h-2.5 w-2.5" />}
+    </button>
+  );
+}
+
+function ActionBtn({ icon: Icon, label, loading, onClick, variant = 'default', small = false }: {
+  icon: React.ElementType; label: string; loading: boolean; onClick: () => void;
+  variant?: 'default' | 'red' | 'amber' | 'green'; small?: boolean;
+}) {
+  const styles = {
+    default: 'text-muted-foreground hover:bg-gray-100',
+    red: 'text-red-500 hover:bg-red-50',
+    amber: 'text-amber-600 hover:bg-amber-50',
+    green: 'text-emerald-600 hover:bg-emerald-50',
+  };
+  return (
+    <button
+      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      disabled={loading}
+      className={cn(
+        'inline-flex items-center gap-1 rounded-lg font-medium transition-colors disabled:opacity-50',
+        small ? 'px-2 py-1 text-[11px]' : 'px-2.5 py-1.5 text-xs',
+        styles[variant]
+      )}
+    >
+      {loading ? <Loader2 className={cn(small ? 'h-3 w-3' : 'h-3.5 w-3.5', 'animate-spin')} /> : <Icon className={small ? 'h-3 w-3' : 'h-3.5 w-3.5'} />}
+      {label}
     </button>
   );
 }
