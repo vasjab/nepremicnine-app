@@ -83,6 +83,16 @@ export default function SoldRentedListings() {
     if (!allListings) return [];
     
     let result = allListings.filter(listing => {
+      // Map bounds filter
+      if (mapBounds) {
+        if (
+          listing.latitude < mapBounds.south ||
+          listing.latitude > mapBounds.north ||
+          listing.longitude < mapBounds.west ||
+          listing.longitude > mapBounds.east
+        ) return false;
+      }
+
       // Search filter
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
@@ -143,7 +153,7 @@ export default function SoldRentedListings() {
           return 0;
       }
     });
-  }, [allListings, sortBy, filters]);
+  }, [allListings, mapBounds, sortBy, filters]);
 
   const handleListingClick = (listing: Listing) => {
     setNavigatingId(listing.id);
@@ -313,6 +323,7 @@ export default function SoldRentedListings() {
                     onListingClick={handleMarkerClick}
                     onPopupClick={handlePopupClick}
                     onMapMove={handleMapMove}
+                    mapStateKey="hemma_map_state_sold"
                   />
                   <div className="absolute bottom-20 right-4 z-30">
                     <MobileMapFilterButton filters={filters} onFiltersChange={setFilters} />

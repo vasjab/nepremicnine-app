@@ -23,19 +23,20 @@ interface MapViewProps {
   onListingClick?: (listing: Listing) => void;
   onPopupClick?: (listing: Listing) => void;
   onMapMove?: (bounds: { north: number; south: number; east: number; west: number }) => void;
+  mapStateKey?: string;
 }
 
 const MAPBOX_TOKEN_KEY = 'hemma_mapbox_token';
-const MAP_STATE_KEY = 'hemma_map_state';
+const DEFAULT_MAP_STATE_KEY = 'hemma_map_state';
 
 interface MapState {
   center: [number, number];
   zoom: number;
 }
 
-const getStoredMapState = (): MapState | null => {
+const getStoredMapState = (key: string): MapState | null => {
   try {
-    const stored = sessionStorage.getItem(MAP_STATE_KEY);
+    const stored = sessionStorage.getItem(key);
     if (stored) {
       return JSON.parse(stored);
     }
@@ -45,15 +46,15 @@ const getStoredMapState = (): MapState | null => {
   return null;
 };
 
-const saveMapState = (center: [number, number], zoom: number) => {
+const saveMapState = (key: string, center: [number, number], zoom: number) => {
   try {
-    sessionStorage.setItem(MAP_STATE_KEY, JSON.stringify({ center, zoom }));
+    sessionStorage.setItem(key, JSON.stringify({ center, zoom }));
   } catch {
     // Ignore storage errors
   }
 };
 
-export function MapView({ listings, activeListing, onListingClick, onPopupClick, onMapMove }: MapViewProps) {
+export function MapView({ listings, activeListing, onListingClick, onPopupClick, onMapMove, mapStateKey }: MapViewProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<{ [key: string]: mapboxgl.Marker }>({});
@@ -111,7 +112,8 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
       mapboxgl.accessToken = mapboxToken;
 
       // Restore saved map state or use defaults
-      const savedState = getStoredMapState();
+      const stateKey = mapStateKey || DEFAULT_MAP_STATE_KEY;
+      const savedState = getStoredMapState(stateKey);
       const initialCenter: [number, number] = savedState?.center || [14.5058, 46.0515];
       const initialZoom = savedState?.zoom || 12;
 
@@ -166,7 +168,7 @@ export function MapView({ listings, activeListing, onListingClick, onPopupClick,
         // Save map state to sessionStorage for persistence
         const center = mapInstance.getCenter();
         const zoom = mapInstance.getZoom();
-        saveMapState([center.lng, center.lat], zoom);
+        saveMapState(stateKey, [center.lng, center.lat], zoom);
 
         if (onMapMoveRef.current) {
           const bounds = mapInstance.getBounds();
