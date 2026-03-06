@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      applications: {
+        Row: {
+          id: string
+          listing_id: string
+          renter_id: string
+          landlord_id: string
+          status: Database["public"]["Enums"]["application_status"]
+          cover_letter: string | null
+          renter_snapshot: Json | null
+          landlord_notes: string | null
+          viewing_date: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          listing_id: string
+          renter_id: string
+          landlord_id: string
+          status?: Database["public"]["Enums"]["application_status"]
+          cover_letter?: string | null
+          renter_snapshot?: Json | null
+          landlord_notes?: string | null
+          viewing_date?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          listing_id?: string
+          renter_id?: string
+          landlord_id?: string
+          status?: Database["public"]["Enums"]["application_status"]
+          cover_letter?: string | null
+          renter_snapshot?: Json | null
+          landlord_notes?: string | null
+          viewing_date?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           created_at: string
@@ -837,6 +887,7 @@ export type Database = {
       }
     }
     Enums: {
+      application_status: "applied" | "viewing_scheduled" | "under_review" | "accepted" | "declined"
       listing_type: "rent" | "sale"
       property_type:
         | "apartment"
@@ -973,6 +1024,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      application_status: ["applied", "viewing_scheduled", "under_review", "accepted", "declined"],
       listing_type: ["rent", "sale"],
       property_type: [
         "apartment",

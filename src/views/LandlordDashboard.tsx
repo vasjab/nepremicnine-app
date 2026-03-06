@@ -1,13 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { Eye, MessageSquare, Mail, Home, TrendingUp, ArrowLeft, ExternalLink, BarChart3 } from 'lucide-react';
+import { Eye, MessageSquare, Mail, Home, TrendingUp, ArrowLeft, ExternalLink, BarChart3, FileText } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLandlordAnalytics } from '@/hooks/useLandlordAnalytics';
+import { useApplicationCount } from '@/hooks/useApplications';
 import { useTranslation } from '@/hooks/useTranslation';
 import { formatDistanceToNow } from 'date-fns';
 import {
@@ -57,6 +58,7 @@ export default function LandlordDashboard() {
   const { user, loading: authLoading } = useAuth();
   const { t } = useTranslation();
   const { data: analytics, isLoading } = useLandlordAnalytics(user?.id);
+  const { data: applicationCount = 0, isLoading: appCountLoading } = useApplicationCount();
 
   if (authLoading) {
     return (
@@ -66,8 +68,8 @@ export default function LandlordDashboard() {
         <main className="container mx-auto px-4 py-8">
           <div className="space-y-6">
             <Skeleton className="h-10 w-48" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map(i => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              {[1, 2, 3, 4, 5].map(i => (
                 <Skeleton key={i} className="h-28" />
               ))}
             </div>
@@ -132,7 +134,7 @@ export default function LandlordDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
           <StatCard
             title={t('dashboard.totalViews')}
             value={analytics?.totalViews || 0}
@@ -157,6 +159,14 @@ export default function LandlordDashboard() {
             icon={Home}
             isLoading={isLoading}
           />
+          <Link href="/applications/landlord">
+            <StatCard
+              title="Pending Applications"
+              value={applicationCount}
+              icon={FileText}
+              isLoading={appCountLoading}
+            />
+          </Link>
         </div>
 
         {/* Chart */}

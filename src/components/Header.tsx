@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, PlusCircle, User, Menu, X, MessageCircle } from 'lucide-react';
+import { Home, PlusCircle, User, Menu, X, MessageCircle, FileText } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useUnreadCount } from '@/hooks/useMessaging';
+import { useApplicationCount } from '@/hooks/useApplications';
 import { Button } from '@/components/ui/button';
 import { InternationalSettings } from '@/components/InternationalSettings';
 import {
@@ -24,6 +25,7 @@ export function Header() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { data: unreadCount = 0 } = useUnreadCount(user?.id);
+  const { data: applicationCount = 0 } = useApplicationCount();
 
   const isActive = (path: string) => pathname === path;
 
@@ -187,6 +189,19 @@ export function Header() {
                           )}
                         </Link>
                       </DropdownMenuItem>
+                      <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-amber-50 rounded-xl mx-1 cursor-pointer">
+                        <Link href="/applications">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-amber-50 mr-3">
+                            <FileText className="h-4 w-4 text-amber-600" />
+                          </div>
+                          Applications
+                          {applicationCount > 0 && (
+                            <span className="ml-auto min-w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] flex items-center justify-center font-bold px-1">
+                              {applicationCount > 9 ? '9+' : applicationCount}
+                            </span>
+                          )}
+                        </Link>
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator className="my-1" />
                       <DropdownMenuItem asChild className="px-3.5 py-2.5 text-sm focus:bg-rose-50 rounded-xl mx-1 cursor-pointer">
                         <Link href="/saved">
@@ -303,6 +318,29 @@ export function Header() {
                     {unreadCount > 0 && (
                       <span className="ml-auto min-w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] flex items-center justify-center font-bold px-1">
                         {unreadCount > 9 ? '9+' : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                  <Link
+                    href="/applications"
+                    className={cn(
+                      'flex items-center gap-3.5 px-4 py-3.5 rounded-xl mx-2 text-[15px] font-medium transition-colors',
+                      isActive('/applications') || isActive('/applications/landlord')
+                        ? 'bg-amber-50 text-amber-900'
+                        : 'text-gray-700 hover:bg-amber-50/60'
+                    )}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <div className={cn(
+                      'flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]',
+                      isActive('/applications') ? 'bg-amber-100' : 'bg-amber-50'
+                    )}>
+                      <FileText className="h-4 w-4 text-amber-600" />
+                    </div>
+                    Applications
+                    {applicationCount > 0 && (
+                      <span className="ml-auto min-w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] flex items-center justify-center font-bold px-1">
+                        {applicationCount > 9 ? '9+' : applicationCount}
                       </span>
                     )}
                   </Link>

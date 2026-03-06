@@ -26,6 +26,9 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { useToast } from '@/hooks/use-toast';
 import { QuickMessageButtons } from '@/components/QuickMessageButtons';
+import { ApplicationForm } from '@/components/applications/ApplicationForm';
+import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
+import { useHasApplied } from '@/hooks/useApplications';
 
 export interface ListingDetailContentProps {
   listing: Listing;
@@ -56,8 +59,11 @@ export function ListingDetailContent({
   const getOrCreateConversation = useGetOrCreateConversation();
   const { toast } = useToast();
   const { data: listingStats } = useListingStats(listing.id, listing.created_at);
+  const { data: hasApplied } = useHasApplied(listing.id);
 
   const [showGallery, setShowGallery] = useState(false);
+  const [showApplicationForm, setShowApplicationForm] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [scrollToFloorPlan, setScrollToFloorPlan] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showFullDescription, setShowFullDescription] = useState(false);
@@ -574,6 +580,18 @@ export function ListingDetailContent({
                     className="mt-2"
                   />
                 )}
+                {!isCompleted && listing.listing_type === 'rent' && listing.user_id !== user?.id && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-2 w-full rounded-xl h-10 border-slate-900"
+                    disabled={hasApplied}
+                    onClick={() => user ? setShowApplicationForm(true) : router.push('/auth')}
+                  >
+                    <FileText className="h-3.5 w-3.5 mr-1.5" />
+                    {hasApplied ? 'Applied' : 'Apply'}
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -861,6 +879,19 @@ export function ListingDetailContent({
                     </>
                   )}
 
+                  {/* Apply button for rentals */}
+                  {!isCompleted && listing.listing_type === 'rent' && listing.user_id !== user?.id && (
+                    <Button
+                      variant="outline"
+                      className="w-full h-12 text-sm font-semibold rounded-xl border-slate-900 hover:bg-slate-50"
+                      disabled={hasApplied}
+                      onClick={() => user ? setShowApplicationForm(true) : router.push('/auth')}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      {hasApplied ? 'Application Submitted' : 'Apply for This Rental'}
+                    </Button>
+                  )}
+
                   <Button
                     variant="outline"
                     className="w-full h-12 text-sm font-semibold rounded-xl border-gray-900 hover:bg-gray-50"
@@ -937,6 +968,20 @@ export function ListingDetailContent({
         onClose={() => { setShowGallery(false); setScrollToFloorPlan(false); }}
         title={listing.title}
         initialScrollToFloorPlan={scrollToFloorPlan}
+      />
+
+      {/* Application form modal */}
+      <ApplicationForm
+        listing={listing}
+        isOpen={showApplicationForm}
+        onClose={() => setShowApplicationForm(false)}
+        onNeedOnboarding={() => { setShowApplicationForm(false); setShowOnboarding(true); }}
+      />
+
+      {/* Onboarding modal (triggered from application form) */}
+      <OnboardingModal
+        open={showOnboarding}
+        onClose={() => { setShowOnboarding(false); setShowApplicationForm(true); }}
       />
     </>
   );
