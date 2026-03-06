@@ -5,7 +5,7 @@ import {
   Users, Home, Eye, MessageSquare, FileText, CheckCircle, Clock,
   LogOut, Lock, Search, ChevronDown, ChevronUp, ExternalLink,
   TrendingUp, Flame, BarChart3, ArrowUpDown, Power, Trash2, Ban,
-  ShieldOff, Pencil, Loader2, Database
+  ShieldOff, Pencil, Loader2, Database, UserRoundCog
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -175,6 +175,25 @@ export default function AdminPage() {
     } finally {
       setActionLoading(null);
       setConfirmAction(null);
+    }
+  };
+
+  const handleImpersonate = async (userId: string) => {
+    setActionLoading(`impersonate_${userId}`);
+    try {
+      const res = await fetch('/api/admin/actions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'impersonate_user', user_id: userId }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error);
+      // Open the magic link in a new tab
+      window.open(d.url, '_blank');
+    } catch (e: any) {
+      alert('Impersonate failed: ' + e.message);
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -493,6 +512,12 @@ export default function AdminPage() {
                           {/* User action buttons */}
                           {isExpanded && (
                             <div className="flex items-center gap-2 px-4 sm:px-5 pl-8 sm:pl-[68px] py-2.5 border-t border-gray-100 bg-gray-50/30">
+                              <ActionBtn
+                                icon={UserRoundCog}
+                                label="Login as"
+                                loading={actionLoading === `impersonate_${user.user_id}`}
+                                onClick={() => handleImpersonate(user.user_id)}
+                              />
                               {user.is_banned ? (
                                 <ActionBtn
                                   icon={ShieldOff}

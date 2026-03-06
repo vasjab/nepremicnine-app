@@ -68,6 +68,29 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
+      case 'impersonate_user': {
+        const { user_id } = body;
+        // Generate a magic link for the user
+        const { data: userData, error: userErr } = await supabase.auth.admin.getUserById(user_id);
+        if (userErr || !userData?.user?.email) throw userErr || new Error('User not found');
+
+        const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
+          type: 'magiclink',
+          email: userData.user.email,
+        });
+        if (linkErr) throw linkErr;
+
+        // The hashed_token can be used to build the verify URL
+        const token = linkData.properties?.hashed_token;
+        if (!token) throw new Error('Failed to generate token');
+
+        // Build the OTP verify URL that the app can consume
+        const siteUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+        const verifyUrl = `${siteUrl}/auth/v1/verify?token=${token}&type=magiclink&redirect_to=${process.env.NEXT_PUBLIC_SITE_URL || 'https://nepremicnine-app.vercel.app'}/`;
+
+        return NextResponse.json({ ok: true, url: verifyUrl, email: userData.user.email });
+      }
+
       case 'delete_user': {
         const { user_id } = body;
         // Get user's listings
