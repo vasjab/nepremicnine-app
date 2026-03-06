@@ -279,10 +279,10 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
       <div className="px-4 pt-3.5 pb-4 antialiased">
         {/* Location */}
         <div className="flex items-center gap-1.5 mb-1.5">
-          <MapPin className="h-3 w-3 text-foreground/30 shrink-0" />
-          <span className="text-[12px] font-medium text-foreground/50 truncate tracking-wide uppercase">
+          <MapPin className="h-3.5 w-3.5 text-blue-500/70 dark:text-blue-400/70 shrink-0" />
+          <span className="text-[12px] font-semibold text-foreground/60 truncate tracking-wide uppercase">
             {listing.city}
-            <span className="mx-1.5 text-foreground/15">·</span>
+            <span className="mx-1.5 text-foreground/20">·</span>
             {propertyTypeLabel}
           </span>
         </div>
@@ -292,38 +292,38 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           {listing.address}
         </h3>
 
-        {/* Specs — clean inline row */}
-        <div className="flex items-center gap-3 text-[13px] text-foreground/60 font-medium mb-3">
+        {/* Specs — bold inline row */}
+        <div className="flex items-center gap-3.5 text-[14px] text-foreground/75 font-semibold mb-3">
           {listing.bedrooms != null && (
-            <div className="inline-flex items-center gap-1">
-              <Bed className="h-3.5 w-3.5 text-foreground/30" />
+            <div className="inline-flex items-center gap-1.5">
+              <Bed className="h-4 w-4 text-violet-500/60 dark:text-violet-400/60" />
               <span>{listing.bedrooms}</span>
             </div>
           )}
           {listing.bathrooms != null && (
-            <div className="inline-flex items-center gap-1">
-              <Bath className="h-3.5 w-3.5 text-foreground/30" />
+            <div className="inline-flex items-center gap-1.5">
+              <Bath className="h-4 w-4 text-sky-500/60 dark:text-sky-400/60" />
               <span>{listing.bathrooms}</span>
             </div>
           )}
-          <div className="inline-flex items-center gap-1">
-            <Maximize2 className="h-3.5 w-3.5 text-foreground/30" />
+          <div className="inline-flex items-center gap-1.5">
+            <Maximize2 className="h-4 w-4 text-amber-500/60 dark:text-amber-400/60" />
             <span>{formatArea(listing.area_sqm)}</span>
           </div>
         </div>
 
-        {/* Tags row — subtle pills */}
+        {/* Tags row — colored pills */}
         {(isRental && (listing.is_furnished || listing.allows_pets)) && (
           <div className="flex flex-wrap items-center gap-1.5 mb-3">
             {isRental && listing.is_furnished && (
-              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-foreground/[0.04] text-foreground/50 text-[11px] font-medium">
-                <Sofa className="h-3 w-3" />
+              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-100/80 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300 text-[11px] font-semibold">
+                <Sofa className="h-3.5 w-3.5" />
                 <span>{t('listing.furnished')}</span>
               </div>
             )}
             {isRental && listing.allows_pets && (
-              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-foreground/[0.04] text-foreground/50 text-[11px] font-medium">
-                <PawPrint className="h-3 w-3" />
+              <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100/80 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 text-[11px] font-semibold">
+                <PawPrint className="h-3.5 w-3.5" />
                 <span>{t('listing.petsAllowed')}</span>
               </div>
             )}
@@ -347,7 +347,7 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
                     {priceDiff !== 0 && `${priceDiff > 0 ? '+' : ''}${priceDiffPercent}%`}
                   </span>
                 </div>
-                <span className="text-[12px] text-foreground/30 line-through mt-0.5 block font-medium">
+                <span className="text-[12px] text-foreground/45 line-through mt-0.5 block font-medium">
                   {formatPrice(listing.price, listing.currency, { isRental, showPeriod: false })}
                 </span>
               </>
@@ -357,13 +357,13 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
               </span>
             )}
             {listing.area_sqm && listing.area_sqm > 0 && (
-              <span className="text-[12px] font-medium text-foreground/30 mt-1 block tabular-nums">
+              <span className="text-[12px] font-medium text-foreground/45 mt-1 block tabular-nums">
                 {formatPrice((hasFinalPrice && isSoldOrRented && showStatusOverlay ? listing.final_price! : listing.price) / listing.area_sqm, listing.currency, { roundedFull: true })}/{areaUnit === 'sqft' ? 'ft²' : 'm²'}
               </span>
             )}
           </div>
           {formattedDate && (
-            <span className="text-[11px] text-foreground/25 font-medium">
+            <span className="text-[11px] text-foreground/40 font-medium">
               {formattedDate}
             </span>
           )}
