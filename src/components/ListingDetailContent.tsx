@@ -25,6 +25,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useFormattedPrice } from '@/hooks/useFormattedPrice';
 import { useToast } from '@/hooks/use-toast';
+import { QuickMessageButtons } from '@/components/QuickMessageButtons';
 
 export interface ListingDetailContentProps {
   listing: Listing;
@@ -96,7 +97,7 @@ export function ListingDetailContent({
     }
   };
 
-  const handleContactLandlord = async () => {
+  const handleContactLandlord = async (initialMessage?: string) => {
     if (!user) {
       router.push('/auth');
       return;
@@ -112,7 +113,8 @@ export function ListingDetailContent({
         landlordId: listing.user_id,
       });
       if (isModal) onClose();
-      router.push(`/messages?conversation=${data.id}`);
+      const msgParam = initialMessage ? `&msg=${encodeURIComponent(initialMessage)}` : '';
+      router.push(`/messages?conversation=${data.id}${msgParam}`);
     } catch {
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to start conversation' });
     }
@@ -558,13 +560,20 @@ export function ListingDetailContent({
                       size="sm"
                       className="shrink-0 rounded-xl h-11 px-5 bg-rose-500 hover:bg-rose-600 text-white border-0"
                       disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
-                      onClick={handleContactLandlord}
+                      onClick={() => handleContactLandlord()}
                     >
                       <MessageCircle className="h-4 w-4 mr-1.5" />
                       Contact
                     </Button>
                   )}
                 </div>
+                {!isCompleted && listing.user_id !== user?.id && (
+                  <QuickMessageButtons
+                    onSelect={(msg) => handleContactLandlord(msg)}
+                    disabled={getOrCreateConversation.isPending}
+                    className="mt-2"
+                  />
+                )}
               </div>
             </div>
 
@@ -834,14 +843,22 @@ export function ListingDetailContent({
 
                 <div className="px-6 pb-6 space-y-3">
                   {!isCompleted && (
-                    <Button
-                      className="w-full h-12 text-sm font-semibold rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white border-0 shadow-md shadow-rose-200/50"
-                      disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
-                      onClick={handleContactLandlord}
-                    >
-                      <MessageCircle className="h-4 w-4 mr-2" />
-                      {getOrCreateConversation.isPending ? 'Starting chat...' : t('listing.contactLandlord')}
-                    </Button>
+                    <>
+                      <Button
+                        className="w-full h-12 text-sm font-semibold rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white border-0 shadow-md shadow-rose-200/50"
+                        disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
+                        onClick={() => handleContactLandlord()}
+                      >
+                        <MessageCircle className="h-4 w-4 mr-2" />
+                        {getOrCreateConversation.isPending ? 'Starting chat...' : t('listing.contactLandlord')}
+                      </Button>
+                      {listing.user_id !== user?.id && (
+                        <QuickMessageButtons
+                          onSelect={(msg) => handleContactLandlord(msg)}
+                          disabled={getOrCreateConversation.isPending}
+                        />
+                      )}
+                    </>
                   )}
 
                   <Button

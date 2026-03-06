@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useConversations, Conversation } from '@/hooks/useMessaging';
+import { useConversations, useSendMessage, Conversation } from '@/hooks/useMessaging';
 import { Header } from '@/components/Header';
 import { ConversationsList } from '@/components/messaging/ConversationsList';
 import { ChatWindow } from '@/components/messaging/ChatWindow';
@@ -24,9 +24,12 @@ export default function Messages() {
   const [highlightMessageId, setHighlightMessageId] = useState<string | undefined>();
 
   const { data: conversations = [], isLoading, refetch } = useConversations(user?.id);
+  const sendMessage = useSendMessage();
+  const [quickMsgSent, setQuickMsgSent] = useState<string | null>(null);
 
-  // Get conversation ID from URL query param
+  // Get conversation ID and optional quick message from URL query params
   const urlConversationId = searchParams.get('conversation');
+  const urlQuickMsg = searchParams.get('msg');
 
   // Restore conversation from URL param on mount or when conversations load
   useEffect(() => {
@@ -39,6 +42,28 @@ export default function Messages() {
       }
     }
   }, [urlConversationId, conversations, selectedConversation]);
+
+  // Auto-send quick message when conversation is selected via URL with msg param
+  useEffect(() => {
+    if (!urlQuickMsg || !selectedConversation || !user || quickMsgSent === selectedConversation.id) return;
+
+    const recipientId = selectedConversation.landlord_id === user.id
+      ? selectedConversation.renter_id
+      : selectedConversation.landlord_id;
+
+    sendMessage.mutate({
+      conversationId: selectedConversation.id,
+      senderId: user.id,
+      content: urlQuickMsg,
+      recipientId,
+      senderName: user.user_metadata?.full_name || user.email?.split('@')[0],
+      listingTitle: selectedConversation.listing?.title,
+    });
+
+    setQuickMsgSent(selectedConversation.id);
+    // Clean URL
+    router.replace(`/messages?conversation=${selectedConversation.id}`);
+  }, [urlQuickMsg, selectedConversation, user, quickMsgSent]);
 
   // Sync selected conversation to URL
   const handleSelectConversation = useCallback((conversation: Conversation | null) => {
