@@ -12,7 +12,7 @@ import { MapView } from '@/components/MapView';
 import { ListingDetailModal } from '@/components/ListingDetailModal';
 import { MobileMapFilterButton } from '@/components/MobileMapFilterButton';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useMobileViewPreference } from '@/hooks/useMobileViewPreference';
@@ -198,20 +198,10 @@ export default function SoldRentedListings() {
     }
   }, [activeListingId]);
 
-  const TabsHeader = () => (
-    <div className="shrink-0 px-4 pt-3 pb-2">
-      <TabsList className="segmented-control segmented-control-tabs w-full p-[3px]">
-        <TabsTrigger value="sold" className="segmented-tab-trigger flex-1">
-          {t('soldRented.recentlySold')}
-          {soldListings && <span className="text-xs opacity-60">({soldListings.length})</span>}
-        </TabsTrigger>
-        <TabsTrigger value="rented" className="segmented-tab-trigger flex-1">
-          {t('soldRented.recentlyRented')}
-          {rentedListings && <span className="text-xs opacity-60">({rentedListings.length})</span>}
-        </TabsTrigger>
-      </TabsList>
-    </div>
-  );
+  const statusTabs = [
+    { value: 'sold', label: t('soldRented.recentlySold'), emoji: '🏠', count: soldListings?.length },
+    { value: 'rented', label: t('soldRented.recentlyRented'), emoji: '🔑', count: rentedListings?.length },
+  ];
 
   const ListingsGrid = ({ showAnimations = true }: { showAnimations?: boolean }) => {
     if (isLoading) {
@@ -296,8 +286,6 @@ export default function SoldRentedListings() {
                     mobileView === 'list' ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
                   )}
                 >
-                  <TabsHeader />
-                  
                   <FilterBar
                     filters={filters}
                     onFiltersChange={setFilters}
@@ -305,8 +293,11 @@ export default function SoldRentedListings() {
                     onSortChange={setSortBy}
                     totalCount={filteredListings.length}
                     userId={user?.id}
+                    tabs={statusTabs}
+                    activeTab={activeTab}
+                    onTabChange={(v) => setActiveTab(v as 'sold' | 'rented')}
                   />
-                  
+
                   <TabsContent value="sold" className="flex-1 overflow-hidden m-0">
                     <div ref={listContainerRef} className="h-full rubber-band-scroll p-3 sm:p-4 @container">
                       <ListingsGrid showAnimations={true} />
@@ -384,8 +375,6 @@ export default function SoldRentedListings() {
             <div className="flex-1 flex min-h-0 h-full">
               {/* Left panel - Tabs + Listings (50%) */}
               <div className="w-1/2 flex flex-col h-full min-h-0 border-r border-border overflow-hidden">
-                <TabsHeader />
-                
                 <FilterBar
                   filters={filters}
                   onFiltersChange={setFilters}
@@ -393,6 +382,9 @@ export default function SoldRentedListings() {
                   onSortChange={setSortBy}
                   totalCount={filteredListings.length}
                   userId={user?.id}
+                  tabs={statusTabs}
+                  activeTab={activeTab}
+                  onTabChange={(v) => setActiveTab(v as 'sold' | 'rented')}
                 />
                 
                 <TabsContent value="sold" className="flex-1 overflow-hidden m-0">

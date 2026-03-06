@@ -59,6 +59,13 @@ import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 
+interface TabOption {
+  value: string;
+  label: string;
+  emoji?: string;
+  count?: number;
+}
+
 interface FilterBarProps {
   filters: ListingFilters;
   onFiltersChange: (filters: ListingFilters) => void;
@@ -68,6 +75,9 @@ interface FilterBarProps {
   userId?: string;
   listingType?: 'rent' | 'sale';
   onListingTypeChange?: (type: 'rent' | 'sale') => void;
+  tabs?: TabOption[];
+  activeTab?: string;
+  onTabChange?: (value: string) => void;
 }
 
 // Price ranges by listing type
@@ -712,7 +722,7 @@ function FilterContent({
   );
 }
 
-export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount, userId, listingType, onListingTypeChange }: FilterBarProps) {
+export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, totalCount, userId, listingType, onListingTypeChange, tabs, activeTab, onTabChange }: FilterBarProps) {
   const { trigger: haptic } = useHapticFeedback();
   const { t } = useTranslation();
   const { formatPriceLabel, currencySymbol } = useFormattedPrice();
@@ -1138,6 +1148,36 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                 <span className="text-sm leading-none" role="img" aria-label="sale">🏷️</span>
                 <span className="hidden sm:inline">{t('listingTypes.sale')}</span>
               </button>
+            </div>
+          )}
+
+          {/* Generic pill tabs (e.g. Sold / Rented) */}
+          {tabs && activeTab && onTabChange && (
+            <div className="inline-flex items-center shrink-0 rounded-xl bg-gray-100/80 p-0.5">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => onTabChange(tab.value)}
+                  className={cn(
+                    'flex items-center gap-1.5 rounded-[10px] px-3 py-2 text-xs font-semibold transition-all duration-200',
+                    activeTab === tab.value
+                      ? 'bg-white text-gray-900 shadow-sm'
+                      : 'text-gray-400 hover:text-gray-600'
+                  )}
+                >
+                  {tab.emoji && <span className="text-sm leading-none">{tab.emoji}</span>}
+                  <span className="hidden sm:inline">{tab.label}</span>
+                  {tab.count !== undefined && (
+                    <span className={cn(
+                      "text-[10px] tabular-nums",
+                      activeTab === tab.value ? "text-gray-500" : "text-gray-400"
+                    )}>
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              ))}
             </div>
           )}
 
