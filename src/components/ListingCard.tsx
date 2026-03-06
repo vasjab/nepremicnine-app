@@ -292,22 +292,22 @@ export function ListingCard({ listing, onClick, showStatusOverlay = false }: Lis
           {listing.address}
         </h3>
 
-        {/* Specs — bold inline row */}
-        <div className="flex items-center gap-3.5 text-[14px] text-foreground/75 font-semibold mb-3">
+        {/* Specs — colored pills */}
+        <div className="flex flex-wrap items-center gap-1.5 mb-3">
           {listing.bedrooms != null && (
-            <div className="inline-flex items-center gap-1.5">
-              <Bed className="h-4 w-4 text-violet-500/60 dark:text-violet-400/60" />
+            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-violet-100/80 dark:bg-violet-500/15 text-violet-700 dark:text-violet-300 text-[11px] font-semibold">
+              <Bed className="h-3.5 w-3.5" />
               <span>{listing.bedrooms}</span>
             </div>
           )}
           {listing.bathrooms != null && (
-            <div className="inline-flex items-center gap-1.5">
-              <Bath className="h-4 w-4 text-sky-500/60 dark:text-sky-400/60" />
+            <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-sky-100/80 dark:bg-sky-500/15 text-sky-700 dark:text-sky-300 text-[11px] font-semibold">
+              <Bath className="h-3.5 w-3.5" />
               <span>{listing.bathrooms}</span>
             </div>
           )}
-          <div className="inline-flex items-center gap-1.5">
-            <Maximize2 className="h-4 w-4 text-amber-500/60 dark:text-amber-400/60" />
+          <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100/80 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 text-[11px] font-semibold">
+            <Maximize2 className="h-3.5 w-3.5" />
             <span>{formatArea(listing.area_sqm)}</span>
           </div>
         </div>
