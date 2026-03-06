@@ -148,7 +148,7 @@ export default function AdminPage() {
       const d = await res.json();
       if (!res.ok) throw new Error(d.error || d.log?.join('\n') || 'Seed failed');
       const s = d.summary;
-      alert(`Seeded successfully!\n\n${d.log?.join('\n') || ''}\n\nSummary:\n- ${s.landlords} landlords\n- ${s.tenants} tenants\n- ${s.listings_distributed} listings distributed\n- ${s.applications} applications\n- ${s.conversations} conversations\n- ${s.messages} messages`);
+      alert(`Seeded successfully!\n\n${d.log?.join('\n') || ''}\n\nSummary:\n- ${s.landlords} landlords\n- ${s.tenants} tenants\n- ${s.listings_distributed} listings distributed\n- ${s.sold || 0} sold, ${s.rented || 0} rented\n- ${s.applications} applications\n- ${s.conversations} conversations\n- ${s.messages} messages`);
       refreshData();
     } catch (e: any) {
       alert('Seed failed: ' + e.message);

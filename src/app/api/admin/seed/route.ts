@@ -764,6 +764,55 @@ export async function POST() {
       log.push('Created 110 new listings distributed across landlords');
     }
 
+    // ── Step 4b: Mark some listings as sold/rented ──────────────
+    log.push('Marking some listings as sold/rented...');
+    const { data: saleListings } = await supabase
+      .from('listings')
+      .select('id, price')
+      .eq('listing_type', 'sale')
+      .eq('is_active', true)
+      .limit(8);
+
+    const { data: rentListings } = await supabase
+      .from('listings')
+      .select('id, price')
+      .eq('listing_type', 'rent')
+      .eq('is_active', true)
+      .limit(6);
+
+    let soldCount = 0;
+    let rentedCount = 0;
+
+    if (saleListings) {
+      for (let i = 0; i < Math.min(saleListings.length, 6); i++) {
+        const l = saleListings[i];
+        const priceDelta = (rand() - 0.5) * 0.1 * l.price; // +/- 5% of asking price
+        const daysAgo = randInt(1, 60, rand);
+        await supabase.from('listings').update({
+          status: 'sold',
+          is_active: false,
+          final_price: Math.round(l.price + priceDelta),
+          completed_at: new Date(Date.now() - daysAgo * 86400000).toISOString(),
+        }).eq('id', l.id);
+        soldCount++;
+      }
+    }
+
+    if (rentListings) {
+      for (let i = 0; i < Math.min(rentListings.length, 4); i++) {
+        const l = rentListings[i];
+        const daysAgo = randInt(1, 45, rand);
+        await supabase.from('listings').update({
+          status: 'rented',
+          is_active: false,
+          final_price: l.price,
+          completed_at: new Date(Date.now() - daysAgo * 86400000).toISOString(),
+        }).eq('id', l.id);
+        rentedCount++;
+      }
+    }
+    log.push(`Marked ${soldCount} as sold, ${rentedCount} as rented`);
+
     // ── Step 5: Create mock applications ────────────────────────
     let appsCreated = 0;
     if (hasApplicationsTable) {
@@ -914,6 +963,8 @@ export async function POST() {
         landlords: landlordIds.length,
         tenants: tenantIds.length,
         listings_distributed: allListings?.length || 110,
+        sold: soldCount,
+        rented: rentedCount,
         applications: appsCreated,
         conversations: convsCreated,
         messages: msgsCreated,

@@ -48,7 +48,8 @@ export default function SavedListings() {
     );
   }
 
-  const savedCount = savedListings?.length ?? 0;
+  const validSaved = savedListings?.filter((s) => s.listing != null);
+  const savedCount = validSaved?.length ?? 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -98,14 +99,16 @@ export default function SavedListings() {
             </div>
           ) : savedListings && savedListings.length > 0 ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {savedListings.map((saved) => (
-                <ListingCard
-                  key={saved.id}
-                  listing={saved.listing}
-                  onClick={() => router.push(`/listing/${saved.listing.id}`)}
-                  showStatusOverlay={saved.listing.status === 'sold' || saved.listing.status === 'rented'}
-                />
-              ))}
+              {savedListings
+                .filter((saved) => saved.listing != null)
+                .map((saved) => (
+                  <ListingCard
+                    key={saved.id}
+                    listing={saved.listing}
+                    onClick={() => router.push(`/listing/${saved.listing.id}`)}
+                    showStatusOverlay={saved.listing.status === 'sold' || saved.listing.status === 'rented'}
+                  />
+                ))}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-16 text-center">

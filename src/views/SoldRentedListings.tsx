@@ -83,16 +83,6 @@ export default function SoldRentedListings() {
     if (!allListings) return [];
     
     let result = allListings.filter(listing => {
-      // Map bounds filter
-      if (mapBounds) {
-        if (
-          listing.latitude < mapBounds.south ||
-          listing.latitude > mapBounds.north ||
-          listing.longitude < mapBounds.west ||
-          listing.longitude > mapBounds.east
-        ) return false;
-      }
-      
       // Search filter
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
@@ -153,7 +143,7 @@ export default function SoldRentedListings() {
           return 0;
       }
     });
-  }, [allListings, mapBounds, sortBy, filters]);
+  }, [allListings, sortBy, filters]);
 
   const handleListingClick = (listing: Listing) => {
     setNavigatingId(listing.id);
