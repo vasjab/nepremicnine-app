@@ -131,13 +131,14 @@ export default function AdminPage() {
   };
 
   const handleSeed = async () => {
-    if (!confirm('This will create ~110 mock listings. Continue?')) return;
+    if (!confirm('This will create mock landlords, tenants, applications, and messages. Continue?')) return;
     setSeeding(true);
     try {
       const res = await fetch('/api/admin/seed', { method: 'POST' });
       const d = await res.json();
-      if (!res.ok) throw new Error(d.error);
-      alert(`Seeded ${d.inserted} listings`);
+      if (!res.ok) throw new Error(d.error || d.log?.join('\n') || 'Seed failed');
+      const s = d.summary;
+      alert(`Seeded successfully!\n\n${d.log?.join('\n') || ''}\n\nSummary:\n- ${s.landlords} landlords\n- ${s.tenants} tenants\n- ${s.listings_distributed} listings distributed\n- ${s.applications} applications\n- ${s.conversations} conversations\n- ${s.messages} messages`);
       refreshData();
     } catch (e: any) {
       alert('Seed failed: ' + e.message);
