@@ -566,95 +566,361 @@ function generateListings(count: number) {
   return listings;
 }
 
+// Slovenian names for mock users
+const LANDLORD_PROFILES = [
+  { email: 'marko.novak@hemma.si', name: 'Marko Novak', bio: 'Property owner in Ljubljana. Quick responses guaranteed.', management_type: 'private', num_properties: 5, response_time: 'same_day' },
+  { email: 'ana.horvat@hemma.si', name: 'Ana Horvat', bio: 'Managing family properties across Slovenia since 2015.', management_type: 'private', num_properties: 3, response_time: 'within_hour' },
+  { email: 'janez.krajnc@hemma.si', name: 'Janez Krajnc', bio: 'Professional property management company.', management_type: 'company', num_properties: 12, response_time: 'same_day' },
+  { email: 'maja.zupan@hemma.si', name: 'Maja Zupan', bio: 'Renting out my apartment while abroad.', management_type: 'private', num_properties: 1, response_time: 'next_day' },
+  { email: 'luka.kovac@hemma.si', name: 'Luka Kovač', bio: 'Real estate investor with premium properties on the coast.', management_type: 'private', num_properties: 8, response_time: 'within_hour' },
+];
+
+const TENANT_PROFILES = [
+  { email: 'nina.oblak@hemma.si', name: 'Nina Oblak', employment: 'employed', income: '2000-3000', timeline: 'asap', household: 1, pets: false, smoker: false, bio: 'Young professional, working in IT. Looking for a quiet place close to the city center.' },
+  { email: 'tomaz.vidmar@hemma.si', name: 'Tomaž Vidmar', employment: 'self_employed', income: '3000-5000', timeline: '1_month', household: 2, pets: true, smoker: false, bio: 'Freelance designer with a small dog. Clean and organized tenant.' },
+  { email: 'petra.kos@hemma.si', name: 'Petra Kos', employment: 'student', income: '0-1000', timeline: '2_3_months', household: 1, pets: false, smoker: false, bio: 'Masters student at University of Ljubljana. Quiet and respectful.' },
+  { email: 'ales.mlakar@hemma.si', name: 'Aleš Mlakar', employment: 'employed', income: '2000-3000', timeline: 'asap', household: 3, pets: false, smoker: false, bio: 'Small family looking for a 2-bedroom apartment. Both parents working.' },
+  { email: 'eva.breznik@hemma.si', name: 'Eva Breznik', employment: 'employed', income: '1000-2000', timeline: 'flexible', household: 2, pets: true, smoker: false, bio: 'Couple with a cat. Both of us are healthcare workers.' },
+  { email: 'rok.turk@hemma.si', name: 'Rok Turk', employment: 'retired', income: '1000-2000', timeline: '3_6_months', household: 1, pets: false, smoker: true, bio: 'Retired teacher looking for a ground-floor apartment.' },
+  { email: 'spela.kolar@hemma.si', name: 'Špela Kolar', employment: 'employed', income: '3000-5000', timeline: 'asap', household: 1, pets: false, smoker: false, bio: 'Relocating to Ljubljana for work. Need a furnished apartment.' },
+  { email: 'matic.kern@hemma.si', name: 'Matic Kern', employment: 'student', income: '0-1000', timeline: '2_3_months', household: 2, pets: false, smoker: false, bio: 'Two students looking for shared accommodation near campus.' },
+];
+
+const MESSAGE_TEMPLATES = {
+  initial: [
+    'Hi! I saw your listing and I\'m very interested. Is it still available?',
+    'Hello, I\'d like to know more about this property. When can I schedule a viewing?',
+    'Good day! I\'m looking for a place to rent and your listing caught my eye. Could you tell me more?',
+    'Hi there! Is this apartment still on the market? I\'d love to arrange a visit.',
+    'Hello! I\'m interested in renting this property. Can we discuss the details?',
+    'I\'m very interested in your property. Can I schedule a viewing this week?',
+    'Hi, is this still available? When would be a good time to view it?',
+    'Great listing! I\'d like to know more about the neighborhood and utilities.',
+  ],
+  landlordReply: [
+    'Hello! Yes, the property is still available. When would you like to visit?',
+    'Hi! Thanks for your interest. I\'m available for viewings on weekdays after 4 PM.',
+    'Yes, it\'s available! I can show you the property this Saturday. Does 11 AM work?',
+    'Thank you for reaching out! The property is available from next month. Let me know when you\'d like to visit.',
+    'Hi! Glad you\'re interested. I can answer any questions you have. Would you like to schedule a viewing?',
+    'Hello! The apartment is still free. Let me know your availability and we\'ll find a time.',
+  ],
+  followUp: [
+    'That sounds great! Saturday at 11 works for me.',
+    'Perfect, I\'ll be there on Wednesday at 5 PM. Thanks!',
+    'Would it be possible to bring a friend along for the viewing?',
+    'Can you tell me more about the utility costs?',
+    'Is parking included in the rent?',
+    'Thank you! One more question - are pets allowed?',
+    'Great, looking forward to seeing the place!',
+    'Could I also see the storage space in the basement?',
+  ],
+  landlordFollowUp: [
+    'Of course! See you then. Here\'s the entrance code: #1234',
+    'Sure, no problem at all. The building entrance is on the left side.',
+    'The utility costs are approximately 80-120 EUR per month depending on season.',
+    'Yes, one parking spot is included. There\'s also street parking available.',
+    'Small pets are welcome with a refundable deposit.',
+    'Looking forward to meeting you! Don\'t hesitate to reach out if you have more questions.',
+  ],
+};
+
+const COVER_LETTERS = [
+  'I\'m a reliable tenant with a stable income. I take great care of properties and always pay rent on time. Looking for a long-term stay.',
+  'As a young professional, I value a clean and quiet living space. I have excellent references from my previous landlord and I\'m happy to provide them.',
+  'My partner and I are looking for our first apartment together. We both have stable jobs and are looking for a long-term rental. We\'re non-smokers and very tidy.',
+  'I\'m relocating to Ljubljana for work and need a place quickly. I can provide proof of employment and salary. Happy to meet in person to discuss.',
+  'Currently a masters student with a part-time job. I\'ve been renting for 3 years and have great references. Quiet and respectful of neighbors.',
+  'Small family looking for a comfortable home. Both parents are employed with good income. We have no pets and are non-smokers.',
+  '',
+  'I\'d love to rent this property. I\'m a healthcare worker with a steady income. I\'ve been renting in Maribor for 5 years and looking to move to Ljubljana.',
+  '',
+  'Experienced tenant with 10+ years of renting history. I maintain properties well and respect house rules. Happy to provide references.',
+];
+
+async function getOrCreateUser(supabase: any, email: string, fullName: string) {
+  const { data: existingUsers } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+  const existing = existingUsers?.users?.find((u: any) => u.email === email);
+  if (existing) return existing.id;
+
+  const { data: newUser, error } = await supabase.auth.admin.createUser({
+    email,
+    password: 'hemma-seed-2024!',
+    email_confirm: true,
+    user_metadata: { full_name: fullName },
+  });
+  if (error) throw error;
+  return newUser.user.id;
+}
+
 export async function POST() {
   if (!(await verifyAdmin())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const supabase = createAdminSupabaseClient();
+  const rand = seededRandom(777);
+  const log: string[] = [];
 
   try {
-    // Get or create a seed user
-    const SEED_EMAIL = 'seed-user@hemma.si';
-    let seedUserId: string;
+    // ── Step 1: Check migrations ──────────────────────────────────
+    log.push('Checking profile columns...');
+    const { data: testProfile } = await supabase.from('profiles').select('*').limit(1).single();
+    const existingCols = testProfile ? Object.keys(testProfile) : [];
+    const neededCols = ['user_intents', 'onboarding_completed', 'employment_status', 'management_type'];
+    const missingCols = neededCols.filter(c => !existingCols.includes(c));
+    if (missingCols.length > 0) {
+      log.push(`Missing profile columns: ${missingCols.join(', ')}`);
+      return NextResponse.json({
+        ok: false, log,
+        error: 'Enhanced profiles migration not run. Execute supabase/migrations/20260306100000_enhanced_profiles.sql in Supabase SQL editor first.',
+      }, { status: 400 });
+    }
+    log.push('All profile columns exist');
 
-    // Check if seed user exists
-    const { data: existingUsers } = await supabase.auth.admin.listUsers({ perPage: 1000 });
-    const existingSeedUser = existingUsers?.users?.find(u => u.email === SEED_EMAIL);
+    // Applications table — check if exists
+    log.push('Checking applications table...');
+    const { error: appTableCheck } = await supabase.from('applications').select('id').limit(1);
+    if (appTableCheck?.message?.includes('does not exist') || appTableCheck?.code === '42P01') {
+      log.push('Applications table does not exist — please run the applications migration SQL manually');
+      log.push('File: supabase/migrations/20260306200000_applications.sql');
+      return NextResponse.json({
+        ok: false,
+        log,
+        error: 'Applications table must be created first. Run the migration in Supabase SQL editor.',
+      }, { status: 400 });
+    }
+    log.push('Applications table exists');
 
-    if (existingSeedUser) {
-      seedUserId = existingSeedUser.id;
-    } else {
-      // Create seed user
-      const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
-        email: SEED_EMAIL,
-        password: 'seed-password-hemma-2024',
-        email_confirm: true,
-        user_metadata: { full_name: 'Hemma Seed Data' },
-      });
-      if (createError) throw createError;
-      seedUserId = newUser.user.id;
-
-      // Create profile
+    // ── Step 2: Create landlord users + profiles ────────────────
+    log.push('Creating landlord users...');
+    const landlordIds: string[] = [];
+    for (const lp of LANDLORD_PROFILES) {
+      const userId = await getOrCreateUser(supabase, lp.email, lp.name);
+      landlordIds.push(userId);
       await supabase.from('profiles').upsert({
-        user_id: seedUserId,
-        full_name: 'Hemma Seed Data',
-        avatar_url: null,
-      });
+        user_id: userId,
+        full_name: lp.name,
+        bio: lp.bio,
+        phone: `+386 ${randInt(30, 70, rand)} ${randInt(100, 999, rand)} ${randInt(100, 999, rand)}`,
+        user_intents: ['renting_out'],
+        onboarding_completed: true,
+        management_type: lp.management_type,
+        num_properties: lp.num_properties,
+        response_time: lp.response_time,
+      }, { onConflict: 'user_id' });
     }
+    log.push(`Created ${landlordIds.length} landlord profiles`);
 
-    // Generate listings
-    const listings = generateListings(110);
-
-    // Assign to seed user, insert in batches
-    const BATCH_SIZE = 20;
-    let inserted = 0;
-
-    for (let b = 0; b < listings.length; b += BATCH_SIZE) {
-      const batch = listings.slice(b, b + BATCH_SIZE).map(l => ({
-        ...l,
-        user_id: seedUserId,
-      }));
-
-      const { error } = await supabase.from('listings').insert(batch);
-      if (error) {
-        console.error(`Batch ${b / BATCH_SIZE} error:`, error);
-        throw error;
-      }
-      inserted += batch.length;
+    // ── Step 3: Create tenant users + profiles ──────────────────
+    log.push('Creating tenant users...');
+    const tenantIds: string[] = [];
+    for (const tp of TENANT_PROFILES) {
+      const userId = await getOrCreateUser(supabase, tp.email, tp.name);
+      tenantIds.push(userId);
+      await supabase.from('profiles').upsert({
+        user_id: userId,
+        full_name: tp.name,
+        bio: tp.bio,
+        phone: `+386 ${randInt(30, 70, rand)} ${randInt(100, 999, rand)} ${randInt(100, 999, rand)}`,
+        user_intents: ['rent'],
+        onboarding_completed: true,
+        employment_status: tp.employment,
+        monthly_income_range: tp.income,
+        move_in_timeline: tp.timeline,
+        household_size: tp.household,
+        has_pets: tp.pets,
+        is_smoker: tp.smoker,
+      }, { onConflict: 'user_id' });
     }
+    log.push(`Created ${tenantIds.length} tenant profiles`);
 
-    // Create some listing_stats for the inserted listings
+    // ── Step 4: Reassign existing listings to landlords ─────────
+    log.push('Distributing listings across landlords...');
     const { data: allListings } = await supabase
       .from('listings')
       .select('id')
-      .eq('user_id', seedUserId)
-      .order('created_at', { ascending: false })
-      .limit(110);
+      .order('created_at', { ascending: true });
 
-    if (allListings) {
-      const rand = seededRandom(99);
-      const statsBatch = allListings.map(l => ({
-        listing_id: l.id,
-        view_count: randInt(0, 500, rand),
-      }));
+    if (allListings && allListings.length > 0) {
+      for (let i = 0; i < allListings.length; i++) {
+        const landlordId = landlordIds[i % landlordIds.length];
+        await supabase
+          .from('listings')
+          .update({ user_id: landlordId })
+          .eq('id', allListings[i].id);
+      }
+      log.push(`Distributed ${allListings.length} listings across ${landlordIds.length} landlords`);
+    } else {
+      log.push('No listings found — generating 110 new ones...');
+      const newListings = generateListings(110);
+      const BATCH_SIZE = 20;
+      for (let b = 0; b < newListings.length; b += BATCH_SIZE) {
+        const batch = newListings.slice(b, b + BATCH_SIZE).map((l, idx) => ({
+          ...l,
+          user_id: landlordIds[(b + idx) % landlordIds.length],
+        }));
+        const { error } = await supabase.from('listings').insert(batch);
+        if (error) throw error;
+      }
+      log.push('Created 110 new listings distributed across landlords');
+    }
 
-      for (let b = 0; b < statsBatch.length; b += BATCH_SIZE) {
-        await supabase.from('listing_stats').upsert(
-          statsBatch.slice(b, b + BATCH_SIZE),
-          { onConflict: 'listing_id' }
-        );
+    // ── Step 5: Create mock applications ────────────────────────
+    log.push('Creating mock applications...');
+    // Get rental listings
+    const { data: rentalListings } = await supabase
+      .from('listings')
+      .select('id, user_id, title')
+      .eq('listing_type', 'rent')
+      .eq('is_active', true)
+      .limit(30);
+
+    let appsCreated = 0;
+    if (rentalListings && rentalListings.length > 0) {
+      const statuses = ['applied', 'viewing_scheduled', 'under_review', 'accepted', 'declined'] as const;
+      for (let i = 0; i < Math.min(rentalListings.length, 25); i++) {
+        const listing = rentalListings[i];
+        // 1-3 tenants apply to each listing
+        const numApplicants = randInt(1, 3, rand);
+        const applicants = pickN(tenantIds, numApplicants, rand);
+
+        for (const tenantId of applicants) {
+          if (tenantId === listing.user_id) continue; // skip if tenant is the landlord
+
+          const status = pick(statuses, rand);
+          const tp = TENANT_PROFILES[tenantIds.indexOf(tenantId)];
+          const viewingDate = status === 'viewing_scheduled'
+            ? new Date(Date.now() + randInt(1, 14, rand) * 86400000).toISOString()
+            : null;
+
+          const { error: appErr } = await supabase.from('applications').upsert({
+            listing_id: listing.id,
+            renter_id: tenantId,
+            landlord_id: listing.user_id,
+            status,
+            cover_letter: pick(COVER_LETTERS, rand) || null,
+            viewing_date: viewingDate,
+            landlord_notes: maybe(0.3, rand) ? pick(['Good candidate', 'Schedule follow-up', 'Needs income verification', 'Very promising', 'Check references'], rand) : null,
+            renter_snapshot: tp ? {
+              full_name: tp.name,
+              email: tp.email,
+              phone: `+386 ${randInt(30, 70, rand)} ${randInt(100, 999, rand)} ${randInt(100, 999, rand)}`,
+              employment_status: tp.employment,
+              monthly_income_range: tp.income,
+              move_in_timeline: tp.timeline,
+              household_size: tp.household,
+              has_pets: tp.pets,
+              is_smoker: tp.smoker,
+              bio: tp.bio,
+            } : null,
+          }, { onConflict: 'listing_id,renter_id' });
+
+          if (!appErr) appsCreated++;
+        }
       }
     }
+    log.push(`Created ${appsCreated} mock applications`);
+
+    // ── Step 6: Create mock conversations & messages ─────────────
+    log.push('Creating mock conversations and messages...');
+    const { data: convListings } = await supabase
+      .from('listings')
+      .select('id, user_id')
+      .eq('is_active', true)
+      .limit(40);
+
+    let convsCreated = 0;
+    let msgsCreated = 0;
+
+    if (convListings && convListings.length > 0) {
+      for (let i = 0; i < Math.min(convListings.length, 30); i++) {
+        const listing = convListings[i];
+        // 1-2 tenants message per listing
+        const numMessagers = randInt(1, 2, rand);
+        const messagers = pickN(tenantIds, numMessagers, rand);
+
+        for (const tenantId of messagers) {
+          if (tenantId === listing.user_id) continue;
+
+          // Check for existing conversation
+          const { data: existingConv } = await supabase
+            .from('conversations')
+            .select('id')
+            .eq('listing_id', listing.id)
+            .eq('renter_id', tenantId)
+            .eq('landlord_id', listing.user_id)
+            .single();
+
+          let convId: string;
+          if (existingConv) {
+            convId = existingConv.id;
+          } else {
+            const { data: newConv, error: convErr } = await supabase
+              .from('conversations')
+              .insert({
+                listing_id: listing.id,
+                renter_id: tenantId,
+                landlord_id: listing.user_id,
+              })
+              .select('id')
+              .single();
+            if (convErr) continue;
+            convId = newConv.id;
+            convsCreated++;
+          }
+
+          // Create 2-6 messages in the conversation
+          const numMessages = randInt(2, 6, rand);
+          const messages: any[] = [];
+          const baseTime = Date.now() - randInt(1, 30, rand) * 86400000;
+
+          for (let m = 0; m < numMessages; m++) {
+            const isFromTenant = m % 2 === 0;
+            const senderId = isFromTenant ? tenantId : listing.user_id;
+            let content: string;
+
+            if (m === 0) content = pick(MESSAGE_TEMPLATES.initial, rand);
+            else if (m === 1) content = pick(MESSAGE_TEMPLATES.landlordReply, rand);
+            else if (isFromTenant) content = pick(MESSAGE_TEMPLATES.followUp, rand);
+            else content = pick(MESSAGE_TEMPLATES.landlordFollowUp, rand);
+
+            messages.push({
+              conversation_id: convId,
+              sender_id: senderId,
+              content,
+              is_read: m < numMessages - 1, // last message unread
+              created_at: new Date(baseTime + m * randInt(300, 7200, rand) * 1000).toISOString(),
+            });
+          }
+
+          const { error: msgErr } = await supabase.from('messages').insert(messages);
+          if (!msgErr) msgsCreated += messages.length;
+
+          // Update conversation last_message_at
+          await supabase
+            .from('conversations')
+            .update({ last_message_at: messages[messages.length - 1].created_at })
+            .eq('id', convId);
+        }
+      }
+    }
+    log.push(`Created ${convsCreated} conversations with ${msgsCreated} messages`);
 
     return NextResponse.json({
       ok: true,
-      inserted,
-      seed_user_id: seedUserId,
-      message: `Successfully created ${inserted} mock listings in Slovenia`,
+      log,
+      summary: {
+        landlords: landlordIds.length,
+        tenants: tenantIds.length,
+        listings_distributed: allListings?.length || 110,
+        applications: appsCreated,
+        conversations: convsCreated,
+        messages: msgsCreated,
+      },
     });
   } catch (error: any) {
     console.error('Seed error:', error);
-    return NextResponse.json({ error: error.message || 'Seed failed' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Seed failed', log }, { status: 500 });
   }
 }
