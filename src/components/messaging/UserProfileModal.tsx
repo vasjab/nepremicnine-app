@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { Home, Calendar, Phone, ExternalLink } from 'lucide-react';
+import { Home, Calendar, Phone, ExternalLink, Briefcase, Users, Clock, PawPrint, Cigarette, Building2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,15 @@ interface UserProfile {
   bio: string | null;
   phone: string | null;
   created_at: string;
+  user_intents: string[] | null;
+  employment_status: string | null;
+  move_in_timeline: string | null;
+  household_size: number | null;
+  has_pets: boolean | null;
+  is_smoker: boolean | null;
+  management_type: string | null;
+  num_properties: number | null;
+  response_time: string | null;
 }
 
 interface UserProfileModalProps {
@@ -45,7 +54,7 @@ export function UserProfileModal({ isOpen, onClose, userId, userName, userAvatar
           .rpc('get_profile_for_viewer', { p_profile_user_id: userId })
           .single();
 
-        setProfile(profileData);
+        setProfile(profileData as UserProfile);
 
         // Fetch active listings count
         const { count } = await supabase
@@ -130,12 +139,63 @@ export function UserProfileModal({ isOpen, onClose, userId, userName, userAvatar
                   <div className="flex items-center gap-3 text-sm">
                     <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <span className="text-muted-foreground">Phone:</span>
-                    <a 
-                      href={`tel:${profile.phone}`} 
+                    <a
+                      href={`tel:${profile.phone}`}
                       className="text-accent hover:underline font-medium"
                     >
                       {profile.phone}
                     </a>
+                  </div>
+                )}
+
+                {/* Renter details */}
+                {profile?.employment_status && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Briefcase className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-muted-foreground">Employment:</span>
+                    <span className="text-foreground font-medium capitalize">{profile.employment_status.replace('_', '-')}</span>
+                  </div>
+                )}
+                {profile?.household_size && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-muted-foreground">Household:</span>
+                    <span className="text-foreground font-medium">{profile.household_size} {profile.household_size === 1 ? 'person' : 'people'}</span>
+                  </div>
+                )}
+                {profile?.move_in_timeline && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-muted-foreground">Move-in:</span>
+                    <span className="text-foreground font-medium capitalize">{profile.move_in_timeline.replace(/_/g, ' ')}</span>
+                  </div>
+                )}
+                {profile?.has_pets && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <PawPrint className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-foreground font-medium">Has pets</span>
+                  </div>
+                )}
+                {profile?.is_smoker && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Cigarette className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-foreground font-medium">Smoker</span>
+                  </div>
+                )}
+
+                {/* Landlord details */}
+                {profile?.management_type && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Building2 className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-muted-foreground">Type:</span>
+                    <span className="text-foreground font-medium">{profile.management_type === 'company' ? 'Management company' : 'Private owner'}</span>
+                  </div>
+                )}
+                {profile?.response_time && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <span className="text-muted-foreground">Responds:</span>
+                    <span className="text-foreground font-medium capitalize">{profile.response_time.replace(/_/g, ' ')}</span>
                   </div>
                 )}
               </>

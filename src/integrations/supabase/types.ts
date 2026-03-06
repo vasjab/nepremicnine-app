@@ -813,11 +813,22 @@ export type Database = {
           avatar_url: string
           bio: string
           created_at: string
+          employment_status: string | null
           full_name: string
+          has_pets: boolean
+          household_size: number | null
           id: string
+          is_smoker: boolean
+          management_type: string | null
+          monthly_income_range: string | null
+          move_in_timeline: string | null
+          num_properties: number | null
+          onboarding_completed: boolean
           phone: string
+          response_time: string | null
           updated_at: string
           user_id: string
+          user_intents: string[]
         }[]
       }
       increment_listing_view: {

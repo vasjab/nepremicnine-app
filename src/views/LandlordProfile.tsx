@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { ArrowLeft, Home, Calendar, Phone, List, MapIcon } from 'lucide-react';
+import { ArrowLeft, Home, Calendar, Phone, List, MapIcon, Building2, Clock, Key, ShoppingCart } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { ListingCard } from '@/components/ListingCard';
 import { ListingSkeletonGrid } from '@/components/ListingSkeleton';
@@ -24,6 +24,10 @@ interface LandlordProfileData {
   bio: string | null;
   phone: string | null;
   created_at: string;
+  user_intents: string[] | null;
+  management_type: string | null;
+  num_properties: number | null;
+  response_time: string | null;
 }
 
 const LandlordProfile = () => {
@@ -48,7 +52,7 @@ const LandlordProfile = () => {
         const { data } = await supabase
           .rpc('get_profile_for_viewer', { p_profile_user_id: userId })
           .single();
-        setProfile(data);
+        setProfile(data as LandlordProfileData);
       } catch (error) {
         console.error('Error fetching profile:', error);
       } finally {
@@ -158,12 +162,24 @@ const LandlordProfile = () => {
                     {profile?.phone && (
                       <div className="flex items-center gap-2">
                         <Phone className="h-4 w-4 text-muted-foreground" />
-                        <a 
+                        <a
                           href={`tel:${profile.phone}`}
                           className="text-accent hover:underline"
                         >
                           {profile.phone}
                         </a>
+                      </div>
+                    )}
+                    {profile?.management_type && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Building2 className="h-4 w-4" />
+                        <span className="capitalize">{profile.management_type === 'company' ? 'Management company' : 'Private owner'}</span>
+                      </div>
+                    )}
+                    {profile?.response_time && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        <span>Responds {profile.response_time.replace(/_/g, ' ')}</span>
                       </div>
                     )}
                   </>
