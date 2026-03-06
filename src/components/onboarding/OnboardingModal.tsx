@@ -10,54 +10,16 @@ import { useSaveOnboarding, type OnboardingData } from '@/hooks/useOnboarding';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import {
-  Home, Key, ShoppingCart, Search,
-  Briefcase, GraduationCap, Clock, Users, PawPrint, Cigarette,
-  Building2, User, ChevronRight, ChevronLeft, Check, Loader2, CalendarIcon, Hourglass,
+  Building2, Clock, Users, PawPrint, Cigarette,
+  ChevronRight, ChevronLeft, Check, Loader2, CalendarIcon, Hourglass,
 } from 'lucide-react';
+import {
+  INTENT_OPTIONS, EMPLOYMENT_OPTIONS, TIMELINE_OPTIONS,
+  LOOKING_DURATION_OPTIONS, MANAGEMENT_OPTIONS, RESPONSE_TIME_OPTIONS,
+} from '@/lib/profile-constants';
 import { OptionalDetailsStep, type OptionalDetailsData } from './steps/OptionalDetailsStep';
 import { ReferencesStep, type ReferencesData } from './steps/ReferencesStep';
 import { CoverLetterStep, type CoverLetterData } from './steps/CoverLetterStep';
-
-const INTENT_OPTIONS = [
-  { value: 'rent', label: 'I want to rent', description: 'Looking for a place to rent', icon: Key },
-  { value: 'buy', label: 'I want to buy', description: 'Looking to purchase property', icon: ShoppingCart },
-  { value: 'renting_out', label: 'I\'m renting out', description: 'I have property to rent', icon: Home },
-  { value: 'selling', label: 'I\'m selling', description: 'I have property to sell', icon: Building2 },
-] as const;
-
-const EMPLOYMENT_OPTIONS = [
-  { value: 'employed', label: 'Employed', icon: Briefcase },
-  { value: 'self_employed', label: 'Self-employed', icon: User },
-  { value: 'student', label: 'Student', icon: GraduationCap },
-  { value: 'retired', label: 'Retired', icon: Clock },
-  { value: 'other', label: 'Other', icon: Users },
-] as const;
-
-const TIMELINE_OPTIONS = [
-  { value: 'asap', label: 'ASAP' },
-  { value: '1_month', label: 'Within 1 month' },
-  { value: '2_3_months', label: '2-3 months' },
-  { value: '3_6_months', label: '3-6 months' },
-  { value: 'flexible', label: 'Flexible' },
-] as const;
-
-const LOOKING_DURATION_OPTIONS = [
-  { value: 'few_months', label: 'A few months' },
-  { value: 'a_year', label: 'About a year' },
-  { value: 'indefinite', label: 'As long as possible' },
-  { value: 'until_date', label: 'Until a date' },
-] as const;
-
-const MANAGEMENT_OPTIONS = [
-  { value: 'private', label: 'Private owner' },
-  { value: 'company', label: 'Management company' },
-] as const;
-
-const RESPONSE_TIME_OPTIONS = [
-  { value: 'within_hour', label: 'Within an hour' },
-  { value: 'same_day', label: 'Same day' },
-  { value: 'next_day', label: 'Next business day' },
-] as const;
 
 interface OnboardingModalProps {
   open: boolean;

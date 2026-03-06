@@ -5,26 +5,9 @@ import { cn } from '@/lib/utils';
 import {
   Baby, GraduationCap, Globe, Heart, Briefcase,
 } from 'lucide-react';
-
-const AGE_BRACKET_OPTIONS = [
-  '18-24', '25-34', '35-44', '45-54', '55-64', '65+',
-] as const;
-
-const MARITAL_STATUS_OPTIONS = [
-  { value: 'single', label: 'Single' },
-  { value: 'married', label: 'Married' },
-  { value: 'partner', label: 'Partner' },
-  { value: 'divorced', label: 'Divorced' },
-  { value: 'widowed', label: 'Widowed' },
-] as const;
-
-const EDUCATION_OPTIONS = [
-  { value: 'high_school', label: 'High school' },
-  { value: 'bachelors', label: 'Bachelors' },
-  { value: 'masters', label: 'Masters' },
-  { value: 'phd', label: 'PhD' },
-  { value: 'other', label: 'Other' },
-] as const;
+import {
+  AGE_BRACKET_OPTIONS, MARITAL_STATUS_OPTIONS, EDUCATION_OPTIONS,
+} from '@/lib/profile-constants';
 
 export interface OptionalDetailsData {
   age_bracket: string;
