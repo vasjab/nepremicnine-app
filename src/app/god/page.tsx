@@ -5,8 +5,16 @@ import {
   Users, Home, Eye, MessageSquare, FileText, CheckCircle, Clock,
   LogOut, Lock, Search, ChevronDown, ChevronUp, ExternalLink,
   TrendingUp, Flame, BarChart3, ArrowUpDown, Power, Trash2, Ban,
-  ShieldOff, Pencil, Loader2, Database, UserRoundCog
+  ShieldOff, Pencil, Loader2, Database, UserRoundCog, MoreHorizontal,
+  ArrowLeft, MapPin, BedDouble, Bath, Ruler, Calendar
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -78,6 +86,8 @@ export default function AdminPage() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<{ type: string; id: string; label: string } | null>(null);
   const [seeding, setSeeding] = useState(false);
+  const [assigning, setAssigning] = useState(false);
+  const [selectedListing, setSelectedListing] = useState<AdminListing | null>(null);
 
   useEffect(() => {
     fetch('/api/admin/auth')
@@ -147,6 +157,26 @@ export default function AdminPage() {
     }
   };
 
+  const handleAssignOwners = async () => {
+    if (!confirm('This will create 5 landlord accounts and assign ALL listings to them. Continue?')) return;
+    setAssigning(true);
+    try {
+      const res = await fetch('/api/admin/actions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'assign_owners' }),
+      });
+      const d = await res.json();
+      if (!res.ok) throw new Error(d.error || 'Failed');
+      alert(`Done!\n\n${d.log?.join('\n') || ''}\n\nAssigned: ${d.assigned}/${d.total} listings`);
+      refreshData();
+    } catch (e: any) {
+      alert('Failed: ' + e.message);
+    } finally {
+      setAssigning(false);
+    }
+  };
+
   const refreshData = () => {
     setDataLoading(true);
     fetch('/api/admin/data')
@@ -168,13 +198,78 @@ export default function AdminPage() {
         const err = await res.json();
         alert(`Error: ${err.error || 'Action failed'}`);
       } else {
-        refreshData();
+        // For delete_listing, optimistically remove from local state
+        if (action === 'delete_listing') {
+          setData((prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              listings: prev.listings.filter((l) => l.id !== params.listing_id),
+              summary: { ...prev.summary, totalListings: prev.summary.totalListings - 1 },
+            };
+          });
+          if (selectedListing?.id === params.listing_id) {
+            setSelectedListing(null);
+          }
+        } else {
+          refreshData();
+        }
       }
     } catch {
       alert('Network error');
     } finally {
       setActionLoading(null);
       setConfirmAction(null);
+    }
+  };
+
+  // Optimistic toggle — no full reload
+  const handleToggleListing = async (listing: AdminListing) => {
+    const newActive = !listing.is_active;
+    const revert = () => {
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          listings: prev.listings.map((l) => l.id === listing.id ? { ...l, is_active: !newActive } : l),
+          summary: { ...prev.summary, activeListings: prev.summary.activeListings + (newActive ? -1 : 1) },
+        };
+      });
+      if (selectedListing?.id === listing.id) {
+        setSelectedListing((prev) => prev ? { ...prev, is_active: !newActive } : prev);
+      }
+    };
+
+    // Optimistic update
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        listings: prev.listings.map((l) => l.id === listing.id ? { ...l, is_active: newActive } : l),
+        summary: { ...prev.summary, activeListings: prev.summary.activeListings + (newActive ? 1 : -1) },
+      };
+    });
+    if (selectedListing?.id === listing.id) {
+      setSelectedListing((prev) => prev ? { ...prev, is_active: newActive } : prev);
+    }
+
+    setActionLoading(`toggle_listing_${listing.id}`);
+    try {
+      const res = await fetch('/api/admin/actions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'toggle_listing', listing_id: listing.id, is_active: newActive }),
+      });
+      if (!res.ok) {
+        revert();
+        const err = await res.json();
+        alert(`Error: ${err.error || 'Action failed'}`);
+      }
+    } catch {
+      revert();
+      alert('Network error');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -188,7 +283,6 @@ export default function AdminPage() {
       });
       const d = await res.json();
       if (!res.ok) throw new Error(d.error);
-      // Open the magic link in a new tab
       window.open(d.url, '_blank');
     } catch (e: any) {
       alert('Impersonate failed: ' + e.message);
@@ -320,6 +414,14 @@ export default function AdminPage() {
 
             <div className="flex items-center gap-3">
               <button
+                onClick={handleAssignOwners}
+                disabled={assigning}
+                className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              >
+                {assigning ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Users className="h-3.5 w-3.5" />}
+                <span className="hidden sm:inline">{assigning ? 'Assigning...' : 'Assign Owners'}</span>
+              </button>
+              <button
                 onClick={handleSeed}
                 disabled={seeding}
                 className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
@@ -342,7 +444,7 @@ export default function AdminPage() {
             {(['overview', 'users', 'listings'] as const).map((tab) => (
               <button
                 key={tab}
-                onClick={() => { setActiveTab(tab); setSearchQuery(''); }}
+                onClick={() => { setActiveTab(tab); setSearchQuery(''); setSelectedListing(null); }}
                 className={cn(
                   'px-4 py-2.5 text-[13px] font-medium transition-colors border-b-2 -mb-px',
                   activeTab === tab
@@ -411,13 +513,12 @@ export default function AdminPage() {
                             <p className="text-sm font-semibold text-foreground tabular-nums">{listing.view_count.toLocaleString()}</p>
                             <p className="text-[10px] text-muted-foreground">views</p>
                           </div>
-                          <Link
-                            href={`/listing/${listing.id}`}
-                            target="_blank"
+                          <button
+                            onClick={() => { setActiveTab('listings'); setSelectedListing(listing); }}
                             className="text-gray-300 hover:text-gray-600 transition-colors shrink-0"
                           >
                             <ExternalLink className="h-3.5 w-3.5" />
-                          </Link>
+                          </button>
                         </div>
                       ))}
                   </div>
@@ -548,7 +649,11 @@ export default function AdminPage() {
                           {isExpanded && userListings.length > 0 && (
                             <div className="border-t border-gray-100 bg-gray-50/30">
                               {userListings.map((listing) => (
-                                <div key={listing.id} className="flex items-center gap-3 px-4 sm:px-5 pl-8 sm:pl-[68px] py-2.5">
+                                <button
+                                  key={listing.id}
+                                  onClick={() => { setActiveTab('listings'); setSelectedListing(listing); }}
+                                  className="w-full flex items-center gap-3 px-4 sm:px-5 pl-8 sm:pl-[68px] py-2.5 hover:bg-gray-100/50 transition-colors text-left"
+                                >
                                   {listing.images?.[0] ? (
                                     <img src={listing.images[0]} alt="" className="h-8 w-8 rounded-lg object-cover bg-gray-100 shrink-0" />
                                   ) : (
@@ -569,10 +674,7 @@ export default function AdminPage() {
                                   <span className="text-xs font-medium text-foreground shrink-0 hidden sm:block">
                                     {formatPrice(listing.price, listing.currency)}
                                   </span>
-                                  <Link href={`/listing/${listing.id}`} target="_blank" className="text-gray-300 hover:text-gray-600 transition-colors shrink-0">
-                                    <ExternalLink className="h-3 w-3" />
-                                  </Link>
-                                </div>
+                                </button>
                               ))}
                             </div>
                           )}
@@ -589,157 +691,141 @@ export default function AdminPage() {
 
             {/* Listings Tab */}
             {activeTab === 'listings' && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search listings..."
-                      className="w-full h-10 pl-9 pr-4 rounded-xl bg-white border border-gray-200 text-foreground placeholder:text-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300"
-                    />
-                  </div>
-                  <span className="text-xs text-muted-foreground shrink-0">{filteredListings.length} listings</span>
-                </div>
-
-                <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white">
-                  {/* Desktop sort headers */}
-                  <div className="hidden sm:grid grid-cols-[1fr_90px_70px_70px_80px_110px] gap-2 px-5 py-2.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
-                    <SortHeader label="Listing" field="title" current={listingSort} onSort={toggleListingSort} />
-                    <SortHeader label="Price" field="price" current={listingSort} onSort={toggleListingSort} className="justify-end" />
-                    <SortHeader label="Views" field="view_count" current={listingSort} onSort={toggleListingSort} className="justify-end" />
-                    <SortHeader label="Msgs" field="inquiry_count" current={listingSort} onSort={toggleListingSort} className="justify-end" />
-                    <SortHeader label="Date" field="created_at" current={listingSort} onSort={toggleListingSort} className="justify-end" />
-                    <span className="text-right">Actions</span>
-                  </div>
-
-                  {/* Mobile sort */}
-                  <div className="sm:hidden flex items-center gap-2 px-4 py-2.5 border-b border-gray-100 bg-gray-50/50 overflow-x-auto">
-                    <span className="text-[10px] text-muted-foreground uppercase shrink-0">Sort:</span>
-                    {(['created_at', 'view_count', 'price'] as SortField[]).map((field) => (
-                      <button
-                        key={field}
-                        onClick={() => toggleListingSort(field)}
-                        className={cn(
-                          'text-[11px] font-medium px-2.5 py-1 rounded-lg transition-colors shrink-0',
-                          listingSort.field === field ? 'bg-gray-900 text-white' : 'text-muted-foreground hover:bg-gray-100'
-                        )}
-                      >
-                        {field === 'created_at' ? 'Date' : field === 'view_count' ? 'Views' : 'Price'}
-                      </button>
-                    ))}
+              selectedListing ? (
+                <ListingDetail
+                  listing={selectedListing}
+                  owner={userMap.get(selectedListing.user_id)}
+                  actionLoading={actionLoading}
+                  onBack={() => setSelectedListing(null)}
+                  onToggle={() => handleToggleListing(selectedListing)}
+                  onDelete={() => setConfirmAction({ type: 'delete_listing', id: selectedListing.id, label: `Delete "${selectedListing.title || 'Untitled'}"? This cannot be undone.` })}
+                />
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search listings..."
+                        className="w-full h-10 pl-9 pr-4 rounded-xl bg-white border border-gray-200 text-foreground placeholder:text-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-300"
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground shrink-0">{filteredListings.length} listings</span>
                   </div>
 
-                  <div className="divide-y divide-gray-50">
-                    {filteredListings.map((listing) => {
-                      const owner = userMap.get(listing.user_id);
-                      return (
-                        <div key={listing.id} className="px-4 sm:px-5 py-3 hover:bg-gray-50/50 transition-colors">
-                          {/* Desktop */}
-                          <div className="hidden sm:grid grid-cols-[1fr_90px_70px_70px_80px_110px] gap-2 items-center">
-                            <div className="flex items-center gap-3 min-w-0">
-                              {listing.images?.[0] ? (
-                                <img src={listing.images[0]} alt="" className="h-10 w-10 rounded-lg object-cover bg-gray-100 shrink-0" />
-                              ) : (
-                                <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
-                                  <Home className="h-4 w-4 text-gray-300" />
+                  <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white">
+                    {/* Desktop sort headers */}
+                    <div className="hidden sm:grid grid-cols-[1fr_90px_70px_70px_80px_40px] gap-2 px-5 py-2.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider border-b border-gray-100 bg-gray-50/50">
+                      <SortHeader label="Listing" field="title" current={listingSort} onSort={toggleListingSort} />
+                      <SortHeader label="Price" field="price" current={listingSort} onSort={toggleListingSort} className="justify-end" />
+                      <SortHeader label="Views" field="view_count" current={listingSort} onSort={toggleListingSort} className="justify-end" />
+                      <SortHeader label="Msgs" field="inquiry_count" current={listingSort} onSort={toggleListingSort} className="justify-end" />
+                      <SortHeader label="Date" field="created_at" current={listingSort} onSort={toggleListingSort} className="justify-end" />
+                      <span />
+                    </div>
+
+                    {/* Mobile sort */}
+                    <div className="sm:hidden flex items-center gap-2 px-4 py-2.5 border-b border-gray-100 bg-gray-50/50 overflow-x-auto">
+                      <span className="text-[10px] text-muted-foreground uppercase shrink-0">Sort:</span>
+                      {(['created_at', 'view_count', 'price'] as SortField[]).map((field) => (
+                        <button
+                          key={field}
+                          onClick={() => toggleListingSort(field)}
+                          className={cn(
+                            'text-[11px] font-medium px-2.5 py-1 rounded-lg transition-colors shrink-0',
+                            listingSort.field === field ? 'bg-gray-900 text-white' : 'text-muted-foreground hover:bg-gray-100'
+                          )}
+                        >
+                          {field === 'created_at' ? 'Date' : field === 'view_count' ? 'Views' : 'Price'}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="divide-y divide-gray-50">
+                      {filteredListings.map((listing) => {
+                        const owner = userMap.get(listing.user_id);
+                        return (
+                          <div
+                            key={listing.id}
+                            className="px-4 sm:px-5 py-3 hover:bg-gray-50/50 transition-colors cursor-pointer"
+                            onClick={() => setSelectedListing(listing)}
+                          >
+                            {/* Desktop */}
+                            <div className="hidden sm:grid grid-cols-[1fr_90px_70px_70px_80px_40px] gap-2 items-center">
+                              <div className="flex items-center gap-3 min-w-0">
+                                {listing.images?.[0] ? (
+                                  <img src={listing.images[0]} alt="" className="h-10 w-10 rounded-lg object-cover bg-gray-100 shrink-0" />
+                                ) : (
+                                  <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                                    <Home className="h-4 w-4 text-gray-300" />
+                                  </div>
+                                )}
+                                <div className="min-w-0">
+                                  <p className="text-sm font-medium text-foreground truncate">{listing.title || 'Untitled'}</p>
+                                  <div className="flex items-center gap-1.5">
+                                    <StatusBadge listing={listing} />
+                                    <span className="text-[10px] text-muted-foreground truncate">
+                                      {owner?.full_name || 'Unknown'} &middot; {listing.city || ''} <span className="text-gray-300 font-mono">{listing.id.slice(0, 8)}</span>
+                                    </span>
+                                  </div>
                                 </div>
-                              )}
-                              <div className="min-w-0">
-                                <p className="text-sm font-medium text-foreground truncate">{listing.title || 'Untitled'}</p>
-                                <div className="flex items-center gap-1.5">
-                                  <StatusBadge listing={listing} />
-                                  <span className="text-[10px] text-muted-foreground truncate">
-                                    {owner?.full_name || 'Unknown'} &middot; {listing.city || ''} <span className="text-gray-300 font-mono">{listing.id.slice(0, 8)}</span>
-                                  </span>
+                              </div>
+                              <p className="text-sm font-medium text-foreground text-right tabular-nums">{formatPrice(listing.price, listing.currency)}</p>
+                              <p className="text-sm text-muted-foreground text-right tabular-nums">{listing.view_count.toLocaleString()}</p>
+                              <p className="text-sm text-muted-foreground text-right tabular-nums">{listing.inquiry_count}</p>
+                              <p className="text-xs text-muted-foreground text-right">{new Date(listing.created_at).toLocaleDateString()}</p>
+                              <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
+                                <ListingDropdown
+                                  listing={listing}
+                                  actionLoading={actionLoading}
+                                  onToggle={() => handleToggleListing(listing)}
+                                  onDelete={() => setConfirmAction({ type: 'delete_listing', id: listing.id, label: `Delete "${listing.title || 'Untitled'}"? This cannot be undone.` })}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Mobile */}
+                            <div className="sm:hidden">
+                              <div className="flex items-center gap-3">
+                                {listing.images?.[0] ? (
+                                  <img src={listing.images[0]} alt="" className="h-12 w-12 rounded-lg object-cover bg-gray-100 shrink-0" />
+                                ) : (
+                                  <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                                    <Home className="h-5 w-5 text-gray-300" />
+                                  </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-foreground truncate">{listing.title || 'Untitled'}</p>
+                                  <div className="flex items-center gap-1.5 mt-0.5">
+                                    <StatusBadge listing={listing} />
+                                    <span className="text-[10px] text-muted-foreground">{formatPrice(listing.price, listing.currency)}</span>
+                                  </div>
+                                  <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
+                                    <span>{listing.view_count} views</span>
+                                    <span>{listing.inquiry_count} msgs</span>
+                                    <span>{new Date(listing.created_at).toLocaleDateString()}</span>
+                                  </div>
+                                </div>
+                                <div onClick={(e) => e.stopPropagation()} className="shrink-0">
+                                  <ListingDropdown
+                                    listing={listing}
+                                    actionLoading={actionLoading}
+                                    onToggle={() => handleToggleListing(listing)}
+                                    onDelete={() => setConfirmAction({ type: 'delete_listing', id: listing.id, label: `Delete "${listing.title || 'Untitled'}"?` })}
+                                  />
                                 </div>
                               </div>
                             </div>
-                            <p className="text-sm font-medium text-foreground text-right tabular-nums">{formatPrice(listing.price, listing.currency)}</p>
-                            <p className="text-sm text-muted-foreground text-right tabular-nums">{listing.view_count.toLocaleString()}</p>
-                            <p className="text-sm text-muted-foreground text-right tabular-nums">{listing.inquiry_count}</p>
-                            <p className="text-xs text-muted-foreground text-right">{new Date(listing.created_at).toLocaleDateString()}</p>
-                            <div className="flex items-center gap-1">
-                              <button
-                                onClick={(e) => { e.stopPropagation(); runAction('toggle_listing', { listing_id: listing.id, is_active: !listing.is_active }); }}
-                                className={cn('p-1 rounded-md transition-colors', listing.is_active ? 'text-emerald-500 hover:bg-emerald-50' : 'text-gray-300 hover:bg-gray-100')}
-                                title={listing.is_active ? 'Deactivate' : 'Activate'}
-                              >
-                                {actionLoading === `toggle_listing_${listing.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Power className="h-3.5 w-3.5" />}
-                              </button>
-                              <Link href={`/edit-listing/${listing.id}`} target="_blank" className="p-1 rounded-md text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="Edit">
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Link>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); setConfirmAction({ type: 'delete_listing', id: listing.id, label: `Delete "${listing.title || 'Untitled'}"? This cannot be undone.` }); }}
-                                className="p-1 rounded-md text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors"
-                                title="Delete"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                              <Link href={`/listing/${listing.id}`} target="_blank" className="p-1 rounded-md text-gray-300 hover:text-gray-600 hover:bg-gray-100 transition-colors" title="View">
-                                <ExternalLink className="h-3.5 w-3.5" />
-                              </Link>
-                            </div>
                           </div>
-
-                          {/* Mobile */}
-                          <div className="sm:hidden">
-                            <div className="flex items-center gap-3">
-                              {listing.images?.[0] ? (
-                                <img src={listing.images[0]} alt="" className="h-12 w-12 rounded-lg object-cover bg-gray-100 shrink-0" />
-                              ) : (
-                                <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
-                                  <Home className="h-5 w-5 text-gray-300" />
-                                </div>
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-foreground truncate">{listing.title || 'Untitled'}</p>
-                                <div className="flex items-center gap-1.5 mt-0.5">
-                                  <StatusBadge listing={listing} />
-                                  <span className="text-[10px] text-muted-foreground">{formatPrice(listing.price, listing.currency)}</span>
-                                </div>
-                                <div className="flex items-center gap-3 mt-1 text-[10px] text-muted-foreground">
-                                  <span>{listing.view_count} views</span>
-                                  <span>{listing.inquiry_count} msgs</span>
-                                  <span>{new Date(listing.created_at).toLocaleDateString()}</span>
-                                  <span className="text-gray-300 font-mono">{listing.id.slice(0, 8)}</span>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 mt-2 ml-[60px]">
-                              <ActionBtn
-                                icon={Power}
-                                label={listing.is_active ? 'Deactivate' : 'Activate'}
-                                loading={actionLoading === `toggle_listing_${listing.id}`}
-                                onClick={() => runAction('toggle_listing', { listing_id: listing.id, is_active: !listing.is_active })}
-                                variant={listing.is_active ? 'green' : 'default'}
-                                small
-                              />
-                              <Link href={`/edit-listing/${listing.id}`} target="_blank" className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-muted-foreground hover:bg-gray-100 transition-colors">
-                                <Pencil className="h-3 w-3" /> Edit
-                              </Link>
-                              <ActionBtn
-                                icon={Trash2}
-                                label="Delete"
-                                loading={actionLoading === `delete_listing_${listing.id}`}
-                                onClick={() => setConfirmAction({ type: 'delete_listing', id: listing.id, label: `Delete "${listing.title || 'Untitled'}"?` })}
-                                variant="red"
-                                small
-                              />
-                              <Link href={`/listing/${listing.id}`} target="_blank" className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-medium text-muted-foreground hover:bg-gray-100 transition-colors">
-                                <ExternalLink className="h-3 w-3" /> View
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )
             )}
           </>
         )}
@@ -783,6 +869,164 @@ export default function AdminPage() {
 }
 
 // --- Components ---
+
+function ListingDropdown({ listing, actionLoading, onToggle, onDelete }: {
+  listing: AdminListing;
+  actionLoading: string | null;
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
+  const isToggling = actionLoading === `toggle_listing_${listing.id}`;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+          <MoreHorizontal className="h-4 w-4" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-44">
+        <DropdownMenuItem onClick={onToggle} disabled={isToggling}>
+          {isToggling ? <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" /> : <Power className={cn('h-3.5 w-3.5 mr-2', listing.is_active ? 'text-emerald-500' : 'text-gray-400')} />}
+          {listing.is_active ? 'Deactivate' : 'Activate'}
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={`/edit-listing/${listing.id}`} target="_blank">
+            <Pencil className="h-3.5 w-3.5 mr-2" />
+            Edit
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={`/listing/${listing.id}`} target="_blank">
+            <ExternalLink className="h-3.5 w-3.5 mr-2" />
+            View on site
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onDelete} className="text-red-600 focus:text-red-600">
+          <Trash2 className="h-3.5 w-3.5 mr-2" />
+          Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function ListingDetail({ listing, owner, actionLoading, onBack, onToggle, onDelete }: {
+  listing: AdminListing;
+  owner: Profile | undefined;
+  actionLoading: string | null;
+  onBack: () => void;
+  onToggle: () => void;
+  onDelete: () => void;
+}) {
+  const isToggling = actionLoading === `toggle_listing_${listing.id}`;
+  return (
+    <div className="space-y-5">
+      <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+        <ArrowLeft className="h-4 w-4" /> Back to listings
+      </button>
+
+      <div className="rounded-2xl border border-gray-100 overflow-hidden bg-white">
+        <div className="flex flex-col sm:flex-row">
+          {listing.images?.[0] && (
+            <div className="sm:w-72 h-48 sm:h-auto shrink-0">
+              <img src={listing.images[0]} alt="" className="w-full h-full object-cover" />
+            </div>
+          )}
+          <div className="flex-1 p-5 space-y-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <StatusBadge listing={listing} />
+                <span className="text-xs text-muted-foreground font-mono">{listing.id.slice(0, 8)}</span>
+                <span className="text-xs text-muted-foreground capitalize">{listing.listing_type}</span>
+              </div>
+              <h2 className="text-xl font-bold text-foreground">{listing.title || 'Untitled'}</h2>
+              {(listing.city || listing.country) && (
+                <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {listing.city}{listing.country ? `, ${listing.country}` : ''}
+                </p>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+              <span className="font-semibold text-foreground text-lg">{formatPrice(listing.price, listing.currency)}{listing.listing_type === 'rent' ? '/mo' : ''}</span>
+            </div>
+
+            <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1"><Home className="h-3.5 w-3.5" /> {listing.property_type}</span>
+              {listing.bedrooms != null && <span className="flex items-center gap-1"><BedDouble className="h-3.5 w-3.5" /> {listing.bedrooms} bed</span>}
+              {listing.area_sqm != null && <span className="flex items-center gap-1"><Ruler className="h-3.5 w-3.5" /> {listing.area_sqm} m&sup2;</span>}
+            </div>
+
+            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" /> {listing.view_count} views</span>
+              <span className="flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" /> {listing.inquiry_count} inquiries</span>
+              <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" /> {new Date(listing.created_at).toLocaleDateString()}</span>
+            </div>
+
+            {owner && (
+              <div className="flex items-center gap-2 text-sm pt-1 border-t border-gray-100">
+                <div className="h-6 w-6 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-semibold text-gray-500">
+                  {owner.full_name?.charAt(0)?.toUpperCase() || '?'}
+                </div>
+                <span className="text-muted-foreground">Owner:</span>
+                <span className="font-medium text-foreground">{owner.full_name || 'Unknown'}</span>
+                {owner.email && <span className="text-xs text-muted-foreground">({owner.email})</span>}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={onToggle}
+          disabled={isToggling}
+          className={cn(
+            'inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-colors disabled:opacity-50',
+            listing.is_active
+              ? 'bg-amber-50 text-amber-700 hover:bg-amber-100'
+              : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+          )}
+        >
+          {isToggling ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Power className="h-3.5 w-3.5" />}
+          {listing.is_active ? 'Deactivate' : 'Activate'}
+        </button>
+        <Link
+          href={`/edit-listing/${listing.id}`}
+          target="_blank"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors"
+        >
+          <Pencil className="h-3.5 w-3.5" /> Edit
+        </Link>
+        <Link
+          href={`/listing/${listing.id}`}
+          target="_blank"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors"
+        >
+          <ExternalLink className="h-3.5 w-3.5" /> View on site
+        </Link>
+        <button
+          onClick={onDelete}
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
+        >
+          <Trash2 className="h-3.5 w-3.5" /> Delete
+        </button>
+      </div>
+
+      {/* Image gallery */}
+      {listing.images && listing.images.length > 1 && (
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          {listing.images.map((img, i) => (
+            <img key={i} src={img} alt="" className="rounded-xl aspect-[4/3] object-cover w-full bg-gray-100" />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function StatCard({ icon: Icon, label, value, color }: {
   icon: React.ElementType; label: string; value: number;

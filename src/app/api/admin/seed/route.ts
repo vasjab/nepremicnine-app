@@ -663,34 +663,28 @@ export async function POST() {
   const log: string[] = [];
 
   try {
-    // ── Step 1: Check migrations ──────────────────────────────────
+    // ── Step 1: Check migrations (non-blocking) ─────────────────
     log.push('Checking profile columns...');
     const { data: testProfile } = await supabase.from('profiles').select('*').limit(1).single();
     const existingCols = testProfile ? Object.keys(testProfile) : [];
     const neededCols = ['user_intents', 'onboarding_completed', 'employment_status', 'management_type'];
     const missingCols = neededCols.filter(c => !existingCols.includes(c));
-    if (missingCols.length > 0) {
-      log.push(`Missing profile columns: ${missingCols.join(', ')}`);
-      return NextResponse.json({
-        ok: false, log,
-        error: 'Enhanced profiles migration not run. Execute supabase/migrations/20260306100000_enhanced_profiles.sql in Supabase SQL editor first.',
-      }, { status: 400 });
+    const hasEnhancedProfiles = missingCols.length === 0;
+    if (!hasEnhancedProfiles) {
+      log.push(`Missing profile columns (will skip enhanced fields): ${missingCols.join(', ')}`);
+    } else {
+      log.push('All profile columns exist');
     }
-    log.push('All profile columns exist');
 
-    // Applications table — check if exists
+    // Applications table — check if exists (non-blocking)
     log.push('Checking applications table...');
     const { error: appTableCheck } = await supabase.from('applications').select('id').limit(1);
-    if (appTableCheck?.message?.includes('does not exist') || appTableCheck?.code === '42P01') {
-      log.push('Applications table does not exist — please run the applications migration SQL manually');
-      log.push('File: supabase/migrations/20260306200000_applications.sql');
-      return NextResponse.json({
-        ok: false,
-        log,
-        error: 'Applications table must be created first. Run the migration in Supabase SQL editor.',
-      }, { status: 400 });
+    const hasApplicationsTable = !(appTableCheck?.message?.includes('does not exist') || appTableCheck?.code === '42P01');
+    if (!hasApplicationsTable) {
+      log.push('Applications table does not exist — skipping applications seeding');
+    } else {
+      log.push('Applications table exists');
     }
-    log.push('Applications table exists');
 
     // ── Step 2: Create landlord users + profiles ────────────────
     log.push('Creating landlord users...');
@@ -703,11 +697,13 @@ export async function POST() {
         full_name: lp.name,
         bio: lp.bio,
         phone: `+386 ${randInt(30, 70, rand)} ${randInt(100, 999, rand)} ${randInt(100, 999, rand)}`,
-        user_intents: ['renting_out'],
-        onboarding_completed: true,
-        management_type: lp.management_type,
-        num_properties: lp.num_properties,
-        response_time: lp.response_time,
+        ...(hasEnhancedProfiles ? {
+          user_intents: ['renting_out'],
+          onboarding_completed: true,
+          management_type: lp.management_type,
+          num_properties: lp.num_properties,
+          response_time: lp.response_time,
+        } : {}),
       }, { onConflict: 'user_id' });
     }
     log.push(`Created ${landlordIds.length} landlord profiles`);
@@ -723,14 +719,16 @@ export async function POST() {
         full_name: tp.name,
         bio: tp.bio,
         phone: `+386 ${randInt(30, 70, rand)} ${randInt(100, 999, rand)} ${randInt(100, 999, rand)}`,
-        user_intents: ['rent'],
-        onboarding_completed: true,
-        employment_status: tp.employment,
-        monthly_income_range: tp.income,
-        move_in_timeline: tp.timeline,
-        household_size: tp.household,
-        has_pets: tp.pets,
-        is_smoker: tp.smoker,
+        ...(hasEnhancedProfiles ? {
+          user_intents: ['rent'],
+          onboarding_completed: true,
+          employment_status: tp.employment,
+          monthly_income_range: tp.income,
+          move_in_timeline: tp.timeline,
+          household_size: tp.household,
+          has_pets: tp.pets,
+          is_smoker: tp.smoker,
+        } : {}),
       }, { onConflict: 'user_id' });
     }
     log.push(`Created ${tenantIds.length} tenant profiles`);
@@ -767,60 +765,62 @@ export async function POST() {
     }
 
     // ── Step 5: Create mock applications ────────────────────────
-    log.push('Creating mock applications...');
-    // Get rental listings
-    const { data: rentalListings } = await supabase
-      .from('listings')
-      .select('id, user_id, title')
-      .eq('listing_type', 'rent')
-      .eq('is_active', true)
-      .limit(30);
-
     let appsCreated = 0;
-    if (rentalListings && rentalListings.length > 0) {
-      const statuses = ['applied', 'viewing_scheduled', 'under_review', 'accepted', 'declined'] as const;
-      for (let i = 0; i < Math.min(rentalListings.length, 25); i++) {
-        const listing = rentalListings[i];
-        // 1-3 tenants apply to each listing
-        const numApplicants = randInt(1, 3, rand);
-        const applicants = pickN(tenantIds, numApplicants, rand);
+    if (hasApplicationsTable) {
+      log.push('Creating mock applications...');
+      const { data: rentalListings } = await supabase
+        .from('listings')
+        .select('id, user_id, title')
+        .eq('listing_type', 'rent')
+        .eq('is_active', true)
+        .limit(30);
 
-        for (const tenantId of applicants) {
-          if (tenantId === listing.user_id) continue; // skip if tenant is the landlord
+      if (rentalListings && rentalListings.length > 0) {
+        const statuses = ['applied', 'viewing_scheduled', 'under_review', 'accepted', 'declined'] as const;
+        for (let i = 0; i < Math.min(rentalListings.length, 25); i++) {
+          const listing = rentalListings[i];
+          const numApplicants = randInt(1, 3, rand);
+          const applicants = pickN(tenantIds, numApplicants, rand);
 
-          const status = pick(statuses, rand);
-          const tp = TENANT_PROFILES[tenantIds.indexOf(tenantId)];
-          const viewingDate = status === 'viewing_scheduled'
-            ? new Date(Date.now() + randInt(1, 14, rand) * 86400000).toISOString()
-            : null;
+          for (const tenantId of applicants) {
+            if (tenantId === listing.user_id) continue;
 
-          const { error: appErr } = await supabase.from('applications').upsert({
-            listing_id: listing.id,
-            renter_id: tenantId,
-            landlord_id: listing.user_id,
-            status,
-            cover_letter: pick(COVER_LETTERS, rand) || null,
-            viewing_date: viewingDate,
-            landlord_notes: maybe(0.3, rand) ? pick(['Good candidate', 'Schedule follow-up', 'Needs income verification', 'Very promising', 'Check references'], rand) : null,
-            renter_snapshot: tp ? {
-              full_name: tp.name,
-              email: tp.email,
-              phone: `+386 ${randInt(30, 70, rand)} ${randInt(100, 999, rand)} ${randInt(100, 999, rand)}`,
-              employment_status: tp.employment,
-              monthly_income_range: tp.income,
-              move_in_timeline: tp.timeline,
-              household_size: tp.household,
-              has_pets: tp.pets,
-              is_smoker: tp.smoker,
-              bio: tp.bio,
-            } : null,
-          }, { onConflict: 'listing_id,renter_id' });
+            const status = pick(statuses, rand);
+            const tp = TENANT_PROFILES[tenantIds.indexOf(tenantId)];
+            const viewingDate = status === 'viewing_scheduled'
+              ? new Date(Date.now() + randInt(1, 14, rand) * 86400000).toISOString()
+              : null;
 
-          if (!appErr) appsCreated++;
+            const { error: appErr } = await supabase.from('applications').upsert({
+              listing_id: listing.id,
+              renter_id: tenantId,
+              landlord_id: listing.user_id,
+              status,
+              cover_letter: pick(COVER_LETTERS, rand) || null,
+              viewing_date: viewingDate,
+              landlord_notes: maybe(0.3, rand) ? pick(['Good candidate', 'Schedule follow-up', 'Needs income verification', 'Very promising', 'Check references'], rand) : null,
+              renter_snapshot: tp ? {
+                full_name: tp.name,
+                email: tp.email,
+                phone: `+386 ${randInt(30, 70, rand)} ${randInt(100, 999, rand)} ${randInt(100, 999, rand)}`,
+                employment_status: tp.employment,
+                monthly_income_range: tp.income,
+                move_in_timeline: tp.timeline,
+                household_size: tp.household,
+                has_pets: tp.pets,
+                is_smoker: tp.smoker,
+                bio: tp.bio,
+              } : null,
+            }, { onConflict: 'listing_id,renter_id' });
+
+            if (!appErr) appsCreated++;
+          }
         }
       }
+      log.push(`Created ${appsCreated} mock applications`);
+    } else {
+      log.push('Skipped applications (table not found)');
     }
-    log.push(`Created ${appsCreated} mock applications`);
 
     // ── Step 6: Create mock conversations & messages ─────────────
     log.push('Creating mock conversations and messages...');
