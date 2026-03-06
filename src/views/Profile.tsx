@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Save, User, Mail, FileText, LogOut } from 'lucide-react';
+import { Save, User, Mail, FileText, LogOut, Key, ShoppingCart, Home as HomeIcon, Building2, Briefcase, Users, PawPrint, Cigarette, Clock, Sparkles } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
@@ -15,6 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 import { RecentlyViewedListings } from '@/components/RecentlyViewedListings';
 import { NotificationPreferences } from '@/components/NotificationPreferences';
 import { Profile } from '@/types/listing';
+import { OnboardingModal } from '@/components/onboarding/OnboardingModal';
+import { cn } from '@/lib/utils';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -24,6 +26,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
@@ -230,6 +233,124 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
+                {/* Onboarding prompt */}
+                {profile && !profile.onboarding_completed && (
+                  <button
+                    onClick={() => setShowOnboarding(true)}
+                    className="w-full rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/50 p-5 text-left hover:border-slate-400 hover:bg-slate-50 transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center shrink-0">
+                        <Sparkles className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Complete your profile</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Tell us what you're looking for so we can personalize your experience</p>
+                      </div>
+                    </div>
+                  </button>
+                )}
+
+                {/* Intent badges */}
+                {profile?.user_intents && profile.user_intents.length > 0 && (
+                  <div className="glass-card overflow-hidden">
+                    <div className="flex items-center justify-between border-b border-black/[0.06] dark:border-white/[0.06] px-5 py-3">
+                      <div className="flex items-center gap-2.5">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                          <Sparkles className="h-3.5 w-3.5 text-gray-500" />
+                        </div>
+                        <span className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">My Interests</span>
+                      </div>
+                      <button
+                        onClick={() => setShowOnboarding(true)}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        Edit
+                      </button>
+                    </div>
+                    <div className="p-5">
+                      <div className="flex flex-wrap gap-2">
+                        {profile.user_intents.map(intent => {
+                          const config: Record<string, { label: string; icon: typeof Key; color: string }> = {
+                            rent: { label: 'Renting', icon: Key, color: 'bg-blue-50 text-blue-700 border-blue-200' },
+                            buy: { label: 'Buying', icon: ShoppingCart, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+                            renting_out: { label: 'Renting out', icon: HomeIcon, color: 'bg-amber-50 text-amber-700 border-amber-200' },
+                            selling: { label: 'Selling', icon: Building2, color: 'bg-violet-50 text-violet-700 border-violet-200' },
+                          };
+                          const c = config[intent];
+                          if (!c) return null;
+                          return (
+                            <span key={intent} className={cn('inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border', c.color)}>
+                              <c.icon className="h-3 w-3" />
+                              {c.label}
+                            </span>
+                          );
+                        })}
+                      </div>
+
+                      {/* Renter details summary */}
+                      {(profile.user_intents.includes('rent') || profile.user_intents.includes('buy')) && profile.employment_status && (
+                        <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 gap-3 text-xs">
+                          {profile.employment_status && (
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Briefcase className="h-3 w-3" />
+                              <span className="capitalize">{profile.employment_status.replace('_', '-')}</span>
+                            </div>
+                          )}
+                          {profile.household_size && (
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Users className="h-3 w-3" />
+                              <span>{profile.household_size} {profile.household_size === 1 ? 'person' : 'people'}</span>
+                            </div>
+                          )}
+                          {profile.move_in_timeline && (
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              <span className="capitalize">{profile.move_in_timeline.replace(/_/g, ' ')}</span>
+                            </div>
+                          )}
+                          {profile.has_pets && (
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <PawPrint className="h-3 w-3" />
+                              <span>Has pets</span>
+                            </div>
+                          )}
+                          {profile.is_smoker && (
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Cigarette className="h-3 w-3" />
+                              <span>Smoker</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Landlord details summary */}
+                      {(profile.user_intents.includes('renting_out') || profile.user_intents.includes('selling')) && profile.management_type && (
+                        <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 gap-3 text-xs">
+                          {profile.management_type && (
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Building2 className="h-3 w-3" />
+                              <span className="capitalize">{profile.management_type.replace('_', ' ')}</span>
+                            </div>
+                          )}
+                          {profile.num_properties && (
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <HomeIcon className="h-3 w-3" />
+                              <span>{profile.num_properties} {profile.num_properties === 1 ? 'property' : 'properties'}</span>
+                            </div>
+                          )}
+                          {profile.response_time && (
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              <span className="capitalize">{profile.response_time.replace(/_/g, ' ')}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Divider */}
                 <div className="border-b border-gray-100" />
 
@@ -268,6 +389,24 @@ export default function ProfilePage() {
           </div>
         </div>
       </main>
+
+      <OnboardingModal
+        open={showOnboarding}
+        onClose={() => {
+          setShowOnboarding(false);
+          // Refetch profile to get updated data
+          if (user) {
+            supabase
+              .from('profiles')
+              .select('*')
+              .eq('user_id', user.id)
+              .single()
+              .then(({ data }) => {
+                if (data) setProfile(data as Profile);
+              });
+          }
+        }}
+      />
     </div>
   );
 }

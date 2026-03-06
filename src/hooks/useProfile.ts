@@ -10,6 +10,17 @@ export interface ProfileData {
   phone: string | null;
   created_at: string;
   updated_at: string;
+  user_intents: string[];
+  onboarding_completed: boolean;
+  employment_status: string | null;
+  monthly_income_range: string | null;
+  move_in_timeline: string | null;
+  household_size: number | null;
+  has_pets: boolean;
+  is_smoker: boolean;
+  num_properties: number | null;
+  management_type: string | null;
+  response_time: string | null;
 }
 
 /**
