@@ -7,6 +7,7 @@ import { List, MapIcon, X } from 'lucide-react';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { Listing, ListingFilters, SortOption } from '@/types/listing';
 import { useListings } from '@/hooks/useListings';
+import { usePersistedFilters } from '@/hooks/usePersistedFilters';
 import { useMobileViewPreference } from '@/hooks/useMobileViewPreference';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,7 +15,6 @@ import { Header } from '@/components/Header';
 import { FilterBar } from '@/components/FilterBar';
 import { ListingCard } from '@/components/ListingCard';
 import { MapView } from '@/components/MapView';
-import { ListingDetailModal } from '@/components/ListingDetailModal';
 import { ListingSkeletonGrid } from '@/components/ListingSkeleton';
 import { MobileMapFilterButton } from '@/components/MobileMapFilterButton';
 import { Button } from '@/components/ui/button';
@@ -41,12 +41,14 @@ const Index = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
   const { trigger: haptic } = useHapticFeedback();
-  const [filters, setFilters] = useState<ListingFilters>({ listing_type: 'rent' });
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const { filters, setFilters, sortBy, setSortBy } = usePersistedFilters({
+    storageKey: 'hemma_index_filters',
+    defaultFilters: { listing_type: 'rent' },
+    defaultSort: 'newest',
+  });
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
   const [highlightedFromMap, setHighlightedFromMap] = useState<string | null>(null);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
-  const [modalListing, setModalListing] = useState<Listing | null>(null);
   const [navigatingId, setNavigatingId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useMobileViewPreference();
   const isMobileLayout = useIsMobile();
@@ -140,12 +142,12 @@ const Index = () => {
   const handleListingTypeToggle = useCallback((type: 'rent' | 'sale') => {
     haptic('light');
     const isChanging = type !== filters.listing_type;
-    setFilters(prev => ({
-      ...prev,
+    setFilters({
+      ...filters,
       listing_type: type,
       ...(isChanging ? { min_price: null, max_price: null } : {}),
-    }));
-  }, [filters.listing_type, haptic]);
+    });
+  }, [filters, haptic, setFilters]);
 
   const visibleListings = filteredListings;
 
@@ -184,10 +186,11 @@ const Index = () => {
     }, 3000);
   }, []);
 
-  // Handle popup click - open modal
+  // Handle popup click - navigate to full listing page
   const handlePopupClick = useCallback((listing: Listing) => {
-    setModalListing(listing);
-  }, []);
+    setNavigatingId(listing.id);
+    router.push(`/listing/${listing.id}`);
+  }, [router]);
 
 
   // Clear highlight after a delay when set via marker click
@@ -426,14 +429,6 @@ const Index = () => {
         )}
       </main>
 
-      {/* Listing Detail Modal */}
-      {modalListing && (
-        <ListingDetailModal
-          listing={modalListing}
-          isOpen={!!modalListing}
-          onClose={() => setModalListing(null)}
-        />
-      )}
     </div>
   );
 };

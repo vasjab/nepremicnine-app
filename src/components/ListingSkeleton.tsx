@@ -8,9 +8,9 @@ interface ListingSkeletonProps {
 
 export function ListingSkeleton({ className, style }: ListingSkeletonProps) {
   return (
-    <div 
+    <div
       className={cn(
-        "bg-card rounded-2xl overflow-hidden shadow-card animate-pulse",
+        "listing-card animate-pulse",
         className
       )}
       style={style}
@@ -18,39 +18,39 @@ export function ListingSkeleton({ className, style }: ListingSkeletonProps) {
       {/* Image skeleton with shimmer */}
       <div className="relative aspect-[4/3] bg-muted skeleton-shimmer">
         {/* Type badge skeleton */}
-        <div className="absolute top-3 left-3">
-          <Skeleton className="h-6 w-16 rounded-full" />
+        <div className="absolute top-2.5 left-2.5">
+          <Skeleton className="h-[22px] w-12 rounded-full" />
         </div>
         {/* Save button skeleton */}
-        <div className="absolute top-3 right-3">
-          <Skeleton className="h-10 w-10 rounded-full" />
+        <div className="absolute top-2.5 right-2.5">
+          <Skeleton className="h-9 w-9 rounded-full" />
         </div>
         {/* Carousel dots skeleton */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+        <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1">
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-1.5 w-6 rounded-full" />
+            <Skeleton key={i} className="h-[5px] w-5 rounded-full" />
           ))}
         </div>
       </div>
 
       {/* Content skeleton */}
-      <div className="p-4 space-y-3">
+      <div className="px-4 pt-3.5 pb-4 space-y-2.5">
+        {/* Location label */}
+        <Skeleton className="h-3 w-24 rounded" />
+
         {/* Title */}
-        <Skeleton className="h-5 w-3/4 rounded-md" />
-        
-        {/* Location */}
-        <Skeleton className="h-4 w-1/2 rounded-md" />
-        
-        {/* Features row */}
-        <div className="flex gap-3 pt-1">
-          <Skeleton className="h-4 w-12 rounded-md" />
-          <Skeleton className="h-4 w-12 rounded-md" />
-          <Skeleton className="h-4 w-16 rounded-md" />
+        <Skeleton className="h-[17px] w-3/4 rounded" />
+
+        {/* Specs row */}
+        <div className="flex gap-3">
+          <Skeleton className="h-3.5 w-10 rounded" />
+          <Skeleton className="h-3.5 w-10 rounded" />
+          <Skeleton className="h-3.5 w-14 rounded" />
         </div>
-        
+
         {/* Price */}
-        <div className="pt-2">
-          <Skeleton className="h-6 w-28 rounded-md" />
+        <div className="pt-1">
+          <Skeleton className="h-5 w-24 rounded" />
         </div>
       </div>
     </div>
