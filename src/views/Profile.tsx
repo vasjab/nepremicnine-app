@@ -57,6 +57,7 @@ export default function ProfilePage() {
   const { toast } = useToast();
 
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [intents, setIntents] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState<ProfileFormData>(DEFAULT_FORM_DATA);
@@ -69,14 +70,19 @@ export default function ProfilePage() {
     }
 
     const fetchProfile = async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
         .single();
 
+      if (error) {
+        console.error('Failed to fetch profile:', error);
+      }
+
       if (data) {
         setProfile(data as Profile);
+        setIntents((data.user_intents as string[]) ?? []);
         const sl = (data.social_links as Record<string, string>) || {};
         const refs = (data.renter_references as Array<{ name: string; contact: string; relationship: string }>) || [];
         setFormData({
@@ -182,8 +188,7 @@ export default function ProfilePage() {
 
   const update = (patch: Partial<ProfileFormData>) => setFormData(prev => ({ ...prev, ...patch }));
 
-  // ── Role detection (driven by profile.user_intents) ─────────────────────────
-  const intents = profile?.user_intents ?? [];
+  // ── Role detection (driven by separate intents state) ───────────────────────
   const isRenter = intents.includes('rent') || intents.includes('buy');
   const isLandlord = intents.includes('renting_out') || intents.includes('selling');
 
@@ -233,6 +238,7 @@ export default function ProfilePage() {
                   userId={user.id}
                   intents={intents}
                   onIntentsChange={(newIntents) => {
+                    setIntents(newIntents);
                     setProfile(prev => prev ? { ...prev, user_intents: newIntents } : prev);
                   }}
                 />
