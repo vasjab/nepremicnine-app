@@ -3,12 +3,15 @@ import { Providers } from '@/components/Providers';
 import '@/index.css';
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://nepremicnine-app.vercel.app'),
   title: 'hemma - Find your next home',
   description: 'Browse rental and sale listings with interactive map view, messaging, and more.',
   openGraph: {
     title: 'hemma - Find your next home',
     description: 'Browse rental and sale listings with interactive map view, messaging, and more.',
+    siteName: 'hemma',
     type: 'website',
+    locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
