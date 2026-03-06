@@ -1339,6 +1339,14 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
                 <X className="h-3 w-3" />
               </Badge>
             ))}
+            {activeChips.length >= 2 && (
+              <button
+                onClick={clearFilters}
+                className="text-[11px] font-medium text-gray-400 hover:text-gray-700 transition-colors px-1.5 py-1 active:scale-[0.95]"
+              >
+                {t('filters.clearAll') || 'Clear all'}
+              </button>
+            )}
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -26,6 +26,13 @@ export function ApplicationForm({ listing, isOpen, onClose, onNeedOnboarding }: 
   const { toast } = useToast();
   const [coverLetter, setCoverLetter] = useState('');
 
+  // Prefill cover letter from profile default
+  useEffect(() => {
+    if (profile?.default_cover_letter && !coverLetter) {
+      setCoverLetter(profile.default_cover_letter);
+    }
+  }, [profile?.default_cover_letter]);
+
   const isOnboarded = profile?.onboarding_completed;
 
   const handleSubmit = async () => {
@@ -41,12 +48,19 @@ export function ApplicationForm({ listing, isOpen, onClose, onNeedOnboarding }: 
       email: user.email || null,
       phone: profile.phone,
       employment_status: profile.employment_status,
+      employment_other: profile.employment_other,
       monthly_income_range: profile.monthly_income_range,
       move_in_timeline: profile.move_in_timeline,
       household_size: profile.household_size,
       has_pets: profile.has_pets,
+      pet_details: profile.pet_details,
       is_smoker: profile.is_smoker,
+      looking_duration: profile.looking_duration,
+      age_bracket: profile.age_bracket,
+      nationality: profile.nationality,
+      occupation: profile.occupation,
       bio: profile.bio,
+      default_cover_letter: profile.default_cover_letter,
     };
 
     try {

@@ -9,16 +9,16 @@ import { Header } from '@/components/Header';
 import { FilterBar } from '@/components/FilterBar';
 import { ListingCard } from '@/components/ListingCard';
 import { MapView } from '@/components/MapView';
-import { ListingDetailModal } from '@/components/ListingDetailModal';
 import { MobileMapFilterButton } from '@/components/MobileMapFilterButton';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent } from '@/components/ui/tabs';
+// Tabs/TabsContent removed — we use conditional rendering with our own activeTab state
 import { useTranslation } from '@/hooks/useTranslation';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useMobileViewPreference } from '@/hooks/useMobileViewPreference';
 import { useHapticFeedback } from '@/hooks/useHapticFeedback';
 import { useAuth } from '@/contexts/AuthContext';
 import { Listing, ListingFilters, SortOption } from '@/types/listing';
+import { usePersistedFilters } from '@/hooks/usePersistedFilters';
 import { cn } from '@/lib/utils';
 
 interface MapBounds {
@@ -55,15 +55,19 @@ export default function SoldRentedListings() {
   const { trigger: haptic } = useHapticFeedback();
   const { user } = useAuth();
   
-  const [activeTab, setActiveTab] = useState<'sold' | 'rented'>('sold');
+  const { filters, setFilters, sortBy, setSortBy, activeTab: persistedTab, setActiveTab: setPersistedTab } = usePersistedFilters({
+    storageKey: 'hemma_sold_filters',
+    defaultFilters: {},
+    defaultSort: 'newest',
+  });
+  const activeTab = (persistedTab as 'sold' | 'rented') || 'sold';
+  const setActiveTab = (v: 'sold' | 'rented') => setPersistedTab(v);
+
   const [activeListingId, setActiveListingId] = useState<string | null>(null);
   const [highlightedFromMap, setHighlightedFromMap] = useState<string | null>(null);
   const [mapBounds, setMapBounds] = useState<MapBounds | null>(null);
-  const [modalListing, setModalListing] = useState<Listing | null>(null);
   const [navigatingId, setNavigatingId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useMobileViewPreference();
-  const [filters, setFilters] = useState<ListingFilters>({});
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
   
   const listingRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   const listContainerRef = useRef<HTMLDivElement>(null);
@@ -182,8 +186,9 @@ export default function SoldRentedListings() {
   }, []);
 
   const handlePopupClick = useCallback((listing: Listing) => {
-    setModalListing(listing);
-  }, []);
+    setNavigatingId(listing.id);
+    router.push(`/listing/${listing.id}`);
+  }, [router]);
 
   // Clear highlight after delay
   useEffect(() => {
@@ -273,7 +278,7 @@ export default function SoldRentedListings() {
       {/* Spacer for fixed header */}
       <div className="h-16 shrink-0" />
       
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'sold' | 'rented')} className="flex-1 flex flex-col overflow-hidden min-h-0">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
         <main className="flex-1 flex flex-col overflow-hidden min-h-0">
           {isMobileLayout ? (
             <>
@@ -298,16 +303,11 @@ export default function SoldRentedListings() {
                     onTabChange={(v) => setActiveTab(v as 'sold' | 'rented')}
                   />
 
-                  <TabsContent value="sold" className="flex-1 overflow-hidden m-0">
+                  <div className="flex-1 overflow-hidden">
                     <div ref={listContainerRef} className="h-full rubber-band-scroll p-3 sm:p-4 @container">
                       <ListingsGrid showAnimations={true} />
                     </div>
-                  </TabsContent>
-                  <TabsContent value="rented" className="flex-1 overflow-hidden m-0">
-                    <div ref={listContainerRef} className="h-full rubber-band-scroll p-3 sm:p-4 @container">
-                      <ListingsGrid showAnimations={true} />
-                    </div>
-                  </TabsContent>
+                  </div>
                 </div>
                 
                 {/* Map View */}
@@ -387,16 +387,11 @@ export default function SoldRentedListings() {
                   onTabChange={(v) => setActiveTab(v as 'sold' | 'rented')}
                 />
                 
-                <TabsContent value="sold" className="flex-1 overflow-hidden m-0">
+                <div className="flex-1 overflow-hidden">
                   <div ref={listContainerRef} className="h-full rubber-band-scroll p-3 sm:p-4 @container">
                     <ListingsGrid showAnimations={false} />
                   </div>
-                </TabsContent>
-                <TabsContent value="rented" className="flex-1 overflow-hidden m-0">
-                  <div ref={listContainerRef} className="h-full rubber-band-scroll p-3 sm:p-4 @container">
-                    <ListingsGrid showAnimations={false} />
-                  </div>
-                </TabsContent>
+                </div>
               </div>
 
               {/* Right panel - Map (50%) */}
@@ -412,16 +407,8 @@ export default function SoldRentedListings() {
             </div>
           )}
         </main>
-      </Tabs>
+      </div>
 
-      {/* Listing Detail Modal */}
-      {modalListing && (
-        <ListingDetailModal
-          listing={modalListing}
-          isOpen={!!modalListing}
-          onClose={() => setModalListing(null)}
-        />
-      )}
     </div>
   );
 }

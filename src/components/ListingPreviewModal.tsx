@@ -249,6 +249,10 @@ function formDataToListing(formData: FormData, uploadedImages: UploadedImage[], 
     utilities_included: (formData.utilities_included || null) as 'yes' | 'no' | 'partial' | null,
     utility_cost_estimate: formData.utility_cost_estimate ? parseFloat(formData.utility_cost_estimate) : null,
     monthly_expenses: formData.monthly_expenses ? parseFloat(formData.monthly_expenses) : null,
+    // Deposit
+    deposit_required: false,
+    deposit_type: null,
+    deposit_months: null,
     // Sale-specific expense breakdown
     expense_breakdown_enabled: null,
     expense_hoa_fees: null,

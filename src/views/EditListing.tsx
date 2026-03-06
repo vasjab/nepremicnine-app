@@ -262,6 +262,9 @@ export default function EditListing() {
     property_condition: '' as string,
     // Rental Terms
     deposit_amount: '',
+    deposit_required: 'false',
+    deposit_type: '',
+    deposit_months: '',
     min_lease_months: '',
     internet_included: '' as string,
     utilities_included: '' as string,
@@ -395,6 +398,9 @@ export default function EditListing() {
         property_condition: listing.property_condition || '',
         // Rental Terms
         deposit_amount: listing.deposit_amount?.toString() || '',
+        deposit_required: (listing as any).deposit_required ? 'true' : 'false',
+        deposit_type: (listing as any).deposit_type || '',
+        deposit_months: (listing as any).deposit_months?.toString() || '',
         min_lease_months: listing.min_lease_months?.toString() || '',
         internet_included: listing.internet_included || '',
         utilities_included: listing.utilities_included || '',
@@ -654,7 +660,9 @@ export default function EditListing() {
       {
         id: 'deposit',
         label: t('checklist.deposit'),
-        isComplete: !!formData.deposit_amount && parseFloat(formData.deposit_amount) > 0,
+        isComplete: formData.deposit_required === 'true'
+          ? (formData.deposit_type === 'fixed' ? !!formData.deposit_amount : !!formData.deposit_months)
+          : formData.deposit_required === 'false',
         isOptional: true,
         onClick: () => scrollToField(rentalTermsRef),
       },
@@ -854,7 +862,10 @@ export default function EditListing() {
         year_built: formData.year_built ? parseInt(formData.year_built) : null,
         property_condition: (formData.property_condition || null) as 'new' | 'renovated' | 'good' | 'needs_work' | null,
         // Rental Terms
-        deposit_amount: formData.deposit_amount ? parseFloat(formData.deposit_amount) : null,
+        deposit_required: formData.deposit_required === 'true',
+        deposit_type: (formData.deposit_type || null) as 'fixed' | 'months' | null,
+        deposit_amount: formData.deposit_type === 'fixed' ? (parseFloat(formData.deposit_amount) || null) : null,
+        deposit_months: formData.deposit_type === 'months' ? (parseInt(formData.deposit_months) || null) : null,
         min_lease_months: formData.min_lease_months ? parseInt(formData.min_lease_months) : null,
         internet_included: (formData.internet_included || null) as 'yes' | 'no' | 'available' | null,
         utilities_included: (formData.utilities_included || null) as 'yes' | 'no' | 'partial' | null,
@@ -1608,19 +1619,100 @@ export default function EditListing() {
               <div ref={rentalTermsRef} className="space-y-4">
                 <h2 className="text-xl font-semibold text-foreground">Rental Terms</h2>
                 
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <FormField label="Deposit Amount" htmlFor="deposit_amount" error={getError('deposit_amount')}>
-                    <Input
-                      id="deposit_amount"
-                      type="number"
-                      min="0"
-                      placeholder="24000"
-                      value={formData.deposit_amount}
-                      onChange={(e) => handleChange('deposit_amount', e.target.value)}
-                      onBlur={() => handleBlur('deposit_amount')}
-                      className={cn(getError('deposit_amount') && 'border-destructive')}
-                    />
+                <div className="space-y-4">
+                  <FormField label="Security Deposit" htmlFor="deposit_required">
+                    <div className="flex gap-2">
+                      {[
+                        { value: 'true', label: 'Required' },
+                        { value: 'false', label: 'Not required' },
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => {
+                            handleChange('deposit_required', opt.value);
+                            if (opt.value === 'false') {
+                              handleChange('deposit_type', '');
+                              handleChange('deposit_amount', '');
+                              handleChange('deposit_months', '');
+                            }
+                          }}
+                          className={cn(
+                            'flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors border',
+                            formData.deposit_required === opt.value
+                              ? 'border-primary bg-primary/5 text-primary'
+                              : 'border-border text-muted-foreground hover:border-primary/50'
+                          )}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
                   </FormField>
+
+                  {formData.deposit_required === 'true' && (
+                    <div className="space-y-3 p-4 rounded-lg bg-secondary/50">
+                      <div className="flex gap-2">
+                        {[
+                          { value: 'fixed', label: 'Fixed amount' },
+                          { value: 'months', label: 'Monthly rents' },
+                        ].map(opt => (
+                          <button
+                            key={opt.value}
+                            type="button"
+                            onClick={() => {
+                              handleChange('deposit_type', opt.value);
+                              if (opt.value === 'months') handleChange('deposit_amount', '');
+                              if (opt.value === 'fixed') handleChange('deposit_months', '');
+                            }}
+                            className={cn(
+                              'flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors border',
+                              formData.deposit_type === opt.value
+                                ? 'border-primary bg-primary/5 text-primary'
+                                : 'border-border text-muted-foreground hover:border-primary/50'
+                            )}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {formData.deposit_type === 'fixed' && (
+                        <FormField label="Amount" htmlFor="deposit_amount" error={getError('deposit_amount')}>
+                          <Input
+                            id="deposit_amount"
+                            type="number"
+                            min="0"
+                            placeholder="e.g., 15000"
+                            value={formData.deposit_amount}
+                            onChange={(e) => handleChange('deposit_amount', e.target.value)}
+                            onBlur={() => handleBlur('deposit_amount')}
+                            className={cn(getError('deposit_amount') && 'border-destructive')}
+                          />
+                        </FormField>
+                      )}
+
+                      {formData.deposit_type === 'months' && (
+                        <FormField label="Number of months" htmlFor="deposit_months">
+                          <Select value={formData.deposit_months} onValueChange={(v) => handleChange('deposit_months', v)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select months" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">1 month</SelectItem>
+                              <SelectItem value="2">2 months</SelectItem>
+                              <SelectItem value="3">3 months</SelectItem>
+                              <SelectItem value="6">6 months</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-muted-foreground mt-1">Deposit equals this many months of rent</p>
+                        </FormField>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
 
                   <FormField label="Minimum Lease (months)" htmlFor="min_lease_months">
                     <Input

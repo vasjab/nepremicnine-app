@@ -8,6 +8,9 @@ import type { Currency } from '@/lib/exchangeRates';
 
 interface RentalTermsStepProps {
   depositAmount: string;
+  depositRequired: string;
+  depositType: string;
+  depositMonths: string;
   minLeaseMonths: string;
   internetIncluded: string;
   internetType: string;
@@ -47,8 +50,18 @@ const MIN_LEASE_OPTIONS = [
   { value: '24', label: '24 months' },
 ];
 
+const DEPOSIT_MONTHS_OPTIONS = [
+  { value: '1', label: '1 month' },
+  { value: '2', label: '2 months' },
+  { value: '3', label: '3 months' },
+  { value: '6', label: '6 months' },
+];
+
 export function RentalTermsStep({
   depositAmount,
+  depositRequired,
+  depositType,
+  depositMonths,
   minLeaseMonths,
   internetIncluded,
   internetType,
@@ -70,26 +83,106 @@ export function RentalTermsStep({
       emoji="📋"
     >
       <div className="max-w-xl mx-auto w-full space-y-6">
-        {/* Deposit amount */}
-        <div>
-          <Label htmlFor="deposit_amount">Security deposit</Label>
-          <div className="relative mt-1">
-            <Input
-              id="deposit_amount"
-              type="number"
-              min="0"
-              placeholder="e.g., 15000"
-              value={depositAmount}
-              onChange={(e) => onChange('deposit_amount', e.target.value)}
-              className="pr-16"
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-              {currency}
-            </span>
+        {/* Deposit */}
+        <div className="space-y-3">
+          <Label>Security deposit</Label>
+          <div className="flex gap-2">
+            {[
+              { value: 'true', label: 'Required' },
+              { value: 'false', label: 'Not required' },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => {
+                  onChange('deposit_required', opt.value);
+                  if (opt.value === 'false') {
+                    onChange('deposit_type', '');
+                    onChange('deposit_amount', '');
+                    onChange('deposit_months', '');
+                  }
+                }}
+                className={cn(
+                  'flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors border',
+                  depositRequired === opt.value
+                    ? 'border-primary bg-primary/5 text-primary'
+                    : 'border-border text-muted-foreground hover:border-primary/50'
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
-          <p className="text-xs text-muted-foreground mt-1">
-            Amount required upfront as security deposit
-          </p>
+
+          {depositRequired === 'true' && (
+            <div className="space-y-3 p-4 rounded-lg bg-secondary/50">
+              <div className="flex gap-2">
+                {[
+                  { value: 'fixed', label: 'Fixed amount' },
+                  { value: 'months', label: 'Monthly rents' },
+                ].map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => {
+                      onChange('deposit_type', opt.value);
+                      if (opt.value === 'months') onChange('deposit_amount', '');
+                      if (opt.value === 'fixed') onChange('deposit_months', '');
+                    }}
+                    className={cn(
+                      'flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors border',
+                      depositType === opt.value
+                        ? 'border-primary bg-primary/5 text-primary'
+                        : 'border-border text-muted-foreground hover:border-primary/50'
+                    )}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {depositType === 'fixed' && (
+                <div>
+                  <Label htmlFor="deposit_amount">Amount</Label>
+                  <div className="relative mt-1">
+                    <Input
+                      id="deposit_amount"
+                      type="number"
+                      min="0"
+                      placeholder="e.g., 15000"
+                      value={depositAmount}
+                      onChange={(e) => onChange('deposit_amount', e.target.value)}
+                      className="pr-16"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                      {currency}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {depositType === 'months' && (
+                <div className="space-y-2">
+                  <Label>Number of months</Label>
+                  <Select value={depositMonths} onValueChange={(v) => onChange('deposit_months', v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select months" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {DEPOSIT_MONTHS_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Deposit equals this many months of rent
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Minimum lease */}

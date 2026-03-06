@@ -17,6 +17,16 @@
 9. **Git hygiene** — conventional commits (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`, `test:`), small commits, descriptive messages (why + what + impact).
 10. **Deploy early & often** — main branch should always be deployable.
 
+## Agent Execution Rules
+- Before coding, always create a short task list of the exact changes you will make.
+- Keep the list small, concrete, and scoped to one logical step.
+- Do not start coding until the task list is written.
+- Only work on the tasks in that list unless I explicitly approve more scope.
+- After coding, report back against the same task list.
+- For each task, give a quick summary of what changed, in which file(s), and why.
+- Clearly mark any incomplete task and state the smallest next step.
+- Never claim a task is done without mapping it back to the original checklist.
+
 ## Preferred Tech Stack (default – override per project if needed)
 - **Frontend**: Next.js 15+ (App Router) + TypeScript
 - **Styling**: Tailwind CSS + shadcn/ui (or Radix + Tailwind if shadcn not ideal)
@@ -35,6 +45,19 @@
   - Playwright for critical E2E
   - Sentry / Logflare for error tracking (free tier)
   - Prettier + ESLint + Husky + lint-staged (pre-commit hooks)
+
+## Design & UX
+- Default to a modern, clean, 2026 feel - polished but simple
+- Always design mobile-first, then desktop
+- Think in 2 main layouts only: mobile and desktop
+- Prioritize clarity, hierarchy, spacing, and obvious actions
+- UI must be fast, responsive, and lightweight
+- Use skeleton loading, suspense, streaming, or optimistic UI when helpful
+- Never leave users wondering - always show feedback for loading, success, error, disabled, and empty states
+- Optimize tap targets and flows for mobile
+- Avoid clutter, awkward breakpoints, layout shift, and heavy-feeling interfaces
+- Reuse consistent UI patterns across the app
+- Before finishing, check the change in both mobile and desktop layouts
 
 ## Workflow Rituals
 - Start every session by asking: "Current state? What do you want to build next?"

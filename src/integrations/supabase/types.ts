@@ -10,49 +10,74 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.1"
+    PostgrestVersion: "13.0.5"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
       applications: {
         Row: {
+          cover_letter: string | null
+          created_at: string
           id: string
+          landlord_id: string
+          landlord_notes: string | null
           listing_id: string
           renter_id: string
-          landlord_id: string
-          status: Database["public"]["Enums"]["application_status"]
-          cover_letter: string | null
           renter_snapshot: Json | null
-          landlord_notes: string | null
-          viewing_date: string | null
-          created_at: string
+          status: Database["public"]["Enums"]["application_status"]
           updated_at: string
+          viewing_date: string | null
         }
         Insert: {
+          cover_letter?: string | null
+          created_at?: string
           id?: string
+          landlord_id: string
+          landlord_notes?: string | null
           listing_id: string
           renter_id: string
-          landlord_id: string
-          status?: Database["public"]["Enums"]["application_status"]
-          cover_letter?: string | null
           renter_snapshot?: Json | null
-          landlord_notes?: string | null
-          viewing_date?: string | null
-          created_at?: string
+          status?: Database["public"]["Enums"]["application_status"]
           updated_at?: string
+          viewing_date?: string | null
         }
         Update: {
+          cover_letter?: string | null
+          created_at?: string
           id?: string
+          landlord_id?: string
+          landlord_notes?: string | null
           listing_id?: string
           renter_id?: string
-          landlord_id?: string
-          status?: Database["public"]["Enums"]["application_status"]
-          cover_letter?: string | null
           renter_snapshot?: Json | null
-          landlord_notes?: string | null
-          viewing_date?: string | null
-          created_at?: string
+          status?: Database["public"]["Enums"]["application_status"]
           updated_at?: string
+          viewing_date?: string | null
         }
         Relationships: [
           {
@@ -162,6 +187,9 @@ export type Database = {
           currency: string
           current_step: number | null
           deposit_amount: number | null
+          deposit_months: number | null
+          deposit_required: boolean | null
+          deposit_type: string | null
           description: string | null
           elevator_condition: string | null
           energy_rating: string | null
@@ -260,6 +288,7 @@ export type Database = {
           property_condition: string | null
           property_floors: number | null
           property_type: Database["public"]["Enums"]["property_type"]
+          rent_indefinitely: boolean | null
           status: string | null
           terrace_sqm: number | null
           title: string
@@ -290,6 +319,9 @@ export type Database = {
           currency?: string
           current_step?: number | null
           deposit_amount?: number | null
+          deposit_months?: number | null
+          deposit_required?: boolean | null
+          deposit_type?: string | null
           description?: string | null
           elevator_condition?: string | null
           energy_rating?: string | null
@@ -388,6 +420,7 @@ export type Database = {
           property_condition?: string | null
           property_floors?: number | null
           property_type?: Database["public"]["Enums"]["property_type"]
+          rent_indefinitely?: boolean | null
           status?: string | null
           terrace_sqm?: number | null
           title: string
@@ -418,6 +451,9 @@ export type Database = {
           currency?: string
           current_step?: number | null
           deposit_amount?: number | null
+          deposit_months?: number | null
+          deposit_required?: boolean | null
+          deposit_type?: string | null
           description?: string | null
           elevator_condition?: string | null
           energy_rating?: string | null
@@ -516,6 +552,7 @@ export type Database = {
           property_condition?: string | null
           property_floors?: number | null
           property_type?: Database["public"]["Enums"]["property_type"]
+          rent_indefinitely?: boolean | null
           status?: string | null
           terrace_sqm?: number | null
           title?: string
@@ -666,96 +703,114 @@ export type Database = {
           },
         ]
       }
-      notification_preferences: {
-        Row: {
-          created_at: string
-          email_daily_digest: boolean
-          email_on_new_message: boolean
-          id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          email_daily_digest?: boolean
-          email_on_new_message?: boolean
-          id?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          email_daily_digest?: boolean
-          email_on_new_message?: boolean
-          id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
+          age_bracket: string | null
           avatar_url: string | null
           bio: string | null
           created_at: string
+          default_cover_letter: string | null
+          education_level: string | null
+          employment_other: string | null
           employment_status: string | null
           full_name: string | null
-          has_pets: boolean
+          has_kids: boolean | null
+          has_pets: boolean | null
           household_size: number | null
           id: string
-          is_smoker: boolean
+          is_smoker: boolean | null
+          kids_ages: string | null
+          kids_count: number | null
+          looking_duration: string | null
+          looking_duration_date: string | null
           management_type: string | null
+          marital_status: string | null
           monthly_income_range: string | null
           move_in_timeline: string | null
+          nationality: string | null
           num_properties: number | null
-          onboarding_completed: boolean
+          occupation: string | null
+          onboarding_completed: boolean | null
+          pet_details: string | null
           phone: string | null
+          renter_references: Json | null
           response_time: string | null
+          social_links: Json | null
           updated_at: string
           user_id: string
-          user_intents: string[]
+          user_intents: string[] | null
         }
         Insert: {
+          age_bracket?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          default_cover_letter?: string | null
+          education_level?: string | null
+          employment_other?: string | null
           employment_status?: string | null
           full_name?: string | null
-          has_pets?: boolean
+          has_kids?: boolean | null
+          has_pets?: boolean | null
           household_size?: number | null
           id?: string
-          is_smoker?: boolean
+          is_smoker?: boolean | null
+          kids_ages?: string | null
+          kids_count?: number | null
+          looking_duration?: string | null
+          looking_duration_date?: string | null
           management_type?: string | null
+          marital_status?: string | null
           monthly_income_range?: string | null
           move_in_timeline?: string | null
+          nationality?: string | null
           num_properties?: number | null
-          onboarding_completed?: boolean
+          occupation?: string | null
+          onboarding_completed?: boolean | null
+          pet_details?: string | null
           phone?: string | null
+          renter_references?: Json | null
           response_time?: string | null
+          social_links?: Json | null
           updated_at?: string
           user_id: string
-          user_intents?: string[]
+          user_intents?: string[] | null
         }
         Update: {
+          age_bracket?: string | null
           avatar_url?: string | null
           bio?: string | null
           created_at?: string
+          default_cover_letter?: string | null
+          education_level?: string | null
+          employment_other?: string | null
           employment_status?: string | null
           full_name?: string | null
-          has_pets?: boolean
+          has_kids?: boolean | null
+          has_pets?: boolean | null
           household_size?: number | null
           id?: string
-          is_smoker?: boolean
+          is_smoker?: boolean | null
+          kids_ages?: string | null
+          kids_count?: number | null
+          looking_duration?: string | null
+          looking_duration_date?: string | null
           management_type?: string | null
+          marital_status?: string | null
           monthly_income_range?: string | null
           move_in_timeline?: string | null
+          nationality?: string | null
           num_properties?: number | null
-          onboarding_completed?: boolean
+          occupation?: string | null
+          onboarding_completed?: boolean | null
+          pet_details?: string | null
           phone?: string | null
+          renter_references?: Json | null
           response_time?: string | null
+          social_links?: Json | null
           updated_at?: string
           user_id?: string
-          user_intents?: string[]
+          user_intents?: string[] | null
         }
         Relationships: []
       }
@@ -860,22 +915,37 @@ export type Database = {
       get_profile_for_viewer: {
         Args: { p_profile_user_id: string }
         Returns: {
+          age_bracket: string
           avatar_url: string
           bio: string
           created_at: string
-          employment_status: string | null
+          default_cover_letter: string
+          education_level: string
+          employment_other: string
+          employment_status: string
           full_name: string
+          has_kids: boolean
           has_pets: boolean
-          household_size: number | null
+          household_size: number
           id: string
           is_smoker: boolean
-          management_type: string | null
-          monthly_income_range: string | null
-          move_in_timeline: string | null
-          num_properties: number | null
+          kids_ages: string
+          kids_count: number
+          looking_duration: string
+          looking_duration_date: string
+          management_type: string
+          marital_status: string
+          monthly_income_range: string
+          move_in_timeline: string
+          nationality: string
+          num_properties: number
+          occupation: string
           onboarding_completed: boolean
+          pet_details: string
           phone: string
-          response_time: string | null
+          renter_references: Json
+          response_time: string
+          social_links: Json
           updated_at: string
           user_id: string
           user_intents: string[]
@@ -887,7 +957,12 @@ export type Database = {
       }
     }
     Enums: {
-      application_status: "applied" | "viewing_scheduled" | "under_review" | "accepted" | "declined"
+      application_status:
+        | "applied"
+        | "viewing_scheduled"
+        | "under_review"
+        | "accepted"
+        | "declined"
       listing_type: "rent" | "sale"
       property_type:
         | "apartment"
@@ -1022,9 +1097,18 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
-      application_status: ["applied", "viewing_scheduled", "under_review", "accepted", "declined"],
+      application_status: [
+        "applied",
+        "viewing_scheduled",
+        "under_review",
+        "accepted",
+        "declined",
+      ],
       listing_type: ["rent", "sale"],
       property_type: [
         "apartment",

@@ -18,6 +18,7 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS management_type TEXT;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS response_time TEXT;
 
 -- Update get_profile_for_viewer to return new columns
+DROP FUNCTION IF EXISTS public.get_profile_for_viewer(uuid);
 CREATE OR REPLACE FUNCTION public.get_profile_for_viewer(p_profile_user_id uuid)
 RETURNS TABLE (
   id uuid,

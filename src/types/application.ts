@@ -33,12 +33,19 @@ export interface RenterSnapshot {
   email: string | null;
   phone: string | null;
   employment_status: string | null;
+  employment_other: string | null;
   monthly_income_range: string | null;
   move_in_timeline: string | null;
   household_size: number | null;
   has_pets: boolean;
+  pet_details: string | null;
   is_smoker: boolean;
+  looking_duration: string | null;
+  age_bracket: string | null;
+  nationality: string | null;
+  occupation: string | null;
   bio: string | null;
+  default_cover_letter: string | null;
 }
 
 export const APPLICATION_STATUS_CONFIG: Record<ApplicationStatus, { label: string; color: string; bgColor: string }> = {

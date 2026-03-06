@@ -32,12 +32,19 @@ function makeApplication(overrides: Partial<Application> = {}): Application {
       email: 'test@example.com',
       phone: null,
       employment_status: 'employed',
+      employment_other: null,
       monthly_income_range: '2000-3000',
       move_in_timeline: 'asap',
       household_size: 2,
       has_pets: false,
+      pet_details: null,
       is_smoker: false,
+      looking_duration: null,
+      age_bracket: null,
+      nationality: null,
+      occupation: null,
       bio: null,
+      default_cover_letter: null,
     },
     landlord_notes: null,
     viewing_date: null,
@@ -91,8 +98,8 @@ describe('ApplicationKanban', () => {
 
   it('renders application cards in correct columns', () => {
     const apps = [
-      makeApplication({ id: 'a1', status: 'applied', renter_snapshot: { full_name: 'Alice', email: null, phone: null, employment_status: null, monthly_income_range: null, move_in_timeline: null, household_size: null, has_pets: false, is_smoker: false, bio: null } }),
-      makeApplication({ id: 'a2', status: 'accepted', renter_snapshot: { full_name: 'Bob', email: null, phone: null, employment_status: null, monthly_income_range: null, move_in_timeline: null, household_size: null, has_pets: false, is_smoker: false, bio: null } }),
+      makeApplication({ id: 'a1', status: 'applied', renter_snapshot: { full_name: 'Alice', email: null, phone: null, employment_status: null, employment_other: null, monthly_income_range: null, move_in_timeline: null, household_size: null, has_pets: false, pet_details: null, is_smoker: false, looking_duration: null, age_bracket: null, nationality: null, occupation: null, bio: null, default_cover_letter: null } }),
+      makeApplication({ id: 'a2', status: 'accepted', renter_snapshot: { full_name: 'Bob', email: null, phone: null, employment_status: null, employment_other: null, monthly_income_range: null, move_in_timeline: null, household_size: null, has_pets: false, pet_details: null, is_smoker: false, looking_duration: null, age_bracket: null, nationality: null, occupation: null, bio: null, default_cover_letter: null } }),
     ];
     apps[0].renter = { full_name: 'Alice', avatar_url: null };
     apps[1].renter = { full_name: 'Bob', avatar_url: null };
@@ -109,12 +116,19 @@ describe('ApplicationKanban', () => {
         email: null,
         phone: null,
         employment_status: 'employed',
+        employment_other: null,
         monthly_income_range: null,
         move_in_timeline: null,
         household_size: 3,
         has_pets: true,
+        pet_details: null,
         is_smoker: true,
+        looking_duration: null,
+        age_bracket: null,
+        nationality: null,
+        occupation: null,
         bio: null,
+        default_cover_letter: null,
       },
     });
 
@@ -130,12 +144,19 @@ describe('ApplicationKanban', () => {
         email: null,
         phone: null,
         employment_status: 'self_employed',
+        employment_other: null,
         monthly_income_range: null,
         move_in_timeline: null,
         household_size: null,
         has_pets: false,
+        pet_details: null,
         is_smoker: false,
+        looking_duration: null,
+        age_bracket: null,
+        nationality: null,
+        occupation: null,
         bio: null,
+        default_cover_letter: null,
       },
     });
 

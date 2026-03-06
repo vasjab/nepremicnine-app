@@ -84,6 +84,15 @@ describe('OnboardingModal', () => {
     // Step to renter
     fireEvent.click(screen.getByText('Continue'));
     expect(screen.getByText('About you')).toBeInTheDocument();
+    // Step to optional details
+    fireEvent.click(screen.getByText('Continue'));
+    expect(screen.getByText('A bit more about you')).toBeInTheDocument();
+    // Step to references
+    fireEvent.click(screen.getByText('Continue'));
+    expect(screen.getByText('References')).toBeInTheDocument();
+    // Step to cover letter
+    fireEvent.click(screen.getByText('Continue'));
+    expect(screen.getByText('Default cover letter')).toBeInTheDocument();
     // Step to landlord
     fireEvent.click(screen.getByText('Continue'));
     expect(screen.getByText('Property management')).toBeInTheDocument();
@@ -93,6 +102,9 @@ describe('OnboardingModal', () => {
     renderWithProviders(<OnboardingModal open={true} onClose={onClose} />);
     fireEvent.click(screen.getByText('I want to buy'));
     fireEvent.click(screen.getByText('Continue')); // renter step
+    fireEvent.click(screen.getByText('Continue')); // optional details step
+    fireEvent.click(screen.getByText('Continue')); // references step
+    fireEvent.click(screen.getByText('Continue')); // cover letter step
     fireEvent.click(screen.getByText('Continue')); // done step
     expect(screen.getByText("You're all set!")).toBeInTheDocument();
     expect(screen.getByText('Save & Continue')).toBeInTheDocument();
@@ -105,6 +117,9 @@ describe('OnboardingModal', () => {
     fireEvent.click(screen.getByText('Employed'));
     fireEvent.click(screen.getByText('ASAP'));
     fireEvent.click(screen.getByText('I have pets'));
+    fireEvent.click(screen.getByText('Continue')); // optional details
+    fireEvent.click(screen.getByText('Continue')); // references
+    fireEvent.click(screen.getByText('Continue')); // cover letter
     fireEvent.click(screen.getByText('Continue')); // done
     fireEvent.click(screen.getByText('Save & Continue'));
 

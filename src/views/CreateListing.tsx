@@ -194,6 +194,9 @@ export default function CreateListing() {
     property_condition: '',
     // Rental terms
     deposit_amount: '',
+    deposit_required: 'false',
+    deposit_type: '',
+    deposit_months: '',
     min_lease_months: '',
     internet_included: '',
     internet_type: '',
@@ -394,6 +397,9 @@ export default function CreateListing() {
         property_condition: draftListing.property_condition || '',
         // Rental terms
         deposit_amount: draftListing.deposit_amount?.toString() || '',
+        deposit_required: (draftListing as any).deposit_required ? 'true' : 'false',
+        deposit_type: (draftListing as any).deposit_type || '',
+        deposit_months: (draftListing as any).deposit_months?.toString() || '',
         min_lease_months: draftListing.min_lease_months?.toString() || '',
         internet_included: draftListing.internet_included || '',
         internet_type: (draftListing as any).internet_type || '',
@@ -607,7 +613,10 @@ export default function CreateListing() {
       year_built: parseInt(formData.year_built) || null,
       property_condition: formData.property_condition || null,
       // Rental terms
-      deposit_amount: parseFloat(formData.deposit_amount) || null,
+      deposit_required: formData.deposit_required === 'true',
+      deposit_type: formData.deposit_type || null,
+      deposit_amount: formData.deposit_type === 'fixed' ? (parseFloat(formData.deposit_amount) || null) : null,
+      deposit_months: formData.deposit_type === 'months' ? (parseInt(formData.deposit_months) || null) : null,
       min_lease_months: parseInt(formData.min_lease_months) || null,
       internet_included: formData.internet_included || null,
       utilities_included: formData.utilities_included || null,
@@ -1046,6 +1055,9 @@ export default function CreateListing() {
         return (
           <RentalTermsStep
             depositAmount={formData.deposit_amount}
+            depositRequired={formData.deposit_required}
+            depositType={formData.deposit_type}
+            depositMonths={formData.deposit_months}
             minLeaseMonths={formData.min_lease_months}
             internetIncluded={formData.internet_included}
             internetType={formData.internet_type}
@@ -1097,6 +1109,9 @@ export default function CreateListing() {
     year_built: formData.year_built,
     property_condition: formData.property_condition,
     deposit_amount: formData.deposit_amount,
+    deposit_required: formData.deposit_required === 'true',
+    deposit_type: formData.deposit_type || null,
+    deposit_months: formData.deposit_months ? parseInt(formData.deposit_months) : null,
     min_lease_months: formData.min_lease_months,
     internet_included: formData.internet_included,
     utilities_included: formData.utilities_included,

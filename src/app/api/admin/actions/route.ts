@@ -142,6 +142,92 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
+      case 'assign_owners': {
+        // Create 5 landlord accounts and distribute ALL listings across them
+        const landlords = [
+          { email: 'marko.novak@test.si', name: 'Marko Novak' },
+          { email: 'ana.horvat@test.si', name: 'Ana Horvat' },
+          { email: 'janez.krajnc@test.si', name: 'Janez Krajnc' },
+          { email: 'maja.zupan@test.si', name: 'Maja Zupan' },
+          { email: 'luka.kovac@test.si', name: 'Luka Kovac' },
+        ];
+
+        const landlordIds: string[] = [];
+        const log: string[] = [];
+
+        for (const ll of landlords) {
+          // Check if user already exists
+          const { data: existing } = await supabase
+            .from('profiles')
+            .select('user_id')
+            .ilike('full_name', ll.name)
+            .maybeSingle();
+
+          if (existing) {
+            landlordIds.push(existing.user_id);
+            log.push(`Found existing: ${ll.name}`);
+          } else {
+            // Create auth user
+            const { data: authData, error: authErr } = await supabase.auth.admin.createUser({
+              email: ll.email,
+              email_confirm: true,
+              user_metadata: { full_name: ll.name },
+            });
+            if (authErr) {
+              // If user exists in auth but not profiles, find by email
+              const { data: { users } } = await supabase.auth.admin.listUsers();
+              const found = (users as Array<{ id: string; email?: string }>)?.find((u) => u.email === ll.email);
+              if (found) {
+                landlordIds.push(found.id);
+                log.push(`Found auth user: ${ll.name}`);
+              } else {
+                log.push(`Failed to create ${ll.name}: ${authErr.message}`);
+              }
+              continue;
+            }
+            landlordIds.push(authData.user.id);
+
+            // Create profile
+            await supabase.from('profiles').upsert({
+              user_id: authData.user.id,
+              full_name: ll.name,
+              phone: `+386 ${40 + landlordIds.length} ${String(100000 + Math.floor(Math.random() * 899999))}`,
+              bio: `Property owner in Slovenia`,
+            });
+            log.push(`Created: ${ll.name}`);
+          }
+        }
+
+        if (landlordIds.length === 0) {
+          throw new Error('Failed to create any landlord accounts');
+        }
+
+        // Get ALL listings
+        const { data: allListings, error: listErr } = await supabase
+          .from('listings')
+          .select('id')
+          .order('created_at', { ascending: true });
+
+        if (listErr) throw listErr;
+        if (!allListings || allListings.length === 0) {
+          return NextResponse.json({ ok: true, log, assigned: 0, message: 'No listings found to assign' });
+        }
+
+        // Distribute listings round-robin
+        let assigned = 0;
+        for (let i = 0; i < allListings.length; i++) {
+          const landlordId = landlordIds[i % landlordIds.length];
+          const { error: upErr } = await supabase
+            .from('listings')
+            .update({ user_id: landlordId })
+            .eq('id', allListings[i].id);
+          if (!upErr) assigned++;
+        }
+
+        log.push(`Assigned ${assigned}/${allListings.length} listings to ${landlordIds.length} landlords`);
+        return NextResponse.json({ ok: true, log, assigned, total: allListings.length });
+      }
+
       default:
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }

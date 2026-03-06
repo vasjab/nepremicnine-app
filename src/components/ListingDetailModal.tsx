@@ -1,8 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
 import { Listing } from '@/types/listing';
 import { ListingDetailContent } from '@/components/ListingDetailContent';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface ListingDetailModalProps {
@@ -49,21 +47,6 @@ export function ListingDetailModal({ listing, isOpen, onClose }: ListingDetailMo
         )}
         onClick={handleClose}
       />
-      
-      {/* Fixed Back Button - outside scrollable area for true fixed positioning */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className={cn(
-          "fixed top-4 left-4 z-[60] h-10 w-10 rounded-[10px] bg-white/90 backdrop-blur-md border border-black/[0.06]",
-          "hover:bg-white active:scale-95",
-          "shadow-[0_2px_8px_rgba(0,0,0,0.12)] transition-all duration-150",
-          "touch-target"
-        )}
-        onClick={handleClose}
-      >
-        <ArrowLeft className="h-5 w-5" />
-      </Button>
       
       {/* Scrollable content container */}
       <div 

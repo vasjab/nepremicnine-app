@@ -2,13 +2,21 @@
 
 import { useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { useSaveOnboarding, type OnboardingData } from '@/hooks/useOnboarding';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 import {
   Home, Key, ShoppingCart, Search,
   Briefcase, GraduationCap, Clock, Users, PawPrint, Cigarette,
-  Building2, User, ChevronRight, ChevronLeft, Check, Loader2,
+  Building2, User, ChevronRight, ChevronLeft, Check, Loader2, CalendarIcon, Hourglass,
 } from 'lucide-react';
+import { OptionalDetailsStep, type OptionalDetailsData } from './steps/OptionalDetailsStep';
+import { ReferencesStep, type ReferencesData } from './steps/ReferencesStep';
+import { CoverLetterStep, type CoverLetterData } from './steps/CoverLetterStep';
 
 const INTENT_OPTIONS = [
   { value: 'rent', label: 'I want to rent', description: 'Looking for a place to rent', icon: Key },
@@ -33,6 +41,13 @@ const TIMELINE_OPTIONS = [
   { value: 'flexible', label: 'Flexible' },
 ] as const;
 
+const LOOKING_DURATION_OPTIONS = [
+  { value: 'few_months', label: 'A few months' },
+  { value: 'a_year', label: 'About a year' },
+  { value: 'indefinite', label: 'As long as possible' },
+  { value: 'until_date', label: 'Until a date' },
+] as const;
+
 const MANAGEMENT_OPTIONS = [
   { value: 'private', label: 'Private owner' },
   { value: 'company', label: 'Management company' },
@@ -54,10 +69,31 @@ export function OnboardingModal({ open, onClose }: OnboardingModalProps) {
   const [intents, setIntents] = useState<string[]>([]);
   const [renterData, setRenterData] = useState({
     employment_status: '',
+    employment_other: '',
     move_in_timeline: '',
     household_size: 1,
     has_pets: false,
+    pet_details: '',
     is_smoker: false,
+    looking_duration: '',
+    looking_duration_date: undefined as Date | undefined,
+  });
+  const [optionalDetails, setOptionalDetails] = useState<OptionalDetailsData>({
+    age_bracket: '',
+    marital_status: '',
+    has_kids: false,
+    kids_count: 0,
+    kids_ages: '',
+    nationality: '',
+    education_level: '',
+    occupation: '',
+    social_links: { linkedin: '', facebook: '', instagram: '' },
+  });
+  const [referencesData, setReferencesData] = useState<ReferencesData>({
+    references: [],
+  });
+  const [coverLetterData, setCoverLetterData] = useState<CoverLetterData>({
+    default_cover_letter: '',
   });
   const [landlordData, setLandlordData] = useState({
     num_properties: 1,
@@ -66,6 +102,7 @@ export function OnboardingModal({ open, onClose }: OnboardingModalProps) {
   });
 
   const saveOnboarding = useSaveOnboarding();
+  const { toast } = useToast();
 
   const isRenter = intents.includes('rent') || intents.includes('buy');
   const isLandlord = intents.includes('renting_out') || intents.includes('selling');
@@ -76,7 +113,7 @@ export function OnboardingModal({ open, onClose }: OnboardingModalProps) {
 
   // Calculate steps dynamically
   const steps: string[] = ['intent'];
-  if (isRenter) steps.push('renter');
+  if (isRenter) steps.push('renter', 'optional_details', 'references', 'cover_letter');
   if (isLandlord) steps.push('landlord');
   steps.push('done');
 
@@ -99,10 +136,34 @@ export function OnboardingModal({ open, onClose }: OnboardingModalProps) {
       user_intents: intents,
       ...(isRenter ? {
         employment_status: renterData.employment_status || undefined,
+        employment_other: renterData.employment_other || undefined,
         move_in_timeline: renterData.move_in_timeline || undefined,
         household_size: renterData.household_size,
         has_pets: renterData.has_pets,
+        pet_details: renterData.pet_details || undefined,
         is_smoker: renterData.is_smoker,
+        looking_duration: renterData.looking_duration || undefined,
+        looking_duration_date: renterData.looking_duration_date
+          ? renterData.looking_duration_date.toISOString().split('T')[0]
+          : undefined,
+        // Optional details
+        age_bracket: optionalDetails.age_bracket || undefined,
+        marital_status: optionalDetails.marital_status || undefined,
+        has_kids: optionalDetails.has_kids,
+        kids_count: optionalDetails.has_kids ? optionalDetails.kids_count : undefined,
+        kids_ages: optionalDetails.has_kids ? optionalDetails.kids_ages || undefined : undefined,
+        nationality: optionalDetails.nationality || undefined,
+        education_level: optionalDetails.education_level || undefined,
+        occupation: optionalDetails.occupation || undefined,
+        social_links: (optionalDetails.social_links.linkedin || optionalDetails.social_links.facebook || optionalDetails.social_links.instagram)
+          ? optionalDetails.social_links
+          : undefined,
+        // References
+        renter_references: referencesData.references.length > 0
+          ? referencesData.references.filter(r => r.name.trim())
+          : undefined,
+        // Cover letter
+        default_cover_letter: coverLetterData.default_cover_letter.trim() || undefined,
       } : {}),
       ...(isLandlord ? {
         num_properties: landlordData.num_properties,
@@ -114,8 +175,12 @@ export function OnboardingModal({ open, onClose }: OnboardingModalProps) {
     try {
       await saveOnboarding.mutateAsync(data);
       onClose();
-    } catch {
-      // Error handled by mutation
+    } catch (e: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Failed to save',
+        description: e?.message || 'Something went wrong. Please try again.',
+      });
     }
   };
 
@@ -203,6 +268,14 @@ export function OnboardingModal({ open, onClose }: OnboardingModalProps) {
                       </button>
                     ))}
                   </div>
+                  {renterData.employment_status === 'other' && (
+                    <Input
+                      placeholder="Tell us what you do"
+                      value={renterData.employment_other}
+                      onChange={(e) => setRenterData(d => ({ ...d, employment_other: e.target.value }))}
+                      className="mt-2 max-w-xs"
+                    />
+                  )}
                 </div>
 
                 {/* Move-in timeline */}
@@ -246,34 +319,115 @@ export function OnboardingModal({ open, onClose }: OnboardingModalProps) {
                 </div>
 
                 {/* Pets & Smoker */}
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => setRenterData(d => ({ ...d, has_pets: !d.has_pets }))}
-                    className={cn(
-                      'flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors flex-1',
-                      renterData.has_pets
-                        ? 'border-slate-900 bg-slate-50 text-foreground'
-                        : 'border-gray-200 text-muted-foreground hover:border-gray-300'
-                    )}
-                  >
-                    <PawPrint className="h-4 w-4" />
-                    I have pets
-                  </button>
-                  <button
-                    onClick={() => setRenterData(d => ({ ...d, is_smoker: !d.is_smoker }))}
-                    className={cn(
-                      'flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors flex-1',
-                      renterData.is_smoker
-                        ? 'border-slate-900 bg-slate-50 text-foreground'
-                        : 'border-gray-200 text-muted-foreground hover:border-gray-300'
-                    )}
-                  >
-                    <Cigarette className="h-4 w-4" />
-                    I smoke
-                  </button>
+                <div className="space-y-2">
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => setRenterData(d => ({ ...d, has_pets: !d.has_pets, pet_details: !d.has_pets ? d.pet_details : '' }))}
+                      className={cn(
+                        'flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors flex-1',
+                        renterData.has_pets
+                          ? 'border-slate-900 bg-slate-50 text-foreground'
+                          : 'border-gray-200 text-muted-foreground hover:border-gray-300'
+                      )}
+                    >
+                      <PawPrint className="h-4 w-4" />
+                      I have pets
+                    </button>
+                    <button
+                      onClick={() => setRenterData(d => ({ ...d, is_smoker: !d.is_smoker }))}
+                      className={cn(
+                        'flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-colors flex-1',
+                        renterData.is_smoker
+                          ? 'border-slate-900 bg-slate-50 text-foreground'
+                          : 'border-gray-200 text-muted-foreground hover:border-gray-300'
+                      )}
+                    >
+                      <Cigarette className="h-4 w-4" />
+                      I smoke
+                    </button>
+                  </div>
+                  {renterData.has_pets && (
+                    <Input
+                      placeholder="What kind of pets? (e.g. 1 small dog)"
+                      value={renterData.pet_details}
+                      onChange={(e) => setRenterData(d => ({ ...d, pet_details: e.target.value }))}
+                      className="max-w-xs"
+                    />
+                  )}
+                </div>
+
+                {/* Looking duration */}
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">
+                    <Hourglass className="h-3.5 w-3.5 inline mr-1" />
+                    How long are you looking for?
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {LOOKING_DURATION_OPTIONS.map(opt => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setRenterData(d => ({
+                          ...d,
+                          looking_duration: d.looking_duration === opt.value ? '' : opt.value,
+                          looking_duration_date: opt.value !== 'until_date' ? undefined : d.looking_duration_date,
+                        }))}
+                        className={cn(
+                          'px-3 py-2 rounded-lg text-sm font-medium transition-colors border',
+                          renterData.looking_duration === opt.value
+                            ? 'border-slate-900 bg-slate-50 text-foreground'
+                            : 'border-gray-200 text-muted-foreground hover:border-gray-300'
+                        )}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                  {renterData.looking_duration === 'until_date' && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          className={cn(
+                            'mt-2 flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors',
+                            renterData.looking_duration_date
+                              ? 'border-slate-900 bg-slate-50 text-foreground'
+                              : 'border-gray-200 text-muted-foreground hover:border-gray-300'
+                          )}
+                        >
+                          <CalendarIcon className="h-4 w-4" />
+                          {renterData.looking_duration_date
+                            ? format(renterData.looking_duration_date, 'PPP')
+                            : 'Pick a date'}
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={renterData.looking_duration_date}
+                          onSelect={(date) => setRenterData(d => ({ ...d, looking_duration_date: date || undefined }))}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  )}
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Step: Optional Details */}
+          {currentStepName === 'optional_details' && (
+            <OptionalDetailsStep data={optionalDetails} onChange={setOptionalDetails} />
+          )}
+
+          {/* Step: References */}
+          {currentStepName === 'references' && (
+            <ReferencesStep data={referencesData} onChange={setReferencesData} />
+          )}
+
+          {/* Step: Cover Letter */}
+          {currentStepName === 'cover_letter' && (
+            <CoverLetterStep data={coverLetterData} onChange={setCoverLetterData} />
           )}
 
           {/* Step: Landlord Profile */}

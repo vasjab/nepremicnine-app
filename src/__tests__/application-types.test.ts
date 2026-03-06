@@ -61,12 +61,19 @@ describe('RenterSnapshot type', () => {
       email: 'john@example.com',
       phone: '+386 40 123 456',
       employment_status: 'employed',
+      employment_other: null,
       monthly_income_range: '2000-3000',
       move_in_timeline: 'asap',
       household_size: 2,
       has_pets: true,
+      pet_details: '1 small dog',
       is_smoker: false,
+      looking_duration: 'a_year',
+      age_bracket: '25-34',
+      nationality: 'Slovenian',
+      occupation: 'Software engineer',
       bio: 'Looking for a quiet apartment.',
+      default_cover_letter: null,
     };
     expect(snapshot.full_name).toBe('John Doe');
     expect(snapshot.has_pets).toBe(true);
@@ -79,12 +86,19 @@ describe('RenterSnapshot type', () => {
       email: null,
       phone: null,
       employment_status: null,
+      employment_other: null,
       monthly_income_range: null,
       move_in_timeline: null,
       household_size: null,
       has_pets: false,
+      pet_details: null,
       is_smoker: false,
+      looking_duration: null,
+      age_bracket: null,
+      nationality: null,
+      occupation: null,
       bio: null,
+      default_cover_letter: null,
     };
     expect(snapshot.full_name).toBeNull();
     expect(snapshot.household_size).toBeNull();

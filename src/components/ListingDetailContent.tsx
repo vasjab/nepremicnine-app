@@ -272,7 +272,21 @@ export function ListingDetailContent({
 
     // Rental-specific details
     if (listing.listing_type === 'rent') {
-      if (listing.deposit_amount) {
+      if ((listing as any).deposit_required) {
+        const depositValue = (listing as any).deposit_type === 'months'
+          ? `${(listing as any).deposit_months} month${(listing as any).deposit_months > 1 ? 's' : ''} rent`
+          : listing.deposit_amount
+            ? formatPrice(listing.deposit_amount, listing.currency)
+            : null;
+        if (depositValue) {
+          rows.push({
+            label: t('listing.deposit'),
+            value: depositValue,
+            icon: Info,
+          });
+        }
+      } else if (listing.deposit_amount) {
+        // Fallback for older listings without deposit_required field
         rows.push({
           label: t('listing.deposit'),
           value: formatPrice(listing.deposit_amount, listing.currency),
@@ -308,50 +322,48 @@ export function ListingDetailContent({
   return (
     <>
       {/* Header bar */}
-      {!isModal && (
-        <div className={cn(
-          "max-w-6xl mx-auto px-4 sm:px-6 transition-opacity duration-500",
-          isAnimating && !isClosing ? "opacity-100" : "opacity-0"
-        )}>
-          <div className="flex items-center justify-between py-3">
-            <div className="flex items-center gap-1 -ml-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-9 px-3 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                onClick={onClose}
-              >
-                <ArrowLeft className="h-4 w-4 mr-1.5" />
-                Back
-              </Button>
-              <span className="text-gray-200">|</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-9 px-3 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                onClick={() => router.push('/')}
-              >
-                <Home className="h-4 w-4 mr-1.5" />
-                Home
-              </Button>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={cn(
-                  "h-9 px-3 rounded-lg text-sm font-medium hover:bg-gray-100",
-                  isSaved ? "text-rose-500" : "text-gray-600 hover:text-gray-900"
-                )}
-                onClick={handleSaveClick}
-              >
-                <Heart className={cn("h-4 w-4 mr-1.5", isSaved && "fill-current")} />
-                {isSaved ? 'Saved' : 'Save'}
-              </Button>
-            </div>
+      <div className={cn(
+        "max-w-6xl mx-auto px-4 sm:px-6 transition-opacity duration-500",
+        isAnimating && !isClosing ? "opacity-100" : "opacity-0"
+      )}>
+        <div className="flex items-center justify-between py-3">
+          <div className="flex items-center gap-1 -ml-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 px-3 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              onClick={onClose}
+            >
+              <ArrowLeft className="h-4 w-4 mr-1.5" />
+              Back
+            </Button>
+            <span className="text-gray-200">|</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 px-3 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              onClick={() => router.push('/')}
+            >
+              <Home className="h-4 w-4 mr-1.5" />
+              Home
+            </Button>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "h-9 px-3 rounded-lg text-sm font-medium hover:bg-gray-100",
+                isSaved ? "text-rose-500" : "text-gray-600 hover:text-gray-900"
+              )}
+              onClick={handleSaveClick}
+            >
+              <Heart className={cn("h-4 w-4 mr-1.5", isSaved && "fill-current")} />
+              {isSaved ? 'Saved' : 'Save'}
+            </Button>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Image Gallery */}
       <div className={cn(
@@ -377,6 +389,8 @@ export function ListingDetailContent({
                         src={image}
                         alt={`${listing.title} - Photo ${index + 1}`}
                         className="w-full h-full object-cover"
+                        loading={index === 0 ? 'eager' : 'lazy'}
+                        decoding="async"
                       />
                     </div>
                   ))}
@@ -445,6 +459,7 @@ export function ListingDetailContent({
                   src={listing.images[0]}
                   alt={`${listing.title} - Main photo`}
                   className="w-full h-full object-cover transition-[filter] duration-300 group-hover:brightness-[0.94]"
+                  decoding="async"
                 />
               </div>
 
@@ -455,6 +470,8 @@ export function ListingDetailContent({
                     src={image}
                     alt={`${listing.title} - Photo ${index + 2}`}
                     className="w-full h-full object-cover transition-[filter] duration-300 hover:brightness-[0.94]"
+                    loading="lazy"
+                    decoding="async"
                   />
                   {/* "+N more" overlay on last visible image */}
                   {index === 3 && listing.images!.length > 5 && (

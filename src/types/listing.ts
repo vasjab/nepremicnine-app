@@ -133,6 +133,9 @@ export interface Listing {
   // Rental-specific
   rent_indefinitely: boolean;
   deposit_amount: number | null;
+  deposit_required: boolean;
+  deposit_type: 'fixed' | 'months' | null;
+  deposit_months: number | null;
   min_lease_months: number | null;
   internet_included: 'yes' | 'no' | 'available' | null;
   utilities_included: 'yes' | 'no' | 'partial' | null;
@@ -167,12 +170,31 @@ export interface Profile {
   updated_at: string;
   user_intents: string[];
   onboarding_completed: boolean;
+  // Renter fields
   employment_status: string | null;
+  employment_other: string | null;
   monthly_income_range: string | null;
   move_in_timeline: string | null;
   household_size: number | null;
   has_pets: boolean;
+  pet_details: string | null;
   is_smoker: boolean;
+  looking_duration: string | null;
+  looking_duration_date: string | null;
+  // Optional profile details
+  age_bracket: string | null;
+  marital_status: string | null;
+  has_kids: boolean;
+  kids_count: number | null;
+  kids_ages: string | null;
+  nationality: string | null;
+  education_level: string | null;
+  occupation: string | null;
+  social_links: Record<string, string> | null;
+  // References & cover letter
+  renter_references: Array<{ name: string; contact: string; relationship: string }> | null;
+  default_cover_letter: string | null;
+  // Landlord fields
   num_properties: number | null;
   management_type: string | null;
   response_time: string | null;
