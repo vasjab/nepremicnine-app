@@ -121,7 +121,6 @@ export async function POST(request: NextRequest) {
         // Delete user's other data
         await supabase.from('saved_listings').delete().eq('user_id', user_id);
         await supabase.from('recently_viewed_listings').delete().eq('user_id', user_id);
-        await supabase.from('notification_preferences').delete().eq('user_id', user_id);
         await supabase.from('profiles').delete().eq('user_id', user_id);
 
         // Also delete conversations where user is renter
