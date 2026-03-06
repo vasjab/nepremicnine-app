@@ -314,15 +314,27 @@ export function ListingDetailContent({
           isAnimating && !isClosing ? "opacity-100" : "opacity-0"
         )}>
           <div className="flex items-center justify-between py-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-9 px-3 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 -ml-3"
-              onClick={onClose}
-            >
-              <ArrowLeft className="h-4 w-4 mr-1.5" />
-              Back
-            </Button>
+            <div className="flex items-center gap-1 -ml-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 px-3 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                onClick={onClose}
+              >
+                <ArrowLeft className="h-4 w-4 mr-1.5" />
+                Back
+              </Button>
+              <span className="text-gray-200">|</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 px-3 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                onClick={() => router.push('/')}
+              >
+                <Home className="h-4 w-4 mr-1.5" />
+                Home
+              </Button>
+            </div>
             <div className="flex items-center gap-1">
               <Button
                 variant="ghost"

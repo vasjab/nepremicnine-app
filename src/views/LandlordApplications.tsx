@@ -34,7 +34,7 @@ export default function LandlordApplicationsPage() {
       <div className="min-h-screen bg-background">
         <Header />
         <main className="pt-16">
-          <div className="container max-w-5xl mx-auto px-4 py-20 text-center">
+          <div className="max-w-6xl mx-auto px-4 py-20 text-center">
             <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center mx-auto mb-4">
               <FileText className="h-7 w-7 text-white" />
             </div>
@@ -51,7 +51,7 @@ export default function LandlordApplicationsPage() {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="pt-16">
-        <div className="container max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           {/* Header */}
           <div className="flex items-center justify-between gap-3 mb-6">
             <div className="flex items-center gap-3">

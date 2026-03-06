@@ -34,13 +34,41 @@ export default function ListingDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Skeleton className="h-[50vh] w-full" />
-        <div className="container mx-auto px-4 py-8">
-          <Skeleton className="h-8 w-1/2 mb-4" />
-          <Skeleton className="h-6 w-1/3 mb-8" />
-          <div className="grid grid-cols-2 gap-4">
-            <Skeleton className="h-24" />
-            <Skeleton className="h-24" />
+        {/* Header bar skeleton */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between py-3">
+            <Skeleton className="h-9 w-20 rounded-lg" />
+            <Skeleton className="h-9 w-16 rounded-lg" />
+          </div>
+        </div>
+
+        {/* Gallery skeleton */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 mb-8">
+          <Skeleton className="h-[280px] sm:h-[360px] w-full rounded-2xl" />
+        </div>
+
+        {/* Content skeleton — 3 col grid */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid lg:grid-cols-3 gap-6 lg:gap-10">
+            {/* Main content */}
+            <div className="lg:col-span-2 space-y-4">
+              <Skeleton className="h-8 w-3/4" />
+              <Skeleton className="h-5 w-1/2" />
+              <Skeleton className="h-4 w-2/5" />
+              <div className="flex gap-2 pt-2">
+                <Skeleton className="h-8 w-24 rounded-full" />
+                <Skeleton className="h-8 w-20 rounded-full" />
+                <Skeleton className="h-8 w-28 rounded-full" />
+              </div>
+              <Skeleton className="h-px w-full mt-4" />
+              <Skeleton className="h-20 w-full rounded-xl" />
+              <Skeleton className="h-40 w-full rounded-xl" />
+            </div>
+            {/* Sidebar */}
+            <div className="hidden lg:block space-y-4">
+              <Skeleton className="h-56 w-full rounded-xl" />
+              <Skeleton className="h-32 w-full rounded-xl" />
+            </div>
           </div>
         </div>
       </div>

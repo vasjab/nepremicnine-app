@@ -19,7 +19,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 
-export function Header() {
+interface HeaderProps {
+  pageTitle?: string;
+}
+
+export function Header({ pageTitle }: HeaderProps = {}) {
   const { user, signOut } = useAuth();
   const { t } = useTranslation();
   const pathname = usePathname();
@@ -31,21 +35,29 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
-      <div className="w-full px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16 relative">
 
-          {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 transition-opacity hover:opacity-80"
-          >
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 shadow-sm">
-              <Home className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-lg font-bold text-foreground tracking-tight">
-              hemma
-            </span>
-          </Link>
+          {/* Logo + Page title */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Link
+              href="/"
+              className="flex items-center gap-2.5 transition-opacity hover:opacity-80 shrink-0"
+            >
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 shadow-sm">
+                <Home className="h-4 w-4 text-white" />
+              </div>
+              <span className="text-lg font-bold text-foreground tracking-tight">
+                hemma
+              </span>
+            </Link>
+            {pageTitle && (
+              <>
+                <span className="text-gray-300 text-lg font-light">/</span>
+                <span className="text-sm font-medium text-gray-500 truncate">{pageTitle}</span>
+              </>
+            )}
+          </div>
 
           {/* Desktop Navigation — Airbnb-style centered tabs */}
           <nav className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2 h-full">
