@@ -1226,7 +1226,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
             <Drawer open={isOpen} onOpenChange={setIsOpen}>
               <div className="relative shrink-0">
                 <DrawerTrigger asChild>
-                <button className={`flex items-center justify-center rounded-xl h-9 w-9 text-sm font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-foreground hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
+                <button data-testid="filters-trigger" className={`flex items-center justify-center rounded-xl h-9 w-9 text-sm font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-foreground hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
                     <span className="text-sm leading-none">⚙️</span>
                   </button>
                 </DrawerTrigger>
@@ -1272,7 +1272,7 @@ export function FilterBar({ filters, onFiltersChange, sortBy, onSortChange, tota
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
               <div className="relative shrink-0">
                 <DialogTrigger asChild>
-                  <button className={`flex items-center gap-1.5 rounded-xl h-9 px-2.5 text-xs font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-foreground hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
+                  <button data-testid="filters-trigger" className={`flex items-center gap-1.5 rounded-xl h-9 px-2.5 text-xs font-medium transition-colors ${totalActiveFilters > 0 ? 'bg-accent text-accent-foreground' : 'bg-secondary text-foreground hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
                     <span className="text-sm leading-none">⚙️</span>
                     <span>Filters</span>
                   </button>

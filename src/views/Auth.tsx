@@ -15,14 +15,16 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { cn } from '@/lib/utils';
 
 const emailSchema = z.string().email('Please enter a valid email address');
+type AuthFlow = 'signin' | 'signup' | null;
 
 export default function Auth() {
   const router = useRouter();
-  const { user, sendOtp, verifyOtp } = useAuth();
+  const { user, sendOtp, verifyOtp, signInWithPassword } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation();
 
   const [step, setStep] = useState<'email' | 'otp'>('email');
+  const [authFlow, setAuthFlow] = useState<AuthFlow>(null);
   const [email, setEmail] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,6 +48,16 @@ export default function Auth() {
     const timer = setTimeout(() => setResendCooldown(prev => prev - 1), 1000);
     return () => clearTimeout(timer);
   }, [resendCooldown]);
+
+  const persistRememberMe = () => {
+    if (rememberMe) {
+      localStorage.setItem('hemma_remember_me', 'true');
+      sessionStorage.removeItem('hemma_session_active');
+    } else {
+      localStorage.removeItem('hemma_remember_me');
+      sessionStorage.setItem('hemma_session_active', 'true');
+    }
+  };
 
   const handleSendOtp = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -78,18 +90,41 @@ export default function Auth() {
 
     setIsLoading(true);
     try {
-      const { error } = await sendOtp(email);
-      if (error) {
+      const startResponse = await fetch('/api/auth/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const startPayload = await startResponse.json() as { flow?: AuthFlow; error?: string };
+
+      if (!startResponse.ok || !startPayload.flow) {
         toast({
           variant: 'destructive',
-          title: 'Could not send code',
-          description: error.message,
+          title: 'Could not start authentication',
+          description: startPayload.error || 'Please try again.',
         });
-      } else {
-        setStep('otp');
-        setResendCooldown(60);
-        setTimeout(() => otpRefs.current[0]?.focus(), 150);
+        return;
       }
+
+      if (startPayload.flow === 'signin') {
+        const { error } = await sendOtp(email, { shouldCreateUser: false });
+        if (error) {
+          toast({
+            variant: 'destructive',
+            title: 'Could not send code',
+            description: error.message,
+          });
+          return;
+        }
+      }
+
+      setAuthFlow(startPayload.flow);
+      setStep('otp');
+      setResendCooldown(60);
+      setTimeout(() => otpRefs.current[0]?.focus(), 150);
     } finally {
       setIsLoading(false);
     }
@@ -101,22 +136,42 @@ export default function Auth() {
     setOtpError('');
     setIsLoading(true);
     try {
-      const { error } = await verifyOtp(email, code);
-      if (error) {
-        setOtpError('Invalid or expired code. Please try again.');
-        setOtpValues(['', '', '', '', '', '']);
-        setTimeout(() => otpRefs.current[0]?.focus(), 50);
-      } else {
-        // Set remember me flags
-        if (rememberMe) {
-          localStorage.setItem('hemma_remember_me', 'true');
-          sessionStorage.removeItem('hemma_session_active');
-        } else {
-          localStorage.removeItem('hemma_remember_me');
-          sessionStorage.setItem('hemma_session_active', 'true');
+      if (authFlow === 'signup') {
+        const response = await fetch('/api/auth/complete-signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, code }),
+        });
+        const payload = await response.json() as { error?: string; email?: string; temporaryPassword?: string };
+
+        if (!response.ok || !payload.email || !payload.temporaryPassword) {
+          setOtpError(payload.error || 'Invalid or expired code. Please try again.');
+          setOtpValues(['', '', '', '', '', '']);
+          setTimeout(() => otpRefs.current[0]?.focus(), 50);
+          return;
         }
-        router.push('/');
+
+        const { error } = await signInWithPassword(payload.email, payload.temporaryPassword);
+        if (error) {
+          setOtpError(error.message || 'Unable to sign you in after verification.');
+          setOtpValues(['', '', '', '', '', '']);
+          setTimeout(() => otpRefs.current[0]?.focus(), 50);
+          return;
+        }
+      } else {
+        const { error } = await verifyOtp(email, code);
+        if (error) {
+          setOtpError('Invalid or expired code. Please try again.');
+          setOtpValues(['', '', '', '', '', '']);
+          setTimeout(() => otpRefs.current[0]?.focus(), 50);
+          return;
+        }
       }
+
+      persistRememberMe();
+      router.push('/');
     } finally {
       setIsLoading(false);
       isVerifyingRef.current = false;
@@ -176,6 +231,7 @@ export default function Auth() {
 
   const handleBackToEmail = () => {
     setStep('email');
+    setAuthFlow(null);
     setOtpValues(['', '', '', '', '', '']);
     setOtpError('');
   };
@@ -218,7 +274,10 @@ export default function Auth() {
                       type="email"
                       placeholder="you@example.com"
                       value={email}
-                      onChange={(e) => { setEmail(e.target.value); setEmailError(''); }}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        setEmailError('');
+                      }}
                       className="pl-10 h-12 text-base rounded-xl border-black/[0.08] bg-white/70 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                       autoFocus
                       autoComplete="email"
@@ -276,11 +335,19 @@ export default function Auth() {
               <div className="text-center mb-8">
                 <span className="text-5xl mb-4 block">✉️</span>
                 <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 tracking-tight">
-                  Check your email
+                  Verify your email
                 </h1>
                 <p className="text-muted-foreground text-sm sm:text-base">
                   We sent a 6-digit code to{' '}
                   <span className="font-medium text-foreground">{email}</span>
+                </p>
+                <p
+                  data-testid="auth-intent-copy"
+                  className="text-xs sm:text-sm text-muted-foreground mt-3 max-w-sm mx-auto"
+                >
+                  {authFlow === 'signup'
+                    ? 'We verify your email before creating your account.'
+                    : 'Enter the code to sign in with your verified email.'}
                 </p>
               </div>
 

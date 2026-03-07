@@ -56,7 +56,7 @@ export default function CreateListing() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const resumeId = searchParams.get('resume');
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const createListing = useCreateListing();
@@ -274,8 +274,9 @@ export default function CreateListing() {
   const WIZARD_STEPS = getWizardSteps();
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) router.push('/auth');
-  }, [user, router]);
+  }, [authLoading, user, router]);
 
   // Populate form when resuming a draft
   useEffect(() => {
@@ -1147,6 +1148,10 @@ export default function CreateListing() {
     await handleSaveDraft();
     router.back();
   };
+
+  if (authLoading || !user) {
+    return null;
+  }
 
   // Mobile fullscreen layout
   if (isMobile) {

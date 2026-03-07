@@ -6,8 +6,9 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  sendOtp: (email: string) => Promise<{ error: Error | null }>;
+  sendOtp: (email: string, options?: { shouldCreateUser?: boolean }) => Promise<{ error: Error | null }>;
   verifyOtp: (email: string, token: string) => Promise<{ error: Error | null }>;
+  signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -51,11 +52,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const sendOtp = async (email: string) => {
+  const sendOtp = async (email: string, options?: { shouldCreateUser?: boolean }) => {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        shouldCreateUser: true,
+        shouldCreateUser: options?.shouldCreateUser ?? true,
       },
     });
     return { error: error as Error | null };
@@ -70,6 +71,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error as Error | null };
   };
 
+  const signInWithPassword = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    return { error: error as Error | null };
+  };
+
   const signOut = async () => {
     localStorage.removeItem('hemma_remember_me');
     sessionStorage.removeItem('hemma_session_active');
@@ -77,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, sendOtp, verifyOtp, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, sendOtp, verifyOtp, signInWithPassword, signOut }}>
       {children}
     </AuthContext.Provider>
   );

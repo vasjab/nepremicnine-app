@@ -60,6 +60,7 @@ export function ListingDetailContent({
   const { toast } = useToast();
   const { data: listingStats } = useListingStats(listing.id, listing.created_at);
   const { data: hasApplied } = useHasApplied(listing.id);
+  const hasFullAccess = !!user;
 
   const [showGallery, setShowGallery] = useState(false);
   const [showApplicationForm, setShowApplicationForm] = useState(false);
@@ -549,7 +550,11 @@ export function ListingDetailContent({
 
               <div className="flex items-center gap-1.5 text-sm text-gray-500">
                 <MapPin className="h-3.5 w-3.5" />
-                <span>{listing.address}, {listing.city}</span>
+                <span>
+                  {hasFullAccess
+                    ? `${listing.address}, ${listing.city}`
+                    : `${listing.city} · Exact address available after sign in`}
+                </span>
               </div>
 
               {/* Highlights */}
@@ -594,22 +599,22 @@ export function ListingDetailContent({
                     <Button
                       size="sm"
                       className="shrink-0 rounded-xl h-11 px-5 bg-rose-500 hover:bg-rose-600 text-white border-0"
-                      disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
-                      onClick={() => handleContactLandlord()}
+                      disabled={hasFullAccess && (getOrCreateConversation.isPending || listing.user_id === user?.id)}
+                      onClick={() => hasFullAccess ? handleContactLandlord() : router.push('/auth')}
                     >
                       <MessageCircle className="h-4 w-4 mr-1.5" />
-                      Contact
+                      {hasFullAccess ? 'Contact' : 'Sign In to Unlock'}
                     </Button>
                   )}
                 </div>
-                {!isCompleted && listing.user_id !== user?.id && (
+                {hasFullAccess && !isCompleted && listing.user_id !== user?.id && (
                   <QuickMessageButtons
                     onSelect={(msg) => handleContactLandlord(msg)}
                     disabled={getOrCreateConversation.isPending}
                     className="mt-2"
                   />
                 )}
-                {!isCompleted && listing.listing_type === 'rent' && listing.user_id !== user?.id && (
+                {hasFullAccess && !isCompleted && listing.listing_type === 'rent' && listing.user_id !== user?.id && (
                   <Button
                     size="sm"
                     variant="outline"
@@ -624,193 +629,234 @@ export function ListingDetailContent({
               </div>
             </div>
 
-            {/* Description */}
-            {listing.description && (
-              <div className="pt-8">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3">{t('listing.description')}</h2>
-                <div className="text-gray-600 whitespace-pre-line leading-relaxed text-[15px]">
-                  {showFullDescription || listing.description.length <= 400 ? (
-                    <>
-                      <p>{listing.description}</p>
-                      {listing.description.length > 400 && (
-                        <button
-                          className="mt-4 text-sm font-semibold text-gray-900 underline underline-offset-4"
-                          onClick={() => setShowFullDescription(false)}
-                        >
-                          Show less
-                        </button>
+            {!hasFullAccess ? (
+              <div
+                data-testid="listing-guest-gate"
+                className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5 sm:p-6"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-white">
+                    <Shield className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <h2 className="text-lg font-semibold text-foreground">Unlock the full listing</h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Sign in with a verified email to view the full description, exact location, amenities, landlord contact, and rental application.
+                    </p>
+                    <div className="flex flex-wrap gap-2 mt-4 text-xs text-muted-foreground">
+                      <span className="inline-flex items-center rounded-full bg-white px-3 py-1.5 border border-slate-200">
+                        Exact address
+                      </span>
+                      <span className="inline-flex items-center rounded-full bg-white px-3 py-1.5 border border-slate-200">
+                        Full description
+                      </span>
+                      <span className="inline-flex items-center rounded-full bg-white px-3 py-1.5 border border-slate-200">
+                        Amenities and map
+                      </span>
+                      <span className="inline-flex items-center rounded-full bg-white px-3 py-1.5 border border-slate-200">
+                        Messaging and applications
+                      </span>
+                    </div>
+                    <Button
+                      className="mt-5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white"
+                      onClick={() => router.push('/auth')}
+                    >
+                      Sign In to Unlock
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                {/* Description */}
+                {listing.description && (
+                  <div className="pt-8">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-3">{t('listing.description')}</h2>
+                    <div className="text-gray-600 whitespace-pre-line leading-relaxed text-[15px]">
+                      {showFullDescription || listing.description.length <= 400 ? (
+                        <>
+                          <p>{listing.description}</p>
+                          {listing.description.length > 400 && (
+                            <button
+                              className="mt-4 text-sm font-semibold text-gray-900 underline underline-offset-4"
+                              onClick={() => setShowFullDescription(false)}
+                            >
+                              Show less
+                            </button>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <p>{listing.description.slice(0, 400)}...</p>
+                          <button
+                            className="mt-4 text-sm font-semibold text-gray-900 underline underline-offset-4"
+                            onClick={() => setShowFullDescription(true)}
+                          >
+                            Show more &rsaquo;
+                          </button>
+                        </>
                       )}
-                    </>
-                  ) : (
-                    <>
-                      <p>{listing.description.slice(0, 400)}...</p>
-                      <button
-                        className="mt-4 text-sm font-semibold text-gray-900 underline underline-offset-4"
-                        onClick={() => setShowFullDescription(true)}
-                      >
-                        Show more &rsaquo;
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Property Details */}
-            {detailRows.length > 0 && (
-              <div className="mt-8 bg-gray-50/80 rounded-2xl p-5 sm:p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Property Details</h2>
-                <dl className="grid grid-cols-2 sm:grid-cols-3 gap-5">
-                  {detailRows.map((row) => {
-                    const Icon = row.icon;
-                    return (
-                      <div key={row.label} className="flex items-start gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm">
-                          <Icon className="h-4.5 w-4.5 text-gray-600" />
-                        </div>
-                        <div className="min-w-0">
-                          <dt className="text-xs text-gray-500 leading-tight">{row.label}</dt>
-                          <dd className="text-sm font-semibold text-gray-900 truncate">{row.value}</dd>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </dl>
-              </div>
-            )}
-
-            {/* Costs Breakdown */}
-            {listing.expense_breakdown_enabled && (
-              listing.monthly_expenses || listing.utility_cost_estimate ||
-              listing.expense_hoa_fees || listing.expense_insurance ||
-              listing.expense_maintenance || listing.expense_property_tax ||
-              listing.expense_utilities || listing.expense_other
-            ) && (
-              <div className="mt-6 bg-gray-50/80 rounded-2xl p-5 sm:p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Monthly Costs</h2>
-                <div className="space-y-2.5">
-                  {listing.monthly_expenses != null && listing.monthly_expenses > 0 && (
-                    <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-white shadow-sm">
-                      <div className="flex items-center gap-3">
-                        <Receipt className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
-                        <span className="text-sm text-gray-700">Total Monthly Expenses</span>
-                      </div>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {formatPrice(listing.monthly_expenses, listing.currency)}
-                      </span>
                     </div>
-                  )}
-                  {listing.utility_cost_estimate != null && listing.utility_cost_estimate > 0 && (
-                    <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-white shadow-sm">
-                      <div className="flex items-center gap-3">
-                        <Droplets className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
-                        <span className="text-sm text-gray-700">Utilities Estimate</span>
-                      </div>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {formatPrice(listing.utility_cost_estimate, listing.currency)}
-                      </span>
-                    </div>
-                  )}
-                  {listing.expense_hoa_fees != null && listing.expense_hoa_fees > 0 && (
-                    <div className="flex items-center justify-between py-2 px-3 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <Building2 className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
-                        <span className="text-sm text-gray-700">HOA / Reserve Fund</span>
-                      </div>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {formatPrice(listing.expense_hoa_fees, listing.currency)}
-                      </span>
-                    </div>
-                  )}
-                  {listing.expense_property_tax != null && listing.expense_property_tax > 0 && (
-                    <div className="flex items-center justify-between py-2 px-3 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <Banknote className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
-                        <span className="text-sm text-gray-700">Property Tax</span>
-                      </div>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {formatPrice(listing.expense_property_tax, listing.currency)}
-                      </span>
-                    </div>
-                  )}
-                  {listing.expense_insurance != null && listing.expense_insurance > 0 && (
-                    <div className="flex items-center justify-between py-2 px-3 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <Shield className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
-                        <span className="text-sm text-gray-700">Insurance</span>
-                      </div>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {formatPrice(listing.expense_insurance, listing.currency)}
-                      </span>
-                    </div>
-                  )}
-                  {listing.expense_maintenance != null && listing.expense_maintenance > 0 && (
-                    <div className="flex items-center justify-between py-2 px-3 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <Wrench className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
-                        <span className="text-sm text-gray-700">Maintenance</span>
-                      </div>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {formatPrice(listing.expense_maintenance, listing.currency)}
-                      </span>
-                    </div>
-                  )}
-                  {listing.expense_utilities != null && listing.expense_utilities > 0 && (
-                    <div className="flex items-center justify-between py-2 px-3 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <Zap className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
-                        <span className="text-sm text-gray-700">Utilities</span>
-                      </div>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {formatPrice(listing.expense_utilities, listing.currency)}
-                      </span>
-                    </div>
-                  )}
-                  {listing.expense_other != null && listing.expense_other > 0 && (
-                    <div className="flex items-center justify-between py-2 px-3 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <Info className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
-                        <span className="text-sm text-gray-700">Other Costs</span>
-                      </div>
-                      <span className="text-sm font-semibold text-gray-900">
-                        {formatPrice(listing.expense_other, listing.currency)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Features & Amenities */}
-            {featureCount > 0 && (
-              <div className="mt-8">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                  {t('listing.features')}
-                </h2>
-                <PropertyFeatures listing={listing} maxItems={10} />
-                {featureCount > 10 && (
-                  <button
-                    className="mt-5 inline-flex items-center justify-center h-12 px-6 text-base font-semibold text-gray-900 rounded-lg border border-gray-900 hover:bg-gray-50 transition-colors"
-                    onClick={() => setShowFeaturesModal(true)}
-                  >
-                    {`Show all ${featureCount} amenities`}
-                  </button>
+                  </div>
                 )}
-              </div>
-            )}
 
-            {/* Location */}
-            <div className="mt-8 bg-gray-50/80 rounded-2xl p-5 sm:p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-1">{t('listing.location')}</h2>
-              <p className="text-sm text-gray-500 mb-4">{listing.address}, {listing.city}</p>
-              <div className="h-[280px] sm:h-[340px] rounded-xl overflow-hidden">
-                <ListingLocationMap
-                  latitude={listing.latitude}
-                  longitude={listing.longitude}
-                  address={listing.address}
-                />
-              </div>
-            </div>
+                {/* Property Details */}
+                {detailRows.length > 0 && (
+                  <div className="mt-8 bg-gray-50/80 rounded-2xl p-5 sm:p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Property Details</h2>
+                    <dl className="grid grid-cols-2 sm:grid-cols-3 gap-5">
+                      {detailRows.map((row) => {
+                        const Icon = row.icon;
+                        return (
+                          <div key={row.label} className="flex items-start gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white shadow-sm">
+                              <Icon className="h-4.5 w-4.5 text-gray-600" />
+                            </div>
+                            <div className="min-w-0">
+                              <dt className="text-xs text-gray-500 leading-tight">{row.label}</dt>
+                              <dd className="text-sm font-semibold text-gray-900 truncate">{row.value}</dd>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </dl>
+                  </div>
+                )}
+
+                {/* Costs Breakdown */}
+                {listing.expense_breakdown_enabled && (
+                  listing.monthly_expenses || listing.utility_cost_estimate ||
+                  listing.expense_hoa_fees || listing.expense_insurance ||
+                  listing.expense_maintenance || listing.expense_property_tax ||
+                  listing.expense_utilities || listing.expense_other
+                ) && (
+                  <div className="mt-6 bg-gray-50/80 rounded-2xl p-5 sm:p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Monthly Costs</h2>
+                    <div className="space-y-2.5">
+                      {listing.monthly_expenses != null && listing.monthly_expenses > 0 && (
+                        <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-white shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <Receipt className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                            <span className="text-sm text-gray-700">Total Monthly Expenses</span>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-900">
+                            {formatPrice(listing.monthly_expenses, listing.currency)}
+                          </span>
+                        </div>
+                      )}
+                      {listing.utility_cost_estimate != null && listing.utility_cost_estimate > 0 && (
+                        <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-white shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <Droplets className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                            <span className="text-sm text-gray-700">Utilities Estimate</span>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-900">
+                            {formatPrice(listing.utility_cost_estimate, listing.currency)}
+                          </span>
+                        </div>
+                      )}
+                      {listing.expense_hoa_fees != null && listing.expense_hoa_fees > 0 && (
+                        <div className="flex items-center justify-between py-2 px-3 rounded-xl">
+                          <div className="flex items-center gap-3">
+                            <Building2 className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                            <span className="text-sm text-gray-700">HOA / Reserve Fund</span>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-900">
+                            {formatPrice(listing.expense_hoa_fees, listing.currency)}
+                          </span>
+                        </div>
+                      )}
+                      {listing.expense_property_tax != null && listing.expense_property_tax > 0 && (
+                        <div className="flex items-center justify-between py-2 px-3 rounded-xl">
+                          <div className="flex items-center gap-3">
+                            <Banknote className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                            <span className="text-sm text-gray-700">Property Tax</span>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-900">
+                            {formatPrice(listing.expense_property_tax, listing.currency)}
+                          </span>
+                        </div>
+                      )}
+                      {listing.expense_insurance != null && listing.expense_insurance > 0 && (
+                        <div className="flex items-center justify-between py-2 px-3 rounded-xl">
+                          <div className="flex items-center gap-3">
+                            <Shield className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                            <span className="text-sm text-gray-700">Insurance</span>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-900">
+                            {formatPrice(listing.expense_insurance, listing.currency)}
+                          </span>
+                        </div>
+                      )}
+                      {listing.expense_maintenance != null && listing.expense_maintenance > 0 && (
+                        <div className="flex items-center justify-between py-2 px-3 rounded-xl">
+                          <div className="flex items-center gap-3">
+                            <Wrench className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                            <span className="text-sm text-gray-700">Maintenance</span>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-900">
+                            {formatPrice(listing.expense_maintenance, listing.currency)}
+                          </span>
+                        </div>
+                      )}
+                      {listing.expense_utilities != null && listing.expense_utilities > 0 && (
+                        <div className="flex items-center justify-between py-2 px-3 rounded-xl">
+                          <div className="flex items-center gap-3">
+                            <Zap className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                            <span className="text-sm text-gray-700">Utilities</span>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-900">
+                            {formatPrice(listing.expense_utilities, listing.currency)}
+                          </span>
+                        </div>
+                      )}
+                      {listing.expense_other != null && listing.expense_other > 0 && (
+                        <div className="flex items-center justify-between py-2 px-3 rounded-xl">
+                          <div className="flex items-center gap-3">
+                            <Info className="h-4 w-4 text-gray-500" strokeWidth={1.5} />
+                            <span className="text-sm text-gray-700">Other Costs</span>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-900">
+                            {formatPrice(listing.expense_other, listing.currency)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Features & Amenities */}
+                {featureCount > 0 && (
+                  <div className="mt-8">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                      {t('listing.features')}
+                    </h2>
+                    <PropertyFeatures listing={listing} maxItems={10} />
+                    {featureCount > 10 && (
+                      <button
+                        className="mt-5 inline-flex items-center justify-center h-12 px-6 text-base font-semibold text-gray-900 rounded-lg border border-gray-900 hover:bg-gray-50 transition-colors"
+                        onClick={() => setShowFeaturesModal(true)}
+                      >
+                        {`Show all ${featureCount} amenities`}
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Location */}
+                <div className="mt-8 bg-gray-50/80 rounded-2xl p-5 sm:p-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-1">{t('listing.location')}</h2>
+                  <p className="text-sm text-gray-500 mb-4">{listing.address}, {listing.city}</p>
+                  <div className="h-[280px] sm:h-[340px] rounded-xl overflow-hidden">
+                    <ListingLocationMap
+                      latitude={listing.latitude}
+                      longitude={listing.longitude}
+                      address={listing.address}
+                    />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -893,13 +939,15 @@ export function ListingDetailContent({
                     <>
                       <Button
                         className="w-full h-12 text-sm font-semibold rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white border-0 shadow-md shadow-rose-200/50"
-                        disabled={getOrCreateConversation.isPending || listing.user_id === user?.id}
-                        onClick={() => handleContactLandlord()}
+                        disabled={hasFullAccess && (getOrCreateConversation.isPending || listing.user_id === user?.id)}
+                        onClick={() => hasFullAccess ? handleContactLandlord() : router.push('/auth')}
                       >
                         <MessageCircle className="h-4 w-4 mr-2" />
-                        {getOrCreateConversation.isPending ? 'Starting chat...' : t('listing.contactLandlord')}
+                        {hasFullAccess
+                          ? (getOrCreateConversation.isPending ? 'Starting chat...' : t('listing.contactLandlord'))
+                          : 'Sign In to Unlock'}
                       </Button>
-                      {listing.user_id !== user?.id && (
+                      {hasFullAccess && listing.user_id !== user?.id && (
                         <QuickMessageButtons
                           onSelect={(msg) => handleContactLandlord(msg)}
                           disabled={getOrCreateConversation.isPending}
@@ -909,7 +957,7 @@ export function ListingDetailContent({
                   )}
 
                   {/* Apply button for rentals */}
-                  {!isCompleted && listing.listing_type === 'rent' && listing.user_id !== user?.id && (
+                  {hasFullAccess && !isCompleted && listing.listing_type === 'rent' && listing.user_id !== user?.id && (
                     <Button
                       variant="outline"
                       className="w-full h-12 text-sm font-semibold rounded-xl border-slate-900 hover:bg-slate-50"
@@ -930,7 +978,7 @@ export function ListingDetailContent({
                     {user ? (isSaved ? t('common.saved') : t('listing.saveListing')) : t('listing.signInToSave')}
                   </Button>
 
-                  {listing.user_id && (
+                  {hasFullAccess && listing.user_id && (
                     <button
                       className="w-full flex items-center justify-center gap-2 py-3 text-sm text-gray-500 hover:text-gray-700 transition-colors rounded-xl hover:bg-gray-50"
                       onClick={() => router.push(`/landlord/${listing.user_id}`)}

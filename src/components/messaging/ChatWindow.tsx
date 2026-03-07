@@ -748,6 +748,7 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
             disabled={sendMessage.isPending}
           />
           <Textarea
+            data-testid="message-composer"
             ref={textareaRef}
             value={newMessage}
             onChange={handleInputChange}
@@ -757,6 +758,7 @@ export function ChatWindow({ conversation, onBack, showBackButton, highlightMess
             rows={1}
           />
           <Button
+            data-testid="message-send"
             onClick={handleSend}
             disabled={(!newMessage.trim() && attachments.length === 0) || sendMessage.isPending}
             variant="accent"

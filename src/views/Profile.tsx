@@ -1,12 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Save, User } from 'lucide-react';
+import { User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Header } from '@/components/Header';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { RecentlyViewedListings } from '@/components/RecentlyViewedListings';
 import { Profile } from '@/types/listing';
@@ -19,6 +18,7 @@ import { ReferencesSection } from '@/components/profile/ReferencesSection';
 import { CoverLetterSection } from '@/components/profile/CoverLetterSection';
 import { LandlordDetailsSection } from '@/components/profile/LandlordDetailsSection';
 import { AccountSection } from '@/components/profile/AccountSection';
+import { FloatingSaveBar } from '@/components/profile/FloatingSaveBar';
 import type { ProfileFormData } from '@/components/profile/types';
 
 const DEFAULT_FORM_DATA: ProfileFormData = {
@@ -53,17 +53,24 @@ const DEFAULT_FORM_DATA: ProfileFormData = {
 
 export default function ProfilePage() {
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const { toast } = useToast();
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [intents, setIntents] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState<ProfileFormData>(DEFAULT_FORM_DATA);
+  const initialFormData = useRef<ProfileFormData>(DEFAULT_FORM_DATA);
+
+  const isDirty = JSON.stringify(formData) !== JSON.stringify(initialFormData.current);
 
   // ── Fetch profile ───────────────────────────────────────────────────────────
   useEffect(() => {
+    if (authLoading) {
+      return;
+    }
+
     if (!user) {
       router.push('/auth');
       return;
@@ -85,7 +92,7 @@ export default function ProfilePage() {
         setIntents((data.user_intents as string[]) ?? []);
         const sl = (data.social_links as Record<string, string>) || {};
         const refs = (data.renter_references as Array<{ name: string; contact: string; relationship: string }>) || [];
-        setFormData({
+        const fetched: ProfileFormData = {
           full_name: data.full_name || '',
           phone: data.phone || '',
           bio: data.bio || '',
@@ -117,13 +124,15 @@ export default function ProfilePage() {
           management_type: data.management_type || '',
           num_properties: data.num_properties || 1,
           response_time: data.response_time || '',
-        });
+        };
+        setFormData(fetched);
+        initialFormData.current = fetched;
       }
-      setLoading(false);
+      setProfileLoading(false);
     };
 
     fetchProfile();
-  }, [user, router]);
+  }, [authLoading, user, router]);
 
   // ── Save all fields ─────────────────────────────────────────────────────────
   const handleSave = async () => {
@@ -175,8 +184,13 @@ export default function ProfilePage() {
     if (error) {
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to update profile.' });
     } else {
+      initialFormData.current = { ...formData };
       toast({ title: 'Profile updated', description: 'Your changes have been saved.' });
     }
+  };
+
+  const handleDiscard = () => {
+    setFormData({ ...initialFormData.current });
   };
 
   const handleSignOut = async () => {
@@ -184,7 +198,7 @@ export default function ProfilePage() {
     router.push('/');
   };
 
-  if (!user) return null;
+  if (authLoading || !user) return null;
 
   const update = (patch: Partial<ProfileFormData>) => setFormData(prev => ({ ...prev, ...patch }));
 
@@ -218,7 +232,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {loading ? (
+            {profileLoading ? (
               <div className="space-y-4 pt-16">
                 <div className="h-24 w-24 rounded-full bg-muted skeleton-shimmer mx-auto" />
                 <div className="h-11 bg-muted rounded-xl skeleton-shimmer" />
@@ -229,6 +243,7 @@ export default function ProfilePage() {
                 {/* ── Basic Info ────────────────────────────────────────── */}
                 <BasicInfoSection
                   email={user.email ?? ''}
+                  userId={user.id}
                   data={formData}
                   onUpdate={update}
                 />
@@ -258,18 +273,6 @@ export default function ProfilePage() {
                   <LandlordDetailsSection data={formData} onUpdate={update} />
                 )}
 
-                {/* ── Save ─────────────────────────────────────────────── */}
-                <div className="border-b border-gray-100" />
-                <Button
-                  onClick={handleSave}
-                  variant="gradient"
-                  disabled={saving}
-                  className="h-12 text-base font-semibold rounded-xl w-full"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </Button>
-
                 {/* ── Account ──────────────────────────────────────────── */}
                 <AccountSection onSignOut={handleSignOut} />
               </div>
@@ -280,8 +283,18 @@ export default function ProfilePage() {
           <div className="mt-12 pt-8 border-t border-border">
             <RecentlyViewedListings limit={6} />
           </div>
+
+          {/* Bottom padding when floating bar is visible */}
+          {isDirty && <div className="h-20" />}
         </div>
       </main>
+
+      <FloatingSaveBar
+        isDirty={isDirty}
+        saving={saving}
+        onSave={handleSave}
+        onDiscard={handleDiscard}
+      />
     </div>
   );
 }

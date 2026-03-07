@@ -152,7 +152,7 @@ export function OnboardingModal({ open, onClose }: OnboardingModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) handleSkip(); }}>
-      <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden [&>button]:hidden">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] grid-rows-[auto,minmax(0,1fr),auto] p-0 gap-0 overflow-hidden [&>button]:hidden">
         {/* Progress bar */}
         <div className="h-1 bg-gray-100">
           <div
@@ -161,7 +161,7 @@ export function OnboardingModal({ open, onClose }: OnboardingModalProps) {
           />
         </div>
 
-        <div className="p-6 sm:p-8">
+        <div className="min-h-0 overflow-y-auto p-6 sm:p-8">
           {/* Step: Intent */}
           {currentStepName === 'intent' && (
             <div>

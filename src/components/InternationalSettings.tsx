@@ -44,11 +44,11 @@ export function InternationalSettings({ trigger = 'icon', onOpenChange }: Intern
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger === 'icon' ? (
-          <Button variant="ghost" size="icon" className="rounded-full">
+          <Button data-testid="international-settings-trigger" variant="ghost" size="icon" className="rounded-full">
             <Globe className="h-5 w-5" />
           </Button>
         ) : (
-          <button className="w-full flex items-center justify-between px-4 py-3.5 text-base hover:bg-gray-50 cursor-pointer transition-colors rounded-xl">
+          <button data-testid="international-settings-trigger" className="w-full flex items-center justify-between px-4 py-3.5 text-base hover:bg-gray-50 cursor-pointer transition-colors rounded-xl">
             <div className="flex items-center gap-3.5">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-gray-100 text-gray-500">
                 <Globe className="h-4 w-4" />

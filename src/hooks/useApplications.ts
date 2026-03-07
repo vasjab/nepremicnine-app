@@ -41,8 +41,7 @@ export function useLandlordApplications(listingId?: string) {
         .from('applications')
         .select(`
           *,
-          listing:listings(id, title, images, address, city, price, currency),
-          renter:profiles!applications_renter_id_fkey(full_name, avatar_url)
+          listing:listings(id, title, images, address, city, price, currency)
         `)
         .eq('landlord_id', user.id)
         .order('created_at', { ascending: false });

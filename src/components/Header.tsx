@@ -168,6 +168,7 @@ export function Header({ pageTitle }: HeaderProps = {}) {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <button
+                        data-testid="user-menu-trigger"
                         className="relative flex items-center gap-2.5 h-10 pl-3 pr-1.5 rounded-full border border-gray-200 hover:shadow-md transition-shadow bg-white cursor-pointer"
                       >
                         <Menu className="h-4 w-4 text-gray-600" />
